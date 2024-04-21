@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="150"
              xmlns:controls="using:CSharpSyntaxEditor.Controls"
+             xmlns:ce="using:CSharpSyntaxEditor.Controls.Extensions"
              x:Class="CSharpSyntaxEditor.Controls.SyntaxTreeListNode">
   <StackPanel
     Name="outerStackPanel"
@@ -14,16 +15,19 @@
       HorizontalAlignment="Stretch">
     </ContentControl>
 
-    <Panel
-      Name="innerPanel">
+    <ce:VerticallyExpandableCanvas
+      Name="expandableCanvas"
+      >
       <StackPanel
         Name="innerStackPanel"
         Margin="30 0 0 0"
-        HorizontalAlignment="Stretch"
+        HorizontalAlignment="Left"
         ClipToBounds="True"
+        Canvas.Left="0"
+        Canvas.Top="0"
         >
 
       </StackPanel>
-    </Panel>
+    </ce:VerticallyExpandableCanvas>
   </StackPanel>
 </UserControl>

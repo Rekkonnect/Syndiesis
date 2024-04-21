@@ -1,5 +1,4 @@
 ﻿using Avalonia.Controls.Documents;
-using Avalonia.Data.Core;
 using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -700,8 +699,9 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
         if (typeName is nameof(SyntaxTokenList))
         {
-            var suffixNameRun = Run(typeName, Styles.ClassSecondaryBrush);
+            var suffixNameRun = Run(typeName, Styles.TokenListBrush);
 
+            inlines.Add(suffixNameRun);
             return;
         }
 

@@ -1,18 +1,13 @@
 using Avalonia;
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using Avalonia.Media;
-using Avalonia.Styling;
+using CSharpSyntaxEditor.Controls.Extensions;
 using CSharpSyntaxEditor.Controls.SyntaxVisualization.Creation;
 using CSharpSyntaxEditor.Utilities;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace CSharpSyntaxEditor.Controls;
 
@@ -26,7 +21,7 @@ public partial class SyntaxTreeListNode : UserControl
     public object? AssociatedSyntaxObjectContent
     {
         get => AssociatedSyntaxObject?.SyntaxObject;
- set
+        set
         {
             var o = SyntaxObjectInfo.GetInfoForObject(value);
             AssociatedSyntaxObject = o;
@@ -74,13 +69,14 @@ public partial class SyntaxTreeListNode : UserControl
     public SyntaxTreeListNode()
     {
         InitializeComponent();
+        expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Expanded);
     }
 
     private static readonly Color _topLineHoverColor = Color.FromArgb(64, 128, 128, 128);
-    private static readonly Color _innerPanelHoverColor = Color.FromArgb(64, 96, 96, 96);
+    private static readonly Color _expandableCanvasHoverColor = Color.FromArgb(64, 96, 96, 96);
 
     private readonly SolidColorBrush _topLineBackgroundBrush = new(Colors.Transparent);
-    private readonly SolidColorBrush _innerPanelBackgroundBrush = new(Colors.Transparent);
+    private readonly SolidColorBrush _expandableCanvasBackgroundBrush = new(Colors.Transparent);
 
     private bool _isHovered;
 
@@ -113,12 +109,12 @@ public partial class SyntaxTreeListNode : UserControl
     {
         _isHovered = isHovered;
         var topLineBackgroundColor = isHovered ? _topLineHoverColor : Colors.Transparent;
-        var innerPanelBackgroundColor = isHovered ? _innerPanelHoverColor : Colors.Transparent;
+        var expandableCanvasBackgroundColor = isHovered ? _expandableCanvasHoverColor : Colors.Transparent;
         _topLineBackgroundBrush.Color = topLineBackgroundColor;
-        _innerPanelBackgroundBrush.Color = innerPanelBackgroundColor;
+        _expandableCanvasBackgroundBrush.Color = expandableCanvasBackgroundColor;
 
         NodeLine.Background = _topLineBackgroundBrush;
-        innerPanel.Background = _innerPanelBackgroundBrush;
+        expandableCanvas.Background = _expandableCanvasBackgroundBrush;
     }
 
     internal void EvaluateHoveringRecursively(PointerEventArgs e)
@@ -137,6 +133,20 @@ public partial class SyntaxTreeListNode : UserControl
         if (_isHovered)
         {
             ToggleExpansion();
+        }
+    }
+
+    internal void CorrectContainedNodeWidths(Size availableSize)
+    {
+        var leftMargin = innerStackPanel.Margin.Left;
+        var nextWidth = availableSize.Width - leftMargin;
+        var nextAvailableSize = availableSize.WithWidth(nextWidth);
+
+        Width = availableSize.Width;
+
+        foreach (var child in ChildNodes)
+        {
+            child.CorrectContainedNodeWidths(nextAvailableSize);
         }
     }
 
@@ -175,49 +185,20 @@ public partial class SyntaxTreeListNode : UserControl
         _expansionAnimationCancellationTokenFactory.Cancel();
 
         var animationToken = _expansionAnimationCancellationTokenFactory.CurrentToken;
-        _ = AnimateExpansionStackPanel(innerStackPanel, expand, animationToken);
+        _ = this.expandableCanvas.SetExpansionState(expand, animationToken);
     }
 
-    private async Task AnimateExpansionStackPanel(
-        StackPanel stackPanel,
-        bool expand,
-        CancellationToken cancellationToken)
+    public IEnumerable<SyntaxTreeListNode> EnumerateNodes()
     {
-        var totalHeight = stackPanel.Children.Sum(c => c.Bounds.Height);
-        var from = expand ? 0 : totalHeight;
-        var to = expand ? totalHeight : 0;
+        yield return this;
 
-        double startOpacity = expand ? 0.0 : 1.0;
-        double targetOpacity = expand ? 1.0 : 0.0;
-
-        var animation = new Animation
+        foreach (var child in ChildNodes)
         {
-            Duration = TimeSpan.FromMilliseconds(300),
-            Easing = new CubicEaseOut(),
-            Children =
+            var enumeratedNodes = child.EnumerateNodes();
+            foreach (var node in enumeratedNodes)
             {
-                new KeyFrame
-                {
-                    Cue = new Cue(0.00),
-                    Setters =
-                    {
-                        new Setter(StackPanel.HeightProperty, from),
-                        new Setter(StackPanel.OpacityProperty, startOpacity),
-                    }
-                },
-                new KeyFrame
-                {
-                    Cue = new Cue(1.00),
-                    Setters =
-                    {
-                        new Setter(StackPanel.HeightProperty, to),
-                        new Setter(StackPanel.OpacityProperty, targetOpacity),
-                    }
-                },
+                yield return node;
             }
-        };
-
-        await new TransitionAnimation(animation)
-            .RunAsync(stackPanel, cancellationToken);
+        }
     }
 }

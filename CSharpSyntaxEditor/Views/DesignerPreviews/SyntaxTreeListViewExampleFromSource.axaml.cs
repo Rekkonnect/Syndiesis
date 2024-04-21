@@ -3,8 +3,6 @@ using CSharpSyntaxEditor.Controls;
 using CSharpSyntaxEditor.Controls.SyntaxVisualization.Creation;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace CSharpSyntaxEditor.Views.DesignerPreviews;
 

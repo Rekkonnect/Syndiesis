@@ -1,4 +1,5 @@
 ﻿using Avalonia.Animation;
+using Avalonia.Controls;
 using Avalonia.Styling;
 using System.Linq;
 using System.Threading;
@@ -13,7 +14,18 @@ public sealed class TransitionAnimation(Animation animation)
     public async Task RunAsync(Animatable control, CancellationToken cancellationToken)
     {
         var animationTask = _animation.RunAsync(control, cancellationToken);
+        ApplyFinalKeyFrame(control);
 
+        await animationTask;
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+            ApplyFinalKeyFrame(control);
+        }
+    }
+
+    private void ApplyFinalKeyFrame(Animatable control)
+    {
         // set the final cue's setters -- which will persist after the animation
         var finalKeyFrame = _animation.Children.FirstOrDefault(s => s.Cue.CueValue is 1.0);
         if (finalKeyFrame is not null)
@@ -23,7 +35,26 @@ public sealed class TransitionAnimation(Animation animation)
                 setter.ApplySetter(control);
             }
         }
+    }
+}
 
-        await animationTask;
+public static class ControlExtensions
+{
+    public static void InvalidateAll(this Control control)
+    {
+        control.InvalidateArrange();
+        control.InvalidateMeasure();
+        control.InvalidateVisual();
+    }
+
+    public static void RecursivelyInvalidateAll(this Control control)
+    {
+        control.InvalidateAll();
+        var parent = control.Parent;
+
+        if (parent is Control parentControl)
+        {
+            parentControl.InvalidateAll();
+        }
     }
 }
