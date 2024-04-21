@@ -1,0 +1,90 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="using:Avalonia.Collections"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:controls="using:CSharpSyntaxEditor.Controls"
+             x:Class="CSharpSyntaxEditor.Views.DesignerPreviews.SyntaxTreeListViewPreview">
+  
+  <controls:SyntaxTreeListNode
+    Background="#001116"
+    Name="rootNode">
+
+    <controls:SyntaxTreeListNode.NodeLine>
+      <controls:SyntaxTreeListNodeLine
+        IsExpanded="True"
+        NodeTypeColor="#33E5A5"
+        NodeTypeText="N"
+        >
+        <controls:SyntaxTreeListNodeLine.Inlines>
+          <Run xml:space="preserve" Foreground="#E5986C">ReturnType</Run
+            ><Run xml:space="preserve" Foreground="#B4B4B4">: </Run
+            ><Run xml:space="preserve" Foreground="#33E5A5">PredefinedType</Run
+            ><Run xml:space="preserve" Foreground="#008052">Syntax</Run
+            >
+        </controls:SyntaxTreeListNodeLine.Inlines>
+      </controls:SyntaxTreeListNodeLine>
+    </controls:SyntaxTreeListNode.NodeLine>
+
+    <controls:SyntaxTreeListNode.ChildNodes>
+      <!-- XAML is the future you guys -->
+      <c:AvaloniaList x:TypeArguments="controls:SyntaxTreeListNode">
+        <controls:SyntaxTreeListNode>
+                
+          <controls:SyntaxTreeListNode.NodeLine>
+            <controls:SyntaxTreeListNodeLine
+              IsExpanded="True"
+              NodeTypeColor="#7A68E5"
+              NodeTypeText="T"
+              >
+              <controls:SyntaxTreeListNodeLine.Inlines>
+                <Run xml:space="preserve" Foreground="#E5986C">Keyword</Run
+                  ><Run xml:space="preserve" Foreground="#B4B4B4">: </Run
+                  ><Run xml:space="preserve" Foreground="#38A0FF">void    </Run
+                  ><Run xml:space="preserve" Foreground="#443A80" FontStyle="Italic">VoidKeyword</Run
+                  >
+              </controls:SyntaxTreeListNodeLine.Inlines>
+            </controls:SyntaxTreeListNodeLine>
+          </controls:SyntaxTreeListNode.NodeLine>
+
+          <controls:SyntaxTreeListNode.ChildNodes>
+
+            <c:AvaloniaList x:TypeArguments="controls:SyntaxTreeListNode">
+              <controls:SyntaxTreeListNode>
+                <controls:SyntaxTreeListNode.NodeLine>
+                  <controls:SyntaxTreeListNodeLine
+                    NodeTypeColor="#CC935F"
+                    NodeTypeText="D"
+                    >
+                    <controls:SyntaxTreeListNodeLine.Inlines>
+                      <Run xml:space="preserve" Foreground="#E4E4E4">void</Run
+                        >
+                    </controls:SyntaxTreeListNodeLine.Inlines>
+                  </controls:SyntaxTreeListNodeLine>
+                </controls:SyntaxTreeListNode.NodeLine>
+              </controls:SyntaxTreeListNode>
+
+              <controls:SyntaxTreeListNode>
+                <controls:SyntaxTreeListNode.NodeLine>
+                  <controls:SyntaxTreeListNodeLine
+                    NodeTypeColor="#7C7C7C"
+                    NodeTypeText="V"
+                    >
+                    <controls:SyntaxTreeListNodeLine.Inlines>
+                      <Run xml:space="preserve" Foreground="#B3B3B3">[space]    </Run
+                      ><Run xml:space="preserve" Foreground="#808080" FontStyle="Italic">WhitespaceTrivia</Run
+                      >
+                    </controls:SyntaxTreeListNodeLine.Inlines>
+                  </controls:SyntaxTreeListNodeLine>
+                </controls:SyntaxTreeListNode.NodeLine>
+              </controls:SyntaxTreeListNode>
+            </c:AvaloniaList>
+          </controls:SyntaxTreeListNode.ChildNodes>
+              
+        </controls:SyntaxTreeListNode>
+      </c:AvaloniaList>
+    </controls:SyntaxTreeListNode.ChildNodes>
+            
+  </controls:SyntaxTreeListNode>
+</UserControl>

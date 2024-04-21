@@ -1,0 +1,41 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CSharpSyntaxEditor.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1450" d:DesignHeight="850"
+        x:Class="CSharpSyntaxEditor.Views.MainWindow"
+        xmlns:controls="using:CSharpSyntaxEditor.Controls"
+        xmlns:previews="using:CSharpSyntaxEditor.Views.DesignerPreviews"
+        Icon="/Assets/logo.png"
+        Title="Syndiesis"
+        >
+
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+
+  <Panel>
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" MinWidth="400" />
+        <ColumnDefinition Width="4" />
+        <ColumnDefinition Width="*" MinWidth="400" />
+      </Grid.ColumnDefinitions>
+
+      <controls:CodeEditor
+        Grid.Column="0"
+        />
+
+      <GridSplitter
+        ResizeDirection="Columns"
+        Grid.Column="1"
+        >
+        
+      </GridSplitter>
+      <previews:SyntaxTreeListViewExampleFromSource
+        Grid.Column="2"
+        />
+    </Grid>
+  </Panel>
+</Window>

@@ -1,0 +1,66 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:controls="using:CSharpSyntaxEditor.Controls"
+        d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="CSharpSyntaxEditor.Controls.CodeEditor">
+
+  <Panel Name="backgroundPanel"
+         Background="#001116">
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="70"/>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="20"/>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="20"/>
+      </Grid.RowDefinitions>
+
+      <Panel Width="70"
+             VerticalAlignment="Stretch"
+             HorizontalAlignment="Left"
+             Name="linePanel"
+             Background="#00232E"
+             Grid.Column="0">
+
+        <controls:CodeEditorLineDisplayPanel
+          SelectedLineNumber="9"
+          LineNumberStart="3"
+          LastLineNumber="16"
+          />
+      </Panel>
+      <Panel Grid.Column="1" Name="codeCanvasContainer"
+             ZIndex="-10">
+        <Canvas>
+          <controls:CodeEditorContentPanel
+            Canvas.Left="0"
+            Canvas.Top="0"
+            Name="codeEditorContent"
+            SelectedLineIndex="3"
+            CursorCharacterIndex="12"
+            />
+        </Canvas>
+      </Panel>
+      <Panel Name="verticalScrollBarPanel"
+             Background="#003034"
+             Grid.Column="2">
+      </Panel>
+      <Panel Name="horizontalScrollBarPanel"
+             Background="#003034"
+             Grid.Column="0"
+             Grid.ColumnSpan="2"
+             Grid.Row="1">
+      </Panel>
+      <Panel Name="scrollBarIntersectionPanel"
+             Background="#00545A"
+             Grid.Column="2"
+             Grid.Row="1">
+      </Panel>
+      <!-- other color is 00777E -->
+    </Grid>
+  </Panel>
+</UserControl>

@@ -1,0 +1,29 @@
+﻿using Avalonia.Animation;
+using Avalonia.Styling;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace CSharpSyntaxEditor.Utilities;
+
+public sealed class TransitionAnimation(Animation animation)
+{
+    private readonly Animation _animation = animation;
+
+    public async Task RunAsync(Animatable control, CancellationToken cancellationToken)
+    {
+        var animationTask = _animation.RunAsync(control, cancellationToken);
+
+        // set the final cue's setters -- which will persist after the animation
+        var finalKeyFrame = _animation.Children.FirstOrDefault(s => s.Cue.CueValue is 1.0);
+        if (finalKeyFrame is not null)
+        {
+            foreach (var setter in finalKeyFrame.Setters.OfType<Setter>())
+            {
+                setter.ApplySetter(control);
+            }
+        }
+
+        await animationTask;
+    }
+}
