@@ -11,7 +11,7 @@
           Name="lineContentPanel">
 
       <TextBlock
-        FontFamily="Fira Code"
+        FontFamily="{StaticResource FiraCodeFontFamily}"
         FontWeight="Normal"
         Name="lineContentText"
         Margin="2 2 0 0"/>

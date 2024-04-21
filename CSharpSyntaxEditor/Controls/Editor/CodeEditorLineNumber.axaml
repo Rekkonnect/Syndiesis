@@ -10,7 +10,7 @@
          Margin="0 2 5 0">
     <TextBlock
         Name="lineNumberText"
-        FontFamily="Fira Code"
+        FontFamily="{StaticResource FiraCodeFontFamily}"
         Text="1"
         TextAlignment="Right"
         VerticalAlignment="Center"

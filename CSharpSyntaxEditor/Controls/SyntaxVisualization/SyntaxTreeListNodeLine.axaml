@@ -29,7 +29,7 @@
       <TextBlock
         TextAlignment="Center"
         VerticalAlignment="Center"
-        FontFamily="Aptos Display"
+        FontFamily="{StaticResource AptosDisplayFontFamily}"
         FontWeight="Bold"
         FontSize="26"
         Foreground="#33E5A5"
@@ -40,7 +40,7 @@
     </ContentControl>
 
     <TextBlock
-      FontFamily="Aptos"
+      FontFamily="{StaticResource AptosFontFamily}"
       Grid.Column="2"
       FontSize="16"
       VerticalAlignment="Center"

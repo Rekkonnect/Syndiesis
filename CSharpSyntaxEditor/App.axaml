@@ -12,10 +12,9 @@
     <FluentTheme />
   </Application.Styles>
   
-  <!-- TODO Fix those resources -->
   <Application.Resources>
-    <FontFamily x:Key="AptosFontFamily">avares://CSharpSyntaxEditor/Assets/Fonts/Aptos</FontFamily>
-    <FontFamily x:Key="AptosDisplayFontFamily">avares://CSharpSyntaxEditor/Assets/Fonts/Aptos Display</FontFamily>
-    <FontFamily x:Key="FiraCodeFontFamily">avares://CSharpSyntaxEditor/Assets/Fonts/Fira Code</FontFamily>
+    <FontFamily x:Key="AptosFontFamily">avares://CSharpSyntaxEditor/Assets/Fonts/Aptos#Aptos</FontFamily>
+    <FontFamily x:Key="AptosDisplayFontFamily">avares://CSharpSyntaxEditor/Assets/Fonts/Aptos-Display#Aptos Display</FontFamily>
+    <FontFamily x:Key="FiraCodeFontFamily">avares://CSharpSyntaxEditor/Assets/Fonts/Fira-Code#Fira Code</FontFamily>
   </Application.Resources>
 </Application>
