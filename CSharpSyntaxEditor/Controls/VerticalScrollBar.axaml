@@ -7,7 +7,10 @@
              mc:Ignorable="d" d:DesignWidth="20" d:DesignHeight="300"
              x:Class="CSharpSyntaxEditor.Controls.VerticalScrollBar">
 
-  <Grid>
+  <Grid
+    VerticalAlignment="Stretch"
+    HorizontalAlignment="Stretch"
+    >
     <Grid.RowDefinitions>
       <RowDefinition Height="20"/>
       <RowDefinition Height="*"/>
@@ -19,15 +22,16 @@
       Grid.Row="0"
       VerticalAlignment="Stretch"
       HorizontalAlignment="Stretch"
+      Background="AliceBlue"
       >
       <controls:ScrollBarStepButton.Content>
         <shapes:Polygon
           Name="upIcon"
-          HorizontalAlignment="Stretch"
-          VerticalAlignment="Stretch"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
           Points="0,8 6,0 12,8"
           Fill="AliceBlue"
-      />
+        />
       </controls:ScrollBarStepButton.Content>
     </controls:ScrollBarStepButton>
 

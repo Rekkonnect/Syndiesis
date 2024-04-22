@@ -13,7 +13,7 @@ public class ScrollBarStepButton : Button
 
     public ScrollBarStepButton()
     {
-        InitializeComponent();
+        //InitializeComponent();
     }
 
     private void InitializeComponent()

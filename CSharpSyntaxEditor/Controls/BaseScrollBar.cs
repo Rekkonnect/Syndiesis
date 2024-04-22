@@ -1,5 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Media;
 using System;
 
@@ -34,32 +36,6 @@ public abstract class BaseScrollBar : UserControl
     protected SolidColorBrush BrushForHoverState(bool hovered)
     {
         return hovered ? HoverColorBrush : AccentColorBrush;
-    }
-
-    public static readonly StyledProperty<Control?> PreviousStepIconProperty =
-        AvaloniaProperty.Register<BaseScrollBar, Control?>(
-            nameof(PreviousStepIcon));
-
-    public Control? PreviousStepIcon
-    {
-        get => GetValue(PreviousStepIconProperty);
-        set
-        {
-            SetValue(PreviousStepIconProperty, value);
-        }
-    }
-
-    public static readonly StyledProperty<Control?> NextStepIconProperty =
-        AvaloniaProperty.Register<BaseScrollBar, Control?>(
-            nameof(NextStepIcon));
-
-    public Control? NextStepIcon
-    {
-        get => GetValue(NextStepIconProperty);
-        set
-        {
-            SetValue(NextStepIconProperty, value);
-        }
     }
 
     public double SmallStep { get; set; } = 1;
@@ -135,6 +111,8 @@ public abstract class BaseScrollBar : UserControl
     }
 
     public double ScrollWindowLength => EndPosition - StartPosition;
+
+    public bool HasFullRangeWindow => ScrollWindowLength >= ValidValueRange;
 
     public bool CanScrollBelow => StartPosition > MinValue;
     public bool CanScrollAbove => EndPosition < MaxValue;
@@ -213,6 +191,11 @@ public abstract class BaseScrollBar : UserControl
             {
                 step = maxStep;
             }
+
+            BeginUpdate();
+            EndPosition += step;
+            StartPosition += step;
+            EndUpdate();
         }
         else
         {
@@ -224,11 +207,72 @@ public abstract class BaseScrollBar : UserControl
             {
                 step = minStep;
             }
-        }
 
-        BeginUpdate();
-        StartPosition += step;
-        EndPosition += step;
-        EndUpdate();
+            BeginUpdate();
+            StartPosition += step;
+            EndPosition += step;
+            EndUpdate();
+        }
+    }
+}
+
+public class PointerDragHandler
+{
+    private Point? _sourcePoint;
+    private Point _previousPoint;
+
+    public event Action? DragStarted;
+    public event Action<PointerDragArgs>? Dragged;
+    public event Action? DragEnded;
+
+    public bool IsActivelyDragging => _sourcePoint is not null;
+
+    public void Attach(InputElement control)
+    {
+        control.PointerPressed += HandlePointerPressed;
+        control.PointerMoved += HandlePointerMoved;
+        control.PointerReleased += HandlePointerReleased;
+    }
+
+    private void HandlePointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        var position = e.GetPosition(null);
+        _sourcePoint = position;
+        _previousPoint = position;
+        DragStarted?.Invoke();
+    }
+
+    private void HandlePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        _sourcePoint = null;
+        DragEnded?.Invoke();
+    }
+
+    private void HandlePointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (_sourcePoint is null)
+            return;
+
+        var current = e.GetPosition(null);
+        var delta = current - _previousPoint;
+        _previousPoint = current;
+        var source = _sourcePoint!.Value;
+        var totalDelta = current - source;
+        var args = new PointerDragArgs
+        {
+            Delta = delta,
+            TotalDelta = totalDelta,
+            DragSourcePoint = source,
+            SourcePointerEventArgs = e,
+        };
+        Dragged?.Invoke(args);
+    }
+
+    public class PointerDragArgs
+    {
+        public required Vector Delta { get; init; }
+        public required Vector TotalDelta { get; init; }
+        public required Point DragSourcePoint { get; init; }
+        public required PointerEventArgs SourcePointerEventArgs { get; init; }
     }
 }

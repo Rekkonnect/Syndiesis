@@ -1,8 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using System;
-using System.ComponentModel;
 
 namespace CSharpSyntaxEditor.Controls;
 
@@ -23,7 +21,13 @@ public partial class SyntaxTreeListView : UserControl
 
             UpdateScrollLimits();
             UpdateRootChanged();
+            value.SizeChanged += HandleRootNodeSizeAdjusted;
         }
+    }
+
+    private void HandleRootNodeSizeAdjusted(object? sender, SizeChangedEventArgs e)
+    {
+        UpdateScrollLimits();
     }
 
     private void UpdateRootChanged()
@@ -50,11 +54,13 @@ public partial class SyntaxTreeListView : UserControl
         verticalScrollBar.BeginUpdate();
         verticalScrollBar.MaxValue = node.Bounds.Height + 50;
         verticalScrollBar.EndPosition = verticalScrollBar.StartPosition + codeCanvas.Bounds.Height;
+        verticalScrollBar.HasAvailableScroll = !verticalScrollBar.HasFullRangeWindow;
         verticalScrollBar.EndUpdate();
 
         horizontalScrollBar.BeginUpdate();
         horizontalScrollBar.MaxValue = node.Bounds.Width;
         horizontalScrollBar.EndPosition = horizontalScrollBar.StartPosition + codeCanvas.Bounds.Width;
+        horizontalScrollBar.HasAvailableScroll = !horizontalScrollBar.HasFullRangeWindow;
         horizontalScrollBar.EndUpdate();
     }
 
@@ -90,6 +96,8 @@ public partial class SyntaxTreeListView : UserControl
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
+        const double scrollMultiplier = 50;
+
         base.OnPointerWheelChanged(e);
 
         var pointerPosition = e.GetCurrentPoint(this).Position;
@@ -98,9 +106,9 @@ public partial class SyntaxTreeListView : UserControl
             return;
         }
 
-        double steps = -e.Delta.Y * 30;
+        double steps = -e.Delta.Y * scrollMultiplier;
         double verticalSteps = steps;
-        double horizontalSteps = -e.Delta.X * 30;
+        double horizontalSteps = -e.Delta.X * scrollMultiplier;
         if (horizontalSteps is 0)
         {
             if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
