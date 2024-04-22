@@ -3,17 +3,70 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:CSharpSyntaxEditor.Controls"
+             xmlns:shapes="using:Avalonia.Controls.Shapes"
              mc:Ignorable="d" d:DesignWidth="20" d:DesignHeight="300"
              x:Class="CSharpSyntaxEditor.Controls.VerticalScrollBar">
 
   <Grid>
     <Grid.RowDefinitions>
-      <RowDefinition Height="30"/>
+      <RowDefinition Height="20"/>
       <RowDefinition Height="*"/>
-      <RowDefinition Height="30"/>
+      <RowDefinition Height="20"/>
     </Grid.RowDefinitions>
 
-    <!-- TODO: Later -->
+    <controls:ScrollBarStepButton
+      Name="upButton"
+      Grid.Row="0"
+      VerticalAlignment="Stretch"
+      HorizontalAlignment="Stretch"
+      >
+      <controls:ScrollBarStepButton.Content>
+        <shapes:Polygon
+          Name="upIcon"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+          Points="0,8 6,0 12,8"
+          Fill="AliceBlue"
+      />
+      </controls:ScrollBarStepButton.Content>
+    </controls:ScrollBarStepButton>
+
+    <Canvas
+      VerticalAlignment="Stretch"
+      HorizontalAlignment="Stretch"
+      Grid.Row="1"
+      ClipToBounds="True"
+      Name="draggableRectangleCanvas"
+      >
+
+      <Rectangle
+        Name="draggableRectangle"
+        Margin="5 0 0 5"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Top"
+        Height="21"
+        Width="10"
+        ClipToBounds="True"
+        Canvas.Top="12"
+        Canvas.Left="0"
+      >
+      </Rectangle>
+    </Canvas>
+
+    <controls:ScrollBarStepButton
+      Name="downButton"
+      Grid.Row="2"
+      VerticalAlignment="Stretch"
+      HorizontalAlignment="Stretch"
+      >
+      <shapes:Polygon
+      Name="downIcon"
+      HorizontalAlignment="Center"
+      VerticalAlignment="Center"
+      Points="0,0 6,8 12,0"
+      />
+    </controls:ScrollBarStepButton>
+
   </Grid>
 
 </UserControl>

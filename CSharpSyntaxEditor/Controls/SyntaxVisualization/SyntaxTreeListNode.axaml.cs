@@ -66,6 +66,8 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
+    internal SyntaxTreeListView? ListView { get; set; }
+
     public SyntaxTreeListNode()
     {
         InitializeComponent();
@@ -79,6 +81,7 @@ public partial class SyntaxTreeListNode : UserControl
     private readonly SolidColorBrush _expandableCanvasBackgroundBrush = new(Colors.Transparent);
 
     private bool _isHovered;
+    public bool EnableHovering { get; set; } = true;
 
     protected override void OnPointerEntered(PointerEventArgs e)
     {
@@ -94,6 +97,11 @@ public partial class SyntaxTreeListNode : UserControl
 
     private void EvaluateHovering(PointerEventArgs e)
     {
+        if (!EnableHovering)
+        {
+            UpdateHovering(false);
+        }
+
         var nodeLine = NodeLine;
         var bounds = nodeLine.Bounds;
         var restrictedBounds = bounds.WithHeight(bounds.Height - 1);
@@ -103,6 +111,30 @@ public partial class SyntaxTreeListNode : UserControl
             return;
 
         UpdateHovering(isHovered);
+    }
+
+    internal void SetEnabledHoveringRecursively(bool enabledHovering)
+    {
+        EnableHovering = enabledHovering;
+        if (!enabledHovering)
+        {
+            UpdateHovering(false);
+        }
+
+        foreach (var child in ChildNodes)
+        {
+            child.SetEnabledHoveringRecursively(enabledHovering);
+        }
+    }
+
+    internal void SetHoveringRecursively(bool isHovered)
+    {
+        UpdateHovering(isHovered);
+
+        foreach (var child in ChildNodes)
+        {
+            child.UpdateHovering(isHovered);
+        }
     }
 
     internal void UpdateHovering(bool isHovered)
@@ -136,17 +168,41 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
-    internal void CorrectContainedNodeWidths(Size availableSize)
+    internal double CorrectContainedNodeWidths(double minimumWidth)
     {
         var leftMargin = innerStackPanel.Margin.Left;
-        var nextWidth = availableSize.Width - leftMargin;
-        var nextAvailableSize = availableSize.WithWidth(nextWidth);
-
-        Width = availableSize.Width;
+        var nextMinimumWidth = minimumWidth;
 
         foreach (var child in ChildNodes)
         {
-            child.CorrectContainedNodeWidths(nextAvailableSize);
+            var fixedMinimumWidth = child.CorrectContainedNodeWidths(nextMinimumWidth - leftMargin);
+            nextMinimumWidth = fixedMinimumWidth + leftMargin;
+        }
+
+        var thisWidth = DesiredSize.Width;
+        if (thisWidth < nextMinimumWidth && thisWidth > 0)
+        {
+            Width = nextMinimumWidth;
+        }
+        else
+        {
+            nextMinimumWidth = thisWidth;
+        }
+
+        return nextMinimumWidth;
+    }
+
+    internal void CorrectContainedNodeWidths_Correct(Size minimumSize)
+    {
+        var leftMargin = innerStackPanel.Margin.Left;
+        var nextWidth = minimumSize.Width - leftMargin;
+        var nextAvailableSize = minimumSize.WithWidth(nextWidth);
+
+        Width = minimumSize.Width;
+
+        foreach (var child in ChildNodes)
+        {
+            child.CorrectContainedNodeWidths_Correct(nextAvailableSize);
         }
     }
 

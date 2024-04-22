@@ -521,6 +521,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         {
             return DisplayTextForUnstructuredTrivia(trivia);
         }
+        // TODO: handle structured trivia
         return null;
     }
 
@@ -534,7 +535,8 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             case SyntaxKind.EndOfLineTrivia:
                 return EndOfLineTriviaText(trivia);
         }
-        return null;
+
+        throw new ArgumentException("Invalid trivia syntax kind; expected whitespace or EOL trivia");
     }
 
     private static string EndOfLineTriviaText(SyntaxTrivia trivia)
@@ -860,13 +862,13 @@ public sealed record SyntaxObjectInfo(
             throw new ArgumentException("Invalid empty list provided");
 
         var first = nodeList[0];
-        var firstSpan = spanGetter(first);
+        var firstSpan = spanGetter(first!);
         if (nodeList.Count is 1)
             return firstSpan;
 
         var start = firstSpan.Start;
         var last = nodeList[^1];
-        var lastSpan = spanGetter(last);
+        var lastSpan = spanGetter(last!);
         var end = lastSpan.End;
         return new TextSpan(start, end);
     }

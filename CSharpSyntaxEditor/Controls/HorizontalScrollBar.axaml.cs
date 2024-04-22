@@ -6,4 +6,9 @@ public partial class HorizontalScrollBar : BaseScrollBar
     {
         InitializeComponent();
     }
+
+    protected override void OnUpdateScroll()
+    {
+        
+    }
 }

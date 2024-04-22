@@ -22,17 +22,24 @@
       <Panel Grid.Column="0"
              Name="codeCanvasContainer"
              >
-        <Canvas>
+        <Canvas
+          Name="codeCanvas"
+          >
           <ContentControl
-            Name="topLevelNodeContent">
+            Name="topLevelNodeContent"
+            VerticalAlignment="Top"
+            HorizontalAlignment="Left"
+            >
           </ContentControl>
         </Canvas>
       </Panel>
       <Panel Name="verticalScrollBarPanel"
              Background="#003034"
              Grid.Column="1">
-        <!-- TODO: Colors -->
-        <controls:VerticalScrollBar>
+        <controls:VerticalScrollBar
+          Name="verticalScrollBar"
+          AccentColor="#006066"
+          >
 
         </controls:VerticalScrollBar>
 
@@ -43,7 +50,10 @@
              Grid.Row="1">
 
         <!-- TODO: Colors -->
-        <controls:HorizontalScrollBar>
+        <controls:HorizontalScrollBar
+          Name="horizontalScrollBar"
+          AccentColor="#00777E"
+          >
 
         </controls:HorizontalScrollBar>
       </Panel>
