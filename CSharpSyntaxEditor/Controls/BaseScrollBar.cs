@@ -1,7 +1,7 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Data;
+﻿using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using System;
 
@@ -129,8 +129,17 @@ public abstract class BaseScrollBar : UserControl
         }
     }
 
+    public abstract ScrollBarStepButtonContainer PreviousButtonContainer { get; }
+    public abstract ScrollBarStepButtonContainer NextButtonContainer { get; }
+
+    public abstract Shape PreviousIconShape { get; }
+    public abstract Shape NextIconShape { get; }
+    public abstract Rectangle DraggableRectangle { get; }
+
     private bool _hasChanges = false;
     private int _updateLocks = 0;
+
+    protected readonly PointerDragHandler DragHandler = new();
 
     public void BeginUpdate()
     {
@@ -149,6 +158,62 @@ public abstract class BaseScrollBar : UserControl
         }
         _hasChanges = false;
     }
+
+    protected void InitializeBrushes()
+    {
+        PreviousButtonContainer.HoverBackgroundBrush = AccentColorBrush;
+        NextButtonContainer.HoverBackgroundBrush = AccentColorBrush;
+
+        PreviousButtonContainer.ContentFillBrush = AccentColorBrush;
+        NextButtonContainer.ContentFillBrush = AccentColorBrush;
+
+        PreviousButtonContainer.HoverContentFillBrush = HoverColorBrush;
+        NextButtonContainer.HoverContentFillBrush = HoverColorBrush;
+
+        PreviousButtonContainer.Background = Background;
+        NextButtonContainer.Background = Background;
+
+        PreviousIconShape.Fill = AccentColorBrush;
+        NextIconShape.Fill = AccentColorBrush;
+        DraggableRectangle.Fill = AccentColorBrush;
+    }
+
+    protected void InitializeEvents()
+    {
+        PreviousButtonContainer.button.Click += HandlePreviousClick;
+        NextButtonContainer.button.Click += HandleNextClick;
+
+        var draggableRectangle = DraggableRectangle;
+        draggableRectangle.PointerEntered += HandlePointerOverRectangle;
+        draggableRectangle.PointerExited += HandlePointerOverRectangle;
+        draggableRectangle.PointerMoved += HandlePointerOverRectangle;
+    }
+
+    protected void InitializeDraggableHandler()
+    {
+        DragHandler.Dragged += HandleDragging;
+        DragHandler.Attach(DraggableRectangle);
+    }
+
+    private void HandlePointerOverRectangle(object? sender, PointerEventArgs e)
+    {
+        var draggableRectangle = DraggableRectangle;
+        bool isHovered = draggableRectangle.IsPointerOver || DragHandler.IsActivelyDragging;
+        var brush = BrushForHoverState(isHovered);
+        draggableRectangle.Fill = brush;
+    }
+
+    private void HandlePreviousClick(object? sender, RoutedEventArgs e)
+    {
+        Step(-SmallStep);
+    }
+
+    private void HandleNextClick(object? sender, RoutedEventArgs e)
+    {
+        Step(SmallStep);
+    }
+
+    protected abstract void HandleDragging(PointerDragHandler.PointerDragArgs args);
 
     private void UpdateIfNotPaused()
     {
@@ -170,8 +235,18 @@ public abstract class BaseScrollBar : UserControl
 
     private void UpdateScroll()
     {
+        BasicUpdateScroll();
+        if (!HasAvailableScroll)
+        {
+            return;
+        }
         OnUpdateScroll();
         ScrollChanged?.Invoke();
+    }
+
+    private void BasicUpdateScroll()
+    {
+        DraggableRectangle.IsVisible = HasAvailableScroll;
     }
 
     protected abstract void OnUpdateScroll();
@@ -213,66 +288,5 @@ public abstract class BaseScrollBar : UserControl
             EndPosition += step;
             EndUpdate();
         }
-    }
-}
-
-public class PointerDragHandler
-{
-    private Point? _sourcePoint;
-    private Point _previousPoint;
-
-    public event Action? DragStarted;
-    public event Action<PointerDragArgs>? Dragged;
-    public event Action? DragEnded;
-
-    public bool IsActivelyDragging => _sourcePoint is not null;
-
-    public void Attach(InputElement control)
-    {
-        control.PointerPressed += HandlePointerPressed;
-        control.PointerMoved += HandlePointerMoved;
-        control.PointerReleased += HandlePointerReleased;
-    }
-
-    private void HandlePointerPressed(object? sender, PointerPressedEventArgs e)
-    {
-        var position = e.GetPosition(null);
-        _sourcePoint = position;
-        _previousPoint = position;
-        DragStarted?.Invoke();
-    }
-
-    private void HandlePointerReleased(object? sender, PointerReleasedEventArgs e)
-    {
-        _sourcePoint = null;
-        DragEnded?.Invoke();
-    }
-
-    private void HandlePointerMoved(object? sender, PointerEventArgs e)
-    {
-        if (_sourcePoint is null)
-            return;
-
-        var current = e.GetPosition(null);
-        var delta = current - _previousPoint;
-        _previousPoint = current;
-        var source = _sourcePoint!.Value;
-        var totalDelta = current - source;
-        var args = new PointerDragArgs
-        {
-            Delta = delta,
-            TotalDelta = totalDelta,
-            DragSourcePoint = source,
-            SourcePointerEventArgs = e,
-        };
-        Dragged?.Invoke(args);
-    }
-
-    public class PointerDragArgs
-    {
-        public required Vector Delta { get; init; }
-        public required Vector TotalDelta { get; init; }
-        public required Point DragSourcePoint { get; init; }
-        public required PointerEventArgs SourcePointerEventArgs { get; init; }
     }
 }

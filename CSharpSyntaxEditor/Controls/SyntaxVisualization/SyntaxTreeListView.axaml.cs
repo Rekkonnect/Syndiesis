@@ -74,12 +74,14 @@ public partial class SyntaxTreeListView : UserControl
     {
         var top = verticalScrollBar.StartPosition;
         Canvas.SetTop(topLevelNodeContent, -top);
+        InvalidateArrange();
     }
 
     private void OnHorizontalScroll()
     {
         var left = horizontalScrollBar.StartPosition;
         Canvas.SetLeft(topLevelNodeContent, -left);
+        InvalidateArrange();
     }
 
     protected override void OnPointerExited(PointerEventArgs e)
@@ -121,7 +123,6 @@ public partial class SyntaxTreeListView : UserControl
         verticalScrollBar.Step(verticalSteps);
         horizontalScrollBar.Step(horizontalSteps);
         EvaluateHovering(e);
-        InvalidateArrange();
     }
 
     private void EvaluateHovering(PointerEventArgs e)

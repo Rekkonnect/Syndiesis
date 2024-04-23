@@ -1,29 +1,42 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
-using Avalonia.Data;
 using Avalonia.Input;
 using Avalonia.Media;
 
 namespace CSharpSyntaxEditor.Controls;
 
-public class ScrollBarStepButton : Button
+public partial class ScrollBarStepButtonContainer : UserControl
 {
     public IBrush HoverBackgroundBrush { get; set; } = new SolidColorBrush(Colors.Transparent);
     public IBrush? ContentFillBrush { get; set; }
+    public IBrush? HoverContentFillBrush { get; set; }
 
-    public ScrollBarStepButton()
+    public object? ContainerContent
     {
-        //InitializeComponent();
+        get => contentControl.Content;
+        set => contentControl.Content = value;
     }
 
-    private void InitializeComponent()
+    public ScrollBarStepButtonContainer()
     {
-        CornerRadius = new(0);
+        InitializeComponent();
+        InitializeEvents();
+    }
+
+    private void InitializeEvents()
+    {
+        // should not be necessary?
     }
 
     protected override void OnPointerEntered(PointerEventArgs e)
     {
         base.OnPointerEntered(e);
+        UpdateContentBrush();
+    }
+
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
         UpdateContentBrush();
     }
 
@@ -35,9 +48,7 @@ public class ScrollBarStepButton : Button
 
     private void UpdateContentBrush()
     {
-        return;
-
-        var content = Content;
+        var content = contentControl.Content;
         if (content is null)
             return;
 
@@ -45,12 +56,13 @@ public class ScrollBarStepButton : Button
             return;
 
         bool isHovered = IsPointerOver;
+
         if (content is Shape shape)
         {
-            var priority = isHovered
-                ? BindingPriority.LocalValue
-                : BindingPriority.Unset;
-            shape.SetValue(Shape.FillProperty, ContentFillBrush, priority);
+            var fill = isHovered
+                ? HoverContentFillBrush
+                : ContentFillBrush;
+            shape.SetCurrentValue(Shape.FillProperty, fill);
         }
     }
 }

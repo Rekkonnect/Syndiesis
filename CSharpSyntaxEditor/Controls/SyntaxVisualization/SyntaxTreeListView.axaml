@@ -39,6 +39,8 @@
         <controls:VerticalScrollBar
           Name="verticalScrollBar"
           AccentColor="#006066"
+          HoverColor="#009099"
+          SmallStep="50"
           >
 
         </controls:VerticalScrollBar>
@@ -49,10 +51,11 @@
              Grid.Column="0"
              Grid.Row="1">
 
-        <!-- TODO: Colors -->
         <controls:HorizontalScrollBar
           Name="horizontalScrollBar"
-          AccentColor="#00777E"
+          AccentColor="#006066"
+          HoverColor="#009099"
+          SmallStep="50"
           >
 
         </controls:HorizontalScrollBar>
@@ -62,7 +65,6 @@
              Grid.Column="2"
              Grid.Row="1">
       </Panel>
-      <!-- other color is 00777E -->
     </Grid>
   </Panel>
 

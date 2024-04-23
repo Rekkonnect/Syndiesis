@@ -1,56 +1,34 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using System.Diagnostics.CodeAnalysis;
 
 namespace CSharpSyntaxEditor.Controls;
 
 public partial class VerticalScrollBar : BaseScrollBar
 {
-    private PointerDragHandler _dragHandler;
+    public override ScrollBarStepButtonContainer PreviousButtonContainer => upButton;
+    public override ScrollBarStepButtonContainer NextButtonContainer => downButton;
+    public override Rectangle DraggableRectangle => draggableRectangle;
+
+    public override Shape PreviousIconShape => upIcon;
+    public override Shape NextIconShape => downIcon;
 
     public VerticalScrollBar()
     {
         InitializeComponent();
         InitializeBrushes();
+        InitializeBrushesExtra();
         InitializeEvents();
+        InitializeDraggableHandler();
     }
 
-    private void InitializeBrushes()
+    private void InitializeBrushesExtra()
     {
-        upButton.HoverBackgroundBrush = AccentColorBrush;
-        downButton.HoverBackgroundBrush = AccentColorBrush;
-
-        upButton.Background = Background;
-        downButton.Background = Background;
-
-        upIcon.Fill = AccentColorBrush;
-        downIcon.Fill = AccentColorBrush;
-        draggableRectangle.Fill = AccentColorBrush;
+        hitboxPanel.Background = Background;
     }
 
-    [MemberNotNull(nameof(_dragHandler))]
-    private void InitializeEvents()
-    {
-        upButton.Click += HandleUpClick;
-        downButton.Click += HandleDownClick;
-        draggableRectangle.PointerEntered += HandlePointerOverRectangle;
-        draggableRectangle.PointerExited += HandlePointerOverRectangle;
-        draggableRectangle.PointerMoved += HandlePointerOverRectangle;
-
-        _dragHandler = new PointerDragHandler();
-        _dragHandler.Dragged += HandleDragging;
-        _dragHandler.Attach(draggableRectangle);
-    }
-
-    private void HandlePointerOverRectangle(object? sender, PointerEventArgs e)
-    {
-        bool isHovered = draggableRectangle.IsPointerOver || _dragHandler.IsActivelyDragging;
-        var brush = BrushForHoverState(isHovered);
-        draggableRectangle.Fill = brush;
-    }
-
-    private void HandleDragging(PointerDragHandler.PointerDragArgs args)
+    protected override void HandleDragging(PointerDragHandler.PointerDragArgs args)
     {
         var heightStep = args.Delta.Y;
         var progressStep = heightStep / draggableRectangleCanvas.Bounds.Height;
@@ -58,25 +36,16 @@ public partial class VerticalScrollBar : BaseScrollBar
         Step(translatedStep);
     }
 
-    private void HandleUpClick(object? sender, RoutedEventArgs e)
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
-        Step(-SmallStep);
-    }
+        base.OnPointerWheelChanged(e);
 
-    private void HandleDownClick(object? sender, RoutedEventArgs e)
-    {
-        Step(SmallStep);
+        var delta = -e.Delta.Y * SmallStep;
+        Step(delta);
     }
 
     protected override void OnUpdateScroll()
     {
-        draggableRectangle.IsVisible = HasAvailableScroll;
-
-        if (!HasAvailableScroll)
-        {
-            return;
-        }
-
         var availableHeight = draggableRectangleCanvas.Bounds.Height;
         var valueRange = ValidValueRange;
         var window = ScrollWindowLength;

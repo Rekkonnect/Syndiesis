@@ -4,45 +4,40 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:CSharpSyntaxEditor.Controls"
              xmlns:shapes="using:Avalonia.Controls.Shapes"
-             mc:Ignorable="d" d:DesignWidth="20" d:DesignHeight="300"
+             mc:Ignorable="d" d:DesignWidth="20" d:DesignHeight="250"
              x:Class="CSharpSyntaxEditor.Controls.VerticalScrollBar">
 
-  <Grid
-    VerticalAlignment="Stretch"
-    HorizontalAlignment="Stretch"
-    >
+  <Grid>
     <Grid.RowDefinitions>
       <RowDefinition Height="20"/>
       <RowDefinition Height="*"/>
       <RowDefinition Height="20"/>
     </Grid.RowDefinitions>
 
-    <controls:ScrollBarStepButton
+    <controls:ScrollBarStepButtonContainer
       Name="upButton"
       Grid.Row="0"
-      VerticalAlignment="Stretch"
-      HorizontalAlignment="Stretch"
-      Background="AliceBlue"
       >
-      <controls:ScrollBarStepButton.Content>
+      <controls:ScrollBarStepButtonContainer.ContainerContent>
         <shapes:Polygon
           Name="upIcon"
           HorizontalAlignment="Center"
           VerticalAlignment="Center"
           Points="0,8 6,0 12,8"
-          Fill="AliceBlue"
         />
-      </controls:ScrollBarStepButton.Content>
-    </controls:ScrollBarStepButton>
+      </controls:ScrollBarStepButtonContainer.ContainerContent>
+    </controls:ScrollBarStepButtonContainer>
 
     <Canvas
-      VerticalAlignment="Stretch"
-      HorizontalAlignment="Stretch"
       Grid.Row="1"
       ClipToBounds="True"
       Name="draggableRectangleCanvas"
       >
 
+      <!--
+      This is not responsive; the manual Width property controls the width
+      of the control, must resolve sometime
+      -->
       <Rectangle
         Name="draggableRectangle"
         Margin="5 0 0 5"
@@ -50,26 +45,33 @@
         VerticalAlignment="Top"
         Height="21"
         Width="10"
-        ClipToBounds="True"
-        Canvas.Top="12"
-        Canvas.Left="0"
       >
       </Rectangle>
     </Canvas>
 
-    <controls:ScrollBarStepButton
+    <controls:ScrollBarStepButtonContainer
       Name="downButton"
       Grid.Row="2"
+      >
+      <controls:ScrollBarStepButtonContainer.ContainerContent>
+        <shapes:Polygon
+        Name="downIcon"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Points="0,0 6,8 12,0"
+        />
+      </controls:ScrollBarStepButtonContainer.ContainerContent>
+    </controls:ScrollBarStepButtonContainer>
+
+    <!-- this might be useless -->
+    <Panel
+      Name="hitboxPanel"
+      Grid.RowSpan="2"
       VerticalAlignment="Stretch"
       HorizontalAlignment="Stretch"
-      >
-      <shapes:Polygon
-      Name="downIcon"
-      HorizontalAlignment="Center"
-      VerticalAlignment="Center"
-      Points="0,0 6,8 12,0"
+      ZIndex="-1"
+      Background="Transparent"
       />
-    </controls:ScrollBarStepButton>
 
   </Grid>
 
