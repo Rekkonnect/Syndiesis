@@ -81,7 +81,6 @@ public partial class SyntaxTreeListNode : UserControl
     private readonly SolidColorBrush _expandableCanvasBackgroundBrush = new(Colors.Transparent);
 
     private bool _isHovered;
-    public bool EnableHovering { get; set; } = true;
 
     protected override void OnPointerEntered(PointerEventArgs e)
     {
@@ -97,9 +96,11 @@ public partial class SyntaxTreeListNode : UserControl
 
     private void EvaluateHovering(PointerEventArgs e)
     {
-        if (!EnableHovering)
+        var allowedHover = ListView?.RequestHover(this) ?? true;
+        if (!allowedHover)
         {
             UpdateHovering(false);
+            return;
         }
 
         var nodeLine = NodeLine;
@@ -110,20 +111,23 @@ public partial class SyntaxTreeListNode : UserControl
         if (isHovered == _isHovered)
             return;
 
-        UpdateHovering(isHovered);
+        if (isHovered)
+        {
+            ListView?.OverrideHover(this);
+        }
+        else
+        {
+            ListView?.RemoveHover(this);
+        }
     }
 
-    internal void SetEnabledHoveringRecursively(bool enabledHovering)
+    internal void SetListViewRecursively(SyntaxTreeListView listView)
     {
-        EnableHovering = enabledHovering;
-        if (!enabledHovering)
-        {
-            UpdateHovering(false);
-        }
+        ListView = listView;
 
         foreach (var child in ChildNodes)
         {
-            child.SetEnabledHoveringRecursively(enabledHovering);
+            child.SetListViewRecursively(listView);
         }
     }
 

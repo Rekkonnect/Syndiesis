@@ -1,11 +1,15 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using System;
 
 namespace CSharpSyntaxEditor.Controls;
 
 public partial class SyntaxTreeListView : UserControl
 {
+    private bool _allowedHover;
+    private SyntaxTreeListNode? _hoveredNode;
+
     public static readonly StyledProperty<SyntaxTreeListNode> RootNodeProperty =
         AvaloniaProperty.Register<CodeEditorLine, SyntaxTreeListNode>(
             nameof(RootNode),
@@ -21,6 +25,7 @@ public partial class SyntaxTreeListView : UserControl
 
             UpdateScrollLimits();
             UpdateRootChanged();
+            value.SetListViewRecursively(this);
             value.SizeChanged += HandleRootNodeSizeAdjusted;
         }
     }
@@ -130,11 +135,12 @@ public partial class SyntaxTreeListView : UserControl
         var pointerPosition = e.GetCurrentPoint(this).Position;
         if (!codeCanvasContainer.Bounds.Contains(pointerPosition))
         {
-            RootNode.SetEnabledHoveringRecursively(false);
+            _allowedHover = false;
+            RootNode.SetHoveringRecursively(false);
         }
         else
         {
-            RootNode.SetEnabledHoveringRecursively(true);
+            _allowedHover = true;
             RootNode.EvaluateHoveringRecursively(e);
         }
     }
@@ -151,5 +157,30 @@ public partial class SyntaxTreeListView : UserControl
         var requiredWidth = RootNode.CorrectContainedNodeWidths(availableSize.Width);
         RootNode.CorrectContainedNodeWidths(requiredWidth + 50);
         return availableSize.WithWidth(requiredWidth);
+    }
+
+    public bool RequestHover(SyntaxTreeListNode syntaxTreeListNode)
+    {
+        if (!_allowedHover)
+            return false;
+
+        return true;
+    }
+
+    public void RemoveHover(SyntaxTreeListNode listNode)
+    {
+        if (listNode != _hoveredNode)
+            return;
+
+        _hoveredNode = null;
+        listNode.UpdateHovering(false);
+    }
+
+    public void OverrideHover(SyntaxTreeListNode listNode)
+    {
+        var previousHover = _hoveredNode;
+        previousHover?.UpdateHovering(false);
+        _hoveredNode = listNode;
+        listNode.UpdateHovering(true);
     }
 }
