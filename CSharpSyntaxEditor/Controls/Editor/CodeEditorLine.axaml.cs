@@ -10,7 +10,7 @@ namespace CSharpSyntaxEditor.Controls;
 
 public partial class CodeEditorLine : UserControl
 {
-    private static readonly SolidColorBrush _selectedLineBackgroundBrush = new(0xFF142930);
+    private static readonly SolidColorBrush _selectedLineBackgroundBrush = new(0x80102020);
     private static readonly SolidColorBrush _unselectedLineBackgroundBrush = new(Colors.Transparent);
 
     public static readonly StyledProperty<string> TextProperty =

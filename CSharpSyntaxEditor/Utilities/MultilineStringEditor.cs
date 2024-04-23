@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Text;
 
 namespace CSharpSyntaxEditor.Utilities;
@@ -34,6 +35,18 @@ public sealed class MultilineStringEditor
         _lines.Insert(line, value);
     }
 
+    public void InsertLineAtColumn(int line, int column)
+    {
+        var sourceLine = AtLine(line);
+        if (column >= sourceLine.Length)
+        {
+            InsertEmptyLineAt(line + 1);
+            return;
+        }
+
+        BreakLineAt(line, column);
+    }
+
     public void BreakLineAt(int line, int upperLineLength)
     {
         var sourceLine = AtLine(line);
@@ -47,8 +60,6 @@ public sealed class MultilineStringEditor
         SetLine(line, start);
         InsertLineAt(line + 1, end);
     }
-
-    // muy bien copypasta
 
     public void InsertAt(int line, int column, char value)
     {
@@ -127,26 +138,68 @@ public sealed class MultilineStringEditor
 
     public void RemoveBackwardsAt(int line, int column, int count)
     {
+        if (count <= 0)
+            return;
+
         var previousLine = AtLine(line);
-        if (count >= previousLine.Length)
+        int removedLength = column;
+        int remainingLength = previousLine.Length - column;
+        if (count >= column)
         {
-            // we do not mess with the previous lines in this one
-            // usually the caller will mind the length of the line
-            // if need be, we may change this
-            ClearLine(line);
+            count -= column;
+            if (remainingLength is 0 && count > 0)
+            {
+                RemoveLine(line);
+                // eat up a virtual newline
+                count--;
+            }
+            else
+            {
+                var trimmedLine = previousLine[column..];
+                SetLine(line, trimmedLine);
+            }
+            var previousLineIndex = line - 1;
+            if (previousLineIndex < 0)
+                return;
+
+            var previousLineLength = AtLine(previousLineIndex).Length;
+            RemoveBackwardsAt(previousLineIndex, previousLineLength, count);
             return;
         }
 
-        var nextLine = previousLine.RemoveBackwards(column, count);
+        var nextLine = previousLine.RemoveBackwards(column - 1, count);
         SetLine(line, nextLine);
     }
 
     public void RemoveForwardsAt(int line, int column, int count)
     {
+        // TODO FIX BASED ON ABOVE
+        if (count <= 0)
+            return;
+
         var previousLine = AtLine(line);
-        if (count >= previousLine.Length)
+        int removedLength = previousLine.Length - column;
+        int remainingLength = column;
+        if (count >= removedLength)
         {
-            ClearLine(line);
+            count -= column;
+            if (remainingLength is 0 && count > 0)
+            {
+                RemoveLine(line);
+                // eat up a virtual newline
+                count--;
+            }
+            else
+            {
+                var trimmedLine = previousLine[..column];
+                SetLine(line, trimmedLine);
+            }
+
+            var nextLineIndex = line;
+            if (nextLineIndex >= _lines.Count)
+                return;
+
+            RemoveForwardsAt(nextLineIndex, 0, count);
             return;
         }
 
@@ -199,6 +252,17 @@ public sealed class MultilineStringEditor
         RemoveStart(endLine, endColumn);
     }
 
+    public void RemoveNewLineIntoBelow(int line)
+    {
+        if (line >= _lines.Count - 1)
+            return;
+
+        var current = AtLine(line);
+        var next = AtLine(line + 1);
+        RemoveLine(line + 1);
+        SetLine(line, current + next);
+    }
+
     public void ClearLine(int line)
     {
         SetLine(line, string.Empty);
@@ -214,7 +278,7 @@ public sealed class MultilineStringEditor
         return _lines[line];
     }
 
-    public string FullString()
+    public string FullString(string newLine = "\r\n")
     {
         int lineCount = LineCount;
 
@@ -229,10 +293,19 @@ public sealed class MultilineStringEditor
             builder.Append(_lines[i]);
             if (i < _lines.Count - 1)
             {
-                builder.Append("\r\n");
+                builder.Append(newLine);
             }
         }
 
         return builder.ToString();
     }
+
+#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    [Obsolete($"Prefer {nameof(FullString)}")]
+    public override string ToString()
+    {
+        return base.ToString()!;
+    }
+#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 }

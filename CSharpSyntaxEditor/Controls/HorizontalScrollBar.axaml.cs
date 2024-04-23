@@ -42,7 +42,7 @@ public partial class HorizontalScrollBar : BaseScrollBar
         var availableWidth = draggableRectangleCanvas.Bounds.Width;
         var valueRange = ValidValueRange;
         var window = ScrollWindowLength;
-        var start = StartPosition;
+        var start = StartPosition - MinValue;
 
         Canvas.SetLeft(draggableRectangle, PixelValue(start));
         draggableRectangle.Width = PixelValue(window);

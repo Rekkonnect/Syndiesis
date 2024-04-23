@@ -52,7 +52,7 @@ public partial class CodeEditorContentPanel : UserControl
         InitializeComponent();
     }
 
-    private CodeEditorLine CurrentlySelectedLine()
+    public CodeEditorLine CurrentlySelectedLine()
     {
         int index = SelectedLineIndex;
         return LineAtIndex(index);

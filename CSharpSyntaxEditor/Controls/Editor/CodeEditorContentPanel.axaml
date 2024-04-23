@@ -3,65 +3,74 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             xmlns:controls="using:CSharpSyntaxEditor.Controls"             d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:controls="using:CSharpSyntaxEditor.Controls"
+             d:DesignWidth="800" d:DesignHeight="450"
              x:Class="CSharpSyntaxEditor.Controls.CodeEditorContentPanel">
 
   <StackPanel Name="codeLinesPanel">
     <controls:CodeEditorLine
       >
       <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve" Foreground="#38A0FF">static </Run
-          ><Run xml:space="preserve" Foreground="#38A0FF">void </Run
-          ><Run xml:space="preserve" Foreground="#FFED8C">Main</Run
-          ><Run xml:space="preserve" Foreground="#FFFFFF">(</Run
-          ><Run xml:space="preserve" Foreground="#38A0FF">string</Run
-          ><Run xml:space="preserve" Foreground="#FFFFFF">[] </Run
-          ><Run xml:space="preserve" Foreground="#86D3FF">args</Run
-          ><Run xml:space="preserve" Foreground="#FFFFFF">)</Run
-          >
+        <Run>using System;</Run>
+      </controls:CodeEditorLine.Inlines>
+      
+    </controls:CodeEditorLine>
+    <controls:CodeEditorLine
+      >
+      <controls:CodeEditorLine.Inlines>
       </controls:CodeEditorLine.Inlines>
     </controls:CodeEditorLine>
     <controls:CodeEditorLine
       >
       <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve" Foreground="#FFFFFF">{</Run
-          >
+        <Run>namespace Example;</Run>
       </controls:CodeEditorLine.Inlines>
     </controls:CodeEditorLine>
     <controls:CodeEditorLine
       >
       <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve" Foreground="#38A0FF">    if </Run
-          ><Run xml:space="preserve" Foreground="#FFFFFF">(</Run
-          ><Run xml:space="preserve" Foreground="#86D3FF">args</Run
-          ><Run xml:space="preserve" Foreground="#FFFFFF">.</Run
-          ><Run xml:space="preserve" Foreground="#FFA978">Length </Run
-          ><Run xml:space="preserve" Foreground="#38A0FF">is </Run
-          ><Run xml:space="preserve" Foreground="#FF4667">1</Run
-          ><Run xml:space="preserve" Foreground="#FFFFFF">)</Run
-          >
       </controls:CodeEditorLine.Inlines>
     </controls:CodeEditorLine>
     <controls:CodeEditorLine
       >
       <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve" Foreground="#FFFFFF">        System.</Run
-          ><Run xml:space="preserve" Foreground="#33E5A5">Console</Run
-          ><Run xml:space="preserve" Foreground="#FFFFFF">.</Run
-          ><Run xml:space="preserve" Foreground="#FFED8C">WriteLine</Run
-          ><Run xml:space="preserve" Foreground="#FFFFFF">(</Run
-          ><Run xml:space="preserve" Foreground="#86D3FF">args</Run
-          ><Run xml:space="preserve" Foreground="#FFFFFF">[</Run
-          ><Run xml:space="preserve" Foreground="#FF4667">0</Run
-          ><Run xml:space="preserve" Foreground="#FFFFFF">]);</Run
-          >
+        <Run>public class Program</Run>
       </controls:CodeEditorLine.Inlines>
     </controls:CodeEditorLine>
     <controls:CodeEditorLine
       >
       <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve" Foreground="#FFFFFF">}</Run
-          >
+        <Run xml:space="preserve">{</Run>
+      </controls:CodeEditorLine.Inlines>
+    </controls:CodeEditorLine>
+    <controls:CodeEditorLine
+      >
+      <controls:CodeEditorLine.Inlines>
+        <Run xml:space="preserve">    public static void Main(string[] args)</Run>
+      </controls:CodeEditorLine.Inlines>
+    </controls:CodeEditorLine>
+    <controls:CodeEditorLine
+      >
+      <controls:CodeEditorLine.Inlines>
+        <Run xml:space="preserve">    {</Run>
+      </controls:CodeEditorLine.Inlines>
+    </controls:CodeEditorLine>
+    <controls:CodeEditorLine
+      >
+      <controls:CodeEditorLine.Inlines>
+        <Run xml:space="preserve">        Console.WriteLine("Hello Syndiesis!");</Run>
+      </controls:CodeEditorLine.Inlines>
+    </controls:CodeEditorLine>
+    <controls:CodeEditorLine
+      >
+      <controls:CodeEditorLine.Inlines>
+        <Run xml:space="preserve">    }</Run>
+      </controls:CodeEditorLine.Inlines>
+    </controls:CodeEditorLine>
+    <controls:CodeEditorLine
+      >
+      <controls:CodeEditorLine.Inlines>
+        <Run xml:space="preserve">}</Run>
       </controls:CodeEditorLine.Inlines>
     </controls:CodeEditorLine>
   </StackPanel>

@@ -48,7 +48,7 @@ public partial class VerticalScrollBar : BaseScrollBar
         var availableHeight = draggableRectangleCanvas.Bounds.Height;
         var valueRange = ValidValueRange;
         var window = ScrollWindowLength;
-        var start = StartPosition;
+        var start = StartPosition - MinValue;
 
         Canvas.SetTop(draggableRectangle, PixelValue(start));
         draggableRectangle.Height = PixelValue(window);

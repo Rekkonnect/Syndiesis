@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using System;
 
 namespace CSharpSyntaxEditor.Controls;
@@ -23,10 +24,9 @@ public partial class SyntaxTreeListView : UserControl
             SetValue(RootNodeProperty, value);
             topLevelNodeContent.Content = value;
 
-            UpdateScrollLimits();
-            UpdateRootChanged();
             value.SetListViewRecursively(this);
             value.SizeChanged += HandleRootNodeSizeAdjusted;
+            UpdateRootChanged();
         }
     }
 
@@ -37,6 +37,13 @@ public partial class SyntaxTreeListView : UserControl
 
     private void UpdateRootChanged()
     {
+        RootNode.Loaded += NewRootNodeLoaded;
+    }
+
+    private void NewRootNodeLoaded(object? sender, RoutedEventArgs e)
+    {
+        RootNode.Loaded -= NewRootNodeLoaded;
+        UpdateScrollLimits();
         CorrectContainedNodeWidths(Bounds.Size);
     }
 

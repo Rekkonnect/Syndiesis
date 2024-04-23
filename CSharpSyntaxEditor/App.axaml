@@ -1,6 +1,7 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="using:CSharpSyntaxEditor"
+             xmlns:skp="using:Avalonia.Controls.Skia"
              x:Class="CSharpSyntaxEditor.App"
              RequestedThemeVariant="Dark"
              >
@@ -16,5 +17,10 @@
     <FontFamily x:Key="AptosFontFamily">avares://CSharpSyntaxEditor/Assets/Fonts/Aptos#Aptos</FontFamily>
     <FontFamily x:Key="AptosDisplayFontFamily">avares://CSharpSyntaxEditor/Assets/Fonts/Aptos-Display#Aptos Display</FontFamily>
     <FontFamily x:Key="FiraCodeFontFamily">avares://CSharpSyntaxEditor/Assets/Fonts/Fira-Code#Fira Code</FontFamily>
+    <FontFamily x:Key="FontAwesomeFontFamily">avares://CSharpSyntaxEditor/Assets/Fonts/FontAwesome#FontAwesome</FontFamily>
+    <FontFamily x:Key="FontAwesomeBrandsFontFamily">avares://CSharpSyntaxEditor/Assets/Fonts/FontAwesome#FontAwesome Brands</FontFamily>
+
+    <Image x:Key="PenImage" Source="avares://CSharpSyntaxEditor/Assets/Icons/fa-pen-fancy.png" />
+    <Image x:Key="SpinnerImage" Source="avares://CSharpSyntaxEditor/Assets/Icons/fa-hurricane.png" />
   </Application.Resources>
 </Application>

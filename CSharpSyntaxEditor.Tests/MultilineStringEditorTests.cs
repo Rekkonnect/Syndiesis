@@ -94,4 +94,148 @@ public class MultilineStringEditorTests
             """;
         Assert.That(converted, Is.EqualTo(expected));
     }
+
+    [Test]
+    public void DeleteBackwards_Full()
+    {
+        const string markup = """
+            using System;
+
+            public static void {|}Main()
+            {
+                Console.WriteLine("this is a test");
+            }
+            """;
+
+        var editor = FromSource(markup, out int cursorLine, out int cursorColumn);
+        editor.RemoveBackwardsAt(cursorLine, cursorColumn, int.MaxValue);
+
+        var removed = editor.FullString();
+        const string expected = """
+            Main()
+            {
+                Console.WriteLine("this is a test");
+            }
+            """;
+        Assert.That(removed, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void DeleteBackwards_WithinLine()
+    {
+        const string markup = """
+            using System;
+
+            public static void {|}Main()
+            {
+                Console.WriteLine("this is a test");
+            }
+            """;
+
+        var editor = FromSource(markup, out int cursorLine, out int cursorColumn);
+        editor.RemoveBackwardsAt(cursorLine, cursorColumn, 15);
+
+        var removed = editor.FullString();
+        const string expected = """
+            using System;
+            
+            publMain()
+            {
+                Console.WriteLine("this is a test");
+            }
+            """;
+        Assert.That(removed, Is.EqualTo(expected));
+    }
+
+    [Test]
+    [Ignore("This is not yet implemented -- and is out of the scope of the editor")]
+    public void DeleteBackwards_WithSomeLines()
+    {
+        const string markup = """
+            using System;
+
+            public static void {|}Main()
+            {
+                Console.WriteLine("this is a test");
+            }
+            """;
+
+        var editor = FromSource(markup, out int cursorLine, out int cursorColumn);
+        editor.RemoveBackwardsAt(cursorLine, cursorColumn, 25);
+
+        var removed = editor.FullString();
+        const string expected = """
+            using SystMain()
+            {
+                Console.WriteLine("this is a test");
+            }
+            """;
+        Assert.That(removed, Is.EqualTo(expected));
+    }
+
+    [Test]
+    public void DeleteForwards_WithinLine()
+    {
+        const string markup = """
+            using System;
+
+            public static void {|}Main()
+            {
+                Console.WriteLine("this is a test");
+            }
+            """;
+
+        var editor = FromSource(markup, out int cursorLine, out int cursorColumn);
+        editor.RemoveForwardsAt(cursorLine, cursorColumn, 5);
+
+        var removed = editor.FullString();
+        const string expected = """
+            using System;
+            
+            public static void )
+            {
+                Console.WriteLine("this is a test");
+            }
+            """;
+        Assert.That(removed, Is.EqualTo(expected));
+    }
+
+    private const string cursorIndicator = "{|}";
+
+    private static MultilineStringEditor FromSourceWithoutMarkup(string source)
+    {
+        var editor = new MultilineStringEditor();
+        editor.SetText(source);
+        return editor;
+    }
+
+    private static MultilineStringEditor FromSource(
+        string markupSource,
+        out int cursorLine,
+        out int cursorColumn)
+    {
+        cursorLine = 0;
+        cursorColumn = -1;
+        foreach (var enumeratedLine in markupSource.AsSpan().EnumerateLines())
+        {
+            int cursorIndex = enumeratedLine.IndexOf(cursorIndicator);
+            if (cursorIndex > -1)
+            {
+                cursorColumn = cursorIndex;
+                break;
+            }
+
+            cursorLine++;
+        }
+
+        var source = markupSource;
+        if (cursorColumn >= 0)
+        {
+            source = markupSource.Replace(cursorIndicator, null);
+        }
+
+        var editor = new MultilineStringEditor();
+        editor.SetText(source);
+        return editor;
+    }
 }

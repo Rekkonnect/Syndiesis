@@ -8,8 +8,9 @@
         MinHeight="300"
         x:Class="CSharpSyntaxEditor.Views.MainWindow"
         xmlns:controls="using:CSharpSyntaxEditor.Controls"
+        xmlns:syntax="using:CSharpSyntaxEditor.Controls.SyntaxVisualization"
         xmlns:previews="using:CSharpSyntaxEditor.Views.DesignerPreviews"
-        Icon="/Assets/logo.png"
+        Icon="/Assets/Icons/logo.png"
         Title="Syndiesis"
         >
 
@@ -26,6 +27,7 @@
       </Grid.ColumnDefinitions>
 
       <controls:CodeEditor
+        Name="codeEditor"
         Grid.Column="0"
         />
 
@@ -35,7 +37,8 @@
         >
         
       </GridSplitter>
-      <previews:SyntaxTreeListViewExampleFromSource
+      <syntax:CoverableSyntaxTreeListView
+        Name="syntaxTreeView"
         Grid.Column="2"
         />
     </Grid>

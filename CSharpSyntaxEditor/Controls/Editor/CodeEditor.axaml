@@ -29,8 +29,8 @@
 
         <controls:CodeEditorLineDisplayPanel
           SelectedLineNumber="9"
-          LineNumberStart="3"
-          LastLineNumber="16"
+          LineNumberStart="1"
+          LastLineNumber="12"
           />
       </Panel>
       <Panel Grid.Column="1" Name="codeCanvasContainer"
@@ -40,20 +40,31 @@
             Canvas.Left="0"
             Canvas.Top="0"
             Name="codeEditorContent"
-            SelectedLineIndex="3"
-            CursorCharacterIndex="12"
+            SelectedLineIndex="8"
+            CursorCharacterIndex="34"
             />
         </Canvas>
       </Panel>
       <Panel Name="verticalScrollBarPanel"
              Background="#003034"
              Grid.Column="2">
+        <controls:VerticalScrollBar
+          MinValue="1"
+          MaxValue="6"
+          HasAvailableScroll="False"
+          />
       </Panel>
       <Panel Name="horizontalScrollBarPanel"
              Background="#003034"
              Grid.Column="0"
              Grid.ColumnSpan="2"
              Grid.Row="1">
+        <controls:HorizontalScrollBar
+          MinValue="1"
+          MaxValue="120"
+          StartPosition="1"
+          EndPosition="100"
+          />
       </Panel>
       <Panel Name="scrollBarIntersectionPanel"
              Background="#00545A"
