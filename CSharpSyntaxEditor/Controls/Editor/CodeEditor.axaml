@@ -23,14 +23,14 @@
       <Panel Width="70"
              VerticalAlignment="Stretch"
              HorizontalAlignment="Left"
-             Name="linePanel"
              Background="#00232E"
              Grid.Column="0">
 
         <controls:CodeEditorLineDisplayPanel
-          SelectedLineNumber="9"
+          Name="lineDisplayPanel"
+          SelectedLineNumber="5"
           LineNumberStart="1"
-          LastLineNumber="12"
+          LastLineNumber="5"
           />
       </Panel>
       <Panel Grid.Column="1" Name="codeCanvasContainer"
@@ -40,8 +40,8 @@
             Canvas.Left="0"
             Canvas.Top="0"
             Name="codeEditorContent"
-            SelectedLineIndex="8"
-            CursorCharacterIndex="34"
+            SelectedLineIndex="4"
+            CursorCharacterIndex="45"
             />
         </Canvas>
       </Panel>

@@ -28,6 +28,9 @@ public partial class CoverableSyntaxTreeListView : UserControl
 
     private void HandleAnalysisCompleted(SyntaxTreeListNode node)
     {
+        var image = App.CurrentResourceManager.SuccessImage?.CopyOfSource();
+        coverable.UpdateCoverContent(image, "Analysis complete");
+
         listView.RootNode = node;
         var hideDuration = TimeSpan.FromMilliseconds(500);
         _ = coverable.HideCover(hideDuration);
@@ -36,7 +39,7 @@ public partial class CoverableSyntaxTreeListView : UserControl
     private void HandleAnalysisRequested()
     {
         var showDuration = TimeSpan.FromMilliseconds(100);
-        var image = TopLevel.GetTopLevel(this)!.FindResource("PenImage") as Image;
+        var image = App.CurrentResourceManager.PenImage?.CopyOfSource();
         const string requestedText = """
             Awaiting for further user input in the code editor
             """;
@@ -45,12 +48,11 @@ public partial class CoverableSyntaxTreeListView : UserControl
 
     private void HandleAnalysisBegun()
     {
-        var showDuration = TimeSpan.FromMilliseconds(100);
         var spinner = new LoadingSpinner();
         const string begunText = """
             Parsing and analyzing the syntax tree,
             we should be ready soon
             """;
-        _ = coverable.ShowCover(spinner, begunText, showDuration);
+        coverable.UpdateCoverContent(spinner, begunText);
     }
 }

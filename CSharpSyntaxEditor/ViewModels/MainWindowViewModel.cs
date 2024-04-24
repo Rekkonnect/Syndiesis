@@ -35,7 +35,8 @@ public class AnalysisPipelineHandler
         AnalysisRequested?.Invoke();
 
         await Task.Delay(UserInputDelay, token);
-        token.ThrowIfCancellationRequested();
+        if (token.IsCancellationRequested)
+            return;
 
         AnalysisBegun?.Invoke();
 
@@ -43,12 +44,15 @@ public class AnalysisPipelineHandler
         var creator = new NodeLineCreator(options);
 
         var syntaxTree = CSharpSyntaxTree.ParseText(source, cancellationToken: token);
-        token.ThrowIfCancellationRequested();
+        if (token.IsCancellationRequested)
+            return;
         var compilationUnitRoot = syntaxTree.GetCompilationUnitRoot(token);
-        token.ThrowIfCancellationRequested();
+        if (token.IsCancellationRequested)
+            return;
 
         var nodeRoot = creator.CreateRootNode(compilationUnitRoot);
-        token.ThrowIfCancellationRequested();
+        if (token.IsCancellationRequested)
+            return;
 
         AnalysisCompleted!(nodeRoot);
     }

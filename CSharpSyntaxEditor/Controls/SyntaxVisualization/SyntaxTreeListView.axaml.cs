@@ -6,8 +6,17 @@ using System;
 
 namespace CSharpSyntaxEditor.Controls;
 
+/*
+ * WARNING: We currently get this error a lot:
+ * [Layout]Layout cycle detected. Item 'CSharpSyntaxEditor.Controls.SyntaxTreeListView' was enqueued '10' times.(LayoutQueue`1 #54044048)
+ * And we must do something about it
+ */
+
 public partial class SyntaxTreeListView : UserControl
 {
+    const double extraScrollHeight = 50;
+    const double extraScrollWidth = 40;
+
     private bool _allowedHover;
     private SyntaxTreeListNode? _hoveredNode;
 
@@ -59,21 +68,29 @@ public partial class SyntaxTreeListView : UserControl
         UpdateScrollLimits();
     }
 
+    private bool _isUpdatingScrollLimits = false;
+
     private void UpdateScrollLimits()
     {
         var node = RootNode;
 
+        _isUpdatingScrollLimits = true;
+
         verticalScrollBar.BeginUpdate();
-        verticalScrollBar.MaxValue = node.Bounds.Height + 50;
+        verticalScrollBar.MaxValue = node.Bounds.Height + extraScrollHeight;
+        verticalScrollBar.StartPosition = -Canvas.GetTop(topLevelNodeContent);
         verticalScrollBar.EndPosition = verticalScrollBar.StartPosition + codeCanvas.Bounds.Height;
         verticalScrollBar.HasAvailableScroll = !verticalScrollBar.HasFullRangeWindow;
         verticalScrollBar.EndUpdate();
 
         horizontalScrollBar.BeginUpdate();
-        horizontalScrollBar.MaxValue = node.Bounds.Width;
+        horizontalScrollBar.MaxValue = Math.Max(node.Bounds.Width - 10, 0);
+        horizontalScrollBar.StartPosition = -Canvas.GetLeft(topLevelNodeContent);
         horizontalScrollBar.EndPosition = horizontalScrollBar.StartPosition + codeCanvas.Bounds.Width;
         horizontalScrollBar.HasAvailableScroll = !horizontalScrollBar.HasFullRangeWindow;
         horizontalScrollBar.EndUpdate();
+
+        _isUpdatingScrollLimits = false;
     }
 
     private void InitializeEvents()
@@ -84,6 +101,9 @@ public partial class SyntaxTreeListView : UserControl
 
     private void OnVerticalScroll()
     {
+        if (_isUpdatingScrollLimits)
+            return;
+
         var top = verticalScrollBar.StartPosition;
         Canvas.SetTop(topLevelNodeContent, -top);
         InvalidateArrange();
@@ -91,6 +111,9 @@ public partial class SyntaxTreeListView : UserControl
 
     private void OnHorizontalScroll()
     {
+        if (_isUpdatingScrollLimits)
+            return;
+
         var left = horizontalScrollBar.StartPosition;
         Canvas.SetLeft(topLevelNodeContent, -left);
         InvalidateArrange();
@@ -158,15 +181,47 @@ public partial class SyntaxTreeListView : UserControl
         return base.MeasureCore(availableSize);
     }
 
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        CorrectPositionFromHorizontalScroll(finalSize);
+        return base.ArrangeOverride(finalSize);
+    }
+
+    private void CorrectPositionFromHorizontalScroll(Size availableSize)
+    {
+        var offset = -Canvas.GetLeft(topLevelNodeContent);
+        var rootWidth = RootNode.Width;
+        // ensure that the width has been initialized
+        if (rootWidth is not > 0)
+            return;
+
+        var availableRight = rootWidth - offset;
+        var missing = availableSize.Width - availableRight;
+        if (missing > 0)
+        {
+            var reducedOffset = offset - missing;
+            Canvas.SetLeft(topLevelNodeContent, -reducedOffset);
+        }
+    }
+
     private Size CorrectContainedNodeWidths(Size availableSize)
     {
         // two passes to ensure that all children have sufficient width
-        var requiredWidth = RootNode.CorrectContainedNodeWidths(availableSize.Width);
-        RootNode.CorrectContainedNodeWidths(requiredWidth + 50);
+        var previousWidth = RootNode.Width;
+        var availableWidth = availableSize.Width;
+        var requiredWidth = RootNode.CorrectContainedNodeWidths(availableWidth);
+        if (previousWidth is not > 0 || requiredWidth - 1 >= previousWidth)
+        {
+            // only resize if we are not long enough 8)
+            // PROBLEM: this causes an awkward scroll behavior where the sudden
+            // increase in the width is shown in the scroll bar in the form of length jumps
+            RootNode.CorrectContainedNodeWidths(requiredWidth + extraScrollWidth + 10);
+        }
         return availableSize.WithWidth(requiredWidth);
     }
 
-    public bool RequestHover(SyntaxTreeListNode syntaxTreeListNode)
+    #region Node hovers
+    public bool RequestHover(SyntaxTreeListNode node)
     {
         if (!_allowedHover)
             return false;
@@ -174,20 +229,26 @@ public partial class SyntaxTreeListView : UserControl
         return true;
     }
 
-    public void RemoveHover(SyntaxTreeListNode listNode)
+    public bool IsHovered(SyntaxTreeListNode node)
     {
-        if (listNode != _hoveredNode)
+        return _hoveredNode == node;
+    }
+
+    public void RemoveHover(SyntaxTreeListNode node)
+    {
+        if (node != _hoveredNode)
             return;
 
         _hoveredNode = null;
-        listNode.UpdateHovering(false);
+        node.UpdateHovering(false);
     }
 
-    public void OverrideHover(SyntaxTreeListNode listNode)
+    public void OverrideHover(SyntaxTreeListNode node)
     {
         var previousHover = _hoveredNode;
         previousHover?.UpdateHovering(false);
-        _hoveredNode = listNode;
-        listNode.UpdateHovering(true);
+        _hoveredNode = node;
+        node.UpdateHovering(true);
     }
+    #endregion
 }

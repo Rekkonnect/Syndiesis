@@ -55,6 +55,8 @@ public partial class VerticalScrollBar : BaseScrollBar
 
         double PixelValue(double scrollValue)
         {
+            if (valueRange is 0)
+                return 0;
             return scrollValue / valueRange * availableHeight;
         }
     }

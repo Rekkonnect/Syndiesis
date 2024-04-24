@@ -69,12 +69,12 @@ public partial class CodeEditorLineDisplayPanel : UserControl
         }
     }
 
-    private static int GetVisibleLineCount(int height)
+    private static int GetVisibleLineCount(double height)
     {
-        return (int)height / CodeEditor.LineHeight + 1;
+        return (int)(height / CodeEditor.LineHeight) + 1;
     }
 
-    private void EnsureEnoughVisibleLineNumbers(int height)
+    private void EnsureEnoughVisibleLineNumbers(double height)
     {
         int lineCount = GetVisibleLineCount(height);
         EnsureEnoughLineNumbers(lineCount);
@@ -90,12 +90,18 @@ public partial class CodeEditorLineDisplayPanel : UserControl
         }
     }
 
+    public void ForceRender()
+    {
+        _pendingRender = true;
+        ApplyRequestedRender(Bounds.Height);
+    }
+
     private void RequestRender()
     {
         _pendingRender = true;
     }
 
-    private void ApplyRequestedRender(int height)
+    private void ApplyRequestedRender(double height)
     {
         if (_pendingRender)
         {
@@ -104,7 +110,7 @@ public partial class CodeEditorLineDisplayPanel : UserControl
         }
     }
 
-    private void RenderLineNumbers(int height)
+    private void RenderLineNumbers(double height)
     {
         int lineStart = LineNumberStart;
         EnsureEnoughVisibleLineNumbers(height);

@@ -19,12 +19,20 @@ public partial class LoadingSpinner : UserControl
 
     private void InitializeImage()
     {
-        var spinner = TopLevel.GetTopLevel(this)!.FindResource("SpinnerImage");
-        if (spinner is not Image { Source: var imageSource })
+        var spinner = App.CurrentResourceManager.SpinnerImage;
+        if (spinner is not Image image)
         {
             throw new KeyNotFoundException("The spinner image was not found in the resources");
         }
 
-        Content = new Image { Source = imageSource };
+        Content = image.CopyOfSource();
+    }
+}
+
+public static class ImageControlExtensions
+{
+    public static Image CopyOfSource(this Image image)
+    {
+        return new() { Source = image.Source };
     }
 }

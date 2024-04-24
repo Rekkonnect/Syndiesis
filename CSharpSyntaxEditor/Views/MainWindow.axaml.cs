@@ -34,6 +34,8 @@ public partial class MainWindow : Window
     private void Reset()
     {
         const string defaultCode = """
+            #define SYNDIESIS
+
             using System;
 
             namespace Example;
@@ -42,7 +44,15 @@ public partial class MainWindow : Window
             {
                 public static void Main(string[] args)
                 {
-                    Console.WriteLine("Hello Syndiesis!");
+                    // using conditional compilation symbols is fun
+                    const string greetings =
+            #if SYNDIESIS
+                        "Hello Syndiesis!"
+            #else
+                        "Hello World!"
+            #endif
+                        ;
+                    Console.WriteLine(greetings);
                 }
             }
 

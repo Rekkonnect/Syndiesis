@@ -22,5 +22,6 @@
 
     <Image x:Key="PenImage" Source="avares://CSharpSyntaxEditor/Assets/Icons/fa-pen-fancy.png" />
     <Image x:Key="SpinnerImage" Source="avares://CSharpSyntaxEditor/Assets/Icons/fa-hurricane.png" />
+    <Image x:Key="SuccessImage" Source="avares://CSharpSyntaxEditor/Assets/Icons/fa-check.png" />
   </Application.Resources>
 </Application>

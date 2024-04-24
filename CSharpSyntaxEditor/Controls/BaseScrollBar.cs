@@ -85,7 +85,7 @@ public abstract class BaseScrollBar : UserControl
         {
             if (value > _endPosition)
             {
-                throw new ArgumentException("start position cannot be set to after the end position");
+                EndPosition = value;
             }
             value = Math.Clamp(value, _minValue, _maxValue);
             _startPosition = value;
@@ -102,7 +102,7 @@ public abstract class BaseScrollBar : UserControl
         {
             if (value < _startPosition)
             {
-                throw new ArgumentException("end position cannot be set to before the start position");
+                StartPosition = value;
             }
             value = Math.Clamp(value, _minValue, _maxValue);
             _endPosition = value;

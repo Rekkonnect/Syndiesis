@@ -34,43 +34,7 @@
     <controls:CodeEditorLine
       >
       <controls:CodeEditorLine.Inlines>
-        <Run>public class Program</Run>
-      </controls:CodeEditorLine.Inlines>
-    </controls:CodeEditorLine>
-    <controls:CodeEditorLine
-      >
-      <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve">{</Run>
-      </controls:CodeEditorLine.Inlines>
-    </controls:CodeEditorLine>
-    <controls:CodeEditorLine
-      >
-      <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve">    public static void Main(string[] args)</Run>
-      </controls:CodeEditorLine.Inlines>
-    </controls:CodeEditorLine>
-    <controls:CodeEditorLine
-      >
-      <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve">    {</Run>
-      </controls:CodeEditorLine.Inlines>
-    </controls:CodeEditorLine>
-    <controls:CodeEditorLine
-      >
-      <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve">        Console.WriteLine("Hello Syndiesis!");</Run>
-      </controls:CodeEditorLine.Inlines>
-    </controls:CodeEditorLine>
-    <controls:CodeEditorLine
-      >
-      <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve">    }</Run>
-      </controls:CodeEditorLine.Inlines>
-    </controls:CodeEditorLine>
-    <controls:CodeEditorLine
-      >
-      <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve">}</Run>
+        <Run xml:space="preserve">Console.WriteLine("Initializing application...");</Run>
       </controls:CodeEditorLine.Inlines>
     </controls:CodeEditorLine>
   </StackPanel>

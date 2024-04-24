@@ -49,6 +49,8 @@ public partial class HorizontalScrollBar : BaseScrollBar
 
         double PixelValue(double scrollValue)
         {
+            if (valueRange is 0)
+                return 0;
             return scrollValue / valueRange * availableWidth;
         }
     }

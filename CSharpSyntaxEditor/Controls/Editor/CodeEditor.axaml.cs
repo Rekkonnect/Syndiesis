@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using CSharpSyntaxEditor.Utilities;
 using System;
@@ -10,7 +11,7 @@ namespace CSharpSyntaxEditor.Controls;
 public partial class CodeEditor : UserControl
 {
     // intended to remain constant for this app
-    public const int LineHeight = 20;
+    public const double LineHeight = 20;
 
     public static readonly StyledProperty<int> SelectedLineIndexProperty =
         AvaloniaProperty.Register<CodeEditor, int>(nameof(SelectedLineIndex), defaultValue: 1);
@@ -22,6 +23,7 @@ public partial class CodeEditor : UserControl
         get => codeEditorContent.GetValue(CodeEditorContentPanel.SelectedLineIndexProperty);
         set
         {
+            lineDisplayPanel.SelectedLineNumber = value + 1;
             codeEditorContent.SetValue(CodeEditorContentPanel.SelectedLineIndexProperty, value);
             RestartCursorAnimation();
         }
@@ -58,7 +60,32 @@ public partial class CodeEditor : UserControl
     public void SetSource(string source)
     {
         _editor.SetText(source);
+        UpdateVisibleText();
         TriggerCodeChanged();
+    }
+
+    private void UpdateVisibleText()
+    {
+        var linesPanel = codeEditorContent.codeLinesPanel;
+        linesPanel.Children.Clear();
+
+        int lineCount = _editor.LineCount;
+        for (int i = 0; i < lineCount; i++)
+        {
+            var lineDisplay = new CodeEditorLine
+            {
+                Inlines = [new Run(_editor.AtLine(i))]
+            };
+            linesPanel.Children.Add(lineDisplay);
+        }
+
+        lineDisplayPanel.LineNumberStart = 1;
+        lineDisplayPanel.LastLineNumber = lineCount;
+        lineDisplayPanel.ForceRender();
+
+        SelectedLineIndex = lineCount - 1;
+        var lastLine = _editor.AtLine(lineCount - 1);
+        CursorCharacterIndex = lastLine.Length;
     }
 
     private void TriggerCodeChanged()

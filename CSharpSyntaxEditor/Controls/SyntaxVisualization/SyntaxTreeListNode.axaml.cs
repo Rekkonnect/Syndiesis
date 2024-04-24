@@ -1,7 +1,6 @@
 using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Controls.Metadata;
 using Avalonia.Input;
 using Avalonia.Media;
 using CSharpSyntaxEditor.Controls.Extensions;
@@ -11,11 +10,8 @@ using System.Collections.Generic;
 
 namespace CSharpSyntaxEditor.Controls;
 
-[PseudoClasses(NodeHoverPseudoClass)]
 public partial class SyntaxTreeListNode : UserControl
 {
-    public const string NodeHoverPseudoClass = ":nodehover";
-
     private static readonly CancellationTokenFactory _expansionAnimationCancellationTokenFactory = new();
 
     public object? AssociatedSyntaxObjectContent
@@ -80,7 +76,11 @@ public partial class SyntaxTreeListNode : UserControl
     private readonly SolidColorBrush _topLineBackgroundBrush = new(Colors.Transparent);
     private readonly SolidColorBrush _expandableCanvasBackgroundBrush = new(Colors.Transparent);
 
-    private bool _isHovered;
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        base.OnPointerMoved(e);
+        EvaluateHoveringRecursively(e);
+    }
 
     protected override void OnPointerEntered(PointerEventArgs e)
     {
@@ -91,7 +91,7 @@ public partial class SyntaxTreeListNode : UserControl
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
-        EvaluateHovering(e);
+        EvaluateHoveringRecursively(e);
     }
 
     private void EvaluateHovering(PointerEventArgs e)
@@ -105,11 +105,10 @@ public partial class SyntaxTreeListNode : UserControl
 
         var nodeLine = NodeLine;
         var bounds = nodeLine.Bounds;
-        var restrictedBounds = bounds.WithHeight(bounds.Height - 1);
-        var isHovered = restrictedBounds.Contains(e.GetCurrentPoint(this).Position);
-
-        if (isHovered == _isHovered)
-            return;
+        var restrictedBounds = bounds
+            .WithHeight(bounds.Height - 1);
+        var position = e.GetCurrentPoint(nodeLine).Position;
+        var isHovered = restrictedBounds.Contains(position);
 
         if (isHovered)
         {
@@ -143,7 +142,6 @@ public partial class SyntaxTreeListNode : UserControl
 
     internal void UpdateHovering(bool isHovered)
     {
-        _isHovered = isHovered;
         var topLineBackgroundColor = isHovered ? _topLineHoverColor : Colors.Transparent;
         var expandableCanvasBackgroundColor = isHovered ? _expandableCanvasHoverColor : Colors.Transparent;
         _topLineBackgroundBrush.Color = topLineBackgroundColor;
@@ -155,9 +153,10 @@ public partial class SyntaxTreeListNode : UserControl
 
     internal void EvaluateHoveringRecursively(PointerEventArgs e)
     {
+        EvaluateHovering(e);
+
         foreach (var child in ChildNodes)
         {
-            EvaluateHovering(e);
             child.EvaluateHoveringRecursively(e);
         }
     }
@@ -166,7 +165,7 @@ public partial class SyntaxTreeListNode : UserControl
     {
         base.OnPointerPressed(e);
         EvaluateHovering(e);
-        if (_isHovered)
+        if (ListView?.IsHovered(this) is true)
         {
             ToggleExpansion();
         }

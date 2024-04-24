@@ -9,12 +9,18 @@
   <StackPanel
     Name="outerStackPanel"
     HorizontalAlignment="Stretch"
+    VerticalAlignment="Stretch"
   >
     <ContentControl
       Name="topNodeContent"
       HorizontalAlignment="Stretch">
     </ContentControl>
 
+    <!--
+    Consider adding an auto-sizable rectangle here only to hold the hover color
+    This may completely free us from the need to correct the contained nodes' width
+    -->
+    
     <ce:VerticallyExpandableCanvas
       Name="expandableCanvas"
       >
