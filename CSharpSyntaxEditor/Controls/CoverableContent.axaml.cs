@@ -1,4 +1,5 @@
 using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Styling;
 using CSharpSyntaxEditor.Utilities;
@@ -133,6 +134,7 @@ public partial class CoverableContent : UserControl
         var animation = new Animation
         {
             Duration = duration,
+            Easing = new ExponentialEaseInOut(),
             Children =
             {
                 new KeyFrame

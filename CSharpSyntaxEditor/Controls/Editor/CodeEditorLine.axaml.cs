@@ -111,6 +111,11 @@ public partial class CodeEditorLine : UserControl
         cursor.Hide();
     }
 
+    public void ShowCursor()
+    {
+        cursor.Show();
+    }
+
     public void StopCursorAnimation()
     {
         cursor.StopAnimation();

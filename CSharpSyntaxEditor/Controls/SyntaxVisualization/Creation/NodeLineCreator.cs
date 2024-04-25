@@ -2,6 +2,7 @@
 using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections;
@@ -12,7 +13,6 @@ using System.Text;
 
 namespace CSharpSyntaxEditor.Controls.SyntaxVisualization.Creation;
 
-using static System.Net.Mime.MediaTypeNames;
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
 
 public sealed class NodeLineCreationOptions
@@ -281,8 +281,14 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
     private static bool FilterNodeProperty(PropertyInfo propertyInfo)
     {
+        var name = propertyInfo.Name;
+
         // we don't like infinite recursion
-        if (propertyInfo.Name is nameof(SyntaxNode.Parent))
+        if (name is nameof(SyntaxNode.Parent))
+            return false;
+
+        bool extraFilter = IsExtraProperty(propertyInfo, name);
+        if (extraFilter)
             return false;
 
         var type = propertyInfo.PropertyType;
@@ -303,6 +309,17 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             || type == typeof(SyntaxToken)
             || type == typeof(SyntaxTrivia)
             ;
+    }
+
+    private static bool IsExtraProperty(PropertyInfo propertyInfo, string name)
+    {
+        if (name is nameof(UsingDirectiveSyntax.Name))
+        {
+            if (propertyInfo.DeclaringType == typeof(UsingDirectiveSyntax))
+                return true;
+        }
+
+        return false;
     }
 
     private bool ShouldIncludeValue(object? value)
@@ -498,35 +515,29 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     {
         var inlines = new InlineCollection();
 
-        FormatTriviaDisplay(trivia, inlines);
-
-        inlines.Add(NewValueKindSplitterRun());
-
-        var triviaKindText = trivia.Kind().ToString();
-        var triviaKindRun = Run(triviaKindText, Styles.WhitespaceTriviaKindBrush);
-        triviaKindRun.FontStyle = FontStyle.Italic;
-        inlines.Add(triviaKindRun);
+        var display = FormatTriviaDisplay(trivia, inlines);
 
         return new()
         {
             Inlines = inlines,
-            NodeTypeDisplay = Styles.WhitespaceTriviaDisplay,
+            NodeTypeDisplay = display,
         };
     }
 
-    private static void FormatTriviaDisplay(SyntaxTrivia trivia, InlineCollection inlines)
+    private static NodeTypeDisplay FormatTriviaDisplay(SyntaxTrivia trivia, InlineCollection inlines)
     {
         var structure = trivia.GetStructure();
         if (structure is null)
         {
-            FormatUnstructuredTriviaDisplay(trivia, inlines);
-            return;
+            return FormatUnstructuredTriviaDisplay(trivia, inlines);
         }
 
         // handle structured trivia
+        return default;
     }
 
-    private static void FormatUnstructuredTriviaDisplay(SyntaxTrivia trivia, InlineCollection inlines)
+    private static NodeTypeDisplay FormatUnstructuredTriviaDisplay(
+        SyntaxTrivia trivia, InlineCollection inlines)
     {
         var kind = trivia.Kind();
         switch (kind)
@@ -536,7 +547,13 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
                 var displayText = WhitespaceTriviaText(trivia);
                 var displayTextRun = Run(displayText, Styles.WhitespaceTriviaBrush);
                 inlines.Add(displayTextRun);
-                return;
+
+                AddTriviaKindWithSplitter(
+                    trivia,
+                    Styles.WhitespaceTriviaKindBrush,
+                    inlines);
+
+                return Styles.WhitespaceTriviaDisplay;
             }
             case SyntaxKind.SingleLineCommentTrivia:
             case SyntaxKind.MultiLineCommentTrivia:
@@ -547,22 +564,59 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             case SyntaxKind.ConflictMarkerTrivia:
             case SyntaxKind.BadDirectiveTrivia:
             {
-                CommentTriviaText(trivia);
-                return;
+                var displayText = CommentTriviaText(trivia);
+                var displayTextRun = Run(displayText, Styles.CommentTriviaContentBrush);
+                inlines.Add(displayTextRun);
+
+                AddTriviaKindWithSplitter(
+                    trivia,
+                    Styles.CommentTriviaTokenKindBrush,
+                    inlines);
+
+                return Styles.CommentTriviaDisplay;
             }
             case SyntaxKind.DisabledTextTrivia:
             {
-                DisabledTextTriviaText(trivia);
-                return;
+                var disabledText = DisabledTextTriviaText(trivia);
+                var disabledTextRun = Run(disabledText, Styles.DisabledTextTriviaContentBrush);
+                inlines.Add(disabledTextRun);
+
+                AddTriviaKindWithSplitter(
+                    trivia,
+                    Styles.DisabledTextTriviaTokenKindBrush,
+                    inlines);
+
+                return Styles.DisabledTextTriviaDisplay;
             }
             case SyntaxKind.EndOfLineTrivia:
             {
-                EndOfLineTriviaText(trivia);
-                return;
+                var eolText = EndOfLineTriviaText(trivia);
+                var displayTextRun = Run(eolText, Styles.WhitespaceTriviaBrush);
+                inlines.Add(displayTextRun);
+
+                AddTriviaKindWithSplitter(
+                    trivia,
+                    Styles.WhitespaceTriviaKindBrush,
+                    inlines);
+
+                return Styles.EndOfLineTriviaDisplay;
             }
         }
 
         throw new ArgumentException("Unexpected trivia syntax kind");
+    }
+
+    private static void AddTriviaKindWithSplitter(
+        SyntaxTrivia trivia,
+        IBrush brush,
+        InlineCollection inlines)
+    {
+        inlines.Add(NewValueKindSplitterRun());
+
+        var triviaKindText = trivia.Kind().ToString();
+        var triviaKindRun = Run(triviaKindText, brush);
+        triviaKindRun.FontStyle = FontStyle.Italic;
+        inlines.Add(triviaKindRun);
     }
 
     private static string EndOfLineTriviaText(SyntaxTrivia trivia)
@@ -980,6 +1034,7 @@ partial class NodeLineCreator
         public const string CommentTrivia = "/*";
         public const string DirectiveTrivia = "#";
         public const string DisabledTextTrivia = "~";
+        public const string EndOfLineTrivia = @"\n";
     }
 
     public static class Styles
@@ -1024,6 +1079,9 @@ partial class NodeLineCreator
         public static readonly SolidColorBrush CommentTriviaNodeTypeBrush = new(CommentTriviaNodeTypeColor);
         public static readonly SolidColorBrush CommentTriviaContentBrush = new(CommentTriviaContentColor);
         public static readonly SolidColorBrush CommentTriviaTokenKindBrush = new(CommentTriviaTokenKindColor);
+        public static readonly SolidColorBrush DisabledTextTriviaNodeTypeBrush = new(DisabledTextTriviaNodeTypeColor);
+        public static readonly SolidColorBrush DisabledTextTriviaContentBrush = new(DisabledTextTriviaContentColor);
+        public static readonly SolidColorBrush DisabledTextTriviaTokenKindBrush = new(DisabledTextTriviaTokenKindColor);
 
         public static readonly NodeTypeDisplay ClassNodeDisplay
             = new(Types.Node, ClassMainColor);
@@ -1038,10 +1096,12 @@ partial class NodeLineCreator
 
         public static readonly NodeTypeDisplay WhitespaceTriviaDisplay
             = new(Types.WhitespaceTrivia, WhitespaceTriviaNodeTypeColor);
-        public static readonly NodeTypeDisplay CommentTriviaDisplay
-            = new(Types.CommentTrivia, CommentTriviaNodeTypeColor);
         public static readonly NodeTypeDisplay DirectiveTriviaDisplay
             = new(Types.DirectiveTrivia, WhitespaceTriviaNodeTypeColor);
+        public static readonly NodeTypeDisplay EndOfLineTriviaDisplay
+            = new(Types.EndOfLineTrivia, WhitespaceTriviaNodeTypeColor);
+        public static readonly NodeTypeDisplay CommentTriviaDisplay
+            = new(Types.CommentTrivia, CommentTriviaNodeTypeColor);
         public static readonly NodeTypeDisplay DisabledTextTriviaDisplay
             = new(Types.DisabledTextTrivia, DisabledTextTriviaNodeTypeColor);
     }

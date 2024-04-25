@@ -32,7 +32,7 @@ public partial class CoverableSyntaxTreeListView : UserControl
         coverable.UpdateCoverContent(image, "Analysis complete");
 
         listView.RootNode = node;
-        var hideDuration = TimeSpan.FromMilliseconds(500);
+        var hideDuration = TimeSpan.FromMilliseconds(750);
         _ = coverable.HideCover(hideDuration);
     }
 

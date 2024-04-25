@@ -5,19 +5,19 @@ namespace CSharpSyntaxEditor.Controls;
 
 public partial class CodeEditorContentPanel : UserControl
 {
-    public static readonly StyledProperty<int> SelectedLineIndexProperty =
-        AvaloniaProperty.Register<CodeEditorContentPanel, int>(nameof(SelectedLineIndex), defaultValue: 0);
+    public static readonly StyledProperty<int> CursorLineIndexProperty =
+        AvaloniaProperty.Register<CodeEditorContentPanel, int>(nameof(CursorLineIndex), defaultValue: 0);
 
-    public int SelectedLineIndex
+    public int CursorLineIndex
     {
-        get => GetValue(SelectedLineIndexProperty);
+        get => GetValue(CursorLineIndexProperty);
         set
         {
-            int previousLineIndex = SelectedLineIndex;
+            int previousLineIndex = CursorLineIndex;
             if (previousLineIndex == value)
                 return;
 
-            SetValue(SelectedLineIndexProperty, value);
+            SetValue(CursorLineIndexProperty, value);
 
             var previousLine = LineAtIndex(previousLineIndex);
             var currentLine = LineAtIndex(value);
@@ -38,8 +38,8 @@ public partial class CodeEditorContentPanel : UserControl
         }
         set
         {
-            int previousLineIndex = SelectedLineIndex;
-            if (previousLineIndex == value)
+            int previousCharacterIndex = CursorCharacterIndex;
+            if (previousCharacterIndex == value)
                 return;
 
             var selectedLine = CurrentlySelectedLine();
@@ -54,7 +54,7 @@ public partial class CodeEditorContentPanel : UserControl
 
     public CodeEditorLine CurrentlySelectedLine()
     {
-        int index = SelectedLineIndex;
+        int index = CursorLineIndex;
         return LineAtIndex(index);
     }
 

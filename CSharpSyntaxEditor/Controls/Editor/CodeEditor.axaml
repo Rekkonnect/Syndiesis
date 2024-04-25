@@ -40,7 +40,7 @@
             Canvas.Left="0"
             Canvas.Top="0"
             Name="codeEditorContent"
-            SelectedLineIndex="4"
+            CursorLineIndex="4"
             CursorCharacterIndex="45"
             />
         </Canvas>

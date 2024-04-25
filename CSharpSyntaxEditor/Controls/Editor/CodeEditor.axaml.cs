@@ -14,28 +14,26 @@ public partial class CodeEditor : UserControl
     public const double LineHeight = 20;
 
     public static readonly StyledProperty<int> SelectedLineIndexProperty =
-        AvaloniaProperty.Register<CodeEditor, int>(nameof(SelectedLineIndex), defaultValue: 1);
+        AvaloniaProperty.Register<CodeEditor, int>(nameof(CursorLineIndex), defaultValue: 1);
 
     private MultilineStringEditor _editor = new();
 
-    public int SelectedLineIndex
+    public int CursorLineIndex
     {
-        get => codeEditorContent.GetValue(CodeEditorContentPanel.SelectedLineIndexProperty);
+        get => codeEditorContent.GetValue(CodeEditorContentPanel.CursorLineIndexProperty);
         set
         {
             lineDisplayPanel.SelectedLineNumber = value + 1;
-            codeEditorContent.SetValue(CodeEditorContentPanel.SelectedLineIndexProperty, value);
-            RestartCursorAnimation();
+            codeEditorContent.SetValue(CodeEditorContentPanel.CursorLineIndexProperty, value);
         }
     }
 
     public int CursorCharacterIndex
     {
-        get => codeEditorContent.GetValue(CodeEditorContentPanel.CursorCharacterIndexProperty);
+        get => codeEditorContent.CursorCharacterIndex;
         set
         {
-            codeEditorContent.SetValue(CodeEditorContentPanel.CursorCharacterIndexProperty, value);
-            RestartCursorAnimation();
+            codeEditorContent.CursorCharacterIndex = value;
         }
     }
 
@@ -61,7 +59,38 @@ public partial class CodeEditor : UserControl
     {
         _editor.SetText(source);
         UpdateVisibleText();
+        CursorLineIndex = 0;
+        CursorCharacterIndex = 0;
         TriggerCodeChanged();
+    }
+
+    private void UpdateVisibleTextTriggerCodeChanged()
+    {
+        QueueUpdateVisibleText();
+        TriggerCodeChanged();
+    }
+
+    private void QueueUpdateVisibleText()
+    {
+        InvalidateArrange();
+        _hasRequestedTextUpdate = true;
+    }
+
+    private bool _hasRequestedTextUpdate = false;
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        ConsumeUpdateTextRequest();
+        return base.ArrangeOverride(finalSize);
+    }
+
+    private void ConsumeUpdateTextRequest()
+    {
+        if (_hasRequestedTextUpdate)
+        {
+            _hasRequestedTextUpdate = false;
+            UpdateVisibleText();
+        }
     }
 
     private void UpdateVisibleText()
@@ -83,7 +112,7 @@ public partial class CodeEditor : UserControl
         lineDisplayPanel.LastLineNumber = lineCount;
         lineDisplayPanel.ForceRender();
 
-        SelectedLineIndex = lineCount - 1;
+        CursorLineIndex = lineCount - 1;
         var lastLine = _editor.AtLine(lineCount - 1);
         CursorCharacterIndex = lastLine.Length;
     }
@@ -91,11 +120,6 @@ public partial class CodeEditor : UserControl
     private void TriggerCodeChanged()
     {
         CodeChanged?.Invoke();
-    }
-
-    private void RestartCursorAnimation()
-    {
-        codeEditorContent.CurrentlySelectedLine().RestartCursorAnimation();
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -107,7 +131,7 @@ public partial class CodeEditor : UserControl
 
     private void GetCurrentTextPosition(out int line, out int column)
     {
-        line = SelectedLineIndex;
+        line = CursorLineIndex;
         column = CursorCharacterIndex;
     }
 
@@ -120,13 +144,12 @@ public partial class CodeEditor : UserControl
 
         GetCurrentTextPosition(out int line, out int column);
         _editor.InsertAt(line, column, text);
-        TriggerCodeChanged();
+        CursorCharacterIndex += text.Length;
+        UpdateVisibleTextTriggerCodeChanged();
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        base.OnKeyDown(e);
-
         var modifiers = e.KeyModifiers;
         switch (e.Key)
         {
@@ -134,28 +157,34 @@ public partial class CodeEditor : UserControl
                 if (modifiers is KeyModifiers.Control)
                 {
                     DeleteCommonCharacterGroupBackwards();
+                    e.Handled = true;
                     break;
                 }
                 DeleteCurrentCharacterBackwards();
+                e.Handled = true;
                 break;
 
             case Key.Delete:
                 if (modifiers is KeyModifiers.Control)
                 {
                     DeleteCommonCharacterGroupForwards();
+                    e.Handled = true;
                     break;
                 }
                 DeleteCurrentCharacterForwards();
+                e.Handled = true;
                 break;
 
             case Key.Enter:
                 InsertLine();
+                e.Handled = true;
                 break;
 
             case Key.V:
                 if (modifiers is KeyModifiers.Control)
                 {
                     _ = PasteClipboardTextAsync();
+                    e.Handled = true;
                 }
                 break;
 
@@ -163,9 +192,12 @@ public partial class CodeEditor : UserControl
                 if (modifiers is KeyModifiers.Control)
                 {
                     _ = CopySelectionToClipboardAsync();
+                    e.Handled = true;
                 }
                 break;
         }
+
+        base.OnKeyDown(e);
     }
 
     private async Task CopySelectionToClipboardAsync()
@@ -201,24 +233,28 @@ public partial class CodeEditor : UserControl
 
         // TODO: Handle selection
         _editor.InsertAt(line, column, pasteText);
+        UpdateVisibleTextTriggerCodeChanged();
     }
 
     private void InsertLine()
     {
         GetCurrentTextPosition(out int line, out int column);
         _editor.InsertLineAtColumn(line, column);
+        UpdateVisibleTextTriggerCodeChanged();
     }
 
     private void DeleteCurrentCharacterBackwards()
     {
         GetCurrentTextPosition(out int line, out int column);
         _editor.RemoveBackwardsAt(line, column, 1);
+        UpdateVisibleTextTriggerCodeChanged();
     }
 
     private void DeleteCurrentCharacterForwards()
     {
         GetCurrentTextPosition(out int line, out int column);
         _editor.RemoveForwardsAt(line, column, 1);
+        UpdateVisibleTextTriggerCodeChanged();
     }
 
     private void DeleteCommonCharacterGroupBackwards()
@@ -228,9 +264,10 @@ public partial class CodeEditor : UserControl
         if ((line, column) is (0, 0))
             return;
 
-        if ((line, column) is (> 0, 0))
+        if ((line, column) is ( > 0, 0))
         {
             _editor.RemoveNewLineIntoBelow(line - 1);
+            UpdateVisibleTextTriggerCodeChanged();
             return;
         }
 
@@ -240,6 +277,7 @@ public partial class CodeEditor : UserControl
 
         _editor.RemoveRangeInLine(line, start, previousColumn);
         CursorCharacterIndex = start;
+        UpdateVisibleTextTriggerCodeChanged();
     }
 
     private void DeleteCommonCharacterGroupForwards()
@@ -259,11 +297,13 @@ public partial class CodeEditor : UserControl
             }
 
             _editor.RemoveNewLineIntoBelow(line);
+            UpdateVisibleTextTriggerCodeChanged();
             return;
         }
 
         int end = currentLine.RightmostContiguousCommonCategoryIndex(column);
 
         _editor.RemoveRangeInLine(line, column, end);
+        UpdateVisibleTextTriggerCodeChanged();
     }
 }
