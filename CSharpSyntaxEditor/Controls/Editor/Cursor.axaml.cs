@@ -35,16 +35,22 @@ public partial class Cursor : UserControl
     public void Hide()
     {
         IsVisible = false;
-        _cursorBlinkAnimationController.Stop();
+        StopAnimation();
     }
 
     public void Show()
     {
         IsVisible = true;
-        ResetAnimation();
+        RunAnimation();
     }
 
-    public void ResetAnimation()
+    public void RestartAnimation()
+    {
+        StopAnimation();
+        RunAnimation();
+    }
+
+    public void RunAnimation()
     {
         _ = _cursorBlinkAnimationController.RunAsync(cursorRectangle);
     }
@@ -59,7 +65,7 @@ public partial class Cursor : UserControl
         return new()
         {
             Duration = TimeSpan.FromMilliseconds(1000),
-            IterationCount = IterationCount.Infinite,
+            IterationCount = AnimationConveniences.NearInfiniteIterationCount,
             Children =
             {
                 CreateFillKeyFrame(0.00, Colors.White),

@@ -19,7 +19,11 @@ public partial class CodeEditorLine : UserControl
     public string Text
     {
         get => GetValue(TextProperty);
-        set => SetValue(TextProperty, value);
+        set
+        {
+            SetValue(TextProperty, value);
+            Inlines = [new Run(value)];
+        }
     }
 
     public static readonly StyledProperty<bool> SelectedLineProperty =
@@ -62,7 +66,7 @@ public partial class CodeEditorLine : UserControl
         set
         {
             SetValue(CursorCharacterIndexProperty, value);
-            const double charWidth = 9.4;
+            const double charWidth = 8.6;
             double newLeftPosition = value * charWidth + 1;
             cursor.Padding = cursor.Padding.WithLeft(newLeftPosition);
         }
@@ -103,7 +107,7 @@ public partial class CodeEditorLine : UserControl
 
     public void RestartCursorAnimation()
     {
-        cursor.ResetAnimation();
+        cursor.RunAnimation();
     }
 
     public void HideCursor()

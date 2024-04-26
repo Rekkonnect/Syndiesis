@@ -1,9 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Documents;
 using Avalonia.Input;
+using CSharpSyntaxEditor.Models;
 using CSharpSyntaxEditor.Utilities;
+using Microsoft.CodeAnalysis.Text;
 using System;
+using System.Diagnostics;
+using System.Globalization;
 using System.Threading.Tasks;
 
 namespace CSharpSyntaxEditor.Controls;
@@ -17,23 +20,33 @@ public partial class CodeEditor : UserControl
         AvaloniaProperty.Register<CodeEditor, int>(nameof(CursorLineIndex), defaultValue: 1);
 
     private MultilineStringEditor _editor = new();
+    private readonly CodeEditorLineBuffer _lineBuffer = new();
+
+    private LinePosition _cursorLinePosition;
+    private readonly SelectionSpan _selectionSpan = new();
+
+    private int _preferredCursorCharacterIndex;
 
     public int CursorLineIndex
     {
-        get => codeEditorContent.GetValue(CodeEditorContentPanel.CursorLineIndexProperty);
+        get => _cursorLinePosition.Line;
         set
         {
+            _cursorLinePosition.SetLineIndex(value);
             lineDisplayPanel.SelectedLineNumber = value + 1;
-            codeEditorContent.SetValue(CodeEditorContentPanel.CursorLineIndexProperty, value);
+            codeEditorContent.CursorLineIndex = value;
+            codeEditorContent.CurrentlySelectedLine().RestartCursorAnimation();
         }
     }
 
     public int CursorCharacterIndex
     {
-        get => codeEditorContent.CursorCharacterIndex;
+        get => _cursorLinePosition.Character;
         set
         {
+            _cursorLinePosition.SetCharacterIndex(value);
             codeEditorContent.CursorCharacterIndex = value;
+            codeEditorContent.CurrentlySelectedLine().RestartCursorAnimation();
         }
     }
 
@@ -81,6 +94,8 @@ public partial class CodeEditor : UserControl
     protected override Size ArrangeOverride(Size finalSize)
     {
         ConsumeUpdateTextRequest();
+        int totalVisible = 40;
+        _lineBuffer.SetCapacity(totalVisible);
         return base.ArrangeOverride(finalSize);
     }
 
@@ -98,13 +113,14 @@ public partial class CodeEditor : UserControl
         var linesPanel = codeEditorContent.codeLinesPanel;
         linesPanel.Children.Clear();
 
+        int lineStart = 0;
+        _lineBuffer.LoadFrom(lineStart, _editor);
         int lineCount = _editor.LineCount;
-        for (int i = 0; i < lineCount; i++)
+        const int visibleLines = 40;
+        var lineRange = _lineBuffer.LineSpanForRange(lineStart, visibleLines);
+        for (int i = 0; i < visibleLines; i++)
         {
-            var lineDisplay = new CodeEditorLine
-            {
-                Inlines = [new Run(_editor.AtLine(i))]
-            };
+            var lineDisplay = lineRange[i];
             linesPanel.Children.Add(lineDisplay);
         }
 
@@ -131,8 +147,8 @@ public partial class CodeEditor : UserControl
 
     private void GetCurrentTextPosition(out int line, out int column)
     {
-        line = CursorLineIndex;
-        column = CursorCharacterIndex;
+        line = _cursorLinePosition.Line;
+        column = _cursorLinePosition.Character;
     }
 
     protected override void OnTextInput(TextInputEventArgs e)
@@ -195,9 +211,208 @@ public partial class CodeEditor : UserControl
                     e.Handled = true;
                 }
                 break;
+
+            case Key.Left:
+                if (modifiers is KeyModifiers.Control)
+                {
+                    MoveCursorLeftWord();
+                    e.Handled = true;
+                    break;
+                }
+                MoveCursorLeft();
+                e.Handled = true;
+                break;
+
+            case Key.Right:
+                if (modifiers is KeyModifiers.Control)
+                {
+                    MoveCursorNextWord();
+                    e.Handled = true;
+                    break;
+                }
+                MoveCursorRight();
+                e.Handled = true;
+                break;
+
+            case Key.Up:
+                MoveCursorUp();
+                e.Handled = true;
+                break;
+
+            case Key.Down:
+                MoveCursorDown();
+                e.Handled = true;
+                break;
+
+            case Key.PageUp:
+                if (modifiers is KeyModifiers.Control)
+                {
+                    e.Handled = true;
+                    break;
+                }
+                MoveCursorRight();
+                e.Handled = true;
+                break;
+
+            case Key.PageDown:
+                if (modifiers is KeyModifiers.Control)
+                {
+                    e.Handled = true;
+                    break;
+                }
+                MoveCursorRight();
+                e.Handled = true;
+                break;
+
+            case Key.Home:
+                if (modifiers is KeyModifiers.Control)
+                {
+                    MoveCursorDocumentStart();
+                    e.Handled = true;
+                    break;
+                }
+                MoveCursorLineStart();
+                e.Handled = true;
+                break;
+
+            case Key.End:
+                if (modifiers is KeyModifiers.Control)
+                {
+                    MoveCursorDocumentEnd();
+                    e.Handled = true;
+                    break;
+                }
+                MoveCursorLineEnd();
+                e.Handled = true;
+                break;
         }
 
         base.OnKeyDown(e);
+    }
+
+    private void MoveCursorLeftWord()
+    {
+        var position = LeftmostContiguousCommonCategory();
+        SetCursorPosition(position);
+        CapturePreferredCursorCharacter();
+    }
+
+    private void MoveCursorNextWord()
+    {
+        var position = RightmostContiguousCommonCategory();
+        SetCursorPosition(position);
+        CapturePreferredCursorCharacter();
+    }
+
+    private void MoveCursorLineStart()
+    {
+        CursorCharacterIndex = 0;
+        CapturePreferredCursorCharacter();
+    }
+
+    private void MoveCursorLineEnd()
+    {
+        CursorCharacterIndex = _editor.LineLength(_cursorLinePosition.Line);
+        CapturePreferredCursorCharacter();
+    }
+
+    private void MoveCursorDocumentStart()
+    {
+        SetCursorPosition(new(0, 0));
+        CapturePreferredCursorCharacter();
+    }
+
+    private void MoveCursorDocumentEnd()
+    {
+        CursorLineIndex = _editor.LineCount - 1;
+        int lineLength = _editor.LineLength(_cursorLinePosition.Line);
+        CursorCharacterIndex = lineLength;
+        CapturePreferredCursorCharacter();
+    }
+
+    private void MoveCursorDown()
+    {
+        GetCurrentTextPosition(out var line, out var column);
+        int lineCount = _editor.LineCount;
+        if (line >= lineCount - 1)
+            return;
+
+        CursorLineIndex++;
+        PlaceCursorCharacterIndexAfterVerticalMovement(column);
+    }
+
+    private void MoveCursorUp()
+    {
+        GetCurrentTextPosition(out var line, out var column);
+        if (line is 0)
+            return;
+
+        CursorLineIndex--;
+        PlaceCursorCharacterIndexAfterVerticalMovement(column);
+    }
+
+    private void PlaceCursorCharacterIndexAfterVerticalMovement(int column)
+    {
+        var lineLength = _editor.LineLength(CursorLineIndex);
+        if (column > lineLength)
+        {
+            CursorCharacterIndex = lineLength;
+        }
+        else
+        {
+            CursorCharacterIndex = Math.Min(_preferredCursorCharacterIndex, lineLength);
+        }
+    }
+
+    private void MoveCursorLeft()
+    {
+        if (_cursorLinePosition.IsFirstCharacter())
+            return;
+
+        GetCurrentTextPosition(out var line, out var column);
+        if (column is 0)
+        {
+            CursorLineIndex = line - 1;
+            CursorCharacterIndex = _editor.AtLine(line - 1).Length;
+            CapturePreferredCursorCharacter();
+            return;
+        }
+
+        CursorCharacterIndex--;
+        CapturePreferredCursorCharacter();
+    }
+
+    private void MoveCursorRight()
+    {
+        GetCurrentTextPosition(out var line, out var column);
+        var lineContent = _editor.AtLine(line);
+        int lineLength = lineContent.Length;
+        if (column == lineLength)
+        {
+            if (line == _editor.LineCount - 1)
+            {
+                // no more text to go to
+                return;
+            }
+
+            CursorLineIndex = line + 1;
+            CursorCharacterIndex = 0;
+            CapturePreferredCursorCharacter();
+            return;
+        }
+
+        CursorCharacterIndex++;
+        CapturePreferredCursorCharacter();
+    }
+
+    private void SetCursorPosition(LinePosition linePosition)
+    {
+        (CursorLineIndex, CursorCharacterIndex) = linePosition;
+    }
+
+    private void CapturePreferredCursorCharacter()
+    {
+        _preferredCursorCharacterIndex = CursorCharacterIndex;
     }
 
     private async Task CopySelectionToClipboardAsync()
@@ -240,6 +455,7 @@ public partial class CodeEditor : UserControl
     {
         GetCurrentTextPosition(out int line, out int column);
         _editor.InsertLineAtColumn(line, column);
+        CapturePreferredCursorCharacter();
         UpdateVisibleTextTriggerCodeChanged();
     }
 
@@ -247,6 +463,7 @@ public partial class CodeEditor : UserControl
     {
         GetCurrentTextPosition(out int line, out int column);
         _editor.RemoveBackwardsAt(line, column, 1);
+        CapturePreferredCursorCharacter();
         UpdateVisibleTextTriggerCodeChanged();
     }
 
@@ -259,11 +476,10 @@ public partial class CodeEditor : UserControl
 
     private void DeleteCommonCharacterGroupBackwards()
     {
-        GetCurrentTextPosition(out int line, out int column);
-
-        if ((line, column) is (0, 0))
+        if (_cursorLinePosition.IsFirstCharacter())
             return;
 
+        GetCurrentTextPosition(out int line, out int column);
         if ((line, column) is ( > 0, 0))
         {
             _editor.RemoveNewLineIntoBelow(line - 1);
@@ -271,12 +487,12 @@ public partial class CodeEditor : UserControl
             return;
         }
 
-        var currentLine = _editor.AtLine(line);
         int previousColumn = column - 1;
-        int start = currentLine.LeftmostContiguousCommonCategoryIndex(previousColumn);
+        var start = LeftmostContiguousCommonCategory().Character;
 
         _editor.RemoveRangeInLine(line, start, previousColumn);
         CursorCharacterIndex = start;
+        CapturePreferredCursorCharacter();
         UpdateVisibleTextTriggerCodeChanged();
     }
 
@@ -301,9 +517,170 @@ public partial class CodeEditor : UserControl
             return;
         }
 
-        int end = currentLine.RightmostContiguousCommonCategoryIndex(column);
+        var end = RightmostContiguousCommonCategory().Character;
 
         _editor.RemoveRangeInLine(line, column, end);
         UpdateVisibleTextTriggerCodeChanged();
     }
+
+    private LinePosition LeftmostContiguousCommonCategory()
+    {
+        // we assume that the caller has sanitized the positions
+
+        var (line, column) = _cursorLinePosition;
+        Debug.Assert(line >= 0 && line < _editor.LineCount);
+        var lineLength = _editor.LineLength(line);
+
+        Debug.Assert(column >= 0 && column <= lineLength);
+
+        bool hasConsumedWhitespace = false;
+        if (column is 0)
+        {
+            if (line is 0)
+            {
+                return new(0, 0);
+            }
+
+            line--;
+            column = _editor.LineLength(line);
+            hasConsumedWhitespace = true;
+        }
+
+        int leftmost = column - 1;
+        var lineContent = _editor.AtLine(line);
+
+        if (lineContent.Length is 0)
+            return new(line, 0);
+
+        var targetCategory = TextEditorCharacterCategory.Whitespace;
+        var firstCharacter = lineContent[leftmost];
+        var previousCategory = EditorCategory(firstCharacter);
+
+        while (leftmost >= 0)
+        {
+            var c = lineContent[leftmost];
+            var category = EditorCategory(c);
+            if (category is TextEditorCharacterCategory.Whitespace)
+            {
+                if (previousCategory is not TextEditorCharacterCategory.Whitespace)
+                {
+                    if (hasConsumedWhitespace)
+                        break;
+                }
+
+                hasConsumedWhitespace = true;
+            }
+
+            // try to determine what char category we are seeking for
+            if (targetCategory is TextEditorCharacterCategory.Whitespace)
+            {
+                targetCategory = category;
+            }
+            else
+            {
+                if (category != targetCategory)
+                    break;
+            }
+
+            previousCategory = category;
+            leftmost--;
+        }
+
+        return new(line, leftmost + 1);
+    }
+
+    // copy-pasting this, although ugly, seems to be better in terms of
+    // guaranteeing flexibility and maintainability in this particular case
+    private LinePosition RightmostContiguousCommonCategory()
+    {
+        // we assume that the caller has sanitized the positions
+
+        var (line, column) = _cursorLinePosition;
+        Debug.Assert(line >= 0 && line < _editor.LineCount);
+        var lineLength = _editor.LineLength(line);
+
+        Debug.Assert(column >= 0 && column <= lineLength);
+
+        bool hasConsumedWhitespace = false;
+        if (column == lineLength)
+        {
+            if (line == _editor.LineCount - 1)
+            {
+                return _cursorLinePosition;
+            }
+
+            line++;
+            column = 0;
+            hasConsumedWhitespace = true;
+        }
+
+        int rightmost = column;
+        var lineContent = _editor.AtLine(line);
+
+        if (lineContent.Length is 0)
+            return new(line, 0);
+
+        var targetCategory = TextEditorCharacterCategory.Whitespace;
+        var firstCharacter = lineContent[rightmost];
+        var previousCategory = EditorCategory(firstCharacter);
+
+        while (rightmost < lineContent.Length)
+        {
+            var c = lineContent[rightmost];
+            var category = EditorCategory(c);
+            if (category is TextEditorCharacterCategory.Whitespace)
+            {
+                if (previousCategory is not TextEditorCharacterCategory.Whitespace)
+                {
+                    if (hasConsumedWhitespace)
+                        break;
+                }
+
+                hasConsumedWhitespace = true;
+            }
+
+            // try to determine what char category we are seeking for
+            if (targetCategory is TextEditorCharacterCategory.Whitespace)
+            {
+                targetCategory = category;
+            }
+            else
+            {
+                if (category != targetCategory)
+                    break;
+            }
+
+            previousCategory = category;
+            rightmost++;
+        }
+
+        return new(line, rightmost);
+    }
+
+    private static TextEditorCharacterCategory EditorCategory(char c)
+    {
+        if (c is '_')
+            return TextEditorCharacterCategory.Identifier;
+
+        var unicode = char.GetUnicodeCategory(c);
+        switch (unicode)
+        {
+            case UnicodeCategory.DecimalDigitNumber:
+            case UnicodeCategory.LowercaseLetter:
+            case UnicodeCategory.UppercaseLetter:
+                return TextEditorCharacterCategory.Identifier;
+
+            case UnicodeCategory.SpaceSeparator:
+                return TextEditorCharacterCategory.Whitespace;
+        }
+
+        return TextEditorCharacterCategory.General;
+    }
+}
+
+public enum TextEditorCharacterCategory
+{
+    General,
+    Identifier,
+    Whitespace,
 }

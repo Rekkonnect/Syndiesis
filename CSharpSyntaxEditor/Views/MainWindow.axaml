@@ -10,6 +10,7 @@
         xmlns:controls="using:CSharpSyntaxEditor.Controls"
         xmlns:syntax="using:CSharpSyntaxEditor.Controls.SyntaxVisualization"
         xmlns:previews="using:CSharpSyntaxEditor.Views.DesignerPreviews"
+        xmlns:views="using:CSharpSyntaxEditor.Views"
         Icon="/Assets/Icons/logo.png"
         Title="Syndiesis"
         >
@@ -19,28 +20,8 @@
   </Design.DataContext>
 
   <Panel>
-    <Grid>
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" MinWidth="400" />
-        <ColumnDefinition Width="4" />
-        <ColumnDefinition Width="*" MinWidth="400" />
-      </Grid.ColumnDefinitions>
-
-      <controls:CodeEditor
-        Name="codeEditor"
-        Grid.Column="0"
-        />
-
-      <GridSplitter
-        ResizeDirection="Columns"
-        Grid.Column="1"
-        >
-        
-      </GridSplitter>
-      <syntax:CoverableSyntaxTreeListView
-        Name="syntaxTreeView"
-        Grid.Column="2"
-        />
-    </Grid>
+    <views:MainView
+      Name="mainView"
+      />
   </Panel>
 </Window>

@@ -278,6 +278,8 @@ public sealed class MultilineStringEditor
         return _lines[line];
     }
 
+    public int LineLength(int line) => _lines[line].Length;
+
     public string FullString(string newLine = "\r\n")
     {
         int lineCount = LineCount;
