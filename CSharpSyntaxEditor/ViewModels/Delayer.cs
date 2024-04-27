@@ -4,11 +4,12 @@ using System.Threading.Tasks;
 
 namespace CSharpSyntaxEditor.ViewModels;
 
-// this doesn't work -- keep here in case we use it somewhere and it fits
 public sealed class Delayer
 {
     private DateTime _nextUnblock = DateTime.MinValue;
     private Task? _delayTask;
+
+    public bool IsWaiting => _delayTask is not null;
 
     public void SetFutureUnblock(TimeSpan span)
     {

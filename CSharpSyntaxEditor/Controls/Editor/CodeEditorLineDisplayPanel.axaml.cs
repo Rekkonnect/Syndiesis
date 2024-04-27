@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using CSharpSyntaxEditor.Utilities;
 using System;
 
 namespace CSharpSyntaxEditor.Controls;
@@ -156,7 +157,7 @@ public partial class CodeEditorLineDisplayPanel : UserControl
         var children = lineNumbersPanel.Children;
         if (index >= children.Count)
             return null;
-        return (CodeEditorLineNumber)children[index];
+        return children.ValueAtOrDefault(index) as CodeEditorLineNumber;
     }
     private int TranslateLineNumberToIndex(int number)
     {

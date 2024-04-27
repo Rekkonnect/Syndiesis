@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -140,6 +141,16 @@ public abstract class BaseScrollBar : UserControl
     private int _updateLocks = 0;
 
     protected readonly PointerDragHandler DragHandler = new();
+
+    public void SetAvailableScrollOnScrollableWindow()
+    {
+        HasAvailableScroll = !HasFullRangeWindow;
+    }
+
+    public UpdateBlock BeginUpdateBlock()
+    {
+        return new(this);
+    }
 
     public void BeginUpdate()
     {
@@ -287,6 +298,22 @@ public abstract class BaseScrollBar : UserControl
             StartPosition += step;
             EndPosition += step;
             EndUpdate();
+        }
+    }
+
+    public readonly struct UpdateBlock : IDisposable
+    {
+        private readonly BaseScrollBar _scrollBar;
+
+        public UpdateBlock(BaseScrollBar scrollBar)
+        {
+            _scrollBar = scrollBar;
+            _scrollBar.BeginUpdate();
+        }
+
+        public void Dispose()
+        {
+            _scrollBar.EndUpdate();
         }
     }
 }

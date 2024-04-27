@@ -6,10 +6,11 @@
              x:Class="CSharpSyntaxEditor.Controls.Cursor">
   <Panel>
     <Rectangle
+      Name="cursorRectangle"
       Fill="White"
       Width="1"
-      Height="20"
-      Name="cursorRectangle">
+      VerticalAlignment="Stretch"
+      >
 
     </Rectangle>
   </Panel>

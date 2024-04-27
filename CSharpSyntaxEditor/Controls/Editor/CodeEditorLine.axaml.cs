@@ -66,9 +66,8 @@ public partial class CodeEditorLine : UserControl
         set
         {
             SetValue(CursorCharacterIndexProperty, value);
-            const double charWidth = 8.6;
-            double newLeftPosition = value * charWidth + 1;
-            cursor.Padding = cursor.Padding.WithLeft(newLeftPosition);
+            double newLeftPosition = value * CodeEditor.CharWidth + 1;
+            cursor.LeftOffset = newLeftPosition;
         }
     }
 
@@ -77,6 +76,7 @@ public partial class CodeEditorLine : UserControl
         InitializeComponent();
     }
 
+    // this is ready to be used for whenever syntax highlighting is implemented
     public void HighlightText(ReadOnlySpan<LineHighlightRange> sortedHighlights)
     {
         var runs = new InlineCollection();

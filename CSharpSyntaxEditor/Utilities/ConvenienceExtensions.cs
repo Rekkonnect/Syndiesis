@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
 using Avalonia.Styling;
+using System.Collections.Generic;
 
 namespace CSharpSyntaxEditor.Utilities;
 
@@ -22,5 +23,16 @@ public static class ConvenienceExtensions
         var current = obj.GetValue(property);
         var subject = obj.GetBindingSubject(property);
         return new(current, subject);
+    }
+
+    public static T? ValueAtOrDefault<T>(this IReadOnlyList<T> list, int index)
+    {
+        if (index < 0)
+            return default;
+
+        if (index >= list.Count)
+            return default;
+
+        return list[index];
     }
 }

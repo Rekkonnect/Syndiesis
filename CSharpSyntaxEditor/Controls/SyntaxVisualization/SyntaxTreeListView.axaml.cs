@@ -80,14 +80,14 @@ public partial class SyntaxTreeListView : UserControl
         verticalScrollBar.MaxValue = node.Bounds.Height + extraScrollHeight;
         verticalScrollBar.StartPosition = -Canvas.GetTop(topLevelNodeContent);
         verticalScrollBar.EndPosition = verticalScrollBar.StartPosition + codeCanvas.Bounds.Height;
-        verticalScrollBar.HasAvailableScroll = !verticalScrollBar.HasFullRangeWindow;
+        verticalScrollBar.SetAvailableScrollOnScrollableWindow();
         verticalScrollBar.EndUpdate();
 
         horizontalScrollBar.BeginUpdate();
         horizontalScrollBar.MaxValue = Math.Max(node.Bounds.Width - 10, 0);
         horizontalScrollBar.StartPosition = -Canvas.GetLeft(topLevelNodeContent);
         horizontalScrollBar.EndPosition = horizontalScrollBar.StartPosition + codeCanvas.Bounds.Width;
-        horizontalScrollBar.HasAvailableScroll = !horizontalScrollBar.HasFullRangeWindow;
+        horizontalScrollBar.SetAvailableScrollOnScrollableWindow();
         horizontalScrollBar.EndUpdate();
 
         _isUpdatingScrollLimits = false;

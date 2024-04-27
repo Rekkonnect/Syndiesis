@@ -7,14 +7,29 @@ using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace CSharpSyntaxEditor.Controls;
 
+/// <summary>
+/// A code editor supporting common code editing operations including navigating the cursor
+/// through with common keyboard shortcuts, deleting characters or words, selecting a
+/// range of text, inserting new lines, copying and pasting text.
+/// </summary>
+/// <remarks>
+/// It is not meant to provide support for autocompletion, indentation preferences,
+/// multiple carets, etc. Those features are outside of the scope of this program.
+/// Highlighting is not yet implemented but is in the works.
+/// </remarks>
 public partial class CodeEditor : UserControl
 {
     // intended to remain constant for this app
-    public const double LineHeight = 20;
+    public const double LineHeight = 19;
+    public const double CharWidth = 8.6;
+
+    private const double extraDisplayWidth = 200;
+    private const double scrollThresholdWidth = extraDisplayWidth / 2;
 
     public static readonly StyledProperty<int> SelectedLineIndexProperty =
         AvaloniaProperty.Register<CodeEditor, int>(nameof(CursorLineIndex), defaultValue: 1);
@@ -25,7 +40,29 @@ public partial class CodeEditor : UserControl
     private LinePosition _cursorLinePosition;
     private readonly SelectionSpan _selectionSpan = new();
 
+    private int _extraBufferLines = 10;
+    private int _lineOffset;
     private int _preferredCursorCharacterIndex;
+
+    public int ExtraBufferLines
+    {
+        get => _extraBufferLines;
+        set
+        {
+            _extraBufferLines = value;
+            // TODO: More?
+        }
+    }
+
+    public int LineOffset
+    {
+        get => _lineOffset;
+        set
+        {
+            _lineOffset = value;
+            UpdateVisibleText();
+        }
+    }
 
     public int CursorLineIndex
     {
@@ -33,9 +70,10 @@ public partial class CodeEditor : UserControl
         set
         {
             _cursorLinePosition.SetLineIndex(value);
+            BringVerticalIntoView();
             lineDisplayPanel.SelectedLineNumber = value + 1;
-            codeEditorContent.CursorLineIndex = value;
-            codeEditorContent.CurrentlySelectedLine().RestartCursorAnimation();
+            codeEditorContent.CursorLineIndex = value - _lineOffset;
+            codeEditorContent.CurrentlySelectedLine()!.RestartCursorAnimation();
         }
     }
 
@@ -46,7 +84,8 @@ public partial class CodeEditor : UserControl
         {
             _cursorLinePosition.SetCharacterIndex(value);
             codeEditorContent.CursorCharacterIndex = value;
-            codeEditorContent.CurrentlySelectedLine().RestartCursorAnimation();
+            BringHorizontalIntoView();
+            codeEditorContent.CurrentlySelectedLine()!.RestartCursorAnimation();
         }
     }
 
@@ -94,9 +133,20 @@ public partial class CodeEditor : UserControl
     protected override Size ArrangeOverride(Size finalSize)
     {
         ConsumeUpdateTextRequest();
-        int totalVisible = 40;
-        _lineBuffer.SetCapacity(totalVisible);
+        int totalVisible = VisibleLines(finalSize);
+        int bufferCapacity = totalVisible + _extraBufferLines * 2;
+        _lineBuffer.SetCapacity(bufferCapacity);
         return base.ArrangeOverride(finalSize);
+    }
+
+    private int VisibleLines()
+    {
+        return VisibleLines(Bounds.Size);
+    }
+
+    private int VisibleLines(Size finalSize)
+    {
+        return (int)(finalSize.Height / LineHeight);
     }
 
     private void ConsumeUpdateTextRequest()
@@ -113,24 +163,29 @@ public partial class CodeEditor : UserControl
         var linesPanel = codeEditorContent.codeLinesPanel;
         linesPanel.Children.Clear();
 
-        int lineStart = 0;
+        int lineStart = Math.Max(0, _lineOffset - _extraBufferLines);
         _lineBuffer.LoadFrom(lineStart, _editor);
         int lineCount = _editor.LineCount;
-        const int visibleLines = 40;
-        var lineRange = _lineBuffer.LineSpanForRange(lineStart, visibleLines);
-        for (int i = 0; i < visibleLines; i++)
-        {
-            var lineDisplay = lineRange[i];
-            linesPanel.Children.Add(lineDisplay);
-        }
+        int visibleLines = VisibleLines();
+        var lineRange = _lineBuffer.LineSpanForRange(_lineOffset, visibleLines);
+        linesPanel.Children.AddRange(lineRange);
+        UpdateLinesDisplayPanel(lineCount);
 
-        lineDisplayPanel.LineNumberStart = 1;
-        lineDisplayPanel.LastLineNumber = lineCount;
+        UpdateEntireScroll();
+    }
+
+    private void UpdateLinesDisplayPanel()
+    {
+        int lineCount = VisibleLines();
+        UpdateLinesDisplayPanel(lineCount);
+    }
+
+    private void UpdateLinesDisplayPanel(int lineCount)
+    {
+        lineDisplayPanel.LineNumberStart = _lineOffset + 1;
+        int maxLines = _editor.LineCount;
+        lineDisplayPanel.LastLineNumber = Math.Min(_lineOffset + lineCount, maxLines);
         lineDisplayPanel.ForceRender();
-
-        CursorLineIndex = lineCount - 1;
-        var lastLine = _editor.AtLine(lineCount - 1);
-        CursorCharacterIndex = lastLine.Length;
     }
 
     private void TriggerCodeChanged()
@@ -138,10 +193,39 @@ public partial class CodeEditor : UserControl
         CodeChanged?.Invoke();
     }
 
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        var canvasOffset = e.GetPosition(codeCanvasContainer);
+        bool contained = codeCanvasContainer.Bounds.Contains(canvasOffset);
+        if (!contained)
+            return;
+
+        int pointerLine = (int)(canvasOffset.Y / LineHeight);
+        int pointerColumn = (int)((canvasOffset.X + GetHorizontalContentOffset()) / CharWidth);
+
+        int line = pointerLine + _lineOffset;
+        if (line >= _editor.LineCount)
+        {
+            line = _editor.LineCount - 1;
+        }
+
+        int column = pointerColumn;
+        int lineLength = _editor.LineLength(line);
+        if (column > lineLength)
+        {
+            column = lineLength;
+        }
+
+        CursorLineIndex = line;
+        CursorCharacterIndex = column;
+        e.Handled = true;
+    }
+
     protected override Size MeasureOverride(Size availableSize)
     {
         // adjust the min width here to ensure the line selection background fills out the displayed line
-        codeEditorContent.MinWidth = availableSize.Width + 200;
+        codeEditorContent.MinWidth = availableSize.Width + extraDisplayWidth;
+        UpdateEntireScroll();
         return base.MeasureOverride(availableSize);
     }
 
@@ -149,6 +233,113 @@ public partial class CodeEditor : UserControl
     {
         line = _cursorLinePosition.Line;
         column = _cursorLinePosition.Character;
+    }
+
+    private void BringCursorIntoView()
+    {
+        BringVerticalIntoView();
+        BringHorizontalIntoView();
+    }
+
+    private void BringVerticalIntoView()
+    {
+        var lineIndex = CursorLineIndex;
+
+        if (lineIndex < _lineOffset)
+        {
+            _lineOffset = lineIndex;
+            UpdateLinesQueueText();
+        }
+        else
+        {
+            int lastVisibleLine = _lineOffset + VisibleLines();
+            int lastVisibleLineThreshold = lastVisibleLine - 4;
+            int missingLines = lineIndex - lastVisibleLineThreshold;
+            if (missingLines > 0)
+            {
+                _lineOffset += missingLines;
+                UpdateLinesQueueText();
+            }
+        }
+    }
+
+    private void BringHorizontalIntoView()
+    {
+        var selectedCursor = codeEditorContent.CurrentlySelectedLine()!.cursor;
+        var left = selectedCursor.LeftOffset;
+        var contentBounds = codeCanvas.Bounds;
+        var currentLeftOffset = GetHorizontalContentOffset();
+        var relativeLeft = left - currentLeftOffset;
+        double rightScrollThreshold = contentBounds.Right - scrollThresholdWidth;
+        if (relativeLeft < scrollThresholdWidth)
+        {
+            var delta = relativeLeft - scrollThresholdWidth;
+            var nextOffset = currentLeftOffset + delta;
+            SetHorizontalContentOffset(nextOffset);
+        }
+        else if (relativeLeft > rightScrollThreshold)
+        {
+            var delta = relativeLeft - rightScrollThreshold;
+            var nextOffset = currentLeftOffset + delta;
+            SetHorizontalContentOffset(nextOffset);
+        }
+    }
+
+    private double GetHorizontalContentOffset()
+    {
+        return -Canvas.GetLeft(codeEditorContent);
+    }
+
+    private void SetHorizontalContentOffset(double value)
+    {
+        if (value < 0)
+            value = 0;
+        Canvas.SetLeft(codeEditorContent, -value);
+        UpdateHorizontalScroll();
+    }
+
+    private void UpdateHorizontalScroll()
+    {
+        using (horizontalScrollBar.BeginUpdateBlock())
+        {
+            var start = GetHorizontalContentOffset();
+            horizontalScrollBar.StartPosition = start;
+            horizontalScrollBar.EndPosition = start + codeCanvas.Bounds.Width;
+        }
+    }
+
+    private void UpdateLinesQueueText()
+    {
+        QueueUpdateVisibleText();
+        UpdateLinesDisplayPanel();
+    }
+
+    private void UpdateEntireScroll()
+    {
+        UpdateScrollBounds();
+        UpdateHorizontalScroll();
+    }
+
+    private void UpdateScrollBounds()
+    {
+        using (horizontalScrollBar.BeginUpdateBlock())
+        {
+            var maxWidth = codeEditorContent.Bounds.Width;
+            horizontalScrollBar.MinValue = 0;
+            horizontalScrollBar.MaxValue = maxWidth;
+            horizontalScrollBar.SetAvailableScrollOnScrollableWindow();
+        }
+
+        using (verticalScrollBar.BeginUpdateBlock())
+        {
+            CalculateMaxVerticalScrollBounds();
+        }
+    }
+
+    private void CalculateMaxVerticalScrollBounds()
+    {
+        verticalScrollBar.MaxValue = _editor.LineCount + VisibleLines() - 1;
+        verticalScrollBar.SetAvailableScrollOnScrollableWindow();
     }
 
     protected override void OnTextInput(TextInputEventArgs e)
@@ -366,7 +557,7 @@ public partial class CodeEditor : UserControl
 
     private void MoveCursorLeft()
     {
-        if (_cursorLinePosition.IsFirstCharacter())
+        if (_cursorLinePosition.IsStart())
             return;
 
         GetCurrentTextPosition(out var line, out var column);
@@ -455,14 +646,20 @@ public partial class CodeEditor : UserControl
     {
         GetCurrentTextPosition(out int line, out int column);
         _editor.InsertLineAtColumn(line, column);
+        CursorLineIndex++;
+        CursorCharacterIndex = 0;
         CapturePreferredCursorCharacter();
         UpdateVisibleTextTriggerCodeChanged();
     }
 
     private void DeleteCurrentCharacterBackwards()
     {
+        if (_cursorLinePosition.IsStart())
+            return;
+
         GetCurrentTextPosition(out int line, out int column);
         _editor.RemoveBackwardsAt(line, column, 1);
+        MoveCursorLeft();
         CapturePreferredCursorCharacter();
         UpdateVisibleTextTriggerCodeChanged();
     }
@@ -470,25 +667,34 @@ public partial class CodeEditor : UserControl
     private void DeleteCurrentCharacterForwards()
     {
         GetCurrentTextPosition(out int line, out int column);
+        int lastLine = _editor.LineCount - 1;
+        var lastLineLength = _editor.LineLength(lastLine);
+        if (line == lastLine && column == lastLineLength)
+            return;
+
         _editor.RemoveForwardsAt(line, column, 1);
         UpdateVisibleTextTriggerCodeChanged();
     }
 
     private void DeleteCommonCharacterGroupBackwards()
     {
-        if (_cursorLinePosition.IsFirstCharacter())
+        if (_cursorLinePosition.IsStart())
             return;
 
         GetCurrentTextPosition(out int line, out int column);
         if ((line, column) is ( > 0, 0))
         {
             _editor.RemoveNewLineIntoBelow(line - 1);
+            CursorLineIndex--;
+            CursorCharacterIndex = _editor.LineLength(CursorLineIndex);
             UpdateVisibleTextTriggerCodeChanged();
             return;
         }
 
         int previousColumn = column - 1;
         var start = LeftmostContiguousCommonCategory().Character;
+        var rightmostWhitespace = RightmostWhitespaceInCurrentLine(line, start);
+        start = rightmostWhitespace.Character;
 
         _editor.RemoveRangeInLine(line, start, previousColumn);
         CursorCharacterIndex = start;
@@ -505,7 +711,7 @@ public partial class CodeEditor : UserControl
 
         var currentLine = _editor.AtLine(line);
 
-        if (column >= currentLine.Length - 1)
+        if (column >= currentLine.Length)
         {
             if (line == _editor.LineCount - 1)
             {
@@ -518,8 +724,10 @@ public partial class CodeEditor : UserControl
         }
 
         var end = RightmostContiguousCommonCategory().Character;
+        var leftmostWhitespace = LeftmostWhitespaceInCurrentLine(line, end);
+        end = leftmostWhitespace.Character;
 
-        _editor.RemoveRangeInLine(line, column, end);
+        _editor.RemoveRangeInLine(line, column, end - 1);
         UpdateVisibleTextTriggerCodeChanged();
     }
 
@@ -559,30 +767,15 @@ public partial class CodeEditor : UserControl
         while (leftmost >= 0)
         {
             var c = lineContent[leftmost];
-            var category = EditorCategory(c);
-            if (category is TextEditorCharacterCategory.Whitespace)
-            {
-                if (previousCategory is not TextEditorCharacterCategory.Whitespace)
-                {
-                    if (hasConsumedWhitespace)
-                        break;
-                }
 
-                hasConsumedWhitespace = true;
-            }
+            bool include = EvaluateContiguousCharacter(
+                c,
+                ref hasConsumedWhitespace,
+                ref targetCategory,
+                ref previousCategory);
+            if (!include)
+                break;
 
-            // try to determine what char category we are seeking for
-            if (targetCategory is TextEditorCharacterCategory.Whitespace)
-            {
-                targetCategory = category;
-            }
-            else
-            {
-                if (category != targetCategory)
-                    break;
-            }
-
-            previousCategory = category;
             leftmost--;
         }
 
@@ -627,16 +820,51 @@ public partial class CodeEditor : UserControl
         while (rightmost < lineContent.Length)
         {
             var c = lineContent[rightmost];
-            var category = EditorCategory(c);
-            if (category is TextEditorCharacterCategory.Whitespace)
-            {
-                if (previousCategory is not TextEditorCharacterCategory.Whitespace)
-                {
-                    if (hasConsumedWhitespace)
-                        break;
-                }
 
-                hasConsumedWhitespace = true;
+            bool include = EvaluateContiguousCharacter(
+                c,
+                ref hasConsumedWhitespace,
+                ref targetCategory,
+                ref previousCategory);
+            if (!include)
+                break;
+
+            rightmost++;
+        }
+
+        return new(line, rightmost);
+    }
+
+    private static bool EvaluateContiguousCharacter(
+        char c,
+        ref bool hasConsumedWhitespace,
+        ref TextEditorCharacterCategory targetCategory,
+        ref TextEditorCharacterCategory previousCategory)
+    {
+        var category = EditorCategory(c);
+
+        if (category is TextEditorCharacterCategory.Whitespace)
+        {
+            if (previousCategory is not TextEditorCharacterCategory.Whitespace)
+            {
+                if (hasConsumedWhitespace)
+                    return false;
+            }
+
+            hasConsumedWhitespace = true;
+        }
+        else
+        {
+            if (category != previousCategory)
+            {
+                if (previousCategory is TextEditorCharacterCategory.Whitespace)
+                {
+                    if (hasConsumedWhitespace &&
+                        targetCategory is not TextEditorCharacterCategory.Whitespace)
+                    {
+                        return false;
+                    }
+                }
             }
 
             // try to determine what char category we are seeking for
@@ -644,17 +872,65 @@ public partial class CodeEditor : UserControl
             {
                 targetCategory = category;
             }
-            else
-            {
-                if (category != targetCategory)
-                    break;
-            }
 
-            previousCategory = category;
-            rightmost++;
+            if (category != targetCategory)
+            {
+                return false;
+            }
         }
 
-        return new(line, rightmost);
+        previousCategory = category;
+
+        return true;
+    }
+
+    private LinePosition LeftmostWhitespaceInCurrentLine()
+    {
+        GetCurrentTextPosition(out int line, out int column);
+        return RightmostWhitespaceInCurrentLine(line, column);
+    }
+
+    private LinePosition LeftmostWhitespaceInCurrentLine(int line, int column)
+    {
+        var currentLine = _editor.AtLine(line);
+        int next = column;
+        while (next > 0)
+        {
+            var c = currentLine[next];
+            if (!char.IsWhiteSpace(c))
+            {
+                break;
+            }
+
+            column = next;
+            next--;
+        }
+
+        return new(line, column);
+    }
+
+    private LinePosition RightmostWhitespaceInCurrentLine()
+    {
+        GetCurrentTextPosition(out int line, out int column);
+        return RightmostWhitespaceInCurrentLine(line, column);
+    }
+
+    private LinePosition RightmostWhitespaceInCurrentLine(int line, int column)
+    {
+        var currentLine = _editor.AtLine(line);
+        var currentLength = currentLine.Length;
+        while (column < currentLength - 1)
+        {
+            var c = currentLine[column];
+            if (!char.IsWhiteSpace(c))
+            {
+                break;
+            }
+
+            column++;
+        }
+
+        return new(line, column);
     }
 
     private static TextEditorCharacterCategory EditorCategory(char c)

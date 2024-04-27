@@ -182,24 +182,28 @@ public sealed class MultilineStringEditor
         int remainingLength = column;
         if (count >= removedLength)
         {
-            count -= column;
+            count -= removedLength;
+            var nextLineIndex = line + 1;
+
             if (remainingLength is 0 && count > 0)
             {
                 RemoveLine(line);
                 // eat up a virtual newline
                 count--;
+                nextLineIndex--;
             }
             else
             {
                 var trimmedLine = previousLine[..column];
                 SetLine(line, trimmedLine);
+                previousLine = trimmedLine;
             }
 
-            var nextLineIndex = line;
-            if (nextLineIndex >= _lines.Count)
-                return;
+            if (nextLineIndex < _lines.Count)
+            {
+                RemoveForwardsAt(nextLineIndex, 0, count);
+            }
 
-            RemoveForwardsAt(nextLineIndex, 0, count);
             return;
         }
 

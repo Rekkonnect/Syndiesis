@@ -11,6 +11,11 @@ public class AnalysisPipelineHandler
 {
     private readonly CancellationTokenFactory _analysisCancellationTokenFactory = new();
 
+    private readonly Delayer _delayer = new();
+
+    private string _pendingSource = string.Empty;
+    private volatile bool _finishedAnalysis = false;
+
     public TimeSpan UserInputDelay { get; set; } = TimeSpan.FromMilliseconds(300);
 
     public event Action? AnalysisRequested;
@@ -19,17 +24,31 @@ public class AnalysisPipelineHandler
 
     public void InitiateAnalysis(string source)
     {
-        _analysisCancellationTokenFactory.Cancel();
-        _ = PerformAnalysis(source);
+        _pendingSource = source;
+        if (_delayer.IsWaiting)
+        {
+            SetRequestedDelay();
+            return;
+        }
+
+        // only cancel the analysis token if we have to interrupt an analysis
+        // in the middle of its execution
+        if (!_finishedAnalysis)
+        {
+            _analysisCancellationTokenFactory.Cancel();
+        }
+        _ = PerformAnalysis();
     }
 
-    private async Task PerformAnalysis(string source)
+    private async Task PerformAnalysis()
     {
+        _finishedAnalysis = false;
         var token = _analysisCancellationTokenFactory.CurrentToken;
 
         AnalysisRequested?.Invoke();
 
-        await Task.Delay(UserInputDelay, token);
+        SetRequestedDelay();
+        await _delayer.WaitUnblock(token);
         if (token.IsCancellationRequested)
             return;
 
@@ -38,6 +57,7 @@ public class AnalysisPipelineHandler
         var options = new NodeLineCreationOptions();
         var creator = new NodeLineCreator(options);
 
+        var source = _pendingSource;
         var syntaxTree = CSharpSyntaxTree.ParseText(source, cancellationToken: token);
         if (token.IsCancellationRequested)
             return;
@@ -50,5 +70,11 @@ public class AnalysisPipelineHandler
             return;
 
         AnalysisCompleted!(nodeRoot);
+        _finishedAnalysis = true;
+    }
+
+    private void SetRequestedDelay()
+    {
+        _delayer.SetFutureUnblock(UserInputDelay);
     }
 }

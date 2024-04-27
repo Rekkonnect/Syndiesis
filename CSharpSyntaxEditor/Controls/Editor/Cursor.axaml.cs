@@ -14,6 +14,12 @@ public partial class Cursor : UserControl
 
     private readonly AnimationRunController _cursorBlinkAnimationController = new(_cursorBlinkAnimation);
 
+    public double LeftOffset
+    {
+        get => Padding.Left;
+        set => Padding = Padding.WithLeft(value);
+    }
+
     public Cursor()
     {
         InitializeComponent();
