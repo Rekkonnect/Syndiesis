@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:Syndiesis.Controls"
+             xmlns:shapes="using:Avalonia.Controls.Shapes"
+             mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="20"
+             x:Class="Syndiesis.Controls.HorizontalScrollBar">
+
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="20"/>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="20"/>
+    </Grid.ColumnDefinitions>
+
+    <controls:ScrollBarStepButtonContainer
+      Name="leftButton"
+      Grid.Column="0"
+      >
+      <controls:ScrollBarStepButtonContainer.ContainerContent>
+        <shapes:Polygon
+          Name="leftIcon"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Points="0,6 8,0 8,12"
+          Fill="AliceBlue"
+        />
+      </controls:ScrollBarStepButtonContainer.ContainerContent>
+    </controls:ScrollBarStepButtonContainer>
+
+    <Canvas
+      Grid.Column="1"
+      ClipToBounds="True"
+      Name="draggableRectangleCanvas"
+      >
+
+      <!--
+      This is not responsive; the manual Height property controls the height
+      of the control, must resolve sometime
+      -->
+      <Rectangle
+        Name="draggableRectangle"
+        Margin="0 5 5 0"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Stretch"
+        Height="10"
+        Width="21"
+          Fill="AliceBlue"
+      >
+      </Rectangle>
+    </Canvas>
+
+    <controls:ScrollBarStepButtonContainer
+      Name="rightButton"
+      Grid.Column="2"
+      >
+      <controls:ScrollBarStepButtonContainer.ContainerContent>
+        <shapes:Polygon
+          Name="rightIcon"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Points="8,6 0,0 0,12"
+          Fill="AliceBlue"
+        />
+      </controls:ScrollBarStepButtonContainer.ContainerContent>
+    </controls:ScrollBarStepButtonContainer>
+
+  </Grid>
+
+</UserControl>

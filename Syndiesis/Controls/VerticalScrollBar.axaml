@@ -1,0 +1,78 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:controls="using:Syndiesis.Controls"
+             xmlns:shapes="using:Avalonia.Controls.Shapes"
+             mc:Ignorable="d" d:DesignWidth="20" d:DesignHeight="250"
+             x:Class="Syndiesis.Controls.VerticalScrollBar">
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="20"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="20"/>
+    </Grid.RowDefinitions>
+
+    <controls:ScrollBarStepButtonContainer
+      Name="upButton"
+      Grid.Row="0"
+      >
+      <controls:ScrollBarStepButtonContainer.ContainerContent>
+        <shapes:Polygon
+          Name="upIcon"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Points="0,8 6,0 12,8"
+        />
+      </controls:ScrollBarStepButtonContainer.ContainerContent>
+    </controls:ScrollBarStepButtonContainer>
+
+    <Canvas
+      Grid.Row="1"
+      ClipToBounds="True"
+      Name="draggableRectangleCanvas"
+      >
+
+      <!--
+      This is not responsive; the manual Width property controls the width
+      of the control, must resolve sometime
+      -->
+      <Rectangle
+        Name="draggableRectangle"
+        Margin="5 0 0 5"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Top"
+        Height="21"
+        Width="10"
+      >
+      </Rectangle>
+    </Canvas>
+
+    <controls:ScrollBarStepButtonContainer
+      Name="downButton"
+      Grid.Row="2"
+      >
+      <controls:ScrollBarStepButtonContainer.ContainerContent>
+        <shapes:Polygon
+        Name="downIcon"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Points="0,0 6,8 12,0"
+        />
+      </controls:ScrollBarStepButtonContainer.ContainerContent>
+    </controls:ScrollBarStepButtonContainer>
+
+    <!-- this might be useless -->
+    <Panel
+      Name="hitboxPanel"
+      Grid.RowSpan="2"
+      VerticalAlignment="Stretch"
+      HorizontalAlignment="Stretch"
+      ZIndex="-1"
+      Background="Transparent"
+      />
+
+  </Grid>
+
+</UserControl>

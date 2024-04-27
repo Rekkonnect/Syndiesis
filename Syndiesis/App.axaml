@@ -1,0 +1,27 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:Syndiesis"
+             xmlns:skp="using:Avalonia.Controls.Skia"
+             x:Class="Syndiesis.App"
+             RequestedThemeVariant="Dark"
+             >
+  <Application.DataTemplates>
+    <local:ViewLocator/>
+  </Application.DataTemplates>
+
+  <Application.Styles>
+    <FluentTheme />
+  </Application.Styles>
+  
+  <Application.Resources>
+    <FontFamily x:Key="AptosFontFamily">avares://Syndiesis/Assets/Fonts/Aptos#Aptos</FontFamily>
+    <FontFamily x:Key="AptosDisplayFontFamily">avares://Syndiesis/Assets/Fonts/Aptos-Display#Aptos Display</FontFamily>
+    <FontFamily x:Key="FiraCodeFontFamily">avares://Syndiesis/Assets/Fonts/Fira-Code#Fira Code</FontFamily>
+    <FontFamily x:Key="FontAwesomeFontFamily">avares://Syndiesis/Assets/Fonts/FontAwesome#FontAwesome</FontFamily>
+    <FontFamily x:Key="FontAwesomeBrandsFontFamily">avares://Syndiesis/Assets/Fonts/FontAwesome#FontAwesome Brands</FontFamily>
+
+    <Image x:Key="PenImage" Source="avares://Syndiesis/Assets/Icons/fa-pen-fancy.png" />
+    <Image x:Key="SpinnerImage" Source="avares://Syndiesis/Assets/Icons/fa-hurricane.png" />
+    <Image x:Key="SuccessImage" Source="avares://Syndiesis/Assets/Icons/fa-check.png" />
+  </Application.Resources>
+</Application>

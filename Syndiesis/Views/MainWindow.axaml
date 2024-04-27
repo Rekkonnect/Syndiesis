@@ -1,0 +1,27 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:Syndiesis.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1450" d:DesignHeight="850"
+        MinWidth="600"
+        MinHeight="300"
+        x:Class="Syndiesis.Views.MainWindow"
+        xmlns:controls="using:Syndiesis.Controls"
+        xmlns:syntax="using:Syndiesis.Controls.SyntaxVisualization"
+        xmlns:previews="using:Syndiesis.Views.DesignerPreviews"
+        xmlns:views="using:Syndiesis.Views"
+        Icon="/Assets/Icons/logo.png"
+        Title="Syndiesis"
+        >
+
+  <Design.DataContext>
+    <vm:MainWindowViewModel/>
+  </Design.DataContext>
+
+  <Panel>
+    <views:MainView
+      Name="mainView"
+      />
+  </Panel>
+</Window>
