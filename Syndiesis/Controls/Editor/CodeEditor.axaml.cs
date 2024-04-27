@@ -43,6 +43,8 @@ public partial class CodeEditor : UserControl
     private int _lineOffset;
     private int _preferredCursorCharacterIndex;
 
+    private bool _hasActiveHover;
+
     public int ExtraBufferLines
     {
         get => _extraBufferLines;
@@ -175,6 +177,7 @@ public partial class CodeEditor : UserControl
         linesPanel.Children.AddRange(lineRange);
         UpdateLinesDisplayPanel(lineCount);
 
+        HideAllHoveredSyntaxNodes();
         UpdateEntireScroll();
     }
 
@@ -215,10 +218,14 @@ public partial class CodeEditor : UserControl
 
     private void HideAllHoveredSyntaxNodes()
     {
+        if (!_hasActiveHover)
+            return;
+
         foreach (CodeEditorLine line in codeEditorContent.codeLinesPanel.Children)
         {
             line.SyntaxNodeHoverHighlight.Clear();
         }
+        _hasActiveHover = false;
     }
 
     private void SetHoverSpan(LinePositionSpan span)
@@ -251,6 +258,8 @@ public partial class CodeEditor : UserControl
             var endEditorLine = EditorLineAt(endLine);
             endEditorLine?.SyntaxNodeHoverHighlight.SetLeftPart(end.Character);
         }
+
+        _hasActiveHover = true;
 
         CodeEditorLine? EditorLineAt(int i)
         {
