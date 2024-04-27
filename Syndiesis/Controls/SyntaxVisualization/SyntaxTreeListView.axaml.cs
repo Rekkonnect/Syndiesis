@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Microsoft.CodeAnalysis;
 using System;
 
 namespace Syndiesis.Controls;
@@ -39,6 +40,8 @@ public partial class SyntaxTreeListView : UserControl
         }
     }
 
+    public SyntaxTree? AnalyzedTree { get; set; }
+
     private void HandleRootNodeSizeAdjusted(object? sender, SizeChangedEventArgs e)
     {
         UpdateScrollLimits();
@@ -55,6 +58,8 @@ public partial class SyntaxTreeListView : UserControl
         UpdateScrollLimits();
         CorrectContainedNodeWidths(Bounds.Size);
     }
+
+    public event Action<SyntaxTreeListNode?>? HoveredNode;
 
     public SyntaxTreeListView()
     {
@@ -76,19 +81,21 @@ public partial class SyntaxTreeListView : UserControl
 
         _isUpdatingScrollLimits = true;
 
-        verticalScrollBar.BeginUpdate();
-        verticalScrollBar.MaxValue = node.Bounds.Height + extraScrollHeight;
-        verticalScrollBar.StartPosition = -Canvas.GetTop(topLevelNodeContent);
-        verticalScrollBar.EndPosition = verticalScrollBar.StartPosition + codeCanvas.Bounds.Height;
-        verticalScrollBar.SetAvailableScrollOnScrollableWindow();
-        verticalScrollBar.EndUpdate();
+        using (verticalScrollBar.BeginUpdateBlock())
+        {
+            verticalScrollBar.MaxValue = node.Bounds.Height + extraScrollHeight;
+            verticalScrollBar.StartPosition = -Canvas.GetTop(topLevelNodeContent);
+            verticalScrollBar.EndPosition = verticalScrollBar.StartPosition + codeCanvas.Bounds.Height;
+            verticalScrollBar.SetAvailableScrollOnScrollableWindow();
+        }
 
-        horizontalScrollBar.BeginUpdate();
-        horizontalScrollBar.MaxValue = Math.Max(node.Bounds.Width - 10, 0);
-        horizontalScrollBar.StartPosition = -Canvas.GetLeft(topLevelNodeContent);
-        horizontalScrollBar.EndPosition = horizontalScrollBar.StartPosition + codeCanvas.Bounds.Width;
-        horizontalScrollBar.SetAvailableScrollOnScrollableWindow();
-        horizontalScrollBar.EndUpdate();
+        using (horizontalScrollBar.BeginUpdateBlock())
+        {
+            horizontalScrollBar.MaxValue = Math.Max(node.Bounds.Width - 10, 0);
+            horizontalScrollBar.StartPosition = -Canvas.GetLeft(topLevelNodeContent);
+            horizontalScrollBar.EndPosition = horizontalScrollBar.StartPosition + codeCanvas.Bounds.Width;
+            horizontalScrollBar.SetAvailableScrollOnScrollableWindow();
+        }
 
         _isUpdatingScrollLimits = false;
     }
@@ -241,14 +248,19 @@ public partial class SyntaxTreeListView : UserControl
 
         _hoveredNode = null;
         node.UpdateHovering(false);
+        HoveredNode?.Invoke(null);
     }
 
     public void OverrideHover(SyntaxTreeListNode node)
     {
+        if (_hoveredNode == node)
+            return;
+
         var previousHover = _hoveredNode;
         previousHover?.UpdateHovering(false);
         _hoveredNode = node;
         node.UpdateHovering(true);
+        HoveredNode?.Invoke(node);
     }
     #endregion
 }

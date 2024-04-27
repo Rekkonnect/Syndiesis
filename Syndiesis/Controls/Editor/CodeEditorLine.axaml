@@ -7,6 +7,18 @@
         x:Class="Syndiesis.Controls.CodeEditorLine">
 
   <Panel Name="backgroundPanel">
+    <Rectangle
+      Name="selectionHighlight"
+      HorizontalAlignment="Left"
+      Fill="#900050B0"
+      />
+    
+    <Rectangle
+      Name="syntaxNodeHoverHighlight"
+      HorizontalAlignment="Left"
+      Fill="#A0606060"
+      />
+    
     <Panel
           Name="lineContentPanel">
 
@@ -14,7 +26,8 @@
         FontFamily="{StaticResource FiraCodeFontFamily}"
         FontWeight="Normal"
         Name="lineContentText"
-        Margin="2 2 0 0"/>
+        Margin="2 2 0 0"
+        />
       <controls:Cursor
         HorizontalAlignment="Left"
         Padding="1 0 0 0"

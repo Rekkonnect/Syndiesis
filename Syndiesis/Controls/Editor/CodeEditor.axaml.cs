@@ -1,13 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Models;
 using Syndiesis.Utilities;
-using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;
@@ -144,9 +143,14 @@ public partial class CodeEditor : UserControl
         return VisibleLines(Bounds.Size);
     }
 
-    private int VisibleLines(Size finalSize)
+    public static int VisibleLines(Size size)
     {
-        return (int)(finalSize.Height / LineHeight);
+        return VisibleLines(size.Height);
+    }
+
+    public static int VisibleLines(double height)
+    {
+        return (int)(height / LineHeight);
     }
 
     private void ConsumeUpdateTextRequest()
@@ -193,6 +197,69 @@ public partial class CodeEditor : UserControl
         CodeChanged?.Invoke();
     }
 
+    public void ShowHoveredSyntaxNode(SyntaxTreeListNode? listNode)
+    {
+        HideAllHoveredSyntaxNodes();
+
+        if (listNode is not null)
+        {
+            var syntaxObject = listNode.AssociatedSyntaxObject;
+
+            if (syntaxObject is not null)
+            {
+                var span = syntaxObject.LineFullSpan;
+                SetHoverSpan(span);
+            }
+        }
+    }
+
+    private void HideAllHoveredSyntaxNodes()
+    {
+        foreach (CodeEditorLine line in codeEditorContent.codeLinesPanel.Children)
+        {
+            line.SyntaxNodeHoverHighlight.Clear();
+        }
+    }
+
+    private void SetHoverSpan(LinePositionSpan span)
+    {
+        var start = span.Start;
+        var end = span.End;
+        var startLine = start.Line;
+        var endLine = end.Line;
+
+        var lines = codeEditorContent.codeLinesPanel.Children;
+
+        if (startLine == endLine)
+        {
+            var startEditorLine = EditorLineAt(startLine);
+            var startCharacter = start.Character;
+            var endCharacter = end.Character;
+            startEditorLine?.SyntaxNodeHoverHighlight.Set(startCharacter..endCharacter);
+        }
+        else
+        {
+            for (int i = startLine + 1; i < endLine; i++)
+            {
+                var editorLine = EditorLineAt(i);
+                editorLine?.SyntaxNodeHoverHighlight.SetEntireLine(editorLine);
+            }
+
+            var startEditorLine = EditorLineAt(startLine);
+            startEditorLine?.SyntaxNodeHoverHighlight.SetRightPart(start.Character, startEditorLine);
+
+            var endEditorLine = EditorLineAt(endLine);
+            endEditorLine?.SyntaxNodeHoverHighlight.SetLeftPart(end.Character);
+        }
+
+        CodeEditorLine? EditorLineAt(int i)
+        {
+            int lineIndex = i - _lineOffset;
+            var editorLine = lines.ValueAtOrDefault(lineIndex) as CodeEditorLine;
+            return editorLine;
+        }
+    }
+
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         var canvasOffset = e.GetPosition(codeCanvasContainer);
@@ -207,6 +274,14 @@ public partial class CodeEditor : UserControl
         if (line >= _editor.LineCount)
         {
             line = _editor.LineCount - 1;
+        }
+
+        // this is a guard clause for when clicking within the designer
+        // if we ever encounter a multiline string editor with no lines, we can
+        // also evade that exception
+        if (line < 0)
+        {
+            return;
         }
 
         int column = pointerColumn;
@@ -951,6 +1026,11 @@ public partial class CodeEditor : UserControl
         }
 
         return TextEditorCharacterCategory.General;
+    }
+
+    public static double CharacterBeginPosition(int character)
+    {
+        return character * CharWidth + 1;
     }
 }
 

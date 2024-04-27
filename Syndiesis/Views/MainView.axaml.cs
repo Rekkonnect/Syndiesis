@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Syndiesis.Controls;
 using Syndiesis.ViewModels;
 using System;
 
@@ -14,10 +15,21 @@ public partial class MainView : UserControl
     public MainView()
     {
         InitializeComponent();
+        InitializeEvents();
 
-        codeEditor.CodeChanged += TriggerPipeline;
-        syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
         Focusable = true;
+    }
+
+    private void InitializeEvents()
+    {
+        codeEditor.CodeChanged += TriggerPipeline;
+        syntaxTreeView.listView.HoveredNode += HandleHoveredNode;
+        syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
+    }
+
+    private void HandleHoveredNode(SyntaxTreeListNode? obj)
+    {
+        codeEditor.ShowHoveredSyntaxNode(obj);
     }
 
     private void TriggerPipeline()

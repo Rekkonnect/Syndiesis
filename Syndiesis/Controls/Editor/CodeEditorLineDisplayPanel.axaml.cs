@@ -72,7 +72,7 @@ public partial class CodeEditorLineDisplayPanel : UserControl
 
     private static int GetVisibleLineCount(double height)
     {
-        return (int)(height / CodeEditor.LineHeight) + 1;
+        return CodeEditor.VisibleLines(height) + 1;
     }
 
     private void EnsureEnoughVisibleLineNumbers(double height)

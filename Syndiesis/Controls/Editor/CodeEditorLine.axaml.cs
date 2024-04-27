@@ -1,10 +1,12 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Syndiesis.Models;
 using Syndiesis.Utilities;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Syndiesis.Controls;
 
@@ -13,18 +15,19 @@ public partial class CodeEditorLine : UserControl
     private static readonly SolidColorBrush _selectedLineBackgroundBrush = new(0x80102020);
     private static readonly SolidColorBrush _unselectedLineBackgroundBrush = new(Colors.Transparent);
 
-    public static readonly StyledProperty<string> TextProperty =
-        AvaloniaProperty.Register<CodeEditorLine, string>(nameof(Text), defaultValue: string.Empty);
+    private string _text;
 
     public string Text
     {
-        get => GetValue(TextProperty);
+        get => _text;
         set
         {
-            SetValue(TextProperty, value);
+            _text = value;
             Inlines = [new Run(value)];
         }
     }
+
+    public int TextLength => Text.Length;
 
     public static readonly StyledProperty<bool> SelectedLineProperty =
         AvaloniaProperty.Register<CodeEditorLine, bool>(nameof(SelectedLine), defaultValue: false);
@@ -66,14 +69,26 @@ public partial class CodeEditorLine : UserControl
         set
         {
             SetValue(CursorCharacterIndexProperty, value);
-            double newLeftPosition = value * CodeEditor.CharWidth + 1;
+            double newLeftPosition = CodeEditor.CharacterBeginPosition(value) + 1;
             cursor.LeftOffset = newLeftPosition;
         }
     }
 
+    public HighlightHandler SelectionHighlight { get; private set; }
+    public HighlightHandler SyntaxNodeHoverHighlight { get; private set; }
+
     public CodeEditorLine()
     {
         InitializeComponent();
+        InitializeRectangleHandlers();
+    }
+
+    [MemberNotNull(nameof(SelectionHighlight))]
+    [MemberNotNull(nameof(SyntaxNodeHoverHighlight))]
+    private void InitializeRectangleHandlers()
+    {
+        SelectionHighlight = new(selectionHighlight);
+        SyntaxNodeHoverHighlight = new(syntaxNodeHoverHighlight);
     }
 
     // this is ready to be used for whenever syntax highlighting is implemented
@@ -128,5 +143,71 @@ public partial class CodeEditorLine : UserControl
     public void SetStaticCursorColor(Color color)
     {
         cursor.SetStaticColor(color);
+    }
+
+    public sealed record HighlightHandler(Rectangle HighlightingRectangle)
+    {
+        private Range? _currentSpan;
+
+        public Range? CurrentSpan
+        {
+            get => _currentSpan;
+            private set
+            {
+                _currentSpan = value;
+                UpdateHighlight();
+            }
+        }
+
+        public void SetEntireLine(CodeEditorLine line)
+        {
+            int length = line.TextLength;
+            Set(0..length);
+        }
+
+        public void SetRightPart(int start, CodeEditorLine line)
+        {
+            int length = line.TextLength;
+            Set(start..length);
+        }
+
+        public void SetLeftPart(int end)
+        {
+            Set(0..end);
+        }
+
+        public void Set(Range span)
+        {
+            CurrentSpan = span;
+        }
+
+        public void Clear()
+        {
+            CurrentSpan = null;
+        }
+
+        private void UpdateHighlight()
+        {
+            var span = _currentSpan;
+            if (span is null)
+            {
+                HighlightingRectangle.Width = 0;
+            }
+            else
+            {
+                var spanValue = span.Value;
+                var left = CodeEditor.CharacterBeginPosition(spanValue.Start.Value);
+                HighlightingRectangle.Margin = HighlightingRectangle.Margin.WithLeft(left);
+
+                var right = CodeEditor.CharacterBeginPosition(spanValue.End.Value);
+                var width = right - left;
+                if (width > 0)
+                {
+                    width += 1;
+                }
+
+                HighlightingRectangle.Width = width;
+            }
+        }
     }
 }

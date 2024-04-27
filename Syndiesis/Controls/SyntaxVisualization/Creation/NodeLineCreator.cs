@@ -3,10 +3,9 @@ using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -115,12 +114,14 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
         AppendTriviaList(leadingTrivia, children);
 
-        var displayNode = CreateDisplayNode(token);
-        children.Add(displayNode);
+        if (token.ValueText.Length > 0)
+        {
+            var displayNode = CreateDisplayNode(token);
+            children.Add(displayNode);
+        }
 
         AppendTriviaList(trailingTrivia, children);
 
-        // sort?
         children.Sort(SyntaxTreeViewNodeObjectSpanComparer.Instance);
 
         return children;
@@ -198,8 +199,6 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
                     var tokenListNode = CreateTokenListNode(tokenList, property.Name);
                     children.Add(tokenListNode);
                     break;
-
-                    // TODO: Rest
             }
         }
 
@@ -316,6 +315,12 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         if (name is nameof(UsingDirectiveSyntax.Name))
         {
             if (propertyInfo.DeclaringType == typeof(UsingDirectiveSyntax))
+                return true;
+        }
+
+        if (name is nameof(DirectiveTriviaSyntax.DirectiveNameToken))
+        {
+            if (propertyInfo.DeclaringType == typeof(DirectiveTriviaSyntax))
                 return true;
         }
 
@@ -504,10 +509,19 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     public SyntaxTreeListNode CreateTriviaNode(SyntaxTrivia trivia)
     {
         var line = CreateTriviaLine(trivia);
+        var structure = trivia.GetStructure();
+        IReadOnlyList<SyntaxTreeListNode> children = [];
+        if (structure is not null)
+        {
+            var structureNode = CreateRootNode(structure, "Structure");
+            children = [structureNode];
+        }
+
         return new()
         {
             NodeLine = line,
             AssociatedSyntaxObjectContent = trivia,
+            ChildNodes = new(children),
         };
     }
 
@@ -532,8 +546,52 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             return FormatUnstructuredTriviaDisplay(trivia, inlines);
         }
 
-        // handle structured trivia
-        return default;
+        return FormatStructuredTriviaDisplay(trivia, inlines);
+    }
+
+    private static NodeTypeDisplay FormatStructuredTriviaDisplay(
+        SyntaxTrivia trivia, InlineCollection inlines)
+    {
+        var kind = trivia.Kind();
+        bool isDirective = SyntaxFacts.IsPreprocessorDirective(kind);
+        if (isDirective)
+        {
+            var displayText = CommentTriviaText(trivia);
+            var displayTextRun = Run(displayText, Styles.WhitespaceTriviaBrush);
+            inlines.Add(displayTextRun);
+
+            AddTriviaKindWithSplitter(
+                trivia,
+                Styles.WhitespaceTriviaKindBrush,
+                inlines);
+
+            return Styles.DirectiveTriviaDisplay;
+        }
+
+        switch (kind)
+        {
+            case SyntaxKind.SingleLineDocumentationCommentTrivia:
+            case SyntaxKind.MultiLineDocumentationCommentTrivia:
+            {
+                var displayText = trivia.Kind().ToString();
+                var displayTextRun = Run(displayText, Styles.CommentTriviaContentBrush);
+                inlines.Add(displayTextRun);
+
+                return Styles.CommentTriviaDisplay;
+            }
+
+            case SyntaxKind.SkippedTokensTrivia:
+            {
+                var displayText = trivia.Kind().ToString();
+                var displayTextRun = Run(displayText, Styles.WhitespaceTriviaBrush);
+                inlines.Add(displayTextRun);
+
+                return Styles.WhitespaceTriviaDisplay;
+            }
+        }
+
+        Debug.Assert(false, "Unreachable by unknown trivia display");
+        return Styles.WhitespaceTriviaDisplay;
     }
 
     private static NodeTypeDisplay FormatUnstructuredTriviaDisplay(
@@ -562,7 +620,6 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             case SyntaxKind.DocumentationCommentExteriorTrivia:
             case SyntaxKind.SkippedTokensTrivia:
             case SyntaxKind.ConflictMarkerTrivia:
-            case SyntaxKind.BadDirectiveTrivia:
             {
                 var displayText = CommentTriviaText(trivia);
                 var displayTextRun = Run(displayText, Styles.CommentTriviaContentBrush);
@@ -574,6 +631,19 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
                     inlines);
 
                 return Styles.CommentTriviaDisplay;
+            }
+            case SyntaxKind.BadDirectiveTrivia:
+            {
+                var displayText = CommentTriviaText(trivia);
+                var displayTextRun = Run(displayText, Styles.WhitespaceTriviaBrush);
+                inlines.Add(displayTextRun);
+
+                AddTriviaKindWithSplitter(
+                    trivia,
+                    Styles.WhitespaceTriviaKindBrush,
+                    inlines);
+
+                return Styles.DirectiveTriviaDisplay;
             }
             case SyntaxKind.DisabledTextTrivia:
             {
@@ -883,140 +953,10 @@ partial class NodeLineCreator
             ArgumentNullException.ThrowIfNull(x, nameof(x));
             ArgumentNullException.ThrowIfNull(y, nameof(y));
 
-            var xObject = x.AssociatedSyntaxObject;
-            var yObject = y.AssociatedSyntaxObject;
-            return SyntaxObjectSpanComparer.Instance.Compare(xObject, yObject);
+            var xObject = x.AssociatedSyntaxObject!.Span;
+            var yObject = y.AssociatedSyntaxObject!.Span;
+            return xObject.CompareTo(yObject);
         }
-    }
-    public sealed class SyntaxObjectSpanComparer : IComparer
-    {
-        public static SyntaxObjectSpanComparer Instance { get; } = new();
-
-        public int Compare(object? x, object? y)
-        {
-            var xSpan = FullSpan(x);
-            var ySpan = FullSpan(y);
-            return xSpan.CompareTo(ySpan);
-        }
-
-        private static TextSpan FullSpan(object? x)
-        {
-            ArgumentNullException.ThrowIfNull(x);
-
-            switch (x)
-            {
-                case SyntaxNode node:
-                    return node.FullSpan;
-
-                case SyntaxToken token:
-                    return token.FullSpan;
-
-                case SyntaxTrivia trivia:
-                    return trivia.FullSpan;
-
-                case IReadOnlyList<object?> nodeList:
-                    var first = nodeList.FirstOrDefault();
-                    if (first is null)
-                        throw new NullReferenceException();
-
-                    return FullSpan(first);
-            }
-
-            return (x as dynamic).FullSpan;
-        }
-    }
-}
-
-public sealed record SyntaxObjectInfo(
-    object SyntaxObject, TextSpan Span, TextSpan FullSpan)
-{
-    public static SyntaxObjectInfo? GetInfoForObject(object? x)
-    {
-        if (x is null)
-            return null;
-
-        if (x is SyntaxNodeOrToken nodeOrToken)
-        {
-            if (nodeOrToken.IsNode)
-            {
-                var node = nodeOrToken.AsNode()!;
-                return GetInfoForObject(node);
-            }
-            else
-            {
-                var token = nodeOrToken.AsToken()!;
-                return GetInfoForObject(token);
-            }
-        }
-
-        var span = GetSpan(x);
-        var fullSpan = GetFullSpan(x);
-        return new(x, span, fullSpan);
-    }
-
-    private static TextSpan GetSpan(object x)
-    {
-        switch (x)
-        {
-            case SyntaxNode node:
-                return node.Span;
-
-            case SyntaxToken token:
-                return token.Span;
-
-            case SyntaxTrivia trivia:
-                return trivia.Span;
-
-            case IReadOnlyList<object> genericList:
-                return ExtractSpanFromList(genericList, GetSpan);
-
-            case SyntaxTokenList tokenList:
-                return ExtractSpanFromList(tokenList, GetSpan);
-        }
-
-        throw new ArgumentException("Unknown object to get Span from");
-    }
-
-    private static TextSpan GetFullSpan(object x)
-    {
-        switch (x)
-        {
-            case SyntaxNode node:
-                return node.FullSpan;
-
-            case SyntaxToken token:
-                return token.FullSpan;
-
-            case SyntaxTrivia trivia:
-                return trivia.FullSpan;
-
-            case IReadOnlyList<object?> nodeList:
-                return ExtractSpanFromList(nodeList, GetFullSpan);
-
-            case SyntaxTokenList tokenList:
-                return ExtractSpanFromList(tokenList, GetFullSpan);
-        }
-
-        throw new ArgumentException("Unknown object to get FullSpan from");
-    }
-
-    private static TextSpan ExtractSpanFromList<T>(
-        IReadOnlyList<T?> nodeList,
-        Func<object, TextSpan> spanGetter)
-    {
-        if (nodeList.Count is 0)
-            throw new ArgumentException("Invalid empty list provided");
-
-        var first = nodeList[0];
-        var firstSpan = spanGetter(first!);
-        if (nodeList.Count is 1)
-            return firstSpan;
-
-        var start = firstSpan.Start;
-        var last = nodeList[^1];
-        var lastSpan = spanGetter(last!);
-        var end = lastSpan.End;
-        return new TextSpan(start, end);
     }
 }
 
