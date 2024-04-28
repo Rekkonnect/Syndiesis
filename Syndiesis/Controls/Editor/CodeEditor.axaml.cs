@@ -1,8 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Media.TextFormatting;
-using Avalonia.Styling;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.SyntaxVisualization.Creation;
 using Syndiesis.Models;
@@ -475,8 +473,12 @@ public partial class CodeEditor : UserControl
     protected override void OnTextInput(TextInputEventArgs e)
     {
         base.OnTextInput(e);
-        var text = e.Text;
-        if (text is null)
+        InsertText(e.Text);
+    }
+
+    private void InsertText(string? text)
+    {
+        if (string.IsNullOrEmpty(text))
             return;
 
         GetCurrentTextPosition(out int line, out int column);
@@ -491,7 +493,7 @@ public partial class CodeEditor : UserControl
         switch (e.Key)
         {
             case Key.Back:
-                if (modifiers is KeyModifiers.Control)
+                if (modifiers.HasFlag(KeyModifiers.Control))
                 {
                     DeleteCommonCharacterGroupBackwards();
                     e.Handled = true;
@@ -502,7 +504,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.Delete:
-                if (modifiers is KeyModifiers.Control)
+                if (modifiers.HasFlag(KeyModifiers.Control))
                 {
                     DeleteCommonCharacterGroupForwards();
                     e.Handled = true;
@@ -518,7 +520,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.V:
-                if (modifiers is KeyModifiers.Control)
+                if (modifiers.HasFlag(KeyModifiers.Control))
                 {
                     _ = PasteClipboardTextAsync();
                     e.Handled = true;
@@ -526,7 +528,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.C:
-                if (modifiers is KeyModifiers.Control)
+                if (modifiers.HasFlag(KeyModifiers.Control))
                 {
                     _ = CopySelectionToClipboardAsync();
                     e.Handled = true;
@@ -534,7 +536,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.Left:
-                if (modifiers is KeyModifiers.Control)
+                if (modifiers.HasFlag(KeyModifiers.Control))
                 {
                     MoveCursorLeftWord();
                     e.Handled = true;
@@ -545,7 +547,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.Right:
-                if (modifiers is KeyModifiers.Control)
+                if (modifiers.HasFlag(KeyModifiers.Control))
                 {
                     MoveCursorNextWord();
                     e.Handled = true;
@@ -566,27 +568,29 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.PageUp:
-                if (modifiers is KeyModifiers.Control)
+                if (modifiers.HasFlag(KeyModifiers.Control))
                 {
+                    MoveCursorPageStart();
                     e.Handled = true;
                     break;
                 }
-                MoveCursorRight();
+                MoveCursorPageUp();
                 e.Handled = true;
                 break;
 
             case Key.PageDown:
-                if (modifiers is KeyModifiers.Control)
+                if (modifiers.HasFlag(KeyModifiers.Control))
                 {
+                    MoveCursorPageEnd();
                     e.Handled = true;
                     break;
                 }
-                MoveCursorRight();
+                MoveCursorPageDown();
                 e.Handled = true;
                 break;
 
             case Key.Home:
-                if (modifiers is KeyModifiers.Control)
+                if (modifiers.HasFlag(KeyModifiers.Control))
                 {
                     MoveCursorDocumentStart();
                     e.Handled = true;
@@ -597,7 +601,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.End:
-                if (modifiers is KeyModifiers.Control)
+                if (modifiers.HasFlag(KeyModifiers.Control))
                 {
                     MoveCursorDocumentEnd();
                     e.Handled = true;
@@ -606,9 +610,66 @@ public partial class CodeEditor : UserControl
                 MoveCursorLineEnd();
                 e.Handled = true;
                 break;
+
+            case Key.Tab:
+                InsertTab();
+                e.Handled = true;
+                break;
         }
 
         base.OnKeyDown(e);
+    }
+
+    private void InsertTab()
+    {
+        const int tabSize = 4;
+        var column = CursorCharacterIndex;
+        int existingInTab = column % tabSize;
+        int spacesToInsert = tabSize - existingInTab;
+        InsertText(new string(' ', spacesToInsert));
+    }
+
+    private void MoveCursorPageStart()
+    {
+        MoveCursorToLine(_lineOffset);
+    }
+
+    private void MoveCursorPageEnd()
+    {
+        var offset = VisibleLines();
+        var next = _lineOffset + offset;
+        next = CapToLastLine(next);
+
+        MoveCursorToLine(next);
+    }
+
+    private void MoveCursorPageUp()
+    {
+        var current = CursorLineIndex;
+        var offset = VisibleLines();
+        var next = current - offset;
+        if (next < 0)
+            next = 0;
+
+        MoveCursorToLine(next);
+    }
+
+    private void MoveCursorPageDown()
+    {
+        var current = CursorLineIndex;
+        var offset = VisibleLines();
+        var next = current + offset;
+        next = CapToLastLine(next);
+
+        MoveCursorToLine(next);
+    }
+
+    private int CapToLastLine(int value)
+    {
+        if (value >= _editor.LineCount)
+            return _editor.LineCount - 1;
+
+        return value;
     }
 
     private void MoveCursorLeftWord()
@@ -653,22 +714,27 @@ public partial class CodeEditor : UserControl
 
     private void MoveCursorDown()
     {
-        GetCurrentTextPosition(out var line, out var column);
-        int lineCount = _editor.LineCount;
-        if (line >= lineCount - 1)
-            return;
-
-        CursorLineIndex++;
-        PlaceCursorCharacterIndexAfterVerticalMovement(column);
+        MoveCursorToLine(CursorLineIndex + 1);
     }
 
     private void MoveCursorUp()
     {
+        MoveCursorToLine(CursorLineIndex - 1);
+    }
+
+    private void MoveCursorToLine(int nextLine)
+    {
         GetCurrentTextPosition(out var line, out var column);
-        if (line is 0)
+        if (line == nextLine)
             return;
 
-        CursorLineIndex--;
+        if (nextLine < 0)
+            return;
+
+        if (nextLine >= _editor.LineCount)
+            return;
+
+        CursorLineIndex = nextLine;
         PlaceCursorCharacterIndexAfterVerticalMovement(column);
     }
 
