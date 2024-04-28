@@ -10,7 +10,7 @@ namespace Syndiesis.Controls;
 public partial class SyntaxTreeListView : UserControl
 {
     private const double extraScrollHeight = 50;
-    private const double extraScrollWidth = 40;
+    private const double extraScrollWidth = 20;
 
     private bool _allowedHover;
     private SyntaxTreeListNode? _hoveredNode;
@@ -61,12 +61,6 @@ public partial class SyntaxTreeListView : UserControl
         InitializeEvents();
     }
 
-    protected override void ArrangeCore(Rect finalRect)
-    {
-        base.ArrangeCore(finalRect);
-        UpdateScrollLimits();
-    }
-
     private bool _isUpdatingScrollLimits = false;
 
     private void UpdateScrollLimits()
@@ -79,15 +73,15 @@ public partial class SyntaxTreeListView : UserControl
         {
             verticalScrollBar.MaxValue = node.Bounds.Height + extraScrollHeight;
             verticalScrollBar.StartPosition = -Canvas.GetTop(topLevelNodeContent);
-            verticalScrollBar.EndPosition = verticalScrollBar.StartPosition + codeCanvas.Bounds.Height;
+            verticalScrollBar.EndPosition = verticalScrollBar.StartPosition + contentCanvas.Bounds.Height;
             verticalScrollBar.SetAvailableScrollOnScrollableWindow();
         }
 
         using (horizontalScrollBar.BeginUpdateBlock())
         {
-            horizontalScrollBar.MaxValue = Math.Max(node.Bounds.Width - 10, 0);
+            horizontalScrollBar.MaxValue = Math.Max(node.Bounds.Width - extraScrollWidth, 0);
             horizontalScrollBar.StartPosition = -Canvas.GetLeft(topLevelNodeContent);
-            horizontalScrollBar.EndPosition = horizontalScrollBar.StartPosition + codeCanvas.Bounds.Width;
+            horizontalScrollBar.EndPosition = horizontalScrollBar.StartPosition + contentCanvas.Bounds.Width;
             horizontalScrollBar.SetAvailableScrollOnScrollableWindow();
         }
 
@@ -139,7 +133,7 @@ public partial class SyntaxTreeListView : UserControl
         base.OnPointerWheelChanged(e);
 
         var pointerPosition = e.GetCurrentPoint(this).Position;
-        if (!codeCanvasContainer.Bounds.Contains(pointerPosition))
+        if (!contentCanvasContainer.Bounds.Contains(pointerPosition))
         {
             return;
         }
@@ -164,7 +158,7 @@ public partial class SyntaxTreeListView : UserControl
     private void EvaluateHovering(PointerEventArgs e)
     {
         var pointerPosition = e.GetCurrentPoint(this).Position;
-        if (!codeCanvasContainer.Bounds.Contains(pointerPosition))
+        if (!contentCanvasContainer.Bounds.Contains(pointerPosition))
         {
             _allowedHover = false;
             RootNode.SetHoveringRecursively(false);
@@ -182,6 +176,12 @@ public partial class SyntaxTreeListView : UserControl
         return base.MeasureCore(availableSize);
     }
 
+    protected override void ArrangeCore(Rect finalRect)
+    {
+        base.ArrangeCore(finalRect);
+        UpdateScrollLimits();
+    }
+
     protected override Size ArrangeOverride(Size finalSize)
     {
         CorrectPositionFromHorizontalScroll(finalSize);
@@ -191,34 +191,27 @@ public partial class SyntaxTreeListView : UserControl
     private void CorrectPositionFromHorizontalScroll(Size availableSize)
     {
         var offset = -Canvas.GetLeft(topLevelNodeContent);
-        var rootWidth = RootNode.Width;
+        var rootWidth = topLevelNodeContent.Bounds.Width;
         // ensure that the width has been initialized
         if (rootWidth is not > 0)
             return;
 
         var availableRight = rootWidth - offset;
-        var missing = availableSize.Width - availableRight;
+        var scrollBarWidth = verticalScrollBar.Bounds.Width;
+        var missing = availableSize.Width - availableRight - scrollBarWidth;
         if (missing > 0)
         {
             var reducedOffset = offset - missing;
-            Canvas.SetLeft(topLevelNodeContent, -reducedOffset);
+            var targetOffset = Math.Min(-reducedOffset, 0);
+            Canvas.SetLeft(topLevelNodeContent, targetOffset);
         }
     }
 
     private Size CorrectContainedNodeWidths(Size availableSize)
     {
-        // two passes to ensure that all children have sufficient width
-        var previousWidth = RootNode.Width;
-        var availableWidth = availableSize.Width;
-        var requiredWidth = RootNode.CorrectContainedNodeWidths(availableWidth);
-        if (previousWidth is not > 0 || requiredWidth - 1 >= previousWidth)
-        {
-            // only resize if we are not long enough 8)
-            // PROBLEM: this causes an awkward scroll behavior where the sudden
-            // increase in the width is shown in the scroll bar in the form of length jumps
-            RootNode.CorrectContainedNodeWidths(requiredWidth + extraScrollWidth + 10);
-        }
-        return availableSize.WithWidth(requiredWidth);
+        topLevelNodeContent.MinWidth = contentCanvas.Bounds.Width + extraScrollWidth;
+        CorrectPositionFromHorizontalScroll(availableSize);
+        return availableSize;
     }
 
     #region Node hovers

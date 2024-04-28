@@ -12,6 +12,7 @@
       <ColumnDefinition Width="30" />
       <ColumnDefinition Width="30" />
       <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="30" />
     </Grid.ColumnDefinitions>
 
     <controls:VisualExpandToggle

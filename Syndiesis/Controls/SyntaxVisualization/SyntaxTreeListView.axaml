@@ -19,11 +19,12 @@
         <RowDefinition Height="20"/>
       </Grid.RowDefinitions>
 
-      <Panel Grid.Column="0"
-             Name="codeCanvasContainer"
-             >
+      <Panel
+        Grid.Column="0"
+        Name="contentCanvasContainer"
+        >
         <Canvas
-          Name="codeCanvas"
+          Name="contentCanvas"
           >
           <ContentControl
             Name="topLevelNodeContent"

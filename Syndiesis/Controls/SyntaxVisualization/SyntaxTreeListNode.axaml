@@ -13,27 +13,23 @@
   >
     <ContentControl
       Name="topNodeContent"
-      HorizontalAlignment="Stretch">
+      HorizontalAlignment="Stretch"
+      >
     </ContentControl>
 
-    <!--
-    Consider adding an auto-sizable rectangle here only to hold the hover color
-    This may completely free us from the need to correct the contained nodes' width
-    -->
-    
-    <ce:VerticallyExpandableCanvas
+    <ce:VerticallyExpandablePanel
       Name="expandableCanvas"
+      HorizontalAlignment="Stretch"
       >
       <StackPanel
         Name="innerStackPanel"
         Margin="30 0 0 0"
         HorizontalAlignment="Stretch"
-        ClipToBounds="True"
         Canvas.Left="0"
         Canvas.Top="0"
         >
 
       </StackPanel>
-    </ce:VerticallyExpandableCanvas>
+    </ce:VerticallyExpandablePanel>
   </StackPanel>
 </UserControl>

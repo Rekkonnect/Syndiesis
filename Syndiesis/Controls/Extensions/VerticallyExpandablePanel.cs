@@ -13,12 +13,12 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.Extensions;
 
-public class VerticallyExpandableCanvas : Canvas
+public class VerticallyExpandablePanel : Panel
 {
     public ExpansionState ExpansionState { get; private set; } = ExpansionState.Collapsed;
 
     public static readonly StyledProperty<double> ChildrenHeightProperty =
-        AvaloniaProperty.Register<VerticallyExpandableCanvas, double>(
+        AvaloniaProperty.Register<VerticallyExpandablePanel, double>(
             nameof(ChildrenHeight),
             defaultBindingMode: BindingMode.OneWay);
 
@@ -30,9 +30,9 @@ public class VerticallyExpandableCanvas : Canvas
         }
     }
 
-    public static readonly DirectProperty<VerticallyExpandableCanvas, double>
+    public static readonly DirectProperty<VerticallyExpandablePanel, double>
         ChildrenHeightRatioProperty =
-            AvaloniaProperty.RegisterDirect<VerticallyExpandableCanvas, double>(
+            AvaloniaProperty.RegisterDirect<VerticallyExpandablePanel, double>(
                 nameof(ChildrenHeightRatio),
                 p => p.ChildrenHeightRatio,
                 (p, value) => p.ChildrenHeightRatio = value);
@@ -64,7 +64,9 @@ public class VerticallyExpandableCanvas : Canvas
             totalSize = totalSize.Constrain(childMeasurement);
         }
         var height = _childrenHeightRatio * totalSize.Height;
-        totalSize = totalSize.WithHeight(height);
+        totalSize = totalSize
+            .WithHeight(height)
+            ;
         return totalSize;
     }
 

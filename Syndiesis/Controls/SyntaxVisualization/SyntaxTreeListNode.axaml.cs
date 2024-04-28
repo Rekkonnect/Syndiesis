@@ -67,6 +67,7 @@ public partial class SyntaxTreeListNode : UserControl
     public SyntaxTreeListNode()
     {
         InitializeComponent();
+        //HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
         expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Expanded);
     }
 
@@ -171,44 +172,6 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
-    internal double CorrectContainedNodeWidths(double minimumWidth)
-    {
-        var leftMargin = innerStackPanel.Margin.Left;
-        var nextMinimumWidth = minimumWidth;
-
-        foreach (var child in ChildNodes)
-        {
-            var fixedMinimumWidth = child.CorrectContainedNodeWidths(nextMinimumWidth - leftMargin);
-            nextMinimumWidth = fixedMinimumWidth + leftMargin;
-        }
-
-        var thisWidth = DesiredSize.Width;
-        if (thisWidth < nextMinimumWidth && thisWidth > 0)
-        {
-            Width = nextMinimumWidth;
-        }
-        else
-        {
-            nextMinimumWidth = thisWidth;
-        }
-
-        return nextMinimumWidth;
-    }
-
-    internal void CorrectContainedNodeWidths_Correct(Size minimumSize)
-    {
-        var leftMargin = innerStackPanel.Margin.Left;
-        var nextWidth = minimumSize.Width - leftMargin;
-        var nextAvailableSize = minimumSize.WithWidth(nextWidth);
-
-        Width = minimumSize.Width;
-
-        foreach (var child in ChildNodes)
-        {
-            child.CorrectContainedNodeWidths_Correct(nextAvailableSize);
-        }
-    }
-
     public void ToggleExpansion()
     {
         var nodeLine = NodeLine;
@@ -244,7 +207,7 @@ public partial class SyntaxTreeListNode : UserControl
         _expansionAnimationCancellationTokenFactory.Cancel();
 
         var animationToken = _expansionAnimationCancellationTokenFactory.CurrentToken;
-        _ = this.expandableCanvas.SetExpansionState(expand, animationToken);
+        _ = expandableCanvas.SetExpansionState(expand, animationToken);
     }
 
     public IEnumerable<SyntaxTreeListNode> EnumerateNodes()
