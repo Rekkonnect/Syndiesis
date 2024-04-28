@@ -26,6 +26,9 @@ public sealed class NodeLineCreationOptions
 
 public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 {
+    private const string eofDisplayString = "[EOF]";
+    private const string missingTokenDisplayString = "[Missing]";
+
     private readonly NodeLineCreationOptions _options = options;
 
     public SyntaxTreeListNode CreateRootNodeOrToken(
@@ -100,31 +103,71 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
     private IReadOnlyList<SyntaxTreeListNode> CreateTokenChildren(SyntaxToken token)
     {
-        if (token.Kind() is SyntaxKind.EndOfFileToken)
-            return [];
-
-        var leadingTrivia = token.LeadingTrivia;
-        var trailingTrivia = token.TrailingTrivia;
-        int triviaCount = leadingTrivia.Count + trailingTrivia.Count;
-        if (!_options.ShowTrivia)
+        int triviaCount = 0;
+        SyntaxTriviaList leadingTrivia = default;
+        SyntaxTriviaList trailingTrivia = default;
+        if (_options.ShowTrivia)
         {
-            triviaCount = 0;
+            leadingTrivia = token.LeadingTrivia;
+            trailingTrivia = token.TrailingTrivia;
+            triviaCount = leadingTrivia.Count + trailingTrivia.Count;
         }
         var children = new List<SyntaxTreeListNode>(triviaCount + 1);
 
-        AppendTriviaList(leadingTrivia, children);
-
-        if (token.ValueText.Length > 0)
+        // they will be sorted anyway
+        if (_options.ShowTrivia)
         {
-            var displayNode = CreateDisplayNode(token);
-            children.Add(displayNode);
+            AppendTriviaList(leadingTrivia, children);
+            AppendTriviaList(trailingTrivia, children);
         }
 
-        AppendTriviaList(trailingTrivia, children);
+        switch (token.Kind())
+        {
+            case SyntaxKind.EndOfFileToken:
+            {
+                var displayNode = CreateEndOfFileDisplayNode(token);
+                children.Add(displayNode);
+                break;
+            }
+            default:
+            {
+                if (token.ValueText.Length > 0)
+                {
+                    var displayNode = CreateDisplayNode(token);
+                    children.Add(displayNode);
+                }
+                break;
+            }
+        }
 
         children.Sort(SyntaxTreeViewNodeObjectSpanComparer.Instance);
 
         return children;
+    }
+
+    private SyntaxTreeListNode CreateEndOfFileDisplayNode(SyntaxToken token)
+    {
+        return new()
+        {
+            NodeLine = CreateEndOfFileDisplayNodeLine(),
+            AssociatedSyntaxObjectContent = token,
+        };
+    }
+
+    private SyntaxTreeListNodeLine CreateEndOfFileDisplayNodeLine()
+    {
+        var eofRun = CreateEofRun();
+
+        return new()
+        {
+            Inlines = [eofRun],
+            NodeTypeDisplay = Styles.DisplayValueDisplay,
+        };
+    }
+
+    private static Run CreateEofRun()
+    {
+        return Run(eofDisplayString, Styles.EofBrush);
     }
 
     private SyntaxTreeListNode CreateDisplayNode(SyntaxToken token)
@@ -139,7 +182,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     private SyntaxTreeListNodeLine CreateDisplayNodeLine(SyntaxToken token)
     {
         var text = token.ValueText;
-        var inlines = new InlineCollection
+        var inlines = new InlineCollection()
         {
             Run(text, Styles.RawValueBrush),
         };
@@ -813,6 +856,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             {
                 WhitespaceKind.Space => space,
                 WhitespaceKind.Tab => tab,
+                _ => throw new UnreachableException(),
             };
 
             string appendString;
@@ -845,19 +889,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         var kindName = kind.ToString();
         bool hasEqualName = propertyName == kindName;
         bool isKeyword = SyntaxFacts.IsKeywordKind(kind);
-
-        var displayText = token.ToString();
-        var displayBrush = isKeyword
-            ? Styles.KeywordBrush
-            : Styles.RawValueBrush;
-
-        // special case for EOF
-        if (kind is SyntaxKind.EndOfFileToken)
-        {
-            displayBrush = Styles.EofBrush;
-            displayText = "[EOF]";
-        }
-        var displayTextRun = Run(displayText, displayBrush);
+        var displayTextRun = CreateDisplayTextRun(token, kind, isKeyword);
 
         bool needsFadeBrush = hasEqualName || isKeyword;
         var kindBrush = needsFadeBrush
@@ -871,6 +903,31 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             NewValueKindSplitterRun(),
             kindRun,
         ]);
+    }
+
+    private static Run CreateDisplayTextRun(SyntaxToken token, SyntaxKind kind, bool isKeyword)
+    {
+        if (kind is SyntaxKind.EndOfFileToken)
+        {
+            return CreateEofRun();
+        }
+
+        if (token.IsMissing)
+        {
+            return CreateMissingTokenRun();
+        }
+
+        var displayText = token.ToString();
+        var displayBrush = isKeyword
+            ? Styles.KeywordBrush
+            : Styles.RawValueBrush;
+
+        return Run(displayText, displayBrush);
+    }
+
+    private static Run CreateMissingTokenRun()
+    {
+        return Run(missingTokenDisplayString, Styles.MissingTokenIndicatorBrush);
     }
 
     private static Run NewValueKindSplitterRun()
@@ -996,10 +1053,11 @@ partial class NodeLineCreator
         public static readonly Color DisplayValueNodeTypeColor = Color.FromUInt32(0xFFCC935F);
         public static readonly Color CommentTriviaNodeTypeColor = Color.FromUInt32(0xFF00A858);
         public static readonly Color CommentTriviaContentColor = Color.FromUInt32(0xFF00703A);
-        public static readonly Color CommentTriviaTokenKindColor = Color.FromUInt32(0xFF00381D);
+        public static readonly Color CommentTriviaTokenKindColor = Color.FromUInt32(0xFF004D28);
         public static readonly Color DisabledTextTriviaNodeTypeColor = Color.FromUInt32(0xFF8B4D4D);
         public static readonly Color DisabledTextTriviaContentColor = Color.FromUInt32(0xFF664747);
-        public static readonly Color DisabledTextTriviaTokenKindColor = Color.FromUInt32(0xFF402D2D);
+        public static readonly Color DisabledTextTriviaTokenKindColor = Color.FromUInt32(0xFF4D3636);
+        public static readonly Color MissingTokenIndicatorColor = Color.FromUInt32(0xFF8B4D4D);
 
         public static readonly SolidColorBrush ClassMainBrush = new(ClassMainColor);
         public static readonly SolidColorBrush ClassSecondaryBrush = new(ClassSecondaryColor);
@@ -1022,6 +1080,7 @@ partial class NodeLineCreator
         public static readonly SolidColorBrush DisabledTextTriviaNodeTypeBrush = new(DisabledTextTriviaNodeTypeColor);
         public static readonly SolidColorBrush DisabledTextTriviaContentBrush = new(DisabledTextTriviaContentColor);
         public static readonly SolidColorBrush DisabledTextTriviaTokenKindBrush = new(DisabledTextTriviaTokenKindColor);
+        public static readonly SolidColorBrush MissingTokenIndicatorBrush = new(MissingTokenIndicatorColor);
 
         public static readonly NodeTypeDisplay ClassNodeDisplay
             = new(Types.Node, ClassMainColor);

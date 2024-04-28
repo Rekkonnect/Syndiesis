@@ -12,12 +12,30 @@ public partial class MainView : UserControl
 
     public readonly MainWindowViewModel ViewModel = new();
 
+    public event Action? SettingsRequested;
+
     public MainView()
     {
         InitializeComponent();
+        InitializeView();
         InitializeEvents();
 
         Focusable = true;
+    }
+
+    private void InitializeView()
+    {
+        const string initializingSource = """
+            using System;
+
+            namespace Example;
+
+            Console.WriteLine("Initializing application...");
+
+            """;
+
+        codeEditor.SetSource(initializingSource);
+        codeEditor.CursorPosition = new(4, 48);
     }
 
     private void InitializeEvents()
@@ -36,6 +54,14 @@ public partial class MainView : UserControl
     {
         var currentSource = ViewModel.Editor.FullString();
         AnalysisPipelineHandler.InitiateAnalysis(currentSource);
+    }
+
+    public void ApplyCurrentSettings()
+    {
+        var settings = AppSettings.Instance;
+        codeEditor.ExtraBufferLines = settings.ExtraBufferLines;
+        AnalysisPipelineHandler.CreationOptions = settings.CreationOptions;
+        AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
     }
 
     public void Reset()

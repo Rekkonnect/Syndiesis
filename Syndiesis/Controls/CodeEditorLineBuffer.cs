@@ -9,6 +9,11 @@ public class CodeEditorLineBuffer
     private readonly List<CodeEditorLine> _lines = new();
     private int _lineOffset;
 
+    public CodeEditorLineBuffer(int defaultCapacity)
+    {
+        SetCapacity(defaultCapacity);
+    }
+
     public void SetCapacity(int capacity)
     {
         while (capacity > _lines.Count)
@@ -62,5 +67,11 @@ public class CodeEditorLineBuffer
         offsetEnd = Math.Min(offsetEnd, _lines.Count);
 
         return _lines[offsetStart..offsetEnd];
+    }
+
+    public CodeEditorLine? GetLine(int line)
+    {
+        int index = line - _lineOffset;
+        return _lines.ValueAtOrDefault(index);
     }
 }

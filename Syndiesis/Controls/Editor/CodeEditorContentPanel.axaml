@@ -7,35 +7,5 @@
              d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Syndiesis.Controls.CodeEditorContentPanel">
 
-  <StackPanel Name="codeLinesPanel">
-    <controls:CodeEditorLine
-      >
-      <controls:CodeEditorLine.Inlines>
-        <Run>using System;</Run>
-      </controls:CodeEditorLine.Inlines>
-      
-    </controls:CodeEditorLine>
-    <controls:CodeEditorLine
-      >
-      <controls:CodeEditorLine.Inlines>
-      </controls:CodeEditorLine.Inlines>
-    </controls:CodeEditorLine>
-    <controls:CodeEditorLine
-      >
-      <controls:CodeEditorLine.Inlines>
-        <Run>namespace Example;</Run>
-      </controls:CodeEditorLine.Inlines>
-    </controls:CodeEditorLine>
-    <controls:CodeEditorLine
-      >
-      <controls:CodeEditorLine.Inlines>
-      </controls:CodeEditorLine.Inlines>
-    </controls:CodeEditorLine>
-    <controls:CodeEditorLine
-      >
-      <controls:CodeEditorLine.Inlines>
-        <Run xml:space="preserve">Console.WriteLine("Initializing application...");</Run>
-      </controls:CodeEditorLine.Inlines>
-    </controls:CodeEditorLine>
-  </StackPanel>
+  <StackPanel Name="codeLinesPanel"/>
 </UserControl>

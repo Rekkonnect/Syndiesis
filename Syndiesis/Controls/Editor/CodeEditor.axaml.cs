@@ -1,7 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Media.TextFormatting;
+using Avalonia.Styling;
 using Microsoft.CodeAnalysis.Text;
+using Syndiesis.Controls.SyntaxVisualization.Creation;
 using Syndiesis.Models;
 using Syndiesis.Utilities;
 using System;
@@ -30,11 +33,8 @@ public partial class CodeEditor : UserControl
     private const double extraDisplayWidth = 200;
     private const double scrollThresholdWidth = extraDisplayWidth / 2;
 
-    public static readonly StyledProperty<int> SelectedLineIndexProperty =
-        AvaloniaProperty.Register<CodeEditor, int>(nameof(CursorLineIndex), defaultValue: 1);
-
     private MultilineStringEditor _editor = new();
-    private readonly CodeEditorLineBuffer _lineBuffer = new();
+    private readonly CodeEditorLineBuffer _lineBuffer = new(20);
 
     private LinePosition _cursorLinePosition;
     private readonly SelectionSpan _selectionSpan = new();
@@ -70,11 +70,21 @@ public partial class CodeEditor : UserControl
         get => _cursorLinePosition.Line;
         set
         {
+            var previousLineIndex = _cursorLinePosition.Line;
+            var previousLine = _lineBuffer.GetLine(previousLineIndex);
+            if (previousLine is not null)
+            {
+                previousLine.SelectedLine = false;
+            }
             _cursorLinePosition.SetLineIndex(value);
             BringVerticalIntoView();
             lineDisplayPanel.SelectedLineNumber = value + 1;
-            codeEditorContent.CursorLineIndex = value - _lineOffset;
-            codeEditorContent.CurrentlySelectedLine()!.RestartCursorAnimation();
+            var nextLine = _lineBuffer.GetLine(value);
+            Debug.Assert(
+                nextLine is not null,
+                "we have brought the line into view, so the line buffer should have loaded the line");
+            nextLine.SelectedLine = true;
+            nextLine.RestartCursorAnimation();
         }
     }
 
@@ -84,9 +94,25 @@ public partial class CodeEditor : UserControl
         set
         {
             _cursorLinePosition.SetCharacterIndex(value);
-            codeEditorContent.CursorCharacterIndex = value;
             BringHorizontalIntoView();
-            codeEditorContent.CurrentlySelectedLine()!.RestartCursorAnimation();
+            var lineIndex = _cursorLinePosition.Line;
+            var line = _lineBuffer.GetLine(lineIndex);
+            Debug.Assert(
+                line is not null,
+                "we have brought the line into view, so the line buffer should have loaded the line");
+            line.CursorCharacterIndex = value;
+            line.RestartCursorAnimation();
+        }
+    }
+
+    public LinePosition CursorPosition
+    {
+        get => _cursorLinePosition;
+        set
+        {
+            var (line, character) = value;
+            CursorLineIndex = line;
+            CursorCharacterIndex = character;
         }
     }
 
@@ -210,10 +236,24 @@ public partial class CodeEditor : UserControl
 
             if (syntaxObject is not null)
             {
-                var span = syntaxObject.LineFullSpan;
+                var span = GetDisplayedSpan(listNode, syntaxObject);
                 SetHoverSpan(span);
             }
         }
+    }
+
+    private static LinePositionSpan GetDisplayedSpan(
+        SyntaxTreeListNode node,
+        SyntaxObjectInfo syntaxObject)
+    {
+        var nodeType = node.NodeLine.NodeTypeText;
+        switch (nodeType)
+        {
+            case NodeLineCreator.Types.DisplayValue:
+                return syntaxObject.LineSpan;
+        }
+
+        return syntaxObject.LineFullSpan;
     }
 
     private void HideAllHoveredSyntaxNodes()
@@ -349,7 +389,7 @@ public partial class CodeEditor : UserControl
 
     private void BringHorizontalIntoView()
     {
-        var selectedCursor = codeEditorContent.CurrentlySelectedLine()!.cursor;
+        var selectedCursor = CurrentlyFocusedLine()!.cursor;
         var left = selectedCursor.LeftOffset;
         var contentBounds = codeCanvas.Bounds;
         var currentLeftOffset = GetHorizontalContentOffset();
@@ -367,6 +407,12 @@ public partial class CodeEditor : UserControl
             var nextOffset = currentLeftOffset + delta;
             SetHorizontalContentOffset(nextOffset);
         }
+    }
+
+    private CodeEditorLine? CurrentlyFocusedLine()
+    {
+        int lineIndex = _cursorLinePosition.Line;
+        return _lineBuffer.GetLine(lineIndex);
     }
 
     private double GetHorizontalContentOffset()
@@ -808,8 +854,11 @@ public partial class CodeEditor : UserControl
         }
 
         var end = RightmostContiguousCommonCategory().Character;
-        var leftmostWhitespace = LeftmostWhitespaceInCurrentLine(line, end);
-        end = leftmostWhitespace.Character;
+        if (end < currentLine.Length)
+        {
+            var leftmostWhitespace = LeftmostWhitespaceInCurrentLine(line, end);
+            end = leftmostWhitespace.Character;
+        }
 
         _editor.RemoveRangeInLine(line, column, end - 1);
         UpdateVisibleTextTriggerCodeChanged();

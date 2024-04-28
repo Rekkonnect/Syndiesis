@@ -1,7 +1,7 @@
-﻿using Syndiesis.Controls;
+﻿using Microsoft.CodeAnalysis.CSharp;
+using Syndiesis.Controls;
 using Syndiesis.Controls.SyntaxVisualization.Creation;
 using Syndiesis.Utilities;
-using Microsoft.CodeAnalysis.CSharp;
 using System;
 using System.Threading.Tasks;
 
@@ -18,9 +18,12 @@ public class AnalysisPipelineHandler
 
     public TimeSpan UserInputDelay { get; set; } = TimeSpan.FromMilliseconds(300);
 
+    public NodeLineCreationOptions CreationOptions { get; set; } = new();
+
     public event Action? AnalysisRequested;
     public event Action? AnalysisBegun;
     public event Action<SyntaxTreeListNode>? AnalysisCompleted;
+    public event Action<Exception>? AnalysisFailed;
 
     public void InitiateAnalysis(string source)
     {
@@ -54,22 +57,28 @@ public class AnalysisPipelineHandler
 
         AnalysisBegun?.Invoke();
 
-        var options = new NodeLineCreationOptions();
-        var creator = new NodeLineCreator(options);
+        try
+        {
+            var creator = new NodeLineCreator(CreationOptions);
 
-        var source = _pendingSource;
-        var syntaxTree = CSharpSyntaxTree.ParseText(source, cancellationToken: token);
-        if (token.IsCancellationRequested)
-            return;
-        var compilationUnitRoot = syntaxTree.GetCompilationUnitRoot(token);
-        if (token.IsCancellationRequested)
-            return;
+            var source = _pendingSource;
+            var syntaxTree = CSharpSyntaxTree.ParseText(source, cancellationToken: token);
+            if (token.IsCancellationRequested)
+                return;
+            var compilationUnitRoot = syntaxTree.GetCompilationUnitRoot(token);
+            if (token.IsCancellationRequested)
+                return;
 
-        var nodeRoot = creator.CreateRootNode(compilationUnitRoot);
-        if (token.IsCancellationRequested)
-            return;
+            var nodeRoot = creator.CreateRootNode(compilationUnitRoot);
+            if (token.IsCancellationRequested)
+                return;
 
-        AnalysisCompleted!(nodeRoot);
+            AnalysisCompleted!(nodeRoot);
+        }
+        catch (Exception e)
+        {
+            AnalysisFailed?.Invoke(e);
+        }
         _finishedAnalysis = true;
     }
 

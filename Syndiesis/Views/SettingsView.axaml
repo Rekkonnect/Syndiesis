@@ -1,0 +1,278 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="400"
+             x:Class="Syndiesis.Views.SettingsView"
+             >
+
+  <Grid
+    HorizontalAlignment="Center"
+    >
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="40" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="40" />
+    </Grid.ColumnDefinitions>
+
+    <Rectangle
+      Grid.Column="0"
+      >
+      <Rectangle.Fill>
+        <LinearGradientBrush
+          StartPoint="40, 0"
+          EndPoint="0, 0"
+          >
+          <LinearGradientBrush.GradientStops>
+            <GradientStop
+              Color="#FF001116"
+              Offset="0"
+                />
+            <GradientStop
+              Color="#00001116"
+              Offset="1"
+                />
+          </LinearGradientBrush.GradientStops>
+        </LinearGradientBrush>
+      </Rectangle.Fill>
+    </Rectangle>
+
+    <Rectangle
+      Grid.Column="2"
+      >
+      <Rectangle.Fill>
+        <LinearGradientBrush
+          StartPoint="0, 0"
+          EndPoint="40, 0"
+          >
+          <LinearGradientBrush.GradientStops>
+            <GradientStop
+              Color="#FF001116"
+              Offset="0"
+                />
+            <GradientStop
+              Color="#00001116"
+              Offset="1"
+                />
+          </LinearGradientBrush.GradientStops>
+        </LinearGradientBrush>
+      </Rectangle.Fill>
+    </Rectangle>
+
+
+    <StackPanel
+      MaxWidth="380"
+      MinWidth="380"
+      Background="#001116"
+      Grid.Column="1"
+    >
+
+      <Grid
+        HorizontalAlignment="Center"
+      >
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="40" />
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="40" />
+        </Grid.ColumnDefinitions>
+
+        <Grid.RowDefinitions>
+          <RowDefinition Height="*" />
+          <RowDefinition Height="1.25" />
+        </Grid.RowDefinitions>
+
+        <TextBlock
+          FontFamily="{StaticResource AptosFontFamily}"
+          FontWeight="Bold"
+          FontSize="40"
+          Foreground="#BBDDFF"
+          HorizontalAlignment="Center"
+          Padding="0 40 0 0"
+          Grid.Column="1"
+          Text="Settings"
+      >
+        </TextBlock>
+
+        <!-- Hard-coded visual effect -->
+        <Rectangle
+          Grid.Column="0"
+          Grid.Row="1"
+      >
+          <Rectangle.Fill>
+            <LinearGradientBrush>
+              <LinearGradientBrush.GradientStops>
+                <GradientStop
+                  Color="Transparent"
+                  Offset="0"
+                />
+                <GradientStop
+                  Color="White"
+                  Offset="1"
+                />
+              </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+          </Rectangle.Fill>
+        </Rectangle>
+
+        <Rectangle
+          Width="200"
+          Fill="White"
+          Grid.Column="1"
+          Grid.Row="1"
+      />
+
+        <Rectangle
+          Grid.Column="2"
+          Grid.Row="1"
+      >
+          <Rectangle.Fill>
+            <LinearGradientBrush>
+              <LinearGradientBrush.GradientStops>
+                <GradientStop
+                  Color="White"
+                  Offset="0"
+                />
+                <GradientStop
+                  Color="Transparent"
+                  Offset="1"
+                />
+              </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+          </Rectangle.Fill>
+        </Rectangle>
+
+      </Grid>
+
+      <StackPanel
+        Name="settingsContainer"
+        Margin="30 20 30 0"
+        Spacing="15"
+      >
+
+        <CheckBox
+          Name="showTriviaCheck"
+        >
+          <TextBlock
+            FontFamily="{StaticResource AptosDisplayFontFamily}"
+            FontSize="16"
+            Text="Show trivia"
+          >
+
+          </TextBlock>
+        </CheckBox>
+
+        <Grid>
+
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="120" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+
+          <Slider
+            Name="typingDelaySlider"
+            Value="150"
+            Minimum="50"
+            Maximum="1000"
+            SmallChange="50"
+            LargeChange="100"
+            Grid.Column="1"
+            Grid.RowSpan="2"
+            Margin="15 0 0 0"
+            Foreground="#009099"
+            Background="#00232E"
+        />
+          <TextBlock
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            FontFamily="{StaticResource AptosDisplayFontFamily}"
+            FontSize="16"
+            Text="Typing delay wait"
+          >
+          </TextBlock>
+
+          <TextBlock
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            FontFamily="{StaticResource AptosDisplayFontFamily}"
+            FontSize="14"
+            Grid.RowSpan="2"
+          >
+            <TextBlock.Inlines>
+              <Run Text="1000" Name="sliderValueDisplay" />
+              <Run Text="ms" />
+            </TextBlock.Inlines>
+          </TextBlock>
+
+        </Grid>
+
+        <Grid>
+
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="120" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+
+          <Slider
+            Name="extraBufferLinesSlider"
+            Value="10"
+            Minimum="5"
+            Maximum="50"
+            SmallChange="2"
+            LargeChange="10"
+            Grid.Column="1"
+            Grid.RowSpan="2"
+            Margin="15 0 0 0"
+            Foreground="#009099"
+            Background="#00232E"
+        />
+          <TextBlock
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            FontFamily="{StaticResource AptosDisplayFontFamily}"
+            FontSize="16"
+            Text="Text editor buffer"
+          >
+          </TextBlock>
+
+          <TextBlock
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            FontFamily="{StaticResource AptosDisplayFontFamily}"
+            FontSize="14"
+            Grid.RowSpan="2"
+          >
+            <TextBlock.Inlines>
+              <Run Text="10" Name="textEditorBufferValueDisplay" />
+              <Run Text="lines" />
+            </TextBlock.Inlines>
+          </TextBlock>
+
+        </Grid>
+
+      </StackPanel>
+
+      <Button
+        HorizontalAlignment="Center"
+        Margin="0 50 0 0"
+        Background="#005055"
+        Name="saveButton"
+      >
+        <TextBlock
+        >
+          Save
+        </TextBlock>
+
+      </Button>
+
+    </StackPanel>
+  </Grid>
+
+</UserControl>

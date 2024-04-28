@@ -9,11 +9,8 @@ using Syndiesis.Utilities;
 
 namespace Syndiesis.Controls;
 
-[PseudoClasses(NodeLineHoverPseudoClass)]
 public partial class SyntaxTreeListNodeLine : UserControl
 {
-    public const string NodeLineHoverPseudoClass = ":nodelinehover";
-
     public static readonly StyledProperty<bool> IsExpandedProperty =
         AvaloniaProperty.Register<CodeEditorLine, bool>(nameof(IsExpanded), defaultValue: true);
 
@@ -96,18 +93,6 @@ public partial class SyntaxTreeListNodeLine : UserControl
     public SyntaxTreeListNodeLine()
     {
         InitializeComponent();
-    }
-
-    protected override void OnPointerEntered(PointerEventArgs e)
-    {
-        base.OnPointerEntered(e);
-        PseudoClasses.Set(NodeLineHoverPseudoClass, true);
-    }
-
-    protected override void OnPointerExited(PointerEventArgs e)
-    {
-        base.OnPointerExited(e);
-        PseudoClasses.Set(NodeLineHoverPseudoClass, false);
     }
 }
 

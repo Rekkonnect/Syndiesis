@@ -15,7 +15,7 @@ public partial class CodeEditorLine : UserControl
     private static readonly SolidColorBrush _selectedLineBackgroundBrush = new(0x80102020);
     private static readonly SolidColorBrush _unselectedLineBackgroundBrush = new(Colors.Transparent);
 
-    private string _text;
+    private string _text = string.Empty;
 
     public string Text
     {
@@ -60,15 +60,14 @@ public partial class CodeEditorLine : UserControl
         }
     }
 
-    public static readonly StyledProperty<int> CursorCharacterIndexProperty =
-        AvaloniaProperty.Register<CodeEditorLine, int>(nameof(CursorCharacterIndex), defaultValue: 0);
+    private int _cursorCharacterIndex = 0;
 
     public int CursorCharacterIndex
     {
-        get => GetValue(CursorCharacterIndexProperty);
+        get => _cursorCharacterIndex;
         set
         {
-            SetValue(CursorCharacterIndexProperty, value);
+            _cursorCharacterIndex = value;
             double newLeftPosition = CodeEditor.CharacterBeginPosition(value) + 1;
             cursor.LeftOffset = newLeftPosition;
         }

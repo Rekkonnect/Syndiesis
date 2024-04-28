@@ -23,5 +23,6 @@
     <Image x:Key="PenImage" Source="avares://Syndiesis/Assets/Icons/fa-pen-fancy.png" />
     <Image x:Key="SpinnerImage" Source="avares://Syndiesis/Assets/Icons/fa-hurricane.png" />
     <Image x:Key="SuccessImage" Source="avares://Syndiesis/Assets/Icons/fa-check.png" />
+    <Image x:Key="FailureImage" Source="avares://Syndiesis/Assets/Icons/fa-xmark.png" />
   </Application.Resources>
 </Application>

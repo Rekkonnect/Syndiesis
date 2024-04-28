@@ -5,7 +5,8 @@
         mc:Ignorable="d"
         xmlns:controls="using:Syndiesis.Controls"
         d:DesignWidth="800" d:DesignHeight="450"
-        x:Class="Syndiesis.Controls.CodeEditor">
+        x:Class="Syndiesis.Controls.CodeEditor"
+          >
 
   <Panel Name="backgroundPanel"
          Background="#001116">
@@ -45,8 +46,6 @@
             Canvas.Left="0"
             Canvas.Top="0"
             Name="codeEditorContent"
-            CursorLineIndex="4"
-            CursorCharacterIndex="45"
             />
         </Canvas>
       </Panel>

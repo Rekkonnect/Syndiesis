@@ -1,6 +1,7 @@
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Styling;
 using Syndiesis.Utilities;
 using System;
@@ -78,10 +79,12 @@ public partial class CoverableContent : UserControl
         }
     }
 
-    public void UpdateCoverContent(Control? content, string text)
+    public void UpdateCoverContent(Control? content, string text, IBrush? textBrush = null)
     {
         cover.IconDisplay = content;
         cover.DisplayText = text;
+        textBrush ??= UserInteractionCover.Styling.GoodTextBrush;
+        cover.TextBrush = textBrush;
     }
 
     public async Task CancelCurrentTaskAnimation()

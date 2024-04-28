@@ -24,6 +24,16 @@ public partial class CoverableSyntaxTreeListView : UserControl
         analysisPipelineHandler.AnalysisBegun += HandleAnalysisBegun;
         analysisPipelineHandler.AnalysisRequested += HandleAnalysisRequested;
         analysisPipelineHandler.AnalysisCompleted += HandleAnalysisCompleted;
+        analysisPipelineHandler.AnalysisFailed += HandleAnalysisFailed;
+    }
+
+    private void HandleAnalysisFailed(Exception exception)
+    {
+        var image = App.CurrentResourceManager.FailureImage?.CopyOfSource();
+        coverable.UpdateCoverContent(
+            image,
+            "Analysis failed",
+            UserInteractionCover.Styling.BadTextBrush);
     }
 
     private void HandleAnalysisCompleted(SyntaxTreeListNode node)
@@ -32,7 +42,7 @@ public partial class CoverableSyntaxTreeListView : UserControl
         coverable.UpdateCoverContent(image, "Analysis complete");
 
         listView.RootNode = node;
-        var hideDuration = TimeSpan.FromMilliseconds(750);
+        var hideDuration = TimeSpan.FromMilliseconds(500);
         _ = coverable.HideCover(hideDuration);
     }
 

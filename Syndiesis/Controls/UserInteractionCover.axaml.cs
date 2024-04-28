@@ -27,4 +27,13 @@ public partial class UserInteractionCover : UserControl
     {
         InitializeComponent();
     }
+
+    public static class Styling
+    {
+        public static readonly Color GoodTextColor = Color.FromUInt32(0xFF009099);
+        public static readonly Color BadTextColor = Color.FromUInt32(0xFF990045);
+
+        public static readonly SolidColorBrush GoodTextBrush = new(GoodTextColor);
+        public static readonly SolidColorBrush BadTextBrush = new(BadTextColor);
+    }
 }

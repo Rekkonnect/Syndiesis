@@ -7,16 +7,10 @@ using System;
 
 namespace Syndiesis.Controls;
 
-/*
- * WARNING: We currently get this error a lot:
- * [Layout]Layout cycle detected. Item 'Syndiesis.Controls.SyntaxTreeListView' was enqueued '10' times.(LayoutQueue`1 #54044048)
- * And we must do something about it
- */
-
 public partial class SyntaxTreeListView : UserControl
 {
-    const double extraScrollHeight = 50;
-    const double extraScrollWidth = 40;
+    private const double extraScrollHeight = 50;
+    private const double extraScrollWidth = 40;
 
     private bool _allowedHover;
     private SyntaxTreeListNode? _hoveredNode;
