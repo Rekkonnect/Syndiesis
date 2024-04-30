@@ -358,6 +358,7 @@ public partial class CodeEditor : UserControl
 
         CursorLineIndex = line;
         CursorCharacterIndex = column;
+        CapturePreferredCursorCharacter();
         e.Handled = true;
     }
 
