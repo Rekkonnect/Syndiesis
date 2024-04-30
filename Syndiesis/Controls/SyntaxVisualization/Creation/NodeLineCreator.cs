@@ -179,9 +179,29 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
+    private static bool IsStringLiteralKind(SyntaxKind kind)
+    {
+        return kind
+            is SyntaxKind.StringLiteralToken
+            or SyntaxKind.StringLiteralExpression
+            or SyntaxKind.InterpolatedStringTextToken
+            or SyntaxKind.MultiLineRawStringLiteralToken
+            or SyntaxKind.SingleLineRawStringLiteralToken
+            or SyntaxKind.Utf8StringLiteralToken
+            or SyntaxKind.Utf8MultiLineRawStringLiteralToken
+            or SyntaxKind.Utf8SingleLineRawStringLiteralToken
+            ;
+    }
+
     private SyntaxTreeListNodeLine CreateDisplayNodeLine(SyntaxToken token)
     {
         var text = token.ValueText;
+
+        if (IsStringLiteralKind(token.Kind()))
+        {
+            text = SimplifyWhitespace(text, 30);
+        }
+
         var inlines = new InlineCollection()
         {
             Run(text, Styles.RawValueBrush),
@@ -921,6 +941,11 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         var displayBrush = isKeyword
             ? Styles.KeywordBrush
             : Styles.RawValueBrush;
+
+        if (IsStringLiteralKind(kind))
+        {
+            displayText = SimplifyWhitespace(displayText, 30);
+        }
 
         return Run(displayText, displayBrush);
     }
