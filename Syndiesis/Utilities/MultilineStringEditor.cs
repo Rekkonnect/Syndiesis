@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.CodeAnalysis.Text;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
@@ -147,11 +148,11 @@ public sealed class MultilineStringEditor
         if (count >= column)
         {
             count -= column;
-            if (remainingLength is 0 && count > 0)
+            if (count > 0)
             {
-                RemoveLine(line);
                 // eat up a virtual newline
                 count--;
+                MergeLineWithBelow(line - 1);
             }
             else
             {
@@ -185,12 +186,12 @@ public sealed class MultilineStringEditor
             count -= removedLength;
             var nextLineIndex = line + 1;
 
-            if (remainingLength is 0 && count > 0)
+            if (count > 0)
             {
-                RemoveLine(line);
                 // eat up a virtual newline
                 count--;
                 nextLineIndex--;
+                MergeLineWithBelow(line);
             }
             else
             {
@@ -209,6 +210,22 @@ public sealed class MultilineStringEditor
 
         var nextLine = previousLine.Remove(column, count);
         SetLine(line, nextLine);
+    }
+
+    public void MergeLineWithBelow(int line)
+    {
+        if (line < 0)
+            return;
+
+        int lineCount = LineCount;
+        if (line >= lineCount)
+            return;
+
+        var current = _lines[line];
+        var next = _lines[line + 1];
+        var set = current + next;
+        SetLine(line, set);
+        RemoveLine(line + 1);
     }
 
     public void RemoveStart(int line, int column)

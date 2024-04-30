@@ -67,7 +67,6 @@ public partial class SyntaxTreeListNode : UserControl
     public SyntaxTreeListNode()
     {
         InitializeComponent();
-        //HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
         expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Expanded);
     }
 

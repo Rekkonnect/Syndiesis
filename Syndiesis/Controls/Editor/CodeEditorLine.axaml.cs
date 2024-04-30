@@ -23,7 +23,7 @@ public partial class CodeEditorLine : UserControl
         set
         {
             _text = value;
-            Inlines = [new Run(value)];
+            lineContentText.Text = value;
         }
     }
 

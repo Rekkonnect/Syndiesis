@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Syndiesis.Controls;
+using Syndiesis.Utilities.Specific;
 using Syndiesis.ViewModels;
 using System;
 

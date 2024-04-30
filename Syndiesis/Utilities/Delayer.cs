@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Syndiesis.ViewModels;
+namespace Syndiesis.Utilities;
 
 public sealed class Delayer
 {

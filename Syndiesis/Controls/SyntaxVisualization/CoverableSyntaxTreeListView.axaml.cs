@@ -1,5 +1,5 @@
 using Avalonia.Controls;
-using Syndiesis.ViewModels;
+using Syndiesis.Utilities.Specific;
 using System;
 
 namespace Syndiesis.Controls.SyntaxVisualization;

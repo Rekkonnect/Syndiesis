@@ -8,6 +8,9 @@ using Syndiesis.Utilities;
 using System;
 using System.Diagnostics;
 using System.Globalization;
+using System.Reflection.Emit;
+using System.Reflection.Metadata.Ecma335;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;
@@ -30,6 +33,7 @@ public partial class CodeEditor : UserControl
 
     private const double extraDisplayWidth = 200;
     private const double scrollThresholdWidth = extraDisplayWidth / 2;
+    private const int visibleLinesThreshold = 4;
 
     private MultilineStringEditor _editor = new();
     private readonly CodeEditorLineBuffer _lineBuffer = new(20);
@@ -37,12 +41,14 @@ public partial class CodeEditor : UserControl
     private LinePosition _cursorLinePosition;
     private readonly SelectionSpan _selectionSpan = new();
 
-    private int _extraBufferLines = 10;
+    private int _extraBufferLines = 0;
+
     private int _lineOffset;
     private int _preferredCursorCharacterIndex;
 
     private bool _hasActiveHover;
 
+    [Obsolete("This setting is not saving any performance")]
     public int ExtraBufferLines
     {
         get => _extraBufferLines;
@@ -92,7 +98,6 @@ public partial class CodeEditor : UserControl
         set
         {
             _cursorLinePosition.SetCharacterIndex(value);
-            BringHorizontalIntoView();
             var lineIndex = _cursorLinePosition.Line;
             var line = _lineBuffer.GetLine(lineIndex);
             Debug.Assert(
@@ -100,6 +105,7 @@ public partial class CodeEditor : UserControl
                 "we have brought the line into view, so the line buffer should have loaded the line");
             line.CursorCharacterIndex = value;
             line.RestartCursorAnimation();
+            BringHorizontalIntoView();
         }
     }
 
@@ -166,7 +172,7 @@ public partial class CodeEditor : UserControl
 
     private int VisibleLines()
     {
-        return VisibleLines(Bounds.Size);
+        return VisibleLines(codeCanvasContainer.Bounds.Size);
     }
 
     public static int VisibleLines(Size size)
@@ -177,6 +183,12 @@ public partial class CodeEditor : UserControl
     public static int VisibleLines(double height)
     {
         return (int)(height / LineHeight);
+    }
+
+    private void ForceUpdateText()
+    {
+        _hasRequestedTextUpdate = false;
+        UpdateVisibleText();
     }
 
     private void ConsumeUpdateTextRequest()
@@ -193,11 +205,17 @@ public partial class CodeEditor : UserControl
         var linesPanel = codeEditorContent.codeLinesPanel;
         linesPanel.Children.Clear();
 
-        int lineStart = Math.Max(0, _lineOffset - _extraBufferLines);
+        int upperBoundLineStart = _lineOffset - _extraBufferLines;
+        int extraBufferLines = _extraBufferLines;
+        if (upperBoundLineStart < 0)
+        {
+            extraBufferLines += upperBoundLineStart;
+        }
+        int lineStart = Math.Max(0, upperBoundLineStart);
         _lineBuffer.LoadFrom(lineStart, _editor);
         int lineCount = _editor.LineCount;
         int visibleLines = VisibleLines();
-        var lineRange = _lineBuffer.LineSpanForRange(_lineOffset, visibleLines);
+        var lineRange = _lineBuffer.LineSpanForAbsoluteIndexRange(extraBufferLines, visibleLines);
         linesPanel.Children.AddRange(lineRange);
         UpdateLinesDisplayPanel(lineCount);
 
@@ -309,8 +327,8 @@ public partial class CodeEditor : UserControl
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        var canvasOffset = e.GetPosition(codeCanvasContainer);
-        bool contained = codeCanvasContainer.Bounds.Contains(canvasOffset);
+        var canvasOffset = e.GetPosition(codeCanvas);
+        bool contained = codeCanvas.Bounds.Contains(canvasOffset);
         if (!contained)
             return;
 
@@ -348,6 +366,14 @@ public partial class CodeEditor : UserControl
         // adjust the min width here to ensure the line selection background fills out the displayed line
         codeEditorContent.MinWidth = availableSize.Width + extraDisplayWidth;
         UpdateEntireScroll();
+
+        int previousCapacity = _lineBuffer.Capacity;
+        int visibleLines = VisibleLines(availableSize);
+        if (visibleLines > previousCapacity)
+        {
+            QueueUpdateVisibleText();
+        }
+
         return base.MeasureOverride(availableSize);
     }
 
@@ -370,17 +396,20 @@ public partial class CodeEditor : UserControl
         if (lineIndex < _lineOffset)
         {
             _lineOffset = lineIndex;
-            UpdateLinesQueueText();
+            UpdateLinesText();
         }
         else
         {
             int lastVisibleLine = _lineOffset + VisibleLines();
-            int lastVisibleLineThreshold = lastVisibleLine - 4;
+            int lastVisibleLineThreshold = lastVisibleLine - visibleLinesThreshold;
+            if (lastVisibleLineThreshold < 0)
+                return;
+
             int missingLines = lineIndex - lastVisibleLineThreshold;
             if (missingLines > 0)
             {
                 _lineOffset += missingLines;
-                UpdateLinesQueueText();
+                UpdateLinesText();
             }
         }
     }
@@ -436,6 +465,12 @@ public partial class CodeEditor : UserControl
         }
     }
 
+    private void UpdateLinesText()
+    {
+        ForceUpdateText();
+        UpdateLinesDisplayPanel();
+    }
+
     private void UpdateLinesQueueText()
     {
         QueueUpdateVisibleText();
@@ -468,6 +503,15 @@ public partial class CodeEditor : UserControl
     {
         verticalScrollBar.MaxValue = _editor.LineCount + VisibleLines() - 1;
         verticalScrollBar.SetAvailableScrollOnScrollableWindow();
+    }
+
+    private void RestartCursorAnimation()
+    {
+        var currentLine = _lineBuffer.GetLine(CursorLineIndex);
+        if (currentLine is null)
+            return;
+
+        currentLine.RestartCursorAnimation();
     }
 
     protected override void OnTextInput(TextInputEventArgs e)
@@ -522,6 +566,7 @@ public partial class CodeEditor : UserControl
             case Key.V:
                 if (modifiers.HasFlag(KeyModifiers.Control))
                 {
+                    // Holding Ctrl+V completely breaks the flow by inserting more than can be handled
                     _ = PasteClipboardTextAsync();
                     e.Handled = true;
                 }
@@ -636,7 +681,7 @@ public partial class CodeEditor : UserControl
 
     private void MoveCursorPageEnd()
     {
-        var offset = VisibleLines();
+        var offset = VisibleLines() - visibleLinesThreshold;
         var next = _lineOffset + offset;
         next = CapToLastLine(next);
 
@@ -814,28 +859,36 @@ public partial class CodeEditor : UserControl
         await clipboard.SetTextAsync(selection);
     }
 
+    private readonly AsyncLock _pasteLock = new();
+
     private async Task PasteClipboardTextAsync()
     {
-        // Get the positions before we paste the text
-        // in which case the user might have buffered inputs that we
-        // display before getting the content to paste,
-        // therefore pasting the content on the position at which the
-        // paste command was input
-        // Will only break user input if the user inserts new input before
-        // the paste location, which is rarer
-        GetCurrentTextPosition(out int line, out int column);
-
-        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-        if (clipboard is null)
+        if (_pasteLock.IsLocked)
             return;
 
-        var pasteText = await clipboard.GetTextAsync();
-        if (pasteText is null)
-            return;
+        using (_pasteLock.Lock())
+        {
+            // Get the positions before we paste the text
+            // in which case the user might have buffered inputs that we
+            // display before getting the content to paste,
+            // therefore pasting the content on the position at which the
+            // paste command was input
+            // Will only break user input if the user inserts new input before
+            // the paste location, which is rarer
+            GetCurrentTextPosition(out int line, out int column);
 
-        // TODO: Handle selection
-        _editor.InsertAt(line, column, pasteText);
-        UpdateVisibleTextTriggerCodeChanged();
+            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
+            if (clipboard is null)
+                return;
+
+            var pasteText = await clipboard.GetTextAsync();
+            if (pasteText is null)
+                return;
+
+            // TODO: Handle selection
+            _editor.InsertAt(line, column, pasteText);
+            UpdateVisibleTextTriggerCodeChanged();
+        }
     }
 
     private void InsertLine()
@@ -858,6 +911,7 @@ public partial class CodeEditor : UserControl
         MoveCursorLeft();
         CapturePreferredCursorCharacter();
         UpdateVisibleTextTriggerCodeChanged();
+        RestartCursorAnimation();
     }
 
     private void DeleteCurrentCharacterForwards()
@@ -870,6 +924,7 @@ public partial class CodeEditor : UserControl
 
         _editor.RemoveForwardsAt(line, column, 1);
         UpdateVisibleTextTriggerCodeChanged();
+        RestartCursorAnimation();
     }
 
     private void DeleteCommonCharacterGroupBackwards()
@@ -880,17 +935,24 @@ public partial class CodeEditor : UserControl
         GetCurrentTextPosition(out int line, out int column);
         if ((line, column) is ( > 0, 0))
         {
-            _editor.RemoveNewLineIntoBelow(line - 1);
-            CursorLineIndex--;
-            CursorCharacterIndex = _editor.LineLength(CursorLineIndex);
-            UpdateVisibleTextTriggerCodeChanged();
+            DeleteCurrentCharacterBackwards();
             return;
         }
 
         int previousColumn = column - 1;
         var start = LeftmostContiguousCommonCategory().Character;
-        var rightmostWhitespace = RightmostWhitespaceInCurrentLine(line, start);
-        start = rightmostWhitespace.Character;
+        var lineContents = _editor.AtLine(line);
+        var startChar = lineContents[start];
+        var endChar = lineContents[previousColumn];
+        bool coveringWhitespace =
+            EditorCategory(startChar) is TextEditorCharacterCategory.Whitespace
+            && EditorCategory(endChar) is TextEditorCharacterCategory.Whitespace;
+        if (!coveringWhitespace)
+        {
+            // avoid removing the left whitespace
+            var rightmostWhitespace = RightmostWhitespaceInCurrentLine(line, start);
+            start = rightmostWhitespace.Character;
+        }
 
         _editor.RemoveRangeInLine(line, start, previousColumn);
         CursorCharacterIndex = start;

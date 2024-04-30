@@ -1,11 +1,10 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Syndiesis.Controls;
 using Syndiesis.Controls.SyntaxVisualization.Creation;
-using Syndiesis.Utilities;
 using System;
 using System.Threading.Tasks;
 
-namespace Syndiesis.ViewModels;
+namespace Syndiesis.Utilities.Specific;
 
 public class AnalysisPipelineHandler
 {
