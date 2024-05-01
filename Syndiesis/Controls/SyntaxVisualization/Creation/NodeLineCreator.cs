@@ -997,7 +997,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             return;
 
         var propertyNameRun = Run(propertyName, Styles.PropertyBrush);
-        var colonRun = Run(": ", Styles.SplitterBrush);
+        var colonRun = Run(":  ", Styles.SplitterBrush);
         inlines.Add(propertyNameRun);
         inlines.Add(colonRun);
     }

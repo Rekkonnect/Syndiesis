@@ -38,6 +38,7 @@ public partial class MainView : UserControl
 
             """;
 
+        codeEditor.Editor = ViewModel.Editor;
         codeEditor.SetSource(initializingSource);
         codeEditor.CursorPosition = new(4, 48);
     }
@@ -70,7 +71,7 @@ public partial class MainView : UserControl
 
     private void CollapseAllClick(object? sender, RoutedEventArgs e)
     {
-        syntaxTreeView.listView.RootNode.SetExpansionWithoutAnimationRecursively(false);
+        syntaxTreeView.listView.CollapseAll();
     }
 
     private void HandleSettingsClick(object? sender, RoutedEventArgs e)
@@ -174,21 +175,16 @@ public partial class MainView : UserControl
         var analysisPipelineHandler = AnalysisPipelineHandler;
         var viewModel = ViewModel;
 
-        codeEditor.Editor = viewModel.Editor;
-        var previousDelay = analysisPipelineHandler.UserInputDelay;
-        analysisPipelineHandler.UserInputDelay = TimeSpan.Zero;
+        analysisPipelineHandler.IgnoreInputDelayOnce();
         codeEditor.SetSource(source);
-        analysisPipelineHandler.UserInputDelay = previousDelay;
     }
 
     public void ForceRedoAnalysis()
     {
         var analysisPipelineHandler = AnalysisPipelineHandler;
 
-        var previousDelay = analysisPipelineHandler.UserInputDelay;
-        analysisPipelineHandler.UserInputDelay = TimeSpan.Zero;
+        analysisPipelineHandler.IgnoreInputDelayOnce();
         TriggerPipeline();
-        analysisPipelineHandler.UserInputDelay = previousDelay;
     }
 
     protected override void OnGotFocus(GotFocusEventArgs e)

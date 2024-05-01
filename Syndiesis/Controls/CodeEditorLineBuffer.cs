@@ -58,6 +58,7 @@ public class CodeEditorLineBuffer
         {
             var line = _lines[i];
             line.Text = string.Empty;
+            line.SelectedLine = false;
         }
     }
 

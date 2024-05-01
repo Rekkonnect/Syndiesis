@@ -118,6 +118,13 @@ public partial class SyntaxTreeListView : UserControl
         InvalidateArrange();
     }
 
+    public void CollapseAll()
+    {
+        RootNode.SetExpansionWithoutAnimationRecursively(false);
+        horizontalScrollBar.StartPosition = 0;
+        verticalScrollBar.StartPosition = 0;
+    }
+
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
@@ -218,7 +225,25 @@ public partial class SyntaxTreeListView : UserControl
         if (!_allowedHover)
             return false;
 
-        return true;
+        var parent = ParentNode(node);
+        if (parent is null)
+            return true;
+
+        return parent.NodeLine.IsExpanded;
+    }
+
+    private static SyntaxTreeListNode? ParentNode(SyntaxTreeListNode node)
+    {
+        var current = node.Parent;
+        while (current is not null)
+        {
+            if (current is SyntaxTreeListNode parent)
+                return parent;
+
+            current = current.Parent;
+        }
+
+        return null;
     }
 
     public bool IsHovered(SyntaxTreeListNode node)

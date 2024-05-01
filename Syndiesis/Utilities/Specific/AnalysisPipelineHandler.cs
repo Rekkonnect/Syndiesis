@@ -2,6 +2,7 @@
 using Syndiesis.Controls;
 using Syndiesis.Controls.SyntaxVisualization.Creation;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Utilities.Specific;
@@ -15,6 +16,8 @@ public class AnalysisPipelineHandler
     private string _pendingSource = string.Empty;
     private volatile bool _finishedAnalysis = false;
 
+    private volatile int _ignoredInputDelayTimes = 0;
+
     public TimeSpan UserInputDelay { get; set; } = AppSettings.Instance.UserInputDelay;
 
     public NodeLineCreationOptions CreationOptions { get; set; } = new();
@@ -23,6 +26,11 @@ public class AnalysisPipelineHandler
     public event Action? AnalysisBegun;
     public event Action<SyntaxTreeListNode>? AnalysisCompleted;
     public event Action<Exception>? AnalysisFailed;
+
+    public void IgnoreInputDelayOnce()
+    {
+        _ignoredInputDelayTimes++;
+    }
 
     public void InitiateAnalysis(string source)
     {
@@ -83,6 +91,12 @@ public class AnalysisPipelineHandler
 
     private void SetRequestedDelay()
     {
+        if (_ignoredInputDelayTimes > 0)
+        {
+            _ignoredInputDelayTimes--;
+            return;
+        }
+        
         _delayer.SetFutureUnblock(UserInputDelay);
     }
 }

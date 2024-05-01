@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;
 
+// TODO: Migrate most of this class' cursor editing logic into another class
+
 /// <summary>
 /// A code editor supporting common code editing operations including navigating the cursor
 /// through with common keyboard shortcuts, deleting characters or words, selecting a
@@ -977,7 +979,8 @@ public partial class CodeEditor : UserControl
                 return;
 
             // TODO: Handle selection
-            _editor.InsertAt(line, column, pasteText);
+            var nextCursorPosition = _editor.InsertAt(line, column, pasteText);
+            CursorPosition = nextCursorPosition;
             UpdateVisibleTextTriggerCodeChanged();
         }
     }

@@ -85,27 +85,28 @@ public sealed class MultilineStringEditor
         SetLine(line, nextLine);
     }
 
-    public void InsertAt(int line, int column, string value)
+    public LinePosition InsertAt(int line, int column, string value)
     {
         var previousLine = AtLine(line);
 
         bool multiline = value.IsMultiline();
         if (!multiline)
         {
-            InsertSingleLine();
+            return InsertSingleLine();
         }
         else
         {
-            InsertMultiLine();
+            return InsertMultiLine();
         }
 
-        void InsertSingleLine()
+        LinePosition InsertSingleLine()
         {
             var nextLine = previousLine.Insert(column, value);
             SetLine(line, nextLine);
+            return new(line, column + value.Length);
         }
 
-        void InsertMultiLine()
+        LinePosition InsertMultiLine()
         {
             var previousStart = previousLine[..column];
             var previousEnd = previousLine[column..];
@@ -130,8 +131,12 @@ public sealed class MultilineStringEditor
 
             if (previousEnd.Length > 0)
             {
-                SetLine(line + lineOffset - 1, lastLine + previousEnd);
+                int finalLineIndex = line + lineOffset - 1;
+                SetLine(finalLineIndex, lastLine + previousEnd);
+                return new(finalLineIndex, lastLine.Length);
             }
+
+            return new(line + lineOffset - 1, lastLine.Length);
         }
     }
 
