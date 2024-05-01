@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
+using Microsoft.CodeAnalysis.CSharp;
 using Syndiesis.Models;
 using Syndiesis.Utilities;
 using System;
@@ -73,8 +74,8 @@ public partial class CodeEditorLine : UserControl
         }
     }
 
-    public HighlightHandler SelectionHighlight { get; private set; }
     public HighlightHandler SyntaxNodeHoverHighlight { get; private set; }
+    public HighlightHandler SelectionHighlight { get; private set; }
 
     public CodeEditorLine()
     {
@@ -86,8 +87,17 @@ public partial class CodeEditorLine : UserControl
     [MemberNotNull(nameof(SyntaxNodeHoverHighlight))]
     private void InitializeRectangleHandlers()
     {
-        SelectionHighlight = new(selectionHighlight);
         SyntaxNodeHoverHighlight = new(syntaxNodeHoverHighlight);
+        SelectionHighlight = new(selectionHighlight);
+    }
+
+    public HighlightHandler GetHighlightHandler(HighlightKind kind)
+    {
+        return kind switch
+        {
+            HighlightKind.SyntaxNodeHover => SyntaxNodeHoverHighlight,
+            HighlightKind.Selection => SelectionHighlight,
+        };
     }
 
     // this is ready to be used for whenever syntax highlighting is implemented
@@ -158,15 +168,25 @@ public partial class CodeEditorLine : UserControl
             }
         }
 
-        public void SetEntireLine(CodeEditorLine line)
+        private static int Length(CodeEditorLine line, bool includeNewLine)
         {
             int length = line.TextLength;
+            if (includeNewLine)
+            {
+                length++;
+            }
+            return length;
+        }
+
+        public void SetEntireLine(CodeEditorLine line, bool includeNewLine)
+        {
+            int length = Length(line, includeNewLine);
             Set(0..length);
         }
 
-        public void SetRightPart(int start, CodeEditorLine line)
+        public void SetRightPart(int start, CodeEditorLine line, bool includeNewLine)
         {
-            int length = line.TextLength;
+            int length = Length(line, includeNewLine);
             Set(start..length);
         }
 
@@ -208,5 +228,11 @@ public partial class CodeEditorLine : UserControl
                 HighlightingRectangle.Width = width;
             }
         }
+    }
+
+    public enum HighlightKind
+    {
+        SyntaxNodeHover,
+        Selection,
     }
 }

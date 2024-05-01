@@ -48,6 +48,7 @@ public class CodeEditorLineBuffer
 
             var line = _lines[i];
             line.Text = sourceEditor.AtLine(start + i);
+            line.SelectedLine = false;
         }
     }
 
@@ -58,7 +59,6 @@ public class CodeEditorLineBuffer
         {
             var line = _lines[i];
             line.Text = string.Empty;
-            line.SelectedLine = false;
         }
     }
 

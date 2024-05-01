@@ -24,4 +24,16 @@ public static class LinePositionExtensions
     {
         return linePosition.Character is 0;
     }
+
+    public static LinePositionSpan FromBounds(LinePosition a, LinePosition b)
+    {
+        if (a < b)
+        {
+            return new(a, b);
+        }
+        else
+        {
+            return new(b, a);
+        }
+    }
 }

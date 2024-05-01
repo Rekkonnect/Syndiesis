@@ -12,14 +12,7 @@ public class SelectionSpan
     {
         get
         {
-            if (SelectionStart < SelectionEnd)
-            {
-                return new(SelectionEnd, SelectionStart);
-            }
-            else
-            {
-                return new(SelectionStart, SelectionEnd);
-            }
+            return LinePositionExtensions.FromBounds(SelectionStart, SelectionEnd);
         }
     }
 

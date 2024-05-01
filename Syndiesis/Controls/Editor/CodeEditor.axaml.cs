@@ -2,12 +2,16 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Microsoft.CodeAnalysis.Text;
+using ReactiveUI;
 using Syndiesis.Models;
 using Syndiesis.Utilities;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Linq;
 using System.Threading.Tasks;
+using static Syndiesis.Controls.CodeEditorLine;
 
 namespace Syndiesis.Controls;
 
@@ -45,6 +49,8 @@ public partial class CodeEditor : UserControl
     private int _preferredCursorCharacterIndex;
 
     private bool _hasActiveHover;
+
+    private SyntaxTreeListNode? _hoveredListNode;
 
     [Obsolete("This setting is not saving any performance")]
     public int ExtraBufferLines
@@ -283,7 +289,9 @@ public partial class CodeEditor : UserControl
         linesPanel.Children.AddRange(lineRange);
         UpdateLinesDisplayPanel(lineCount);
 
-        HideAllHoveredSyntaxNodes();
+        ShowSelectedLine();
+        ShowCurrentHoveredSyntaxNode();
+        ShowCurrentTextSelection();
         UpdateEntireScroll();
     }
 
@@ -301,6 +309,17 @@ public partial class CodeEditor : UserControl
         lineDisplayPanel.ForceRender();
     }
 
+    private void ShowSelectedLine()
+    {
+        int index = CursorLineIndex;
+        var line = _lineBuffer.GetLine(index);
+        if (line is null)
+            return;
+
+        line.SelectedLine = true;
+        line.RestartCursorAnimation();
+    }
+
     private void TriggerCursorPositionChanged()
     {
         if (CursorPositionChanged is null)
@@ -316,18 +335,41 @@ public partial class CodeEditor : UserControl
 
     public void ShowHoveredSyntaxNode(SyntaxTreeListNode? listNode)
     {
+        _hoveredListNode = listNode;
+        ShowCurrentHoveredSyntaxNode();
+    }
+
+    private void ShowCurrentHoveredSyntaxNode()
+    {
         HideAllHoveredSyntaxNodes();
 
-        if (listNode is not null)
+        if (_hoveredListNode is not null)
         {
-            var syntaxObject = listNode.AssociatedSyntaxObject;
+            var syntaxObject = _hoveredListNode.AssociatedSyntaxObject;
 
             if (syntaxObject is not null)
             {
-                var span = listNode.NodeLine.DisplayLineSpan;
-                SetHoverSpan(span);
+                var span = _hoveredListNode.NodeLine.DisplayLineSpan;
+                SetHoverSpan(span, HighlightKind.SyntaxNodeHover);
             }
         }
+    }
+
+    private void ShowCurrentTextSelection()
+    {
+        HideAllTextSelection();
+
+        if (_selectionSpan.HasSelection)
+        {
+            var span = _selectionSpan.SelectionPositionSpan;
+            SetHoverSpan(span, HighlightKind.Selection);
+        }
+    }
+
+    private IReadOnlyList<CodeEditorLine> CodeEditorLines()
+    {
+        return codeEditorContent.codeLinesPanel.Children
+            .UpcastReadOnlyList<Control, CodeEditorLine>();
     }
 
     private void HideAllHoveredSyntaxNodes()
@@ -335,42 +377,59 @@ public partial class CodeEditor : UserControl
         if (!_hasActiveHover)
             return;
 
-        foreach (CodeEditorLine line in codeEditorContent.codeLinesPanel.Children)
-        {
-            line.SyntaxNodeHoverHighlight.Clear();
-        }
+        ClearAllHighlights(HighlightKind.SyntaxNodeHover);
         _hasActiveHover = false;
     }
 
-    private void SetHoverSpan(LinePositionSpan span)
+    private void HideAllTextSelection()
+    {
+        if (!_selectionSpan.HasSelection)
+            return;
+
+        ClearAllHighlights(HighlightKind.Selection);
+    }
+
+    private void ClearAllHighlights(HighlightKind syntaxNodeHover)
+    {
+        foreach (var line in CodeEditorLines())
+        {
+            line.GetHighlightHandler(syntaxNodeHover).Clear();
+        }
+    }
+
+    private void SetHoverSpan(LinePositionSpan span, HighlightKind highlightKind)
     {
         var start = span.Start;
         var end = span.End;
         var startLine = start.Line;
         var endLine = end.Line;
 
-        var lines = codeEditorContent.codeLinesPanel.Children;
+        var lines = CodeEditorLines();
 
         if (startLine == endLine)
         {
             var startEditorLine = EditorLineAt(startLine);
             var startCharacter = start.Character;
             var endCharacter = end.Character;
-            startEditorLine?.SyntaxNodeHoverHighlight.Set(startCharacter..endCharacter);
+            startEditorLine?.GetHighlightHandler(highlightKind)
+                .Set(startCharacter..endCharacter);
         }
         else
         {
             for (int i = startLine + 1; i < endLine; i++)
             {
                 var editorLine = EditorLineAt(i);
-                editorLine?.SyntaxNodeHoverHighlight.SetEntireLine(editorLine);
+                editorLine?.GetHighlightHandler(highlightKind)
+                    .SetEntireLine(editorLine, true);
             }
 
             var startEditorLine = EditorLineAt(startLine);
-            startEditorLine?.SyntaxNodeHoverHighlight.SetRightPart(start.Character, startEditorLine);
+            startEditorLine?.GetHighlightHandler(highlightKind)
+                .SetRightPart(start.Character, startEditorLine, true);
 
             var endEditorLine = EditorLineAt(endLine);
-            endEditorLine?.SyntaxNodeHoverHighlight.SetLeftPart(end.Character);
+            endEditorLine?.GetHighlightHandler(highlightKind)
+                .SetLeftPart(end.Character);
         }
 
         _hasActiveHover = true;
@@ -378,7 +437,7 @@ public partial class CodeEditor : UserControl
         CodeEditorLine? EditorLineAt(int i)
         {
             int lineIndex = i - _lineOffset;
-            var editorLine = lines.ValueAtOrDefault(lineIndex) as CodeEditorLine;
+            var editorLine = lines.ValueAtOrDefault(lineIndex);
             return editorLine;
         }
     }
@@ -414,10 +473,34 @@ public partial class CodeEditor : UserControl
             column = lineLength;
         }
 
+        bool inRangeSelection = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        CaptureSelectionStart();
         CursorLineIndex = line;
         CursorCharacterIndex = column;
+        HandleSelectionForCurrentNavigation(inRangeSelection);
         CapturePreferredCursorCharacter();
         e.Handled = true;
+    }
+
+    private void HandleSelectionForCurrentNavigation(bool inRangeSelection)
+    {
+        if (inRangeSelection)
+        {
+            _selectionSpan.SelectionEnd = _cursorLinePosition;
+        }
+        else
+        {
+            _selectionSpan.Clear();
+        }
+    }
+
+    private void CaptureSelectionStart()
+    {
+        if (_selectionSpan.HasSelection)
+            return;
+
+        _selectionSpan.HasSelection = true;
+        _selectionSpan.SelectionStart = _cursorLinePosition;
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -627,10 +710,14 @@ public partial class CodeEditor : UserControl
     protected override void OnKeyDown(KeyEventArgs e)
     {
         var modifiers = e.KeyModifiers;
+
+        bool hasControl = modifiers.HasFlag(KeyModifiers.Control);
+        bool hasShift = modifiers.HasFlag(KeyModifiers.Shift);
+
         switch (e.Key)
         {
             case Key.Back:
-                if (modifiers.HasFlag(KeyModifiers.Control))
+                if (hasControl)
                 {
                     DeleteCommonCharacterGroupBackwards();
                     e.Handled = true;
@@ -641,7 +728,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.Delete:
-                if (modifiers.HasFlag(KeyModifiers.Control))
+                if (hasControl)
                 {
                     DeleteCommonCharacterGroupForwards();
                     e.Handled = true;
@@ -657,16 +744,21 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.V:
-                if (modifiers.HasFlag(KeyModifiers.Control))
+                if (hasControl)
                 {
-                    // Holding Ctrl+V completely breaks the flow by inserting more than can be handled
+                    if (hasShift)
+                    {
+                        _ = PasteDirectAsync();
+                        e.Handled = true;
+                        break;
+                    }
                     _ = PasteClipboardTextAsync();
                     e.Handled = true;
                 }
                 break;
 
             case Key.C:
-                if (modifiers.HasFlag(KeyModifiers.Control))
+                if (hasControl)
                 {
                     _ = CopySelectionToClipboardAsync();
                     e.Handled = true;
@@ -674,7 +766,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.Left:
-                if (modifiers.HasFlag(KeyModifiers.Control))
+                if (hasControl)
                 {
                     MoveCursorLeftWord();
                     e.Handled = true;
@@ -685,7 +777,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.Right:
-                if (modifiers.HasFlag(KeyModifiers.Control))
+                if (hasControl)
                 {
                     MoveCursorNextWord();
                     e.Handled = true;
@@ -706,7 +798,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.PageUp:
-                if (modifiers.HasFlag(KeyModifiers.Control))
+                if (hasControl)
                 {
                     MoveCursorPageStart();
                     e.Handled = true;
@@ -717,7 +809,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.PageDown:
-                if (modifiers.HasFlag(KeyModifiers.Control))
+                if (hasControl)
                 {
                     MoveCursorPageEnd();
                     e.Handled = true;
@@ -728,7 +820,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.Home:
-                if (modifiers.HasFlag(KeyModifiers.Control))
+                if (hasControl)
                 {
                     MoveCursorDocumentStart();
                     e.Handled = true;
@@ -739,7 +831,7 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.End:
-                if (modifiers.HasFlag(KeyModifiers.Control))
+                if (hasControl)
                 {
                     MoveCursorDocumentEnd();
                     e.Handled = true;
@@ -756,6 +848,21 @@ public partial class CodeEditor : UserControl
         }
 
         base.OnKeyDown(e);
+    }
+
+    private readonly RateLimiter _pasteRateLimiter = new(TimeSpan.FromMilliseconds(400));
+
+    private async Task PasteDirectAsync()
+    {
+        var canPaste = _pasteRateLimiter.Request();
+        if (!canPaste)
+            return;
+
+        var text = await this.GetClipboardTextAsync();
+        if (text is null)
+            return;
+
+        SetSource(text);
     }
 
     private void InsertTab()
@@ -970,11 +1077,7 @@ public partial class CodeEditor : UserControl
             // the paste location, which is rarer
             GetCurrentTextPosition(out int line, out int column);
 
-            var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-            if (clipboard is null)
-                return;
-
-            var pasteText = await clipboard.GetTextAsync();
+            var pasteText = await this.GetClipboardTextAsync();
             if (pasteText is null)
                 return;
 

@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;
+using Syndiesis.Utilities;
 using Syndiesis.Utilities.Specific;
 using Syndiesis.ViewModels;
 using System;
@@ -86,11 +87,7 @@ public partial class MainView : UserControl
 
     private async Task HandlePasteClick()
     {
-        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-        if (clipboard is null)
-            return;
-
-        var pasteText = await clipboard.GetTextAsync();
+        var pasteText = await this.GetClipboardTextAsync();
         if (pasteText is null)
             return;
 

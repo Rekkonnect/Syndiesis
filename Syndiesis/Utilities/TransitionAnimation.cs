@@ -1,5 +1,4 @@
 ﻿using Avalonia.Animation;
-using Avalonia.Controls;
 using Avalonia.Styling;
 using System.Linq;
 using System.Threading;
@@ -34,27 +33,6 @@ public sealed class TransitionAnimation(Animation animation)
             {
                 setter.ApplySetter(control);
             }
-        }
-    }
-}
-
-public static class ControlExtensions
-{
-    public static void InvalidateAll(this Control control)
-    {
-        control.InvalidateArrange();
-        control.InvalidateMeasure();
-        control.InvalidateVisual();
-    }
-
-    public static void RecursivelyInvalidateAll(this Control control)
-    {
-        control.InvalidateAll();
-        var parent = control.Parent;
-
-        if (parent is Control parentControl)
-        {
-            parentControl.InvalidateAll();
         }
     }
 }
