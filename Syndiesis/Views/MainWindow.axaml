@@ -30,7 +30,7 @@
     >
     <!-- Create and use a custom drill transition if we got time -->
     <TransitioningContentControl.PageTransition>
-      <CrossFade Duration="0:0:0.4" />
+      <CrossFade Duration="0:0:0.25" />
     </TransitioningContentControl.PageTransition>
 
     <views:MainView

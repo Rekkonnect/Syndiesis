@@ -20,8 +20,6 @@ public sealed class NodeLineCreationOptions
 
     [Obsolete("Not yet implemented")]
     public bool ShowOperations = false;
-
-    public bool OmitCompilationUnitRoot = false;
 }
 
 public sealed partial class NodeLineCreator(NodeLineCreationOptions options)

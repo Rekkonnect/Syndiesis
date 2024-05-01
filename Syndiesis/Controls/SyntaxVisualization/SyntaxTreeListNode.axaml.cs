@@ -112,6 +112,14 @@ public partial class SyntaxTreeListNode : UserControl
     private readonly SolidColorBrush _topLineBackgroundBrush = new(Colors.Transparent);
     private readonly SolidColorBrush _expandableCanvasBackgroundBrush = new(Colors.Transparent);
 
+    public void EnsureInitializedChildren(bool flag)
+    {
+        if (flag)
+        {
+            EnsureInitializedChildren();
+        }
+    }
+
     public void EnsureInitializedChildren()
     {
         if (_childRetriever is null)
@@ -239,10 +247,19 @@ public partial class SyntaxTreeListNode : UserControl
         ExpandOrCollapse(newToggle);
     }
 
-    // This method is unsafe and does not perform checks on
-    // whether it is expandable or collapsible
+    public void SetExpansionWithoutAnimationRecursively(bool expand)
+    {
+        EnsureInitializedChildren(expand);
+        foreach (var node in LazyChildren)
+        {
+            node.SetExpansionWithoutAnimationRecursively(expand);
+        }
+        SetExpansionWithoutAnimation(expand);
+    }
+
     public void SetExpansionWithoutAnimation(bool expand)
     {
+        EnsureInitializedChildren(expand);
         var state = expand ? ExpansionState.Expanded : ExpansionState.Collapsed;
         NodeLine.IsExpanded = expand;
         expandableCanvas.SetExpansionStateWithoutAnimation(state);
@@ -273,10 +290,7 @@ public partial class SyntaxTreeListNode : UserControl
         _expansionAnimationCancellationTokenFactory.Cancel();
 
         var animationToken = _expansionAnimationCancellationTokenFactory.CurrentToken;
-        if (expand)
-        {
-            EnsureInitializedChildren();
-        }
+        EnsureInitializedChildren(expand);
         _ = expandableCanvas.SetExpansionState(expand, animationToken);
     }
 }

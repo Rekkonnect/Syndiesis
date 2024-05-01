@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Microsoft.CodeAnalysis;
-using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -287,12 +286,11 @@ public partial class SyntaxTreeListView : UserControl
             var relevant = children
                 .FirstOrDefault(s => s.NodeLine.DisplaySpan.Contains(position));
 
-            // if no position corresponds to our tree, the position is invalid
-            // - there is little chance the tree is improperly constructed
+            // if no position corresponds to our tree, the position is within the node
+            // but is not displayed in our tree (for example because trivia is hidden)
             if (relevant is null)
             {
-                ClearHover();
-                return;
+                break;
             }
             current = relevant;
         }
@@ -318,15 +316,15 @@ public partial class SyntaxTreeListView : UserControl
 
     private IReadOnlyList<SyntaxTreeListNode> ExpandDemandChildren(SyntaxTreeListNode node)
     {
-        var children = node.DemandedChildren;
         node.SetExpansionWithoutAnimation(true);
-        return children;
+        return node.LazyChildren;
     }
     #endregion
 
     public void BringToView(SyntaxTreeListNode node)
     {
-        var translation = node.TranslatePoint(default, this);
+        var basis = contentCanvasContainer;
+        var translation = node.TranslatePoint(default, basis);
         if (translation is null)
         {
             node.Loaded += (_, _) => BringToView(node);
@@ -334,7 +332,7 @@ public partial class SyntaxTreeListView : UserControl
         }
 
         var point = translation.Value;
-        var offset = topLevelNodeContent.TranslatePoint(default, this).GetValueOrDefault();
+        var offset = topLevelNodeContent.TranslatePoint(default, basis).GetValueOrDefault();
         var leftOffset = offset.X;
         var topOffset = offset.Y;
         var x = point.X - leftOffset - 60;

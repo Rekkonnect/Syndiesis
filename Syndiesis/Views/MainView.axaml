@@ -12,27 +12,142 @@
              >
   <Panel>
     <Grid>
-      <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*" MinWidth="400" />
-        <ColumnDefinition Width="4" />
-        <ColumnDefinition Width="*" MinWidth="400" />
-      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto"/>
+        <RowDefinition Height="*"/>
+      </Grid.RowDefinitions>
 
-      <controls:CodeEditor
-        Name="codeEditor"
-        Grid.Column="0"
-        />
-
-      <GridSplitter
-        ResizeDirection="Columns"
-        Grid.Column="1"
+      <Grid
+        Grid.Row="0"
         >
 
-      </GridSplitter>
-      <syntax:CoverableSyntaxTreeListView
-        Name="syntaxTreeView"
-        Grid.Column="2"
-        />
+        <Grid
+            Margin="5 15 5 15"
+          >
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="200" />
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="200" />
+          </Grid.ColumnDefinitions>
+
+          <StackPanel
+            Orientation="Horizontal"
+            Spacing="10"
+            Grid.Column="0"
+            Margin="20 0 0 0"
+            >
+            <Button
+              VerticalAlignment="Stretch"
+              Name="resetCodeButton"
+              >
+              <TextBlock
+                Text="Reset"
+                TextAlignment="Center"
+                VerticalAlignment="Center"
+                />
+            </Button>
+
+            <Button
+              VerticalAlignment="Stretch"
+              Name="pasteOverButton"
+              >
+              <TextBlock
+                Text="Paste over"
+                TextAlignment="Center"
+                VerticalAlignment="Center"
+                />
+            </Button>
+          </StackPanel>
+
+          <StackPanel
+            Orientation="Horizontal"
+            Spacing="10"
+            Grid.Column="1"
+            HorizontalAlignment="Center"
+            >
+            <Button
+              VerticalAlignment="Stretch"
+              Name="settingsButton"
+              >
+              <TextBlock
+                Text="Settings"
+                TextAlignment="Center"
+                VerticalAlignment="Center"
+                />
+            </Button>
+          </StackPanel>
+
+          <StackPanel
+            Orientation="Horizontal"
+            Spacing="10"
+            Grid.Column="2"
+            Margin="0 0 20 0"
+            HorizontalAlignment="Right"
+            >
+            <Button
+              VerticalAlignment="Stretch"
+              Name="collapseAllButton"
+              >
+              <TextBlock
+                Text="Collapse all"
+                TextAlignment="Center"
+                VerticalAlignment="Center"
+                />
+            </Button>
+
+            <!-- Expand all lags a lot because of the allocations, so it's best not shown -->
+            <Button
+              VerticalAlignment="Stretch"
+              Name="expandAllButton"
+              Background="#770922"
+              IsVisible="False"
+              >
+              <TextBlock
+                Text="Expand all"
+                TextAlignment="Center"
+                VerticalAlignment="Center"
+                />
+            </Button>
+          </StackPanel>
+        </Grid>
+      </Grid>
+
+      <Grid
+        Grid.Row="2"
+        >
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" MinWidth="400" />
+          <ColumnDefinition Width="4" />
+          <ColumnDefinition Width="*" MinWidth="400" />
+        </Grid.ColumnDefinitions>
+
+        <Border
+          BorderBrush="#38A0FF"
+          BorderThickness="2"
+          Grid.Column="0"
+        >
+          <controls:CodeEditor
+            Name="codeEditor"
+          />
+        </Border>
+
+        <GridSplitter
+          ResizeDirection="Columns"
+          Grid.Column="1"
+        >
+
+        </GridSplitter>
+
+        <Border
+          BorderBrush="#38A0FF"
+          BorderThickness="2"
+          Grid.Column="2"
+        >
+          <syntax:CoverableSyntaxTreeListView
+            Name="syntaxTreeView"
+          />
+        </Border>
+      </Grid>
     </Grid>
   </Panel>
 </UserControl>

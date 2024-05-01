@@ -1,9 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
-using Avalonia.Controls.Metadata;
 using Avalonia.Media;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.SyntaxVisualization.Creation;
 using Syndiesis.Utilities;

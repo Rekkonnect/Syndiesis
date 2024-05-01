@@ -6,6 +6,8 @@ namespace Syndiesis.Controls.SyntaxVisualization;
 
 public partial class CoverableSyntaxTreeListView : UserControl
 {
+    public event Action? NewRootNodeLoaded;
+
     public CoverableSyntaxTreeListView()
     {
         InitializeComponent();
@@ -44,6 +46,7 @@ public partial class CoverableSyntaxTreeListView : UserControl
         listView.RootNode = node;
         var hideDuration = TimeSpan.FromMilliseconds(500);
         _ = coverable.HideCover(hideDuration);
+        NewRootNodeLoaded?.Invoke();
     }
 
     private void HandleAnalysisRequested()
