@@ -29,6 +29,7 @@ public partial class SettingsView : UserControl
     {
         var settings = AppSettings.Instance;
         showTriviaCheck.IsChecked = settings.CreationOptions.ShowTrivia;
+        enableExpandAllButtonCheck.IsChecked = settings.EnableExpandingAllNodes;
         typingDelaySlider.Value = settings.UserInputDelay.TotalMilliseconds;
     }
 
@@ -47,6 +48,7 @@ public partial class SettingsView : UserControl
     {
         var settings = AppSettings.Instance;
         settings.UserInputDelay = TypingDelay;
+        settings.EnableExpandingAllNodes = enableExpandAllButtonCheck.IsChecked is true;
         settings.CreationOptions.ShowTrivia = showTriviaCheck.IsChecked is true;
         SettingsSaved?.Invoke();
     }

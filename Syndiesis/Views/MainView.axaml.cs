@@ -135,6 +135,7 @@ public partial class MainView : UserControl
         var settings = AppSettings.Instance;
         AnalysisPipelineHandler.CreationOptions = settings.CreationOptions;
         AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
+        expandAllButton.IsVisible = settings.EnableExpandingAllNodes;
         ForceRedoAnalysis();
     }
 

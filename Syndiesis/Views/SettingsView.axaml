@@ -156,9 +156,17 @@
             FontFamily="{StaticResource AptosDisplayFontFamily}"
             FontSize="16"
             Text="Show trivia"
-          >
+          />
+        </CheckBox>
 
-          </TextBlock>
+        <CheckBox
+          Name="enableExpandAllButtonCheck"
+        >
+          <TextBlock
+            FontFamily="{StaticResource AptosDisplayFontFamily}"
+            FontSize="16"
+            Text="Enable expand all nodes button"
+          />
         </CheckBox>
 
         <Grid>
@@ -191,8 +199,7 @@
             FontFamily="{StaticResource AptosDisplayFontFamily}"
             FontSize="16"
             Text="Typing delay wait"
-          >
-          </TextBlock>
+          />
 
           <TextBlock
             HorizontalAlignment="Right"

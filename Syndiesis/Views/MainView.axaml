@@ -95,7 +95,10 @@
                 />
             </Button>
 
-            <!-- Expand all lags a lot because of the allocations, so it's best not shown -->
+            <!--
+            Expand all lags a lot because of the allocations,
+            so it's best not shown by default; can be enabled in settings
+            -->
             <Button
               VerticalAlignment="Stretch"
               Name="expandAllButton"
