@@ -20,6 +20,8 @@ public sealed class NodeLineCreationOptions
 
     [Obsolete("Not yet implemented")]
     public bool ShowOperations = false;
+
+    public int TruncationLimit = 30;
 }
 
 public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
@@ -78,13 +80,24 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     public SyntaxTreeListNode CreateTokenNode(SyntaxToken token, string? propertyName = null)
     {
         var rootLine = CreateTokenNodeLine(token, propertyName);
-        var children = () => CreateTokenChildren(token);
+        var children = GetChildRetrieverForToken(token);
         return new SyntaxTreeListNode
         {
             NodeLine = rootLine,
             ChildRetriever = children,
             AssociatedSyntaxObjectContent = token,
         };
+    }
+
+    private Func<IReadOnlyList<SyntaxTreeListNode>>? GetChildRetrieverForToken(SyntaxToken token)
+    {
+        switch (token.Kind())
+        {
+            case SyntaxKind.XmlTextLiteralNewLineToken:
+                return null;
+        }
+
+        return () => CreateTokenChildren(token);
     }
 
     public SyntaxTreeListNode CreateRootNode(ReadOnlySyntaxNodeList node, string? propertyName = null)
@@ -188,6 +201,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             or SyntaxKind.Utf8StringLiteralToken
             or SyntaxKind.Utf8MultiLineRawStringLiteralToken
             or SyntaxKind.Utf8SingleLineRawStringLiteralToken
+
+            // also handle XML texts
+            or SyntaxKind.XmlText
+            or SyntaxKind.XmlTextLiteralToken
             ;
     }
 
@@ -197,7 +214,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
         if (IsStringLiteralKind(token.Kind()))
         {
-            text = SimplifyWhitespace(text, 30);
+            text = SimplifyWhitespace(text);
         }
 
         var inlines = new InlineCollection()
@@ -599,7 +616,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private static NodeTypeDisplay FormatTriviaDisplay(SyntaxTrivia trivia, InlineCollection inlines)
+    private NodeTypeDisplay FormatTriviaDisplay(SyntaxTrivia trivia, InlineCollection inlines)
     {
         var structure = trivia.GetStructure();
         if (structure is null)
@@ -610,7 +627,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return FormatStructuredTriviaDisplay(trivia, inlines);
     }
 
-    private static NodeTypeDisplay FormatStructuredTriviaDisplay(
+    private NodeTypeDisplay FormatStructuredTriviaDisplay(
         SyntaxTrivia trivia, InlineCollection inlines)
     {
         var kind = trivia.Kind();
@@ -655,7 +672,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return Styles.WhitespaceTriviaDisplay;
     }
 
-    private static NodeTypeDisplay FormatUnstructuredTriviaDisplay(
+    private NodeTypeDisplay FormatUnstructuredTriviaDisplay(
         SyntaxTrivia trivia, InlineCollection inlines)
     {
         var kind = trivia.Kind();
@@ -753,6 +770,11 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     private static string EndOfLineTriviaText(SyntaxTrivia trivia)
     {
         var text = trivia.ToFullString();
+        return CreateDisplayStringForEndOfLineText(text);
+    }
+
+    private static string CreateDisplayStringForEndOfLineText(string text)
+    {
         switch (text)
         {
             case "\r\n":
@@ -768,10 +790,15 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return text;
     }
 
-    private static string CommentTriviaText(SyntaxTrivia trivia)
+    private string CommentTriviaText(SyntaxTrivia trivia)
     {
         var text = trivia.ToFullString();
-        return SimplifyWhitespace(text, 25);
+        return SimplifyWhitespace(text);
+    }
+
+    private string SimplifyWhitespace(string source)
+    {
+        return SimplifyWhitespace(source, _options.TruncationLimit);
     }
 
     private static string SimplifyWhitespace(string source, int truncationLength)
@@ -923,11 +950,17 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         ]);
     }
 
-    private static Run CreateDisplayTextRun(SyntaxToken token, SyntaxKind kind, bool isKeyword)
+    private Run CreateDisplayTextRun(SyntaxToken token, SyntaxKind kind, bool isKeyword)
     {
         if (kind is SyntaxKind.EndOfFileToken)
         {
             return CreateEofRun();
+        }
+
+        if (kind is SyntaxKind.XmlTextLiteralNewLineToken)
+        {
+            var eolText = CreateDisplayStringForEndOfLineText(token.ToFullString());
+            return Run(eolText, Styles.RawValueBrush);
         }
 
         if (token.IsMissing)
@@ -942,7 +975,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
         if (IsStringLiteralKind(kind))
         {
-            displayText = SimplifyWhitespace(displayText, 30);
+            displayText = SimplifyWhitespace(displayText);
         }
 
         return Run(displayText, displayBrush);
