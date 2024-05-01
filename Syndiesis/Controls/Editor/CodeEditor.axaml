@@ -54,8 +54,8 @@
         Grid.Column="2">
         <controls:VerticalScrollBar
           Name="verticalScrollBar"
-          MinValue="1"
-          MaxValue="6"
+          MinValue="0"
+          MaxValue="5"
           HasAvailableScroll="False"
           />
       </Panel>

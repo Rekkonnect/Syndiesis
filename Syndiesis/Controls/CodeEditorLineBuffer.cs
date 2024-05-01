@@ -10,6 +10,7 @@ public class CodeEditorLineBuffer
     private int _lineOffset;
 
     public int Capacity => _lines.Count;
+    public int LineOffset => _lineOffset;
 
     public CodeEditorLineBuffer(int defaultCapacity)
     {

@@ -136,12 +136,6 @@ public partial class SyntaxTreeListView : UserControl
 
         base.OnPointerWheelChanged(e);
 
-        var pointerPosition = e.GetCurrentPoint(this).Position;
-        if (!contentCanvasContainer.Bounds.Contains(pointerPosition))
-        {
-            return;
-        }
-
         double steps = -e.Delta.Y * scrollMultiplier;
         double verticalSteps = steps;
         double horizontalSteps = -e.Delta.X * scrollMultiplier;
@@ -335,7 +329,7 @@ public partial class SyntaxTreeListView : UserControl
         var offset = topLevelNodeContent.TranslatePoint(default, basis).GetValueOrDefault();
         var leftOffset = offset.X;
         var topOffset = offset.Y;
-        var x = point.X - leftOffset - 60;
+        var x = point.X - leftOffset - 150;
         var y = point.Y - topOffset - 150;
         horizontalScrollBar.SetStartPositionPreserveLength(x);
         verticalScrollBar.SetStartPositionPreserveLength(y);

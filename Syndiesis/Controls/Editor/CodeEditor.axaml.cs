@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Microsoft.CodeAnalysis.Text;
-using Syndiesis.Controls.SyntaxVisualization.Creation;
 using Syndiesis.Models;
 using Syndiesis.Utilities;
 using System;
@@ -61,6 +60,9 @@ public partial class CodeEditor : UserControl
         get => _lineOffset;
         set
         {
+            if (_lineOffset == value)
+                return;
+
             _lineOffset = value;
             UpdateVisibleText();
         }
@@ -135,7 +137,67 @@ public partial class CodeEditor : UserControl
     public CodeEditor()
     {
         InitializeComponent();
+        InitializeEvents();
         Focusable = true;
+    }
+
+    private void InitializeEvents()
+    {
+        verticalScrollBar.ScrollChanged += OnVerticalScroll;
+        horizontalScrollBar.ScrollChanged += OnHorizontalScroll;
+    }
+
+    private bool _isUpdatingScrollLimits = false;
+
+    private void OnVerticalScroll()
+    {
+        if (_isUpdatingScrollLimits)
+            return;
+
+        var newLineOffset = (int)verticalScrollBar.StartPosition;
+        LineOffset = newLineOffset;
+        UpdateVisibleCursor();
+    }
+
+    private void UpdateVisibleCursor()
+    {
+        var cursorLine = CursorLineIndex;
+
+        var lineOffset = _lineBuffer.LineOffset;
+        Debug.Assert(_lineOffset == lineOffset, """
+            while the line buffer has an independent line offset, it is
+            possible to encounter a future change that affects this
+            """);
+
+        for (int i = 0; i < _lineBuffer.Capacity; i++)
+        {
+            var currentIndex = lineOffset + i;
+            bool visible = cursorLine == currentIndex;
+            var line = _lineBuffer.GetLine(currentIndex);
+            if (line is null)
+            {
+                continue;
+            }
+
+            if (visible)
+            {
+                line.ShowCursor();
+                line.CursorCharacterIndex = CursorCharacterIndex;
+            }
+            else
+            {
+                line.HideCursor();
+            }
+        }
+    }
+
+    private void OnHorizontalScroll()
+    {
+        if (_isUpdatingScrollLimits)
+            return;
+
+        var offset = horizontalScrollBar.StartPosition;
+        Canvas.SetLeft(codeEditorContent, -offset);
     }
 
     public void SetSource(string source)
@@ -447,17 +509,7 @@ public partial class CodeEditor : UserControl
         if (value < 0)
             value = 0;
         Canvas.SetLeft(codeEditorContent, -value);
-        UpdateHorizontalScroll();
-    }
-
-    private void UpdateHorizontalScroll()
-    {
-        using (horizontalScrollBar.BeginUpdateBlock())
-        {
-            var start = GetHorizontalContentOffset();
-            horizontalScrollBar.StartPosition = start;
-            horizontalScrollBar.EndPosition = start + codeCanvas.Bounds.Width;
-        }
+        UpdateHorizontalScrollPosition();
     }
 
     private void UpdateLinesText()
@@ -475,11 +527,13 @@ public partial class CodeEditor : UserControl
     private void UpdateEntireScroll()
     {
         UpdateScrollBounds();
-        UpdateHorizontalScroll();
+        UpdateHorizontalScrollPosition();
     }
 
     private void UpdateScrollBounds()
     {
+        _isUpdatingScrollLimits = true;
+
         using (horizontalScrollBar.BeginUpdateBlock())
         {
             var maxWidth = codeEditorContent.Bounds.Width;
@@ -490,14 +544,33 @@ public partial class CodeEditor : UserControl
 
         using (verticalScrollBar.BeginUpdateBlock())
         {
-            CalculateMaxVerticalScrollBounds();
+            UpdateVerticalScroll();
         }
+
+        _isUpdatingScrollLimits = false;
     }
 
-    private void CalculateMaxVerticalScrollBounds()
+    private void UpdateVerticalScroll()
     {
-        verticalScrollBar.MaxValue = _editor.LineCount + VisibleLines() - 1;
+        int visibleLines = VisibleLines();
+        verticalScrollBar.MaxValue = _editor.LineCount + visibleLines - 1;
+        verticalScrollBar.StartPosition = _lineOffset;
+        verticalScrollBar.EndPosition = _lineOffset + visibleLines;
         verticalScrollBar.SetAvailableScrollOnScrollableWindow();
+    }
+
+    private void UpdateHorizontalScrollPosition()
+    {
+        using (horizontalScrollBar.BeginUpdateBlock())
+        {
+            _isUpdatingScrollLimits = true;
+
+            var start = GetHorizontalContentOffset();
+            horizontalScrollBar.StartPosition = start;
+            horizontalScrollBar.EndPosition = start + codeCanvas.Bounds.Width;
+
+            _isUpdatingScrollLimits = false;
+        }
     }
 
     private void RestartCursorAnimation()
@@ -507,6 +580,29 @@ public partial class CodeEditor : UserControl
             return;
 
         currentLine.RestartCursorAnimation();
+    }
+
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+    {
+        const double scrollMultiplier = 50;
+        const double verticalScrollMultiplier = scrollMultiplier / LineHeight;
+
+        base.OnPointerWheelChanged(e);
+
+        double steps = -e.Delta.Y * verticalScrollMultiplier;
+        double verticalSteps = steps;
+        double horizontalSteps = -e.Delta.X * scrollMultiplier;
+        if (horizontalSteps is 0)
+        {
+            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
+            {
+                horizontalSteps = verticalSteps;
+                verticalSteps = 0;
+            }
+        }
+
+        verticalScrollBar.Step(verticalSteps);
+        horizontalScrollBar.Step(horizontalSteps);
     }
 
     protected override void OnTextInput(TextInputEventArgs e)
