@@ -6,6 +6,7 @@ using Avalonia.Media;
 using Syndiesis.Controls.Extensions;
 using Syndiesis.Controls.SyntaxVisualization.Creation;
 using Syndiesis.Utilities;
+using System;
 using System.Collections.Generic;
 
 namespace Syndiesis.Controls;
@@ -42,23 +43,72 @@ public partial class SyntaxTreeListNode : UserControl
         {
             SetValue(NodeLineProperty, value);
             topNodeContent.Content = value;
-            value.HasChildren = ChildNodes.Count > 0;
+            value.HasChildren = _childRetriever is not null;
         }
     }
 
-    public static readonly StyledProperty<AvaloniaList<SyntaxTreeListNode>> ChildNodesProperty =
-        AvaloniaProperty.Register<CodeEditorLine, AvaloniaList<SyntaxTreeListNode>>(
-            nameof(ChildNodes),
-            defaultValue: []);
-
+    // Only here for the designer preview
     public AvaloniaList<SyntaxTreeListNode> ChildNodes
     {
-        get => GetValue(ChildNodesProperty);
         set
         {
-            SetValue(ChildNodesProperty, value);
             innerStackPanel.Children.ClearSetValues(value);
             NodeLine.HasChildren = value.Count > 0;
+        }
+    }
+
+    private AdvancedLazy<IReadOnlyList<SyntaxTreeListNode>>? _childRetriever;
+
+    public Func<IReadOnlyList<SyntaxTreeListNode>>? ChildRetriever
+    {
+        get => _childRetriever?.Factory;
+        set
+        {
+            if (value is null)
+            {
+                _childRetriever = null;
+            }
+            else
+            {
+                _childRetriever = new(value);
+            }
+
+            NodeLine.HasChildren = value is not null;
+        }
+    }
+
+    public IReadOnlyList<SyntaxTreeListNode> LazyChildren
+    {
+        get
+        {
+            return _childRetriever?.ValueOrDefault ?? [];
+        }
+    }
+
+    public IReadOnlyList<SyntaxTreeListNode> DemandedChildren
+    {
+        get
+        {
+            EnsureInitializedChildren();
+            return _childRetriever?.Value ?? [];
+        }
+    }
+
+    private void EnsureInitializedChildren()
+    {
+        if (_childRetriever is null)
+            return;
+
+        if (_childRetriever.IsValueCreated)
+            return;
+
+        var value = _childRetriever.Value;
+        innerStackPanel.Children.ClearSetValues(value);
+        // this is necessary to avoid overriding the height of the node
+        expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Collapsed);
+        foreach (var child in value)
+        {
+            child.ListView = ListView;
         }
     }
 
@@ -113,6 +163,8 @@ public partial class SyntaxTreeListNode : UserControl
         if (isHovered)
         {
             ListView?.OverrideHover(this);
+            // when the user clicks on this node, the animation must not be broken
+            EnsureInitializedChildren();
         }
         else
         {
@@ -124,7 +176,7 @@ public partial class SyntaxTreeListNode : UserControl
     {
         ListView = listView;
 
-        foreach (var child in ChildNodes)
+        foreach (var child in LazyChildren)
         {
             child.SetListViewRecursively(listView);
         }
@@ -134,7 +186,7 @@ public partial class SyntaxTreeListNode : UserControl
     {
         UpdateHovering(isHovered);
 
-        foreach (var child in ChildNodes)
+        foreach (var child in LazyChildren)
         {
             child.UpdateHovering(isHovered);
         }
@@ -155,7 +207,7 @@ public partial class SyntaxTreeListNode : UserControl
     {
         EvaluateHovering(e);
 
-        foreach (var child in ChildNodes)
+        foreach (var child in LazyChildren)
         {
             child.EvaluateHoveringRecursively(e);
         }
@@ -206,20 +258,10 @@ public partial class SyntaxTreeListNode : UserControl
         _expansionAnimationCancellationTokenFactory.Cancel();
 
         var animationToken = _expansionAnimationCancellationTokenFactory.CurrentToken;
-        _ = expandableCanvas.SetExpansionState(expand, animationToken);
-    }
-
-    public IEnumerable<SyntaxTreeListNode> EnumerateNodes()
-    {
-        yield return this;
-
-        foreach (var child in ChildNodes)
+        if (expand)
         {
-            var enumeratedNodes = child.EnumerateNodes();
-            foreach (var node in enumeratedNodes)
-            {
-                yield return node;
-            }
+            EnsureInitializedChildren();
         }
+        _ = expandableCanvas.SetExpansionState(expand, animationToken);
     }
 }

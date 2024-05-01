@@ -18,7 +18,6 @@
     <controls:VisualExpandToggle
       Width="18"
       Height="18"
-      IsExpandingToggle="False"
       Grid.Column="0"
       Name="visualExpandToggle"
       />

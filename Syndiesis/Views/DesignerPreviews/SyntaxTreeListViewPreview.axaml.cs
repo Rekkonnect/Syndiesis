@@ -36,7 +36,7 @@ public partial class SyntaxTreeListViewPreview : UserControl
     {
         yield return parent;
 
-        foreach (var child in parent.ChildNodes)
+        foreach (var child in parent.LazyChildren)
         {
             var enumeratedNodes = EnumerateNodes(child);
             foreach (var node in enumeratedNodes)

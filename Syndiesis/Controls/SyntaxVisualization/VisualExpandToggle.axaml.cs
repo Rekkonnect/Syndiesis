@@ -6,7 +6,7 @@ namespace Syndiesis.Controls;
 public partial class VisualExpandToggle : UserControl
 {
     public static readonly StyledProperty<bool> IsExpandingToggleProperty =
-        AvaloniaProperty.Register<CodeEditor, bool>(nameof(IsExpandingToggle), defaultValue: true);
+        AvaloniaProperty.Register<CodeEditor, bool>(nameof(IsExpandingToggle), defaultValue: false);
 
     public bool IsExpandingToggle
     {
@@ -14,7 +14,6 @@ public partial class VisualExpandToggle : UserControl
         set
         {
             SetValue(IsExpandingToggleProperty, value);
-
             verticalLine.IsVisible = value;
         }
     }

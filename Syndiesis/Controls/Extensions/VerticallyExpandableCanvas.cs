@@ -15,7 +15,7 @@ namespace Syndiesis.Controls.Extensions;
 
 public class VerticallyExpandableCanvas : Canvas
 {
-    public ExpansionState ExpansionState { get; private set; } = ExpansionState.Collapsed;
+    public ExpansionState ExpansionState { get; private set; }
 
     public static readonly StyledProperty<double> ChildrenHeightProperty =
         AvaloniaProperty.Register<VerticallyExpandableCanvas, double>(

@@ -15,7 +15,7 @@ public class AnalysisPipelineHandler
     private string _pendingSource = string.Empty;
     private volatile bool _finishedAnalysis = false;
 
-    public TimeSpan UserInputDelay { get; set; } = TimeSpan.FromMilliseconds(300);
+    public TimeSpan UserInputDelay { get; set; } = AppSettings.Instance.UserInputDelay;
 
     public NodeLineCreationOptions CreationOptions { get; set; } = new();
 

@@ -35,11 +35,11 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         SyntaxNodeOrToken nodeOrToken, string? propertyName = null)
     {
         var rootLine = CreateNodeOrTokenLine(nodeOrToken, propertyName);
-        var children = CreateNodeOrTokenChildren(nodeOrToken);
+        var children = () => CreateNodeOrTokenChildren(nodeOrToken);
         return new SyntaxTreeListNode
         {
             NodeLine = rootLine,
-            ChildNodes = new(children),
+            ChildRetriever = children,
             AssociatedSyntaxObjectContent = nodeOrToken,
         };
     }
@@ -68,11 +68,11 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     public SyntaxTreeListNode CreateRootNode(SyntaxNode node, string? propertyName = null)
     {
         var rootLine = CreateNodeLine(node, propertyName);
-        var children = CreateNodeChildren(node);
+        var children = () => CreateNodeChildren(node);
         return new SyntaxTreeListNode
         {
             NodeLine = rootLine,
-            ChildNodes = new(children),
+            ChildRetriever = children,
             AssociatedSyntaxObjectContent = node,
         };
     }
@@ -80,11 +80,11 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     public SyntaxTreeListNode CreateTokenNode(SyntaxToken token, string? propertyName = null)
     {
         var rootLine = CreateTokenNodeLine(token, propertyName);
-        var children = CreateTokenChildren(token);
+        var children = () => CreateTokenChildren(token);
         return new SyntaxTreeListNode
         {
             NodeLine = rootLine,
-            ChildNodes = new(children),
+            ChildRetriever = children,
             AssociatedSyntaxObjectContent = token,
         };
     }
@@ -92,11 +92,11 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     public SyntaxTreeListNode CreateRootNode(ReadOnlySyntaxNodeList node, string? propertyName = null)
     {
         var rootLine = CreateSyntaxListLine(node, propertyName);
-        var children = CreateNodeListChildren(node);
+        var children = () => CreateNodeListChildren(node);
         return new SyntaxTreeListNode
         {
             NodeLine = rootLine,
-            ChildNodes = new(children),
+            ChildRetriever = children,
             AssociatedSyntaxObjectContent = node,
         };
     }
@@ -273,12 +273,12 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     private SyntaxTreeListNode CreateTokenListNode(SyntaxTokenList list, string? propertyName)
     {
         var node = CreateTokenListNodeLine(list, propertyName);
-        var children = CreateTokenListChildren(list);
+        var children = () => CreateTokenListChildren(list);
 
         return new()
         {
             NodeLine = node,
-            ChildNodes = new(children),
+            ChildRetriever = children,
             AssociatedSyntaxObjectContent = list,
         };
     }
@@ -573,18 +573,18 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     {
         var line = CreateTriviaLine(trivia);
         var structure = trivia.GetStructure();
-        IReadOnlyList<SyntaxTreeListNode> children = [];
+        Func<IReadOnlyList<SyntaxTreeListNode>>? children = null;
         if (structure is not null)
         {
             var structureNode = CreateRootNode(structure, "Structure");
-            children = [structureNode];
+            children = () => [structureNode];
         }
 
         return new()
         {
             NodeLine = line,
             AssociatedSyntaxObjectContent = trivia,
-            ChildNodes = new(children),
+            ChildRetriever = children,
         };
     }
 

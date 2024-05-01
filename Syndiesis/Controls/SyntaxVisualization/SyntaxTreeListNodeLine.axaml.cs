@@ -1,8 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
-using Avalonia.Controls.Metadata;
-using Avalonia.Input;
 using Avalonia.Media;
 using Syndiesis.Controls.SyntaxVisualization.Creation;
 using Syndiesis.Utilities;
@@ -12,7 +10,7 @@ namespace Syndiesis.Controls;
 public partial class SyntaxTreeListNodeLine : UserControl
 {
     public static readonly StyledProperty<bool> IsExpandedProperty =
-        AvaloniaProperty.Register<CodeEditorLine, bool>(nameof(IsExpanded), defaultValue: true);
+        AvaloniaProperty.Register<CodeEditorLine, bool>(nameof(IsExpanded), defaultValue: false);
 
     public bool IsExpanded
     {
