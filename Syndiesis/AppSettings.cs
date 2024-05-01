@@ -9,6 +9,5 @@ public sealed class AppSettings
 
     public NodeLineCreationOptions CreationOptions { get; set; } = new();
 
-    public int ExtraBufferLines { get; set; } = 5;
     public TimeSpan UserInputDelay { get; set; } = TimeSpan.FromMilliseconds(600);
 }

@@ -209,60 +209,11 @@
 
         </Grid>
 
-        <Grid>
-
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="120" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
-
-          <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-          </Grid.RowDefinitions>
-
-          <Slider
-            Name="extraBufferLinesSlider"
-            Value="10"
-            Minimum="5"
-            Maximum="50"
-            SmallChange="2"
-            LargeChange="10"
-            Grid.Column="1"
-            Grid.RowSpan="2"
-            Margin="15 0 0 0"
-            Foreground="#009099"
-            Background="#00232E"
-        />
-          <TextBlock
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center"
-            FontFamily="{StaticResource AptosDisplayFontFamily}"
-            FontSize="16"
-            Text="Text editor buffer"
-          >
-          </TextBlock>
-
-          <TextBlock
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            FontFamily="{StaticResource AptosDisplayFontFamily}"
-            FontSize="14"
-            Grid.RowSpan="2"
-          >
-            <TextBlock.Inlines>
-              <Run Text="10" Name="textEditorBufferValueDisplay" />
-              <Run Text="lines" />
-            </TextBlock.Inlines>
-          </TextBlock>
-
-        </Grid>
-
       </StackPanel>
 
       <Button
         HorizontalAlignment="Center"
         Margin="0 50 0 0"
-        Background="#005055"
         Name="saveButton"
       >
         <TextBlock

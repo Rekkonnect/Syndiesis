@@ -8,9 +8,6 @@ using Syndiesis.Utilities;
 using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Reflection.Emit;
-using System.Reflection.Metadata.Ecma335;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;
@@ -89,6 +86,7 @@ public partial class CodeEditor : UserControl
                 "we have brought the line into view, so the line buffer should have loaded the line");
             nextLine.SelectedLine = true;
             nextLine.RestartCursorAnimation();
+            TriggerCursorPositionChanged();
         }
     }
 
@@ -106,6 +104,7 @@ public partial class CodeEditor : UserControl
             line.CursorCharacterIndex = value;
             line.RestartCursorAnimation();
             BringHorizontalIntoView();
+            TriggerCursorPositionChanged();
         }
     }
 
@@ -131,6 +130,7 @@ public partial class CodeEditor : UserControl
     }
 
     public event Action? CodeChanged;
+    public event Action<LinePosition>? CursorPositionChanged;
 
     public CodeEditor()
     {
@@ -237,6 +237,14 @@ public partial class CodeEditor : UserControl
         lineDisplayPanel.ForceRender();
     }
 
+    private void TriggerCursorPositionChanged()
+    {
+        if (CursorPositionChanged is null)
+            return;
+
+        CursorPositionChanged.Invoke(_cursorLinePosition);
+    }
+
     private void TriggerCodeChanged()
     {
         CodeChanged?.Invoke();
@@ -252,24 +260,10 @@ public partial class CodeEditor : UserControl
 
             if (syntaxObject is not null)
             {
-                var span = GetDisplayedSpan(listNode, syntaxObject);
+                var span = listNode.NodeLine.DisplayLineSpan;
                 SetHoverSpan(span);
             }
         }
-    }
-
-    private static LinePositionSpan GetDisplayedSpan(
-        SyntaxTreeListNode node,
-        SyntaxObjectInfo syntaxObject)
-    {
-        var nodeType = node.NodeLine.NodeTypeText;
-        switch (nodeType)
-        {
-            case NodeLineCreator.Types.DisplayValue:
-                return syntaxObject.LineSpan;
-        }
-
-        return syntaxObject.LineFullSpan;
     }
 
     private void HideAllHoveredSyntaxNodes()

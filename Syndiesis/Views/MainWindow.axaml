@@ -15,6 +15,12 @@
         Title="Syndiesis"
         >
 
+  <Window.Styles>
+    <Style Selector="Button">
+      <Setter Property="Background" Value="#005055" />
+    </Style>
+  </Window.Styles>
+  
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>

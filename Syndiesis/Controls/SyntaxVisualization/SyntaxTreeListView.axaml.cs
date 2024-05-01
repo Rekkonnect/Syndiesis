@@ -3,7 +3,11 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Microsoft.CodeAnalysis;
+using ReactiveUI;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace Syndiesis.Controls;
 
@@ -30,6 +34,7 @@ public partial class SyntaxTreeListView : UserControl
 
             value.SetListViewRecursively(this);
             value.SizeChanged += HandleRootNodeSizeAdjusted;
+            AnalyzedTree = value.AssociatedSyntaxObject?.SyntaxTree;
             UpdateRootChanged();
         }
     }
@@ -228,6 +233,13 @@ public partial class SyntaxTreeListView : UserControl
         return _hoveredNode == node;
     }
 
+    public void ClearHover()
+    {
+        _hoveredNode?.UpdateHovering(false);
+        _hoveredNode = null;
+        HoveredNode?.Invoke(null);
+    }
+
     public void RemoveHover(SyntaxTreeListNode node)
     {
         if (node != _hoveredNode)
@@ -249,5 +261,85 @@ public partial class SyntaxTreeListView : UserControl
         node.UpdateHovering(true);
         HoveredNode?.Invoke(node);
     }
+
+    public void HighlightPosition(int position)
+    {
+        if (AnalyzedTree is null)
+            return;
+
+        if (position >= AnalyzedTree.Length)
+        {
+            var last = GetLastDemandedNode();
+            OverrideHover(last);
+            BringToView(last);
+            return;
+        }
+
+        var current = RootNode;
+        while (true)
+        {
+            current.EnsureInitializedChildren();
+            if (!current.HasChildren)
+            {
+                break;
+            }
+            var children = ExpandDemandChildren(current);
+            var relevant = children
+                .FirstOrDefault(s => s.NodeLine.DisplaySpan.Contains(position));
+
+            // if no position corresponds to our tree, the position is invalid
+            // - there is little chance the tree is improperly constructed
+            if (relevant is null)
+            {
+                ClearHover();
+                return;
+            }
+            current = relevant;
+        }
+
+        OverrideHover(current);
+        BringToView(current);
+    }
+
+    private SyntaxTreeListNode GetLastDemandedNode()
+    {
+        var current = RootNode;
+        Debug.Assert(current is not null);
+        while (true)
+        {
+            var children = ExpandDemandChildren(current);
+            if (children is [])
+                return current;
+
+            var last = children.Last();
+            current = last;
+        }
+    }
+
+    private IReadOnlyList<SyntaxTreeListNode> ExpandDemandChildren(SyntaxTreeListNode node)
+    {
+        var children = node.DemandedChildren;
+        node.SetExpansionWithoutAnimation(true);
+        return children;
+    }
     #endregion
+
+    public void BringToView(SyntaxTreeListNode node)
+    {
+        var translation = node.TranslatePoint(default, this);
+        if (translation is null)
+        {
+            node.Loaded += (_, _) => BringToView(node);
+            return;
+        }
+
+        var point = translation.Value;
+        var offset = topLevelNodeContent.TranslatePoint(default, this).GetValueOrDefault();
+        var leftOffset = offset.X;
+        var topOffset = offset.Y;
+        var x = point.X - leftOffset - 60;
+        var y = point.Y - topOffset - 150;
+        horizontalScrollBar.SetStartPositionPreserveLength(x);
+        verticalScrollBar.SetStartPositionPreserveLength(y);
+    }
 }

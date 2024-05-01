@@ -57,6 +57,8 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
+    public bool HasChildren => NodeLine.HasChildren;
+
     private AdvancedLazy<IReadOnlyList<SyntaxTreeListNode>>? _childRetriever;
 
     public Func<IReadOnlyList<SyntaxTreeListNode>>? ChildRetriever
@@ -94,25 +96,9 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
-    private void EnsureInitializedChildren()
-    {
-        if (_childRetriever is null)
-            return;
-
-        if (_childRetriever.IsValueCreated)
-            return;
-
-        var value = _childRetriever.Value;
-        innerStackPanel.Children.ClearSetValues(value);
-        // this is necessary to avoid overriding the height of the node
-        expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Collapsed);
-        foreach (var child in value)
-        {
-            child.ListView = ListView;
-        }
-    }
-
     internal SyntaxTreeListView? ListView { get; set; }
+
+    public int Depth { get; private set; }
 
     public SyntaxTreeListNode()
     {
@@ -125,6 +111,26 @@ public partial class SyntaxTreeListNode : UserControl
 
     private readonly SolidColorBrush _topLineBackgroundBrush = new(Colors.Transparent);
     private readonly SolidColorBrush _expandableCanvasBackgroundBrush = new(Colors.Transparent);
+
+    public void EnsureInitializedChildren()
+    {
+        if (_childRetriever is null)
+            return;
+
+        if (_childRetriever.IsValueCreated)
+            return;
+
+        var value = _childRetriever.Value;
+        innerStackPanel.Children.ClearSetValues(value);
+        // this is necessary to avoid overriding the height of the node
+        expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Collapsed);
+        var nextDepth = Depth + 1;
+        foreach (var child in value)
+        {
+            child.ListView = ListView;
+            child.Depth = nextDepth;
+        }
+    }
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
@@ -231,6 +237,15 @@ public partial class SyntaxTreeListNode : UserControl
 
         bool newToggle = !nodeLine.IsExpanded;
         ExpandOrCollapse(newToggle);
+    }
+
+    // This method is unsafe and does not perform checks on
+    // whether it is expandable or collapsible
+    public void SetExpansionWithoutAnimation(bool expand)
+    {
+        var state = expand ? ExpansionState.Expanded : ExpansionState.Collapsed;
+        NodeLine.IsExpanded = expand;
+        expandableCanvas.SetExpansionStateWithoutAnimation(state);
     }
 
     public void Expand()

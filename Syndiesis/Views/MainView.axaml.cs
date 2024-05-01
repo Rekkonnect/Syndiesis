@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
+using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;
 using Syndiesis.Utilities.Specific;
 using Syndiesis.ViewModels;
@@ -42,8 +43,15 @@ public partial class MainView : UserControl
     private void InitializeEvents()
     {
         codeEditor.CodeChanged += TriggerPipeline;
+        codeEditor.CursorPositionChanged += HandleCursorPositionChanged;
         syntaxTreeView.listView.HoveredNode += HandleHoveredNode;
         syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
+    }
+
+    private void HandleCursorPositionChanged(LinePosition position)
+    {
+        var index = ViewModel.Editor.GetIndex(position);
+        syntaxTreeView.listView.HighlightPosition(index);
     }
 
     private void HandleHoveredNode(SyntaxTreeListNode? obj)
@@ -60,7 +68,6 @@ public partial class MainView : UserControl
     public void ApplyCurrentSettings()
     {
         var settings = AppSettings.Instance;
-        codeEditor.ExtraBufferLines = settings.ExtraBufferLines;
         AnalysisPipelineHandler.CreationOptions = settings.CreationOptions;
         AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
     }

@@ -1,7 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
+using Avalonia.Controls.Metadata;
 using Avalonia.Media;
+using Microsoft.CodeAnalysis.Diagnostics;
+using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.SyntaxVisualization.Creation;
 using Syndiesis.Utilities;
 
@@ -87,6 +90,38 @@ public partial class SyntaxTreeListNodeLine : UserControl
     }
 
     public SyntaxObjectInfo? AssociatedSyntaxObject { get; set; }
+
+    public TextSpan DisplaySpan
+    {
+        get
+        {
+            var syntaxObject = AssociatedSyntaxObject;
+            if (syntaxObject is null)
+                return default;
+
+            var nodeType = NodeTypeText;
+            switch (nodeType)
+            {
+                case NodeLineCreator.Types.DisplayValue:
+                    return syntaxObject.Span;
+            }
+
+            return syntaxObject.FullSpan;
+        }
+    }
+
+    public LinePositionSpan DisplayLineSpan
+    {
+        get
+        {
+            var displaySpan = DisplaySpan;
+            if (displaySpan == default)
+                return default;
+
+            var tree = AssociatedSyntaxObject!.SyntaxTree;
+            return tree!.GetLineSpan(displaySpan).Span;
+        }
+    }
 
     public SyntaxTreeListNodeLine()
     {

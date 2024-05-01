@@ -26,6 +26,22 @@ public sealed class MultilineStringEditor
         _lines.Clear();
     }
 
+    public int GetIndex(LinePosition position)
+    {
+        int line = position.Line;
+        if (line >= _lines.Count)
+            throw new IndexOutOfRangeException("The given position was out of the bounds of the text");
+
+        const int lineEndingLength = 2; // \r\n
+        int index = 0;
+        for (int i = 0; i < line; i++)
+        {
+            index += _lines[i].Length + lineEndingLength;
+        }
+
+        return index + position.Character;
+    }
+
     public void InsertEmptyLineAt(int line)
     {
         InsertLineAt(line, string.Empty);

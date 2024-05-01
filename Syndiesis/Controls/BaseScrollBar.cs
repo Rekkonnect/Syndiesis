@@ -261,6 +261,13 @@ public abstract class BaseScrollBar : UserControl
 
     protected abstract void OnUpdateScroll();
 
+    public void SetStartPositionPreserveLength(double start)
+    {
+        var current = StartPosition;
+        var offset = start - current;
+        Step(offset);
+    }
+
     public void Step(double step)
     {
         if (step is 0)
