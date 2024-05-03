@@ -19,7 +19,7 @@ https://github.com/Rekkonnect/Syndiesis/assets/8298332/4d754285-c9d9-4637-a885-8
 
 - Visual Studio 2022
 - .NET 8.0
-- c# 12.0
+- C# 12.0
 - Avalonia 11.0
 
 ## Features
