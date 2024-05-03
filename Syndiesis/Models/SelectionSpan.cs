@@ -1,25 +1,32 @@
 ﻿using Microsoft.CodeAnalysis.Text;
+using Syndiesis.Utilities;
 
 namespace Syndiesis.Models;
 
 public class SelectionSpan
 {
-    public bool HasSelection { get; set; }
     public LinePosition SelectionStart { get; set; }
     public LinePosition SelectionEnd { get; set; }
+
+    public bool HasSelection => !SelectionPositionSpan.IsEmpty();
 
     public LinePositionSpan SelectionPositionSpan
     {
         get
         {
-            return LinePositionExtensions.FromBounds(SelectionStart, SelectionEnd);
+            return LineExtensions.FromBounds(SelectionStart, SelectionEnd);
         }
     }
 
     public void Clear()
     {
-        HasSelection = false;
         SelectionStart = default;
         SelectionEnd = default;
+    }
+
+    public void SetBoth(LinePosition position)
+    {
+        SelectionStart = position;
+        SelectionEnd = position;
     }
 }

@@ -211,22 +211,29 @@ public partial class CodeEditorLine : UserControl
             if (span is null)
             {
                 HighlightingRectangle.Width = 0;
+                return;
             }
-            else
+
+            var spanValue = span.Value;
+            int start = spanValue.Start.Value;
+            int end = spanValue.End.Value;
+            if (start == end)
             {
-                var spanValue = span.Value;
-                var left = CodeEditor.CharacterBeginPosition(spanValue.Start.Value);
-                HighlightingRectangle.Margin = HighlightingRectangle.Margin.WithLeft(left);
-
-                var right = CodeEditor.CharacterBeginPosition(spanValue.End.Value);
-                var width = right - left;
-                if (width > 0)
-                {
-                    width += 1;
-                }
-
-                HighlightingRectangle.Width = width;
+                HighlightingRectangle.Width = 0;
+                return;
             }
+
+            var left = CodeEditor.CharacterBeginPosition(start);
+            HighlightingRectangle.Margin = HighlightingRectangle.Margin.WithLeft(left);
+
+            var right = CodeEditor.CharacterBeginPosition(end);
+            var width = right - left;
+            if (width > 0)
+            {
+                width += 1;
+            }
+
+            HighlightingRectangle.Width = width;
         }
     }
 

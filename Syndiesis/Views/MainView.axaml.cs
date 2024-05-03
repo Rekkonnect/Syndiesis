@@ -47,7 +47,7 @@ public partial class MainView : UserControl
     private void InitializeEvents()
     {
         codeEditor.CodeChanged += TriggerPipeline;
-        codeEditor.CursorPositionChanged += HandleCursorPositionChanged;
+        codeEditor.CursorMoved += HandleCursorPositionChanged;
         syntaxTreeView.listView.HoveredNode += HandleHoveredNode;
         syntaxTreeView.NewRootNodeLoaded += HandleNewRootNodeLoaded;
 
@@ -113,7 +113,7 @@ public partial class MainView : UserControl
 
     private void ShowCurrentCursorPosition(LinePosition position)
     {
-        var index = ViewModel.Editor.GetIndex(position);
+        var index = ViewModel.Editor.MultilineEditor.GetIndex(position);
         syntaxTreeView.listView.HighlightPosition(index);
     }
 
@@ -124,7 +124,7 @@ public partial class MainView : UserControl
 
     private void TriggerPipeline()
     {
-        var currentSource = ViewModel.Editor.FullString();
+        var currentSource = ViewModel.Editor.MultilineEditor.FullString();
         AnalysisPipelineHandler.InitiateAnalysis(currentSource);
     }
 

@@ -2,12 +2,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Syndiesis.Utilities;
 
 public sealed class MultilineStringEditor
 {
+    private const string DefaultNewLine = "\r\n";
+
     private readonly List<string> _lines = new();
 
     public int LineCount => _lines.Count;
@@ -277,21 +281,21 @@ public sealed class MultilineStringEditor
 
     public void RemoveRange(int startLine, int endLine, int startColumn, int endColumn)
     {
+        if (startLine == endLine)
+        {
+            RemoveRangeInLine(startLine, startColumn, endColumn - 1);
+            return;
+        }
+
+        RemoveEnd(startLine, startColumn);
+        RemoveStart(endLine, endColumn);
+
         int nextStart = startLine + 1;
         int previousEnd = endLine - 1;
         if (nextStart <= previousEnd)
         {
             RemoveLineRange(nextStart, previousEnd);
         }
-
-        if (startLine == endLine)
-        {
-            RemoveRangeInLine(startLine, startColumn, endColumn);
-            return;
-        }
-
-        RemoveEnd(startLine, startColumn);
-        RemoveStart(endLine, endColumn);
     }
 
     public void RemoveNewLineIntoBelow(int line)
@@ -322,7 +326,7 @@ public sealed class MultilineStringEditor
 
     public int LineLength(int line) => _lines[line].Length;
 
-    public string FullString(string newLine = "\r\n")
+    public string FullString(string newLine = DefaultNewLine)
     {
         int lineCount = LineCount;
 
@@ -342,6 +346,59 @@ public sealed class MultilineStringEditor
         }
 
         return builder.ToString();
+    }
+
+    public string SectionString(LinePositionSpan span, string newLine = DefaultNewLine)
+    {
+        var start = span.Start;
+        var end = span.End;
+
+        AssertValidPosition(start);
+        AssertValidPosition(end);
+
+        if (LineCount is 0)
+            return string.Empty;
+
+        if (start.Line == end.Line)
+        {
+            var singleLine = _lines[start.Line];
+            var startChar = start.Character;
+            var endChar = end.Character;
+            return singleLine[startChar..endChar];
+        }
+
+        const int averageLineLength = 30;
+        int lineCount = end.Line - start.Line;
+        Debug.Assert(lineCount > 0, "invalid span range was given");
+        var builder = new StringBuilder((lineCount + 2) * averageLineLength);
+
+        var firstLine = AtLine(start.Line);
+        builder.Append(firstLine[start.Character..]);
+        builder.Append(newLine);
+
+        for (int i = start.Line + 1; i < end.Line; i++)
+        {
+            builder.Append(_lines[i]);
+            builder.Append(newLine);
+        }
+
+        var lastLine = AtLine(end.Line);
+        builder.Append(lastLine[..end.Character]);
+
+        return builder.ToString();
+    }
+
+    [Conditional("DEBUG")]
+    public void AssertValidPosition(LinePosition position)
+    {
+        var line = position.Line;
+        var column = position.Character;
+
+        Debug.Assert(0 <= line && line < _lines.Count);
+
+        var length = LineLength(line);
+
+        Debug.Assert(0 <= column && column <= length);
     }
 
 #pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
