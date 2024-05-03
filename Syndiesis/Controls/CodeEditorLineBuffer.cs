@@ -47,8 +47,8 @@ public class CodeEditorLineBuffer
             }
 
             var line = _lines[i];
-            line.Text = sourceEditor.AtLine(start + i);
-            line.SelectedLine = false;
+            var text = sourceEditor.AtLine(start + i);
+            UpdateLineResetDisplay(line, text);
         }
     }
 
@@ -58,9 +58,16 @@ public class CodeEditorLineBuffer
         for (int i = offsetStart; i < _lines.Count; i++)
         {
             var line = _lines[i];
-            line.Text = string.Empty;
-            line.SelectedLine = false;
+            UpdateLineResetDisplay(line, string.Empty);
         }
+    }
+
+    private void UpdateLineResetDisplay(CodeEditorLine line, string text)
+    {
+        line.Text = text;
+        line.SelectedLine = false;
+        line.SelectionHighlight.Clear();
+        line.SyntaxNodeHoverHighlight.Clear();
     }
 
     public IReadOnlyList<CodeEditorLine> LineSpanForRange(int start, int count)

@@ -46,5 +46,6 @@ public partial class MainWindow : Window
     {
         mainView.ApplyCurrentSettings();
         pageTransition.Content = mainView;
+        mainView.Focus();
     }
 }

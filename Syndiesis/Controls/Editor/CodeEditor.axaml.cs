@@ -24,7 +24,7 @@ namespace Syndiesis.Controls;
 public partial class CodeEditor : UserControl
 {
     // intended to remain constant for this app
-    public const double LineHeight = 19;
+    public const double LineHeight = 20;
     public const double CharWidth = 8.6;
 
     private const double extraDisplayWidth = 200;
@@ -35,8 +35,6 @@ public partial class CodeEditor : UserControl
     private readonly CodeEditorLineBuffer _lineBuffer = new(20);
 
     private int _lineOffset;
-
-    private bool _hasActiveHover;
 
     private SyntaxTreeListNode? _hoveredListNode;
 
@@ -99,6 +97,7 @@ public partial class CodeEditor : UserControl
 
     private void HandleCodeChanged()
     {
+        _hoveredListNode = null;
         UpdateCurrentContent();
     }
 
@@ -319,11 +318,7 @@ public partial class CodeEditor : UserControl
 
     private void HideAllHoveredSyntaxNodes()
     {
-        if (!_hasActiveHover)
-            return;
-
         ClearAllHighlights(HighlightKind.SyntaxNodeHover);
-        _hasActiveHover = false;
     }
 
     private void HideAllTextSelection()
@@ -373,8 +368,6 @@ public partial class CodeEditor : UserControl
             endEditorLine?.GetHighlightHandler(highlightKind)
                 .SetLeftPart(end.Character);
         }
-
-        _hasActiveHover = true;
 
         CodeEditorLine? EditorLineAt(int i)
         {
