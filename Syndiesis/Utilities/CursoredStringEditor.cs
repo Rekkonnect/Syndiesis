@@ -199,8 +199,9 @@ public sealed class CursoredStringEditor
         GetCurrentTextPosition(out var line, out var column);
         if (column is 0)
         {
-            CursorLineIndex = line - 1;
-            CursorCharacterIndex = _editor.AtLine(line - 1).Length;
+            var nextLine = line - 1;
+            var nextColumn = _editor.AtLine(line - 1).Length;
+            CursorPosition = new(nextLine, nextColumn);
             CapturePreferredCursorCharacter();
             return;
         }
@@ -222,8 +223,7 @@ public sealed class CursoredStringEditor
                 return;
             }
 
-            CursorLineIndex = line + 1;
-            CursorCharacterIndex = 0;
+            CursorPosition = new(line + 1, 0);
             CapturePreferredCursorCharacter();
             return;
         }
