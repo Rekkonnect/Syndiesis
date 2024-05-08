@@ -2,7 +2,6 @@
 using Syndiesis.Controls;
 using Syndiesis.Controls.SyntaxVisualization.Creation;
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Utilities.Specific;

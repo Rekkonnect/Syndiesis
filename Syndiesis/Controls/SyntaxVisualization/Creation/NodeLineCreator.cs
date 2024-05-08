@@ -3,6 +3,7 @@ using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,9 +18,6 @@ using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
 public sealed class NodeLineCreationOptions
 {
     public bool ShowTrivia = true;
-
-    [Obsolete("Not yet implemented")]
-    public bool ShowOperations = false;
 
     public int TruncationLimit = 30;
 }
@@ -872,7 +870,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         for (int i = 0; i < length; i++)
         {
             var c = text[i];
-            var iteratedWhitespace = GetWhitespaceKind(c);
+            var iteratedWhitespace = c.GetWhitespaceKind();
             if (iteratedWhitespace != currentWhitespace)
             {
                 ConsumeCurrentStreak();
@@ -916,16 +914,6 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
             resultString += appendString;
         }
-    }
-
-    private static WhitespaceKind GetWhitespaceKind(char c)
-    {
-        return c switch
-        {
-            ' ' => WhitespaceKind.Space,
-            '\t' => WhitespaceKind.Tab,
-            _ => WhitespaceKind.None,
-        };
     }
 
     private void AppendTokenKindDetails(SyntaxToken token, string? propertyName, InlineCollection inlines)

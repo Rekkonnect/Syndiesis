@@ -1,4 +1,4 @@
-﻿namespace Syndiesis;
+﻿namespace Syndiesis.Utilities;
 
 public enum WhitespaceKind
 {

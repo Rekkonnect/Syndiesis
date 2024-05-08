@@ -47,7 +47,7 @@ public class CodeEditorLineBuffer
             }
 
             var line = _lines[i];
-            var text = sourceEditor.AtLine(start + i);
+            var text = sourceEditor.LineAt(start + i);
             UpdateLineResetDisplay(line, text);
         }
     }

@@ -19,7 +19,7 @@ public sealed class CursoredStringEditor
     public event Action? CodeChanged;
     public event Action<LinePosition>? CursorMoved;
 
-    public int TabSize { get; set; } = 4;
+    public IndentationOptions IndentationOptions { get; set; } = new();
 
     public int CursorLineIndex
     {
@@ -105,11 +105,47 @@ public sealed class CursoredStringEditor
 
     public void InsertTab()
     {
-        int tabSize = TabSize;
+        int tabSize = IndentationOptions.IndentationWidth;
         var column = CursorCharacterIndex;
-        int existingInTab = column % tabSize;
-        int spacesToInsert = tabSize - existingInTab;
+        int existingInBlock = column % tabSize;
+        int spacesToInsert = tabSize - existingInBlock;
         InsertText(new string(' ', spacesToInsert));
+    }
+
+    public void ReduceIndentation()
+    {
+        int tabSize = IndentationOptions.IndentationWidth;
+        var position = CursorPosition;
+        var line = position.Line;
+        var indentation = GetIndentation(line);
+        int indentationLength = indentation.Length;
+        int existingInBlock = indentationLength % tabSize;
+        int spacesToRemove = tabSize - existingInBlock;
+        spacesToRemove = Math.Clamp(0, indentationLength, spacesToRemove);
+        if (spacesToRemove is 0)
+            return;
+
+        int start = indentationLength - spacesToRemove;
+        int end = indentationLength;
+        RemoveRangeInLine(line, start, end);
+    }
+
+    private void RemoveRangeInLine(int line, int start, int end)
+    {
+        _editor.RemoveRangeInLine(line, start, end);
+        var newLength = _editor.LineLength(line);
+        if (CursorCharacterIndex > newLength)
+        {
+            CursorCharacterIndex = newLength;
+        }
+        TriggerCodeChanged();
+    }
+
+    private string GetIndentation(int line)
+    {
+        var lineContent = _editor.LineAt(line);
+        var leading = lineContent.GetLeadingWhitespace();
+        return leading;
     }
 
     public void MoveCursorLeftWord()
@@ -200,7 +236,7 @@ public sealed class CursoredStringEditor
         if (column is 0)
         {
             var nextLine = line - 1;
-            var nextColumn = _editor.AtLine(line - 1).Length;
+            var nextColumn = _editor.LineAt(line - 1).Length;
             CursorPosition = new(nextLine, nextColumn);
             CapturePreferredCursorCharacter();
             return;
@@ -213,7 +249,7 @@ public sealed class CursoredStringEditor
     public void MoveCursorRight()
     {
         GetCurrentTextPosition(out var line, out var column);
-        var lineContent = _editor.AtLine(line);
+        var lineContent = _editor.LineAt(line);
         int lineLength = lineContent.Length;
         if (column == lineLength)
         {
@@ -288,9 +324,42 @@ public sealed class CursoredStringEditor
         DeleteCurrentSelection();
         GetCurrentTextPosition(out int line, out int column);
         _editor.InsertLineAtColumn(line, column);
-        CursorPosition = new(CursorLineIndex + 1, 0);
+        int nextLine = line + 1;
+        var preferred = ApplyDefaultIndentation(nextLine);
+        CursorPosition = new(nextLine, preferred.Length);
         CapturePreferredCursorCharacter();
         TriggerCodeChanged();
+    }
+
+    private string ApplyDefaultIndentation(int line)
+    {
+        var preferred = GetPreferredIndentation(line);
+        _editor.InsertAt(line, 0, preferred);
+        return preferred;
+    }
+
+    private string GetPreferredIndentation(int line)
+    {
+        var defaultIndentation = string.Empty;
+
+        int previousLine = line - 1;
+        int nextLine = line + 1;
+        if (previousLine.ValidIndex(_editor.LineCount))
+        {
+            defaultIndentation = GetIndentation(previousLine);
+        }
+
+        if (nextLine.ValidIndex(_editor.LineCount))
+        {
+            // This does not account for the length of the tabs
+            var nextIndentation = GetIndentation(nextLine);
+            if (nextIndentation.Length > defaultIndentation.Length)
+            {
+                return nextIndentation;
+            }
+        }
+
+        return defaultIndentation;
     }
 
     public void DeleteCurrentCharacterBackwards()
@@ -338,7 +407,7 @@ public sealed class CursoredStringEditor
 
         int previousColumn = column - 1;
         var start = LeftmostContiguousCommonCategory().Character;
-        var lineContents = _editor.AtLine(line);
+        var lineContents = _editor.LineAt(line);
         var startChar = lineContents[start];
         var endChar = lineContents[previousColumn];
         bool coveringWhitespace =
@@ -366,7 +435,7 @@ public sealed class CursoredStringEditor
         if (line >= _editor.LineCount)
             return;
 
-        var currentLine = _editor.AtLine(line);
+        var currentLine = _editor.LineAt(line);
 
         if (column >= currentLine.Length)
         {
@@ -433,7 +502,7 @@ public sealed class CursoredStringEditor
         }
 
         int leftmost = column - 1;
-        var lineContent = _editor.AtLine(line);
+        var lineContent = _editor.LineAt(line);
 
         if (lineContent.Length is 0)
             return new(line, 0);
@@ -486,7 +555,7 @@ public sealed class CursoredStringEditor
         }
 
         int rightmost = column;
-        var lineContent = _editor.AtLine(line);
+        var lineContent = _editor.LineAt(line);
 
         if (lineContent.Length is 0)
             return new(line, 0);
@@ -570,7 +639,7 @@ public sealed class CursoredStringEditor
 
     private LinePosition LeftmostWhitespaceInCurrentLine(int line, int column)
     {
-        var currentLine = _editor.AtLine(line);
+        var currentLine = _editor.LineAt(line);
         int next = column;
         while (next > 0)
         {
@@ -595,7 +664,7 @@ public sealed class CursoredStringEditor
 
     private LinePosition RightmostWhitespaceInCurrentLine(int line, int column)
     {
-        var currentLine = _editor.AtLine(line);
+        var currentLine = _editor.LineAt(line);
         var currentLength = currentLine.Length;
         while (column < currentLength - 1)
         {
