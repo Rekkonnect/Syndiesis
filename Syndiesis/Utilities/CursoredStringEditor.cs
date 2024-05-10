@@ -184,15 +184,15 @@ public sealed class CursoredStringEditor
         var startLengthDifference = _editor.LineLength(startLine) - previousStartLength;
         var endLengthDifference = _editor.LineLength(endLine) - previousEndLength;
 
-        if (startLengthDifference > 0)
+        if (startLengthDifference is not 0)
         {
             selectionStart.SetCharacterIndex(
-                selectionStart.Character - startLengthDifference);
+                selectionStart.Character + startLengthDifference);
             _selectionSpan.SelectionStart = selectionStart;
         }
-        if (endLengthDifference > 0)
+        if (endLengthDifference is not 0)
         {
-            CursorCharacterIndex -= endLengthDifference;
+            CursorCharacterIndex += endLengthDifference;
         }
         TriggerCodeChanged();
     }
