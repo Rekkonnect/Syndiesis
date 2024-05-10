@@ -268,6 +268,7 @@ public partial class CodeEditor : UserControl
         lineDisplayPanel.LineNumberStart = _lineOffset + 1;
         int maxLines = _editor.LineCount;
         lineDisplayPanel.LastLineNumber = Math.Min(_lineOffset + lineCount, maxLines);
+        lineDisplayPanel.SelectedLineNumber = CursorLineIndex + 1;
         lineDisplayPanel.ForceRender();
     }
 
