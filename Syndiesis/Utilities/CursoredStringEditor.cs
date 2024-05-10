@@ -121,6 +121,49 @@ public sealed class CursoredStringEditor
         InsertText(new string(' ', spacesToInsert));
     }
 
+    public void IncreaseIndentation()
+    {
+        var selectionStart = _selectionSpan.SelectionStart;
+        var selectionEnd = _selectionSpan.SelectionEnd;
+
+        int startLine = selectionStart.Line;
+        int endLine = selectionEnd.Line;
+
+        int previousStartLength = _editor.LineLength(startLine);
+        int previousEndLength = _editor.LineLength(endLine);
+
+        ConvenienceExtensions.Sort(startLine, endLine, out var firstLine, out var lastLine);
+        for (int line = firstLine; line <= lastLine; line++)
+        {
+            IncreaseSingleLineIndentation(line);
+        }
+
+        var startLengthDifference = _editor.LineLength(startLine) - previousStartLength;
+        var endLengthDifference = _editor.LineLength(endLine) - previousEndLength;
+
+        if (startLengthDifference > 0)
+        {
+            selectionStart.SetCharacterIndex(
+                selectionStart.Character + startLengthDifference);
+            _selectionSpan.SelectionStart = selectionStart;
+        }
+        if (endLengthDifference > 0)
+        {
+            CursorCharacterIndex += endLengthDifference;
+        }
+        TriggerCodeChanged();
+    }
+
+    private void IncreaseSingleLineIndentation(int line)
+    {
+        var indentationOption = IndentationOptions.Indentation;
+        var currentIndentation = GetIndentation(line);
+        var insertedIndentation = indentationOption.ToString();
+
+        _editor.InsertAt(line, currentIndentation.Length, insertedIndentation);
+    }
+
+    // copy pasta
     public void ReduceIndentation()
     {
         var selectionStart = _selectionSpan.SelectionStart;
@@ -139,7 +182,7 @@ public sealed class CursoredStringEditor
         }
 
         var startLengthDifference = _editor.LineLength(startLine) - previousStartLength;
-        var endLengthDifference = _editor.LineLength(startLine) - previousEndLength;
+        var endLengthDifference = _editor.LineLength(endLine) - previousEndLength;
 
         if (startLengthDifference > 0)
         {

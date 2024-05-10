@@ -786,12 +786,24 @@ public partial class CodeEditor : UserControl
                     e.Handled = true;
                     break;
                 }
-                _editor.InsertTab();
+                HandleTabInsertion();
                 e.Handled = true;
                 break;
         }
 
         base.OnKeyDown(e);
+    }
+
+    private void HandleTabInsertion()
+    {
+        if (!_editor.HasSelection)
+        {
+            _editor.InsertTab();
+        }
+        else
+        {
+            _editor.IncreaseIndentation();
+        }
     }
 
     private void ExpandSelectNextNode()
