@@ -414,6 +414,7 @@ public partial class CodeEditor : UserControl
         bool inRangeSelection = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
         _editor.SetSelectionMode(inRangeSelection);
         _editor.CursorPosition = new(line, column);
+        _editor.CapturePreferredCursorCharacter();
         e.Handled = true;
     }
 

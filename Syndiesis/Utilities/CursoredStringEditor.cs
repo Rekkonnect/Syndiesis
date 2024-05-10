@@ -544,7 +544,7 @@ public sealed class CursoredStringEditor
         TriggerCodeChanged();
     }
 
-    private void CapturePreferredCursorCharacter()
+    public void CapturePreferredCursorCharacter()
     {
         _preferredCursorCharacterIndex = CursorCharacterIndex;
     }
