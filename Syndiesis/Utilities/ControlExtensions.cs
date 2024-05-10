@@ -37,4 +37,13 @@ public static class ControlExtensions
 
         return await clipboard.GetTextAsync();
     }
+
+    public static async Task SetClipboardTextAsync(this Control control, string? value)
+    {
+        var clipboard = control.Clipboard();
+        if (clipboard is null)
+            return;
+
+        await clipboard.SetTextAsync(value);
+    }
 }

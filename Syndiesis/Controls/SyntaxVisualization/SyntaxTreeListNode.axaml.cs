@@ -100,6 +100,24 @@ public partial class SyntaxTreeListNode : UserControl
 
     public int Depth { get; private set; }
 
+    public SyntaxTreeListNode? ParentNode
+    {
+        get
+        {
+            StyledElement? current = this;
+            while (current is not null)
+            {
+                var parent = current.Parent;
+                if (parent is SyntaxTreeListNode node)
+                    return node;
+
+                current = parent;
+            }
+
+            return null;
+        }
+    }
+
     public SyntaxTreeListNode()
     {
         InitializeComponent();

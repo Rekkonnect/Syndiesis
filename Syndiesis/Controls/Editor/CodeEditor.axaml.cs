@@ -90,6 +90,8 @@ public partial class CodeEditor : UserControl
         }
     }
 
+    public SyntaxTreeListView? AssociatedTreeView { get; set; }
+
     private void HandleCursorMoved(LinePosition position)
     {
         UpdateCurrentContent();
@@ -660,6 +662,30 @@ public partial class CodeEditor : UserControl
                 }
                 break;
 
+            case Key.X:
+                if (hasControl)
+                {
+                    _ = CutSelectionToClipboardAsync();
+                    e.Handled = true;
+                }
+                break;
+
+            case Key.W:
+                if (hasControl)
+                {
+                    SelectCurrentWord();
+                    e.Handled = true;
+                }
+                break;
+
+            case Key.U:
+                if (hasControl)
+                {
+                    ExpandSelectNextNode();
+                    e.Handled = true;
+                }
+                break;
+
             case Key.A:
                 if (hasControl)
                 {
@@ -753,12 +779,51 @@ public partial class CodeEditor : UserControl
                 break;
 
             case Key.Tab:
+                if (hasShift)
+                {
+                    _editor.ReduceIndentation();
+                    e.Handled = true;
+                    break;
+                }
                 _editor.InsertTab();
                 e.Handled = true;
                 break;
         }
 
         base.OnKeyDown(e);
+    }
+
+    private void ExpandSelectNextNode()
+    {
+        var discovered = DiscoverParentNodeCoveringSelection();
+        if (discovered is null)
+            return;
+
+        var span = discovered.NodeLine.DisplayLineSpan;
+        _editor.SelectionLineSpan = span;
+        _editor.InvertSelectionCursorPosition();
+        AssociatedTreeView?.OverrideHover(discovered);
+    }
+
+    private SyntaxTreeListNode? DiscoverParentNodeCoveringSelection()
+    {
+        var span = _editor.SelectionLineSpan;
+        var start = span.Start;
+        var end = span.End;
+
+        var startIndex = _editor.MultilineEditor.GetIndex(start);
+        var endIndex = _editor.MultilineEditor.GetIndex(end);
+
+        return AssociatedTreeView?.DiscoverParentNodeCoveringSelection(startIndex, endIndex);
+    }
+
+    private void SelectCurrentWord()
+    {
+        _editor.SetSelectionMode(false);
+        _editor.MoveCursorNextWord();
+        _editor.SetSelectionMode(true);
+        _editor.MoveCursorLeftWord();
+        _editor.InvertSelectionCursorPosition();
     }
 
     private void MoveCursorPageStart()
@@ -824,17 +889,22 @@ public partial class CodeEditor : UserControl
         _editor.SelectAll();
     }
 
-    private async Task CopySelectionToClipboardAsync()
+    private async Task CutSelectionToClipboardAsync()
     {
         var selection = _editor.GetCurrentSelectionString();
         if (string.IsNullOrEmpty(selection))
             return;
 
-        var clipboard = TopLevel.GetTopLevel(this)?.Clipboard;
-        if (clipboard is null)
-            return;
+        _editor.DeleteCurrentSelection();
+        await this.SetClipboardTextAsync(selection);
+    }
 
-        await clipboard.SetTextAsync(selection);
+    private async Task CopySelectionToClipboardAsync()
+    {
+        var selection = _editor.GetCurrentSelectionString();
+        if (string.IsNullOrEmpty(selection))
+            return;
+        await this.SetClipboardTextAsync(selection);
     }
 
     private readonly AsyncLock _pasteLock = new();

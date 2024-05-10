@@ -56,6 +56,15 @@ public sealed class CursoredStringEditor
     public LinePositionSpan SelectionLineSpan
     {
         get => _selectionSpan.SelectionPositionSpan;
+        set
+        {
+            var start = value.Start;
+            var end = value.End;
+            _selectionSpan.SelectionStart = start;
+            _selectionSpan.SelectionEnd = end;
+            _isSelectingText = _selectionSpan.HasSelection;
+            CursorPosition = end;
+        }
     }
 
     public int LineCount
@@ -114,31 +123,51 @@ public sealed class CursoredStringEditor
 
     public void ReduceIndentation()
     {
+        var selectionStart = _selectionSpan.SelectionStart;
+        var selectionEnd = _selectionSpan.SelectionEnd;
+
+        int startLine = selectionStart.Line;
+        int endLine = selectionEnd.Line;
+
+        int previousStartLength = _editor.LineLength(startLine);
+        int previousEndLength = _editor.LineLength(endLine);
+
+        ConvenienceExtensions.Sort(startLine, endLine, out var firstLine, out var lastLine);
+        for (int line = firstLine; line <= lastLine; line++)
+        {
+            ReduceSingleLineIndentation(line);
+        }
+
+        var startLengthDifference = _editor.LineLength(startLine) - previousStartLength;
+        var endLengthDifference = _editor.LineLength(startLine) - previousEndLength;
+
+        if (startLengthDifference > 0)
+        {
+            selectionStart.SetCharacterIndex(
+                selectionStart.Character - startLengthDifference);
+            _selectionSpan.SelectionStart = selectionStart;
+        }
+        if (endLengthDifference > 0)
+        {
+            CursorCharacterIndex -= endLengthDifference;
+        }
+        TriggerCodeChanged();
+    }
+
+    private void ReduceSingleLineIndentation(int line)
+    {
         int tabSize = IndentationOptions.IndentationWidth;
-        var position = CursorPosition;
-        var line = position.Line;
         var indentation = GetIndentation(line);
         int indentationLength = indentation.Length;
         int existingInBlock = indentationLength % tabSize;
         int spacesToRemove = tabSize - existingInBlock;
-        spacesToRemove = Math.Clamp(0, indentationLength, spacesToRemove);
+        spacesToRemove = Math.Clamp(spacesToRemove, 0, indentationLength);
         if (spacesToRemove is 0)
             return;
 
         int start = indentationLength - spacesToRemove;
-        int end = indentationLength;
-        RemoveRangeInLine(line, start, end);
-    }
-
-    private void RemoveRangeInLine(int line, int start, int end)
-    {
+        int end = indentationLength - 1;
         _editor.RemoveRangeInLine(line, start, end);
-        var newLength = _editor.LineLength(line);
-        if (CursorCharacterIndex > newLength)
-        {
-            CursorCharacterIndex = newLength;
-        }
-        TriggerCodeChanged();
     }
 
     private string GetIndentation(int line)
@@ -266,6 +295,18 @@ public sealed class CursoredStringEditor
 
         CursorCharacterIndex++;
         CapturePreferredCursorCharacter();
+    }
+
+    public void InvertSelectionCursorPosition()
+    {
+        if (!HasSelection)
+            return;
+
+        var start = _selectionSpan.SelectionStart;
+        var end = _selectionSpan.SelectionEnd;
+        _selectionSpan.SelectionStart = end;
+        _selectionSpan.SelectionEnd = start;
+        CursorPosition = start;
     }
 
     private void HandleTriggerCursorMoved()

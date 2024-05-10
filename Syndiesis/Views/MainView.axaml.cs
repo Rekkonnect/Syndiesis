@@ -42,6 +42,7 @@ public partial class MainView : UserControl
         codeEditor.Editor = ViewModel.Editor;
         codeEditor.SetSource(initializingSource);
         codeEditor.CursorPosition = new(4, 48);
+        codeEditor.AssociatedTreeView = syntaxTreeView.listView;
     }
 
     private void InitializeEvents()
