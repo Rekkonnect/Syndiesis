@@ -1,6 +1,5 @@
 using Avalonia.Controls;
 using Syndiesis.Utilities;
-using System;
 
 namespace Syndiesis.Controls;
 

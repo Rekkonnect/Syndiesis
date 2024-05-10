@@ -19,7 +19,7 @@ public sealed class CursoredStringEditor
     public event Action? CodeChanged;
     public event Action<LinePosition>? CursorMoved;
 
-    public int TabSize { get; set; } = 4;
+    public IndentationOptions IndentationOptions { get; set; } = new();
 
     public int CursorLineIndex
     {
@@ -56,6 +56,15 @@ public sealed class CursoredStringEditor
     public LinePositionSpan SelectionLineSpan
     {
         get => _selectionSpan.SelectionPositionSpan;
+        set
+        {
+            var start = value.Start;
+            var end = value.End;
+            _selectionSpan.SelectionStart = start;
+            _selectionSpan.SelectionEnd = end;
+            _isSelectingText = _selectionSpan.HasSelection;
+            CursorPosition = end;
+        }
     }
 
     public int LineCount
@@ -105,11 +114,110 @@ public sealed class CursoredStringEditor
 
     public void InsertTab()
     {
-        int tabSize = TabSize;
+        int tabSize = IndentationOptions.IndentationWidth;
         var column = CursorCharacterIndex;
-        int existingInTab = column % tabSize;
-        int spacesToInsert = tabSize - existingInTab;
+        int existingInBlock = column % tabSize;
+        int spacesToInsert = tabSize - existingInBlock;
         InsertText(new string(' ', spacesToInsert));
+    }
+
+    public void IncreaseIndentation()
+    {
+        var selectionStart = _selectionSpan.SelectionStart;
+        var selectionEnd = _selectionSpan.SelectionEnd;
+
+        int startLine = selectionStart.Line;
+        int endLine = selectionEnd.Line;
+
+        int previousStartLength = _editor.LineLength(startLine);
+        int previousEndLength = _editor.LineLength(endLine);
+
+        ConvenienceExtensions.Sort(startLine, endLine, out var firstLine, out var lastLine);
+        for (int line = firstLine; line <= lastLine; line++)
+        {
+            IncreaseSingleLineIndentation(line);
+        }
+
+        var startLengthDifference = _editor.LineLength(startLine) - previousStartLength;
+        var endLengthDifference = _editor.LineLength(endLine) - previousEndLength;
+
+        if (startLengthDifference > 0)
+        {
+            selectionStart.SetCharacterIndex(
+                selectionStart.Character + startLengthDifference);
+            _selectionSpan.SelectionStart = selectionStart;
+        }
+        if (endLengthDifference > 0)
+        {
+            CursorCharacterIndex += endLengthDifference;
+        }
+        TriggerCodeChanged();
+    }
+
+    private void IncreaseSingleLineIndentation(int line)
+    {
+        var indentationOption = IndentationOptions.Indentation;
+        var currentIndentation = GetIndentation(line);
+        var insertedIndentation = indentationOption.ToString();
+
+        _editor.InsertAt(line, currentIndentation.Length, insertedIndentation);
+    }
+
+    // copy pasta
+    public void ReduceIndentation()
+    {
+        var selectionStart = _selectionSpan.SelectionStart;
+        var selectionEnd = _selectionSpan.SelectionEnd;
+
+        int startLine = selectionStart.Line;
+        int endLine = selectionEnd.Line;
+
+        int previousStartLength = _editor.LineLength(startLine);
+        int previousEndLength = _editor.LineLength(endLine);
+
+        ConvenienceExtensions.Sort(startLine, endLine, out var firstLine, out var lastLine);
+        for (int line = firstLine; line <= lastLine; line++)
+        {
+            ReduceSingleLineIndentation(line);
+        }
+
+        var startLengthDifference = _editor.LineLength(startLine) - previousStartLength;
+        var endLengthDifference = _editor.LineLength(endLine) - previousEndLength;
+
+        if (startLengthDifference > 0)
+        {
+            selectionStart.SetCharacterIndex(
+                selectionStart.Character - startLengthDifference);
+            _selectionSpan.SelectionStart = selectionStart;
+        }
+        if (endLengthDifference > 0)
+        {
+            CursorCharacterIndex -= endLengthDifference;
+        }
+        TriggerCodeChanged();
+    }
+
+    private void ReduceSingleLineIndentation(int line)
+    {
+        int tabSize = IndentationOptions.IndentationWidth;
+        var indentation = GetIndentation(line);
+        int indentationLength = indentation.Length;
+        int existingInBlock = indentationLength % tabSize;
+        int spacesToRemove = tabSize - existingInBlock;
+        spacesToRemove = Math.Clamp(spacesToRemove, 0, indentationLength);
+        if (spacesToRemove is 0)
+            return;
+
+        int start = indentationLength - spacesToRemove;
+        int end = indentationLength - 1;
+        _editor.RemoveRangeInLine(line, start, end);
+    }
+
+    private string GetIndentation(int line)
+    {
+        var lineContent = _editor.LineAt(line);
+        var leading = lineContent.GetLeadingWhitespace();
+        return leading;
     }
 
     public void MoveCursorLeftWord()
@@ -200,7 +308,7 @@ public sealed class CursoredStringEditor
         if (column is 0)
         {
             var nextLine = line - 1;
-            var nextColumn = _editor.AtLine(line - 1).Length;
+            var nextColumn = _editor.LineAt(line - 1).Length;
             CursorPosition = new(nextLine, nextColumn);
             CapturePreferredCursorCharacter();
             return;
@@ -213,7 +321,7 @@ public sealed class CursoredStringEditor
     public void MoveCursorRight()
     {
         GetCurrentTextPosition(out var line, out var column);
-        var lineContent = _editor.AtLine(line);
+        var lineContent = _editor.LineAt(line);
         int lineLength = lineContent.Length;
         if (column == lineLength)
         {
@@ -230,6 +338,18 @@ public sealed class CursoredStringEditor
 
         CursorCharacterIndex++;
         CapturePreferredCursorCharacter();
+    }
+
+    public void InvertSelectionCursorPosition()
+    {
+        if (!HasSelection)
+            return;
+
+        var start = _selectionSpan.SelectionStart;
+        var end = _selectionSpan.SelectionEnd;
+        _selectionSpan.SelectionStart = end;
+        _selectionSpan.SelectionEnd = start;
+        CursorPosition = start;
     }
 
     private void HandleTriggerCursorMoved()
@@ -288,9 +408,42 @@ public sealed class CursoredStringEditor
         DeleteCurrentSelection();
         GetCurrentTextPosition(out int line, out int column);
         _editor.InsertLineAtColumn(line, column);
-        CursorPosition = new(CursorLineIndex + 1, 0);
+        int nextLine = line + 1;
+        var preferred = ApplyDefaultIndentation(nextLine);
+        CursorPosition = new(nextLine, preferred.Length);
         CapturePreferredCursorCharacter();
         TriggerCodeChanged();
+    }
+
+    private string ApplyDefaultIndentation(int line)
+    {
+        var preferred = GetPreferredIndentation(line);
+        _editor.InsertAt(line, 0, preferred);
+        return preferred;
+    }
+
+    private string GetPreferredIndentation(int line)
+    {
+        var defaultIndentation = string.Empty;
+
+        int previousLine = line - 1;
+        int nextLine = line + 1;
+        if (previousLine.ValidIndex(_editor.LineCount))
+        {
+            defaultIndentation = GetIndentation(previousLine);
+        }
+
+        if (nextLine.ValidIndex(_editor.LineCount))
+        {
+            // This does not account for the length of the tabs
+            var nextIndentation = GetIndentation(nextLine);
+            if (nextIndentation.Length > defaultIndentation.Length)
+            {
+                return nextIndentation;
+            }
+        }
+
+        return defaultIndentation;
     }
 
     public void DeleteCurrentCharacterBackwards()
@@ -338,7 +491,7 @@ public sealed class CursoredStringEditor
 
         int previousColumn = column - 1;
         var start = LeftmostContiguousCommonCategory().Character;
-        var lineContents = _editor.AtLine(line);
+        var lineContents = _editor.LineAt(line);
         var startChar = lineContents[start];
         var endChar = lineContents[previousColumn];
         bool coveringWhitespace =
@@ -366,7 +519,7 @@ public sealed class CursoredStringEditor
         if (line >= _editor.LineCount)
             return;
 
-        var currentLine = _editor.AtLine(line);
+        var currentLine = _editor.LineAt(line);
 
         if (column >= currentLine.Length)
         {
@@ -433,7 +586,7 @@ public sealed class CursoredStringEditor
         }
 
         int leftmost = column - 1;
-        var lineContent = _editor.AtLine(line);
+        var lineContent = _editor.LineAt(line);
 
         if (lineContent.Length is 0)
             return new(line, 0);
@@ -486,7 +639,7 @@ public sealed class CursoredStringEditor
         }
 
         int rightmost = column;
-        var lineContent = _editor.AtLine(line);
+        var lineContent = _editor.LineAt(line);
 
         if (lineContent.Length is 0)
             return new(line, 0);
@@ -570,7 +723,7 @@ public sealed class CursoredStringEditor
 
     private LinePosition LeftmostWhitespaceInCurrentLine(int line, int column)
     {
-        var currentLine = _editor.AtLine(line);
+        var currentLine = _editor.LineAt(line);
         int next = column;
         while (next > 0)
         {
@@ -595,7 +748,7 @@ public sealed class CursoredStringEditor
 
     private LinePosition RightmostWhitespaceInCurrentLine(int line, int column)
     {
-        var currentLine = _editor.AtLine(line);
+        var currentLine = _editor.LineAt(line);
         var currentLength = currentLine.Length;
         while (column < currentLength - 1)
         {

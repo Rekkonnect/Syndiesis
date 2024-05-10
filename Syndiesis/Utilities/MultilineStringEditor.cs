@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Syndiesis.Utilities;
@@ -58,7 +57,7 @@ public sealed class MultilineStringEditor
 
     public void InsertLineAtColumn(int line, int column)
     {
-        var sourceLine = AtLine(line);
+        var sourceLine = LineAt(line);
         if (column >= sourceLine.Length)
         {
             InsertEmptyLineAt(line + 1);
@@ -70,7 +69,7 @@ public sealed class MultilineStringEditor
 
     public void BreakLineAt(int line, int upperLineLength)
     {
-        var sourceLine = AtLine(line);
+        var sourceLine = LineAt(line);
         if (upperLineLength >= sourceLine.Length)
         {
             return;
@@ -84,14 +83,14 @@ public sealed class MultilineStringEditor
 
     public void InsertAt(int line, int column, char value)
     {
-        var previousLine = AtLine(line);
+        var previousLine = LineAt(line);
         var nextLine = previousLine.InsertAt(column, value);
         SetLine(line, nextLine);
     }
 
     public LinePosition InsertAt(int line, int column, string value)
     {
-        var previousLine = AtLine(line);
+        var previousLine = LineAt(line);
 
         bool multiline = value.IsMultiline();
         if (!multiline)
@@ -146,7 +145,7 @@ public sealed class MultilineStringEditor
 
     public void RemoveAt(int line, int column)
     {
-        var previousLine = AtLine(line);
+        var previousLine = LineAt(line);
         if (previousLine.Length is 0)
         {
             RemoveLine(line);
@@ -167,7 +166,7 @@ public sealed class MultilineStringEditor
         if (count <= 0)
             return;
 
-        var previousLine = AtLine(line);
+        var previousLine = LineAt(line);
         int removedLength = column;
         int remainingLength = previousLine.Length - column;
         if (count >= column)
@@ -188,7 +187,7 @@ public sealed class MultilineStringEditor
             if (previousLineIndex < 0)
                 return;
 
-            var previousLineLength = AtLine(previousLineIndex).Length;
+            var previousLineLength = LineAt(previousLineIndex).Length;
             RemoveBackwardsAt(previousLineIndex, previousLineLength, count);
             return;
         }
@@ -203,7 +202,7 @@ public sealed class MultilineStringEditor
         if (count <= 0)
             return;
 
-        var previousLine = AtLine(line);
+        var previousLine = LineAt(line);
         int removedLength = previousLine.Length - column;
         int remainingLength = column;
         if (count >= removedLength)
@@ -255,14 +254,14 @@ public sealed class MultilineStringEditor
 
     public void RemoveStart(int line, int column)
     {
-        var previousLine = AtLine(line);
+        var previousLine = LineAt(line);
         var nextLine = previousLine[column..];
         SetLine(line, nextLine);
     }
 
     public void RemoveEnd(int line, int column)
     {
-        var previousLine = AtLine(line);
+        var previousLine = LineAt(line);
         var nextLine = previousLine[..column];
         SetLine(line, nextLine);
     }
@@ -303,8 +302,8 @@ public sealed class MultilineStringEditor
         if (line >= _lines.Count - 1)
             return;
 
-        var current = AtLine(line);
-        var next = AtLine(line + 1);
+        var current = LineAt(line);
+        var next = LineAt(line + 1);
         RemoveLine(line + 1);
         SetLine(line, current + next);
     }
@@ -319,7 +318,7 @@ public sealed class MultilineStringEditor
         _lines[line] = value;
     }
 
-    public string AtLine(int line)
+    public string LineAt(int line)
     {
         return _lines[line];
     }
@@ -372,7 +371,7 @@ public sealed class MultilineStringEditor
         Debug.Assert(lineCount > 0, "invalid span range was given");
         var builder = new StringBuilder((lineCount + 2) * averageLineLength);
 
-        var firstLine = AtLine(start.Line);
+        var firstLine = LineAt(start.Line);
         builder.Append(firstLine[start.Character..]);
         builder.Append(newLine);
 
@@ -382,7 +381,7 @@ public sealed class MultilineStringEditor
             builder.Append(newLine);
         }
 
-        var lastLine = AtLine(end.Line);
+        var lastLine = LineAt(end.Line);
         builder.Append(lastLine[..end.Character]);
 
         return builder.ToString();

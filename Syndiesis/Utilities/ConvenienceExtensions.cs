@@ -2,6 +2,7 @@
 using Avalonia.ReactiveUI;
 using Avalonia.Styling;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Syndiesis.Utilities;
 
@@ -34,5 +35,36 @@ public static class ConvenienceExtensions
             return default;
 
         return list[index];
+    }
+
+    public static bool ValidIndex(this int value, int length)
+    {
+        return value >= 0
+            && value < length;
+    }
+
+    public static bool ValidIndex<T>(this int value, T[] array)
+    {
+        return ValidIndex(value, array.Length);
+    }
+
+    public static bool ValidIndex<T>(this int value, ICollection<T> collection)
+    {
+        return ValidIndex(value, collection.Count);
+    }
+
+    public static void Sort<T>(T a, T b, out T min, out T max)
+        where T : IComparisonOperators<T, T, bool>
+    {
+        if (a < b)
+        {
+            min = a;
+            max = b;
+        }
+        else
+        {
+            min = b;
+            max = a;
+        }
     }
 }

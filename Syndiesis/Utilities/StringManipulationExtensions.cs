@@ -1,9 +1,13 @@
 ﻿using System;
+using System.Buffers;
 
 namespace Syndiesis.Utilities;
 
 public static class StringManipulationExtensions
 {
+    private static readonly SearchValues<char> _whitespaceCharacters
+        = SearchValues.Create(" \t\r\n");
+
     public static string InsertAt(this string s, int index, char value)
     {
         if (index is 0)
@@ -81,5 +85,47 @@ public static class StringManipulationExtensions
             rightmost = next;
         }
         return rightmost;
+    }
+
+    /// <summary>
+    /// Gets the leading whitespace of a string, which is the whitespace that
+    /// appears at the left side of the string (assuming left-to-right / LTR content).
+    /// </summary>
+    /// <returns>
+    /// The leading whitespace of the string. If the entire string is whitespace,
+    /// the entire string is returned. If no leading whitespace exists, the empty
+    /// string is returned.
+    /// </returns>
+    public static string GetLeadingWhitespace(this string s)
+    {
+        int nonWhitespace = s.AsSpan().IndexOfAnyExcept(_whitespaceCharacters);
+        if (nonWhitespace < 0)
+            return s;
+
+        if (nonWhitespace is 0)
+            return string.Empty;
+
+        return s[..nonWhitespace];
+    }
+
+    /// <summary>
+    /// Gets the trailing whitespace of a string, which is the whitespace that
+    /// appears at the right side of the string (assuming left-to-right / LTR content).
+    /// </summary>
+    /// <returns>
+    /// The trailing whitespace of the string. If the entire string is whitespace,
+    /// the entire string is returned. If no trailing whitespace exists, the empty
+    /// string is returned.
+    /// </returns>
+    public static string GetTrailingWhitespace(this string s)
+    {
+        int nonWhitespace = s.AsSpan().LastIndexOfAnyExcept(_whitespaceCharacters);
+        if (nonWhitespace < 0)
+            return s;
+
+        if (nonWhitespace == s.Length - 1)
+            return string.Empty;
+
+        return s[nonWhitespace..];
     }
 }

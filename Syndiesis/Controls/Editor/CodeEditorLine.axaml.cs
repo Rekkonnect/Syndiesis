@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
-using Microsoft.CodeAnalysis.CSharp;
 using Syndiesis.Models;
 using Syndiesis.Utilities;
 using System;

@@ -3,6 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
+using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -125,6 +127,34 @@ public partial class SyntaxTreeListView : UserControl
         verticalScrollBar.StartPosition = 0;
     }
 
+    public SyntaxTreeListNode? DiscoverParentNodeCoveringSelection(int start, int end)
+    {
+        Debug.Assert(end >= start);
+
+        var startNode = GetNodeAtPosition(start);
+        if (startNode is null)
+            return null;
+
+        var current = startNode;
+        while (true)
+        {
+            var parentNode = current.ParentNode;
+            if (parentNode is null)
+                return current;
+
+            var displaySpan = parentNode.NodeLine.DisplaySpan;
+            bool contained = displaySpan.Contains(start)
+                && displaySpan.Contains(end);
+
+            if (contained)
+            {
+                return parentNode;
+            }
+
+            current = parentNode;
+        }
+    }
+
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
@@ -225,25 +255,11 @@ public partial class SyntaxTreeListView : UserControl
         if (!_allowedHover)
             return false;
 
-        var parent = ParentNode(node);
+        var parent = node.ParentNode;
         if (parent is null)
             return true;
 
         return parent.NodeLine.IsExpanded;
-    }
-
-    private static SyntaxTreeListNode? ParentNode(SyntaxTreeListNode node)
-    {
-        var current = node.Parent;
-        while (current is not null)
-        {
-            if (current is SyntaxTreeListNode parent)
-                return parent;
-
-            current = current.Parent;
-        }
-
-        return null;
     }
 
     public bool IsHovered(SyntaxTreeListNode node)
@@ -282,15 +298,24 @@ public partial class SyntaxTreeListView : UserControl
 
     public void HighlightPosition(int position)
     {
-        if (AnalyzedTree is null)
+        var node = GetNodeAtPosition(position);
+        if (node is null)
             return;
+
+        OverrideHover(node);
+        BringToView(node);
+        return;
+    }
+
+    private SyntaxTreeListNode? GetNodeAtPosition(int position)
+    {
+        if (AnalyzedTree is null)
+            return null;
 
         if (position >= AnalyzedTree.Length)
         {
             var last = GetLastDemandedNode();
-            OverrideHover(last);
-            BringToView(last);
-            return;
+            return last;
         }
 
         var current = RootNode;
@@ -299,7 +324,7 @@ public partial class SyntaxTreeListView : UserControl
             current.EnsureInitializedChildren();
             if (!current.HasChildren)
             {
-                break;
+                return current;
             }
             var children = ExpandDemandChildren(current);
             var relevant = children
@@ -309,13 +334,10 @@ public partial class SyntaxTreeListView : UserControl
             // but is not displayed in our tree (for example because trivia is hidden)
             if (relevant is null)
             {
-                break;
+                return current;
             }
             current = relevant;
         }
-
-        OverrideHover(current);
-        BringToView(current);
     }
 
     private SyntaxTreeListNode GetLastDemandedNode()

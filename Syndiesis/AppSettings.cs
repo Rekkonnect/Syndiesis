@@ -7,9 +7,10 @@ public sealed class AppSettings
 {
     public static readonly AppSettings Instance = new();
 
-    public NodeLineCreationOptions CreationOptions { get; set; } = new();
+    public NodeLineCreationOptions CreationOptions = new();
+    public IndentationOptions IndentationOptions = new();
 
-    public TimeSpan UserInputDelay { get; set; } = TimeSpan.FromMilliseconds(600);
+    public TimeSpan UserInputDelay = TimeSpan.FromMilliseconds(600);
 
-    public bool EnableExpandingAllNodes { get; set; } = false;
+    public bool EnableExpandingAllNodes = false;
 }
