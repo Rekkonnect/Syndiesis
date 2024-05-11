@@ -659,7 +659,8 @@ public partial class CodeEditor : UserControl
             case Key.C:
                 if (hasControl)
                 {
-                    _ = CopySelectionToClipboardAsync();
+                    _ = CopySelectionToClipboardAsync()
+                        .ConfigureAwait(false);
                     e.Handled = true;
                 }
                 break;
@@ -667,7 +668,8 @@ public partial class CodeEditor : UserControl
             case Key.X:
                 if (hasControl)
                 {
-                    _ = CutSelectionToClipboardAsync();
+                    _ = CutSelectionToClipboardAsync()
+                        .ConfigureAwait(false);
                     e.Handled = true;
                 }
                 break;
@@ -910,7 +912,8 @@ public partial class CodeEditor : UserControl
             return;
 
         _editor.DeleteCurrentSelection();
-        await this.SetClipboardTextAsync(selection);
+        await this.SetClipboardTextAsync(selection)
+            .ConfigureAwait(false);
     }
 
     private async Task CopySelectionToClipboardAsync()
@@ -918,10 +921,12 @@ public partial class CodeEditor : UserControl
         var selection = _editor.GetCurrentSelectionString();
         if (string.IsNullOrEmpty(selection))
             return;
-        await this.SetClipboardTextAsync(selection);
+
+        await this.SetClipboardTextAsync(selection)
+            .ConfigureAwait(false);
     }
 
-    private readonly AsyncLock _pasteLock = new();
+    private readonly AsyncUsableLock _pasteLock = new();
 
     private async Task PasteClipboardTextAsync()
     {

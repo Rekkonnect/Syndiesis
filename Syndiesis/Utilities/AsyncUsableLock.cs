@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Utilities;
 
-// Inspired by a ChatGPT suggestion, with extra
-public sealed class AsyncLock
+public sealed class AsyncUsableLock
 {
     private volatile bool _isLocked = false;
 
@@ -39,7 +38,7 @@ public sealed class AsyncLock
         return new(this);
     }
 
-    public readonly record struct LockReleaser(AsyncLock AsyncLock)
+    public readonly record struct LockReleaser(AsyncUsableLock AsyncLock)
         : IDisposable
     {
         public void Dispose()

@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Threading;
 using Syndiesis.Utilities.Specific;
 using System;
 
@@ -31,47 +32,69 @@ public partial class CoverableSyntaxTreeListView : UserControl
 
     private void HandleAnalysisFailed(FailedAnalysisResult failedResult)
     {
-        var image = App.CurrentResourceManager.FailureImage?.CopyOfSource();
-        coverable.UpdateCoverContent(
-            image,
-            "Analysis failed",
-            UserInteractionCover.Styling.BadTextBrush);
+        void UIUpdate()
+        {
+            var image = App.CurrentResourceManager.FailureImage?.CopyOfSource();
+            coverable.UpdateCoverContent(
+                image,
+                "Analysis failed",
+                UserInteractionCover.Styling.BadTextBrush);
+        }
+
+        Dispatcher.UIThread.Invoke(UIUpdate);
     }
 
     private void HandleAnalysisCompleted(AnalysisResult analysisResult)
     {
-        var image = App.CurrentResourceManager.SuccessImage?.CopyOfSource();
-        coverable.UpdateCoverContent(image, "Analysis complete");
-
-        switch (analysisResult)
+        void UIUpdate()
         {
-            case SyntaxNodeAnalysisResult syntaxNodeAnalysisResult:
-                listView.RootNode = syntaxNodeAnalysisResult.NodeRoot!;
-                break;
+            var image = App.CurrentResourceManager.SuccessImage?.CopyOfSource();
+            coverable.UpdateCoverContent(image, "Analysis complete");
+
+            switch (analysisResult)
+            {
+                case SyntaxNodeAnalysisResult syntaxNodeAnalysisResult:
+                    listView.RootNode = syntaxNodeAnalysisResult.NodeRoot!;
+                    break;
+            }
+
+            var hideDuration = TimeSpan.FromMilliseconds(500);
+            _ = coverable.HideCover(hideDuration)
+                .ConfigureAwait(false);
+            NewRootNodeLoaded?.Invoke();
         }
 
-        var hideDuration = TimeSpan.FromMilliseconds(500);
-        _ = coverable.HideCover(hideDuration);
-        NewRootNodeLoaded?.Invoke();
+        Dispatcher.UIThread.Invoke(UIUpdate);
     }
 
     private void HandleAnalysisRequested()
     {
-        var showDuration = TimeSpan.FromMilliseconds(100);
-        var image = App.CurrentResourceManager.PenImage?.CopyOfSource();
-        const string requestedText = """
-            Awaiting for further user input in the code editor
-            """;
-        _ = coverable.ShowCover(image, requestedText, showDuration);
+        void UIUpdate()
+        {
+            var showDuration = TimeSpan.FromMilliseconds(100);
+            var image = App.CurrentResourceManager.PenImage?.CopyOfSource();
+            const string requestedText = """
+                Awaiting for further user input in the code editor
+                """;
+            _ = coverable.ShowCover(image, requestedText, showDuration)
+                .ConfigureAwait(false);
+        }
+
+        Dispatcher.UIThread.Invoke(UIUpdate);
     }
 
     private void HandleAnalysisBegun()
     {
-        var spinner = new LoadingSpinner();
-        const string begunText = """
-            Parsing and analyzing the syntax tree,
-            we should be ready soon
-            """;
-        coverable.UpdateCoverContent(spinner, begunText);
+        void UIUpdate()
+        {
+            var spinner = new LoadingSpinner();
+            const string begunText = """
+                Parsing and analyzing the syntax tree,
+                we should be ready soon
+                """;
+            coverable.UpdateCoverContent(spinner, begunText);
+        }
+
+        Dispatcher.UIThread.Invoke(UIUpdate);
     }
 }

@@ -36,7 +36,6 @@
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
     <PackageReference Include="Garyon" Version="0.3.3" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
-    <PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
   </ItemGroup>
   
 </Project>
