@@ -4,12 +4,12 @@ The most revolutionary syntax visualizer for C#
 
 ## Motivation
 
-The project was inspired by the task for applying into a Roslyn position regarding C# syntax highlighting at JetBrains:
+The project was inspired by the task for applying into a Roslyn internship position regarding C# syntax highlighting at JetBrains:
 ([project](https://internship.jetbrains.com/projects/1442/) / [task](https://internship.jetbrains.com/applications/19433/))
 
 The main design inspiration is [SharpLab](https://sharplab.io/). The syntax view feature of SharpLab is the main design that the app built upon.
 
-Despite not applying, I wanted to finish the project and release it into a usable state without entering the depths of feature creep. The initial intend was to build a complete project for once in my life.
+Despite not applying for the internship, I wanted to finish the project and release it into a usable state without entering the depths of feature creep.
 
 ## Usage preview
 
@@ -20,7 +20,7 @@ https://github.com/Rekkonnect/Syndiesis/assets/8298332/4d754285-c9d9-4637-a885-8
 - Visual Studio 2022
 - .NET 8.0
 - C# 12.0
-- Avalonia 11.0
+- [Avalonia 11.0](https://github.com/AvaloniaUI/Avalonia)
 
 ## Features
 
@@ -30,6 +30,7 @@ https://github.com/Rekkonnect/Syndiesis/assets/8298332/4d754285-c9d9-4637-a885-8
   - Scrolling
   - Copy/paste text
   - Navigation with keybinds
+  - Smart indentation
 - Syntax visualizer
   - Current cursor syntax node highlighting
   - Tree view of nodes
@@ -40,13 +41,7 @@ The entirety of the app is built using basic components in Avalonia. Everything 
 
 ### Desired features
 
-Features that someday could be implemented without drifting off the scope of the project.
-
-- Syntax highlighting on code view
-- Animations on navigation through the syntax tree via code editor cursor
-- Indentation reduction with Shift+Tab
-- Indentation adjustments on selected lines when multiple lines are selected
-- Multiple cursors for editing simultaneously
+Desired features are listed in the [issues](https://github.com/Rekkonnect/Syndiesis/issues).
 
 ### Ruled-out features
 
@@ -69,19 +64,27 @@ Features that someday could be implemented without drifting off the scope of the
 
 ### Keybinds
 
-- Navigation
-  - `Up` / `Down` / `Left` / `Right` - Move cursor by one character or line
-  - `Ctrl+Left` / `Ctrl+Right` - Move to next word left or right
-- Manipulation
-  - `Back` - Delete one character left
-  - `Delete` - Delete one character right
-  - `Ctrl+Back` - Delete one word left
-  - `Ctrl+Delete` - Delete one word right
-  - `Ctrl+C` - Copy current selection
-  - `Ctrl+V` - Paste current content on clipboard
-  - `Ctrl+Shift+V` - Paste current content on clipboard and replace entire snippet with pasted content
-  - `Ctrl+A` - Select all
-  - `Tab` - Insert up to 4 spaces to fill a 4-character section within the line
+- Main view
+  - `Ctrl+S` - Open settings
+  - `Ctrl+R` - Reset code
+- Code editor
+  - Navigation
+    - `Up` / `Down` / `Left` / `Right` - Move cursor by one character or line
+    - `Ctrl+Left` / `Ctrl+Right` - Move to next word left or right
+  - Manipulation
+    - `Back` - Delete one character left
+    - `Delete` - Delete one character right
+    - `Ctrl+Back` - Delete one word left
+    - `Ctrl+Delete` - Delete one word right
+    - `Ctrl+C` - Copy current selection
+    - `Ctrl+X` - Cut current selection
+    - `Ctrl+V` - Paste current content on clipboard
+    - `Ctrl+U` - Select outer node on syntax tree view
+    - `Ctrl+W` - Select currently hovered word
+    - `Ctrl+Shift+V` - Paste current content on clipboard and replace entire snippet with pasted content
+    - `Ctrl+A` - Select all
+    - `Tab` - Insert up to 4 spaces to fill a 4-character section within the line, or increase indentation by 4 spaces on selected lines
+    - `Shift+Tab` - Reduce indentation on current or selected lines by 4 spaces
 
 ## Design philosophy
 
