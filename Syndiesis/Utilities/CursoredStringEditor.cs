@@ -109,6 +109,7 @@ public sealed class CursoredStringEditor
     {
         _editor.SetText(source);
         CursorPosition = new(0, 0);
+        CapturePreferredCursorCharacter();
         TriggerCodeChanged();
     }
 
@@ -150,6 +151,7 @@ public sealed class CursoredStringEditor
         if (endLengthDifference > 0)
         {
             CursorCharacterIndex += endLengthDifference;
+            CapturePreferredCursorCharacter();
         }
         TriggerCodeChanged();
     }
@@ -186,13 +188,15 @@ public sealed class CursoredStringEditor
 
         if (startLengthDifference is not 0)
         {
-            selectionStart.SetCharacterIndex(
-                selectionStart.Character + startLengthDifference);
+            int characterIndex = Math.Max(0, selectionStart.Character + startLengthDifference);
+            selectionStart.SetCharacterIndex(characterIndex);
             _selectionSpan.SelectionStart = selectionStart;
         }
         if (endLengthDifference is not 0)
         {
-            CursorCharacterIndex += endLengthDifference;
+            int characterIndex = Math.Max(0, CursorCharacterIndex + endLengthDifference);
+            CursorCharacterIndex = characterIndex;
+            CapturePreferredCursorCharacter();
         }
         TriggerCodeChanged();
     }
@@ -564,6 +568,7 @@ public sealed class CursoredStringEditor
         GetCurrentTextPosition(out int line, out int column);
         var nextCursorPosition = _editor.InsertAt(line, column, text);
         CursorPosition = nextCursorPosition;
+        CapturePreferredCursorCharacter();
         TriggerCodeChanged();
     }
 
