@@ -78,6 +78,11 @@ public partial class MainView : UserControl
 
     private void HandleSettingsClick(object? sender, RoutedEventArgs e)
     {
+        RequestSettings();
+    }
+
+    private void RequestSettings()
+    {
         SettingsRequested?.Invoke();
     }
 
@@ -189,5 +194,33 @@ public partial class MainView : UserControl
     {
         base.OnGotFocus(e);
         codeEditor.Focus();
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        var modifiers = e.KeyModifiers;
+
+        bool hasControl = modifiers.HasFlag(KeyModifiers.Control);
+
+        switch (e.Key)
+        {
+            case Key.S:
+                if (hasControl)
+                {
+                    RequestSettings();
+                    e.Handled = true;
+                }
+                break;
+
+            case Key.R:
+                if (hasControl)
+                {
+                    Reset();
+                    e.Handled = true;
+                }
+                break;
+        }
+
+        base.OnKeyDown(e);
     }
 }
