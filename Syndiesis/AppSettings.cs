@@ -7,7 +7,7 @@ public sealed class AppSettings
 {
     public static readonly AppSettings Instance = new();
 
-    public NodeLineCreationOptions CreationOptions = new();
+    public NodeLineCreationOptions NodeLineOptions = new();
     public IndentationOptions IndentationOptions = new();
 
     public TimeSpan UserInputDelay = TimeSpan.FromMilliseconds(600);

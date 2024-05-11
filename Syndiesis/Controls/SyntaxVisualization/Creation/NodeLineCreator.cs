@@ -15,13 +15,6 @@ namespace Syndiesis.Controls.SyntaxVisualization.Creation;
 
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
 
-public sealed class NodeLineCreationOptions
-{
-    public bool ShowTrivia = true;
-
-    public int TruncationLimit = 30;
-}
-
 public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 {
     private const string eofDisplayString = "[EOF]";

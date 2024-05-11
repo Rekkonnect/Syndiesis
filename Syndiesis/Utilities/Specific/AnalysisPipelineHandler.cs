@@ -1,7 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Syndiesis.Controls;
-using Syndiesis.Controls.SyntaxVisualization.Creation;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Utilities.Specific;
@@ -19,12 +16,13 @@ public class AnalysisPipelineHandler
 
     public TimeSpan UserInputDelay { get; set; } = AppSettings.Instance.UserInputDelay;
 
-    public NodeLineCreationOptions CreationOptions { get; set; } = new();
+    public IAnalysisExecution AnalysisExecution { get; set; }
+        = new SyntaxNodeAnalysisExecution();
 
     public event Action? AnalysisRequested;
     public event Action? AnalysisBegun;
-    public event Action<SyntaxTreeListNode>? AnalysisCompleted;
-    public event Action<Exception>? AnalysisFailed;
+    public event Action<AnalysisResult>? AnalysisCompleted;
+    public event Action<FailedAnalysisResult>? AnalysisFailed;
 
     public void IgnoreInputDelayOnce()
     {
@@ -65,25 +63,12 @@ public class AnalysisPipelineHandler
 
         try
         {
-            var creator = new NodeLineCreator(CreationOptions);
-
-            var source = _pendingSource;
-            var syntaxTree = CSharpSyntaxTree.ParseText(source, cancellationToken: token);
-            if (token.IsCancellationRequested)
-                return;
-            var compilationUnitRoot = syntaxTree.GetCompilationUnitRoot(token);
-            if (token.IsCancellationRequested)
-                return;
-
-            var nodeRoot = creator.CreateRootNode(compilationUnitRoot);
-            if (token.IsCancellationRequested)
-                return;
-
-            AnalysisCompleted!(nodeRoot);
+            var result = await AnalysisExecution.Execute(_pendingSource, token);
+            AnalysisCompleted!(result);
         }
         catch (Exception e)
         {
-            AnalysisFailed?.Invoke(e);
+            AnalysisFailed?.Invoke(new(e));
         }
         _finishedAnalysis = true;
     }

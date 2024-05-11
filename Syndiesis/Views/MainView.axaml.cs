@@ -132,7 +132,7 @@ public partial class MainView : UserControl
     public void ApplyCurrentSettings()
     {
         var settings = AppSettings.Instance;
-        AnalysisPipelineHandler.CreationOptions = settings.CreationOptions;
+        AnalysisPipelineHandler.AnalysisExecution.NodeLineOptions = settings.NodeLineOptions;
         AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
         expandAllButton.IsVisible = settings.EnableExpandingAllNodes;
         ForceRedoAnalysis();
