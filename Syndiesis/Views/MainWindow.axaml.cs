@@ -39,12 +39,14 @@ public partial class MainWindow : Window
     public void ShowSettings()
     {
         _settingsView.LoadFromSettings();
+        pageTransition.IsTransitionReversed = false;
         pageTransition.Content = _settingsView;
     }
 
     public void ShowMainView()
     {
         mainView.ApplyCurrentSettings();
+        pageTransition.IsTransitionReversed = true;
         pageTransition.Content = mainView;
         mainView.Focus();
     }

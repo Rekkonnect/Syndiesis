@@ -20,7 +20,7 @@
       <Setter Property="Background" Value="#005055" />
     </Style>
   </Window.Styles>
-  
+
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>
@@ -28,9 +28,8 @@
   <TransitioningContentControl
     Name="pageTransition"
     >
-    <!-- Create and use a custom drill transition if we got time -->
     <TransitioningContentControl.PageTransition>
-      <CrossFade Duration="0:0:0.25" />
+      <controls:DrillTransition Duration="0:0:0.5" />
     </TransitioningContentControl.PageTransition>
 
     <views:MainView

@@ -115,7 +115,7 @@ public class VerticallyExpandableCanvas : Canvas
         var animation = new Animation
         {
             Duration = TimeSpan.FromMilliseconds(300),
-            Easing = new CubicEaseOut(),
+            Easing = Singleton<CubicEaseOut>.Instance,
             Children =
             {
                 new KeyFrame

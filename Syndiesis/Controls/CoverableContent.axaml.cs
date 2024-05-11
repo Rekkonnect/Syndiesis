@@ -137,7 +137,7 @@ public partial class CoverableContent : UserControl
         var animation = new Animation
         {
             Duration = duration,
-            Easing = new ExponentialEaseInOut(),
+            Easing = Singleton<ExponentialEaseInOut>.Instance,
             Children =
             {
                 new KeyFrame

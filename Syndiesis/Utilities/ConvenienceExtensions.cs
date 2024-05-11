@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
 using Avalonia.Styling;
+using Garyon.Functions;
 using System.Collections.Generic;
 using System.Numerics;
 
