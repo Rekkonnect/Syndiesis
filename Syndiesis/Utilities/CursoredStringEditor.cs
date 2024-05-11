@@ -385,11 +385,11 @@ public sealed class CursoredStringEditor
         return _editor.SectionString(_selectionSpan.SelectionPositionSpan);
     }
 
-    public void DeleteCurrentSelection()
+    public bool DeleteCurrentSelection()
     {
         if (!_isSelectingText || !_selectionSpan.HasSelection)
         {
-            return;
+            return false;
         }
 
         var span = _selectionSpan.SelectionPositionSpan;
@@ -401,6 +401,7 @@ public sealed class CursoredStringEditor
         CursorPosition = start;
         SetSelectionMode(false);
         TriggerCodeChanged();
+        return true;
     }
 
     public void InsertLine()
@@ -448,7 +449,9 @@ public sealed class CursoredStringEditor
 
     public void DeleteCurrentCharacterBackwards()
     {
-        DeleteCurrentSelection();
+        bool deleted = DeleteCurrentSelection();
+        if (deleted)
+            return;
 
         if (_cursorPosition.IsStart())
             return;
@@ -462,7 +465,9 @@ public sealed class CursoredStringEditor
 
     public void DeleteCurrentCharacterForwards()
     {
-        DeleteCurrentSelection();
+        bool deleted = DeleteCurrentSelection();
+        if (deleted)
+            return;
 
         GetCurrentTextPosition(out int line, out int column);
         int lastLine = _editor.LineCount - 1;
