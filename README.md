@@ -11,6 +11,11 @@ The main design inspiration is [SharpLab](https://sharplab.io/). The syntax view
 
 Despite not applying for the internship, I wanted to finish the project and release it into a usable state without entering the depths of feature creep.
 
+## Download
+
+- [Releases](https://github.com/Rekkonnect/Syndiesis/releases)
+- [Changelog](/docs/changelog.md)
+
 ## Usage preview
 
 https://github.com/Rekkonnect/Syndiesis/assets/8298332/4d754285-c9d9-4637-a885-88c78ce3484b
