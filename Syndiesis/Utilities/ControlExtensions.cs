@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Input.Platform;
 using System.Threading.Tasks;
 
@@ -45,5 +46,24 @@ public static class ControlExtensions
             return;
 
         await clipboard.SetTextAsync(value);
+    }
+
+    public static async Task SetClipboardDataAsync(this Control control, IDataObject value)
+    {
+        var clipboard = control.Clipboard();
+        if (clipboard is null)
+            return;
+
+        await clipboard.SetDataObjectAsync(value);
+    }
+
+    public static async Task<bool> HasSingleLineClipboardText(this Control control)
+    {
+        var clipboard = control.Clipboard();
+        if (clipboard is null)
+            return false;
+
+        var data = await clipboard.GetDataAsync(CodeEditorDataObject.Formats.CodeEditor);
+        return data is not null;
     }
 }

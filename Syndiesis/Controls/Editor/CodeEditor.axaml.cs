@@ -17,9 +17,8 @@ namespace Syndiesis.Controls;
 /// range of text, inserting new lines, copying and pasting text.
 /// </summary>
 /// <remarks>
-/// It is not meant to provide support for autocompletion, indentation preferences,
-/// multiple carets, etc. Those features are outside of the scope of this program.
-/// Highlighting is not yet implemented but is in the works.
+/// It is not meant to provide support for features like autocompletion, or more
+/// advanced IDE features. Those features are outside of the scope of this program.
 /// </remarks>
 public partial class CodeEditor : UserControl
 {
@@ -907,12 +906,16 @@ public partial class CodeEditor : UserControl
 
     private async Task CutSelectionToClipboardAsync()
     {
-        var selection = _editor.GetCurrentSelectionString();
-        if (string.IsNullOrEmpty(selection))
+        var content = _editor.GetCurrentSelectionString();
+        if (string.IsNullOrEmpty(content))
+        {
+            await CopyCurrentLineToClipboard();
+            _editor.RemoveCurrentLine();
             return;
+        }
 
         _editor.DeleteCurrentSelection();
-        await this.SetClipboardTextAsync(selection)
+        await this.SetClipboardTextAsync(content)
             .ConfigureAwait(false);
     }
 
@@ -920,10 +923,26 @@ public partial class CodeEditor : UserControl
     {
         var selection = _editor.GetCurrentSelectionString();
         if (string.IsNullOrEmpty(selection))
+        {
+            await CopyCurrentLineToClipboard();
             return;
+        }
 
         await this.SetClipboardTextAsync(selection)
             .ConfigureAwait(false);
+    }
+
+    private async Task CopyCurrentLineToClipboard()
+    {
+        var content = GetSingleLineClipboardContent();
+        var data = CodeEditorDataObject.ForSingleLine(content);
+        await this.SetClipboardDataAsync(data)
+            .ConfigureAwait(false);
+    }
+
+    private string GetSingleLineClipboardContent()
+    {
+        return _editor.GetCurrentLineContent() + MultilineStringEditor.DefaultNewLine;
     }
 
     private readonly AsyncUsableLock _pasteLock = new();
@@ -939,7 +958,15 @@ public partial class CodeEditor : UserControl
             if (pasteText is null)
                 return;
 
-            _editor.InsertText(pasteText);
+            bool hasSingleLine = await this.HasSingleLineClipboardText();
+            if (hasSingleLine)
+            {
+                _editor.InsertLine(pasteText);
+            }
+            else
+            {
+                _editor.InsertText(pasteText);
+            }
             QueueUpdateVisibleText();
         }
     }

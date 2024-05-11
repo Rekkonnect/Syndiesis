@@ -389,6 +389,18 @@ public sealed class CursoredStringEditor
         return _editor.SectionString(_selectionSpan.SelectionPositionSpan);
     }
 
+    public string GetCurrentLineContent()
+    {
+        return _editor.LineAt(CursorLineIndex);
+    }
+
+    public void RemoveCurrentLine()
+    {
+        _editor.RemoveLine(CursorLineIndex);
+        PlaceCursorCharacterIndexAfterVerticalMovement(CursorCharacterIndex);
+        TriggerCodeChanged();
+    }
+
     public bool DeleteCurrentSelection()
     {
         if (!_isSelectingText || !_selectionSpan.HasSelection)
@@ -569,6 +581,15 @@ public sealed class CursoredStringEditor
         var nextCursorPosition = _editor.InsertAt(line, column, text);
         CursorPosition = nextCursorPosition;
         CapturePreferredCursorCharacter();
+        TriggerCodeChanged();
+    }
+
+    public void InsertLine(string text)
+    {
+        DeleteCurrentSelection();
+
+        _editor.InsertAt(CursorLineIndex, 0, text);
+        MoveCursorDown();
         TriggerCodeChanged();
     }
 

@@ -9,7 +9,7 @@ namespace Syndiesis.Utilities;
 
 public sealed class MultilineStringEditor
 {
-    private const string DefaultNewLine = "\r\n";
+    public const string DefaultNewLine = "\r\n";
 
     private readonly List<string> _lines = new();
 
