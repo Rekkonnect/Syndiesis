@@ -701,6 +701,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
                 return Styles.CommentTriviaDisplay;
             }
+            case SyntaxKind.PreprocessingMessageTrivia:
             case SyntaxKind.BadDirectiveTrivia:
             {
                 var displayText = CommentTriviaText(trivia);
