@@ -109,6 +109,7 @@ public sealed class CursoredStringEditor
     {
         _editor.SetText(source);
         CursorPosition = new(0, 0);
+        _selectionSpan.SetBoth(CursorPosition);
         CapturePreferredCursorCharacter();
         TriggerCodeChanged();
     }
