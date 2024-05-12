@@ -975,7 +975,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
     private static Run NewValueKindSplitterRun()
     {
-        return Run("    ", Styles.RawValueBrush);
+        return Run("      ", Styles.RawValueBrush);
     }
 
     private void AppendPropertyDetail(string? propertyName, InlineCollection inlines)
