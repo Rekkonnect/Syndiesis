@@ -76,6 +76,10 @@ Desired features are listed in the [issues](https://github.com/Rekkonnect/Syndie
   - Navigation
     - `Up` / `Down` / `Left` / `Right` - Move cursor by one character or line
     - `Ctrl+Left` / `Ctrl+Right` - Move to next word left or right
+    - `Home` / `End` - Move to start or end of current line
+    - `Ctrl+Home` / `Ctrl+End` - Move to start or end of document
+    - `PageUp` / `PageDown` - Move to next or previous page of visible lines
+    - `Ctrl+PageUp` / `Ctrl+PageDown` - Move to first or last visible line in the current position
   - Manipulation
     - `Back` - Delete one character left
     - `Delete` - Delete one character right
