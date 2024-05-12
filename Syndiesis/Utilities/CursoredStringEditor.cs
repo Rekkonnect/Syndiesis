@@ -416,6 +416,7 @@ public sealed class CursoredStringEditor
         _editor.RemoveRange(start.Line, end.Line, start.Character, end.Character);
 
         CursorPosition = start;
+        CapturePreferredCursorCharacter();
         SetSelectionMode(false);
         TriggerCodeChanged();
         return true;
