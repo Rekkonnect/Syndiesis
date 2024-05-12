@@ -30,6 +30,8 @@ public partial class CodeEditor : UserControl
     private const double scrollThresholdWidth = extraDisplayWidth / 2;
     private const int visibleLinesThreshold = 2;
 
+    private readonly PointerDragHandler _dragHandler = new();
+
     private CursoredStringEditor _editor = new();
     private readonly CodeEditorLineBuffer _lineBuffer = new(20);
 
@@ -131,6 +133,9 @@ public partial class CodeEditor : UserControl
     {
         verticalScrollBar.ScrollChanged += OnVerticalScroll;
         horizontalScrollBar.ScrollChanged += OnHorizontalScroll;
+
+        _dragHandler.Dragged += PointerDragged;
+        _dragHandler.Attach(this);
     }
 
     private bool _isUpdatingScrollLimits = false;
@@ -381,15 +386,46 @@ public partial class CodeEditor : UserControl
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
+        bool success = GetPositionFromCursor(e, out int column, out int line);
+        if (!success)
+            return;
+
+        bool inRangeSelection = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
+        _editor.SetSelectionMode(inRangeSelection);
+        _editor.CursorPosition = new(line, column);
+        _editor.CapturePreferredCursorCharacter();
+    }
+
+    private void PointerDragged(PointerDragHandler.PointerDragArgs args)
+    {
+        var e = args.SourcePointerEventArgs;
+        SetSelectionRangeFromDrag(e);
+    }
+
+    private void SetSelectionRangeFromDrag(PointerEventArgs e)
+    {
+        bool success = GetPositionFromCursor(e, out int column, out int line);
+        if (!success)
+            return;
+
+        _editor.SetSelectionMode(true);
+        _editor.CursorPosition = new(line, column);
+        _editor.CapturePreferredCursorCharacter();
+    }
+
+    private bool GetPositionFromCursor(PointerEventArgs e, out int column, out int line)
+    {
+        line = 0;
+        column = 0;
+
         var canvasOffset = e.GetPosition(codeCanvas);
         bool contained = codeCanvas.Bounds.Contains(canvasOffset);
         if (!contained)
-            return;
+            return false;
 
         int pointerLine = (int)(canvasOffset.Y / LineHeight);
         int pointerColumn = (int)((canvasOffset.X + GetHorizontalContentOffset()) / CharWidth);
-
-        int line = pointerLine + _lineOffset;
+        line = pointerLine + _lineOffset;
         if (line >= _editor.LineCount)
         {
             line = _editor.LineCount - 1;
@@ -398,23 +434,20 @@ public partial class CodeEditor : UserControl
         // this is a guard clause for when clicking within the designer
         // if we ever encounter a multiline string editor with no lines, we can
         // also evade that exception
+        column = 0;
         if (line < 0)
         {
-            return;
+            return false;
         }
 
-        int column = pointerColumn;
+        column = pointerColumn;
         int lineLength = _editor.MultilineEditor.LineLength(line);
         if (column > lineLength)
         {
             column = lineLength;
         }
 
-        bool inRangeSelection = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
-        _editor.SetSelectionMode(inRangeSelection);
-        _editor.CursorPosition = new(line, column);
-        _editor.CapturePreferredCursorCharacter();
-        e.Handled = true;
+        return true;
     }
 
     protected override Size MeasureOverride(Size availableSize)
@@ -597,6 +630,11 @@ public partial class CodeEditor : UserControl
 
         verticalScrollBar.Step(verticalSteps);
         horizontalScrollBar.Step(horizontalSteps);
+
+        if (_dragHandler.IsActivelyDragging)
+        {
+            SetSelectionRangeFromDrag(e);
+        }
     }
 
     protected override void OnTextInput(TextInputEventArgs e)
