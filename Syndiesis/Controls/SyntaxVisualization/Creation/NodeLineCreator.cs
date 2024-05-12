@@ -220,11 +220,11 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private void AppendTriviaList(SyntaxTriviaList leadingTrivia, List<SyntaxTreeListNode> children)
+    private void AppendTriviaList(SyntaxTriviaList triviaList, List<SyntaxTreeListNode> children)
     {
         if (_options.ShowTrivia)
         {
-            foreach (var trivia in leadingTrivia)
+            foreach (var trivia in triviaList)
             {
                 var triviaNode = CreateTriviaNode(trivia);
                 children.Add(triviaNode);
@@ -426,7 +426,12 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
             case SyntaxToken token:
                 if (token.IsMissing)
-                    return false;
+                {
+                    if (!_options.ShowTrivia || !token.HasAnyTrivia())
+                    {
+                        return false;
+                    }
+                }
 
                 return token != default;
 

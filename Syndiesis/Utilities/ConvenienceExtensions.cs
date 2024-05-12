@@ -1,7 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
 using Avalonia.Styling;
-using Garyon.Functions;
+using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Numerics;
 
@@ -67,5 +67,17 @@ public static class ConvenienceExtensions
             min = b;
             max = a;
         }
+    }
+
+    public static bool HasAnyTrivia(this SyntaxNode node)
+    {
+        return node.HasLeadingTrivia
+            || node.HasTrailingTrivia;
+    }
+
+    public static bool HasAnyTrivia(this SyntaxToken token)
+    {
+        return token.HasLeadingTrivia
+            || token.HasTrailingTrivia;
     }
 }
