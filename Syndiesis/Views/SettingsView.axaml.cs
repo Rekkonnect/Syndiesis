@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Microsoft.CodeAnalysis;
 using System;
 
 namespace Syndiesis.Views;
@@ -50,6 +51,7 @@ public partial class SettingsView : UserControl
         settings.UserInputDelay = TypingDelay;
         settings.EnableExpandingAllNodes = enableExpandAllButtonCheck.IsChecked is true;
         settings.NodeLineOptions.ShowTrivia = showTriviaCheck.IsChecked is true;
+        AppSettings.TrySave();
         SettingsSaved?.Invoke();
     }
 

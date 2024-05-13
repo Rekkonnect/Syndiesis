@@ -24,6 +24,7 @@ public partial class MainView : UserControl
         InitializeComponent();
         InitializeView();
         InitializeEvents();
+        ApplyCurrentSettingsWithoutAnalysis();
 
         Focusable = true;
     }
@@ -136,11 +137,16 @@ public partial class MainView : UserControl
 
     public void ApplyCurrentSettings()
     {
+        ApplyCurrentSettingsWithoutAnalysis();
+        ForceRedoAnalysis();
+    }
+
+    private void ApplyCurrentSettingsWithoutAnalysis()
+    {
         var settings = AppSettings.Instance;
         AnalysisPipelineHandler.AnalysisExecution.NodeLineOptions = settings.NodeLineOptions;
         AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
         expandAllButton.IsVisible = settings.EnableExpandingAllNodes;
-        ForceRedoAnalysis();
     }
 
     public void Reset()

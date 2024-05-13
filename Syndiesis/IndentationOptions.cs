@@ -1,10 +1,11 @@
 ﻿using Syndiesis.Utilities;
+using System.Text.Json.Serialization;
 
 namespace Syndiesis;
 
 public class IndentationOptions
 {
-    public char IndentationCharacter = ' ';
+    public char IndentationCharacter = WhitespaceFacts.Space;
     public int IndentationWidth = 4;
 
     /// <summary>
@@ -15,12 +16,14 @@ public class IndentationOptions
     /// </summary>
     public int TabWidth = 4;
 
+    [JsonIgnore]
     public WhitespaceKind WhitespaceKind
     {
         get => IndentationCharacter.GetWhitespaceKind();
         set => IndentationCharacter = value.GetWhitespaceChar();
     }
 
+    [JsonIgnore]
     public Indentation Indentation
     {
         get => new(IndentationCharacter, IndentationWidth);

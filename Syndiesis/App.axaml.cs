@@ -19,6 +19,7 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
         ResourceManager = new(this);
+        AppSettings.TryLoad();
     }
 
     public override void OnFrameworkInitializationCompleted()
