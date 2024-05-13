@@ -1,5 +1,30 @@
 # Changelog
 
+## 1.0.2
+
+### Features
+
+- Code editor
+  - Hovering mouse sets the `Ibeam` cursor instead of the default
+  - No background fill on selected line if text is selected
+  - Dragging mouse selects text
+  - Double-click engages word selection mode
+  - Allow customizing indentation width in spaces
+- Syntax tree view
+  - Missing tokens with trivia are now displayed
+  - Larger spacing between token value display and kind
+- Settings
+  - Settings are now stored in `appsettings.json`
+
+### Bugfixes
+
+- Code editor
+  - Clear selection upon setting source
+  - Capture preferred cursor character position
+    - On text deletion
+- Syntax tree view
+  - Support `PreprocessingMessageTrivia`
+
 ## 1.0.1
 
 ### Features

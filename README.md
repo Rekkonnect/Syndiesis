@@ -18,6 +18,8 @@ Despite not applying for the internship, I wanted to finish the project and rele
 
 ## Usage preview
 
+> _The video was shot in version 1.0.0_
+
 https://github.com/Rekkonnect/Syndiesis/assets/8298332/4d754285-c9d9-4637-a885-88c78ce3484b
 
 ## Stack
@@ -92,8 +94,8 @@ Desired features are listed in the [issues](https://github.com/Rekkonnect/Syndie
     - `Ctrl+W` - Select currently hovered word
     - `Ctrl+Shift+V` - Paste current content on clipboard and replace entire snippet with pasted content
     - `Ctrl+A` - Select all
-    - `Tab` - Insert up to 4 spaces to fill a 4-character section within the line, or increase indentation by 4 spaces on selected lines
-    - `Shift+Tab` - Reduce indentation on current or selected lines by 4 spaces
+    - `Tab` - Insert up to N spaces to fill a N-character section within the line, or increase indentation on selected lines
+    - `Shift+Tab` - Reduce indentation on current or selected lines
 
 ## Design philosophy
 
