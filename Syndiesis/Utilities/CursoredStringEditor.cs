@@ -11,6 +11,7 @@ public sealed class CursoredStringEditor
     private readonly MultilineStringEditor _editor = new();
 
     private LinePosition _cursorPosition;
+    private LinePosition _wordSelectionStartPosition;
     private readonly SelectionSpan _selectionSpan = new();
 
     private int _preferredCursorCharacterIndex;
@@ -223,6 +224,63 @@ public sealed class CursoredStringEditor
         var lineContent = _editor.LineAt(line);
         var leading = lineContent.GetLeadingWhitespace();
         return leading;
+    }
+
+    public LinePositionSpan GetWordPosition()
+    {
+        return GetWordPosition(_cursorPosition);
+    }
+
+    public LinePositionSpan GetWordPosition(LinePosition position)
+    {
+        var rightmost = RightmostContiguousCommonCategory(position);
+        var leftmost = LeftmostContiguousCommonCategory(rightmost);
+        return new(leftmost, rightmost);
+    }
+
+    public void IncludeCurrentWordInSelection()
+    {
+        IncludeWordInSelection(_cursorPosition);
+    }
+
+    public void IncludeWordInSelection(LinePosition position)
+    {
+        var wordPosition = GetWordPosition(position);
+        _selectionSpan.CoverRange(wordPosition);
+    }
+
+    public void BeginWordSelection()
+    {
+        BeginWordSelection(CursorPosition);
+    }
+
+    public void BeginWordSelection(LinePosition position)
+    {
+        _wordSelectionStartPosition = position;
+    }
+
+    public void SetWordSelection(LinePosition position)
+    {
+        var startWord = GetWordPosition(_wordSelectionStartPosition);
+        var endWord = GetWordPosition(position);
+        _selectionSpan.Clear();
+
+        if (startWord == endWord)
+        {
+            SelectionLineSpan = startWord;
+            return;
+        }
+
+        if (startWord.Start < endWord.Start)
+        {
+            SelectionLineSpan = new(startWord.Start, endWord.End);
+        }
+        else
+        {
+            _selectionSpan.SetBounds(endWord.Start, startWord.End);
+            _cursorPosition = endWord.Start;
+            TriggerCursorMoved();
+        }
     }
 
     public void MoveCursorLeftWord()
@@ -597,9 +655,14 @@ public sealed class CursoredStringEditor
 
     private LinePosition LeftmostContiguousCommonCategory()
     {
+        return LeftmostContiguousCommonCategory(_cursorPosition);
+    }
+
+    private LinePosition LeftmostContiguousCommonCategory(LinePosition position)
+    {
         // we assume that the caller has sanitized the positions
 
-        var (line, column) = _cursorPosition;
+        var (line, column) = position;
         Debug.Assert(line >= 0 && line < _editor.LineCount);
         var lineLength = _editor.LineLength(line);
 
@@ -650,9 +713,14 @@ public sealed class CursoredStringEditor
     // guaranteeing flexibility and maintainability in this particular case
     private LinePosition RightmostContiguousCommonCategory()
     {
+        return RightmostContiguousCommonCategory(_cursorPosition);
+    }
+
+    private LinePosition RightmostContiguousCommonCategory(LinePosition position)
+    {
         // we assume that the caller has sanitized the positions
 
-        var (line, column) = _cursorPosition;
+        var (line, column) = position;
         Debug.Assert(line >= 0 && line < _editor.LineCount);
         var lineLength = _editor.LineLength(line);
 
@@ -663,7 +731,7 @@ public sealed class CursoredStringEditor
         {
             if (line == _editor.LineCount - 1)
             {
-                return _cursorPosition;
+                return position;
             }
 
             line++;

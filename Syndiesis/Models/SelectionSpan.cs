@@ -10,6 +10,8 @@ public class SelectionSpan
 
     public bool HasSelection => !SelectionPositionSpan.IsEmpty();
 
+    public bool IsBackwards => SelectionEnd < SelectionStart;
+
     public LinePositionSpan SelectionPositionSpan
     {
         get
@@ -28,5 +30,43 @@ public class SelectionSpan
     {
         SelectionStart = position;
         SelectionEnd = position;
+    }
+
+    public void SetBounds(LinePosition start, LinePosition end)
+    {
+        SelectionStart = start;
+        SelectionEnd = end;
+    }
+
+    public void CoverUntil(LinePosition position)
+    {
+        if (IsBackwards)
+        {
+            if (position < SelectionEnd)
+            {
+                SelectionEnd = position;
+            }
+            if (position > SelectionStart)
+            {
+                SelectionStart = position;
+            }
+        }
+        else
+        {
+            if (position < SelectionStart)
+            {
+                SelectionStart = position;
+            }
+            if (position > SelectionEnd)
+            {
+                SelectionEnd = position;
+            }
+        }
+    }
+
+    public void CoverRange(LinePositionSpan span)
+    {
+        CoverUntil(span.Start);
+        CoverUntil(span.End);
     }
 }

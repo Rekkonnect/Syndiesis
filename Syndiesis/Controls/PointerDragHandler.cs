@@ -43,6 +43,9 @@ public class PointerDragHandler
 
         var current = e.GetPosition(null);
         var delta = current - _previousPoint;
+        if (delta == default)
+            return;
+
         _previousPoint = current;
         var source = _sourcePoint!.Value;
         var totalDelta = current - source;

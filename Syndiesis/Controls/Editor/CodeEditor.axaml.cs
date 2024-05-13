@@ -31,6 +31,7 @@ public partial class CodeEditor : UserControl
     private const int visibleLinesThreshold = 2;
 
     private readonly PointerDragHandler _dragHandler = new();
+    private bool _isDoubleTapped = false;
 
     private CursoredStringEditor _editor = new();
     private readonly CodeEditorLineBuffer _lineBuffer = new(20);
@@ -136,6 +137,8 @@ public partial class CodeEditor : UserControl
 
         _dragHandler.Dragged += PointerDragged;
         _dragHandler.Attach(this);
+
+        DoubleTapped += HandleDoubleTapped;
     }
 
     private bool _isUpdatingScrollLimits = false;
@@ -384,6 +387,14 @@ public partial class CodeEditor : UserControl
         }
     }
 
+    private void HandleDoubleTapped(object? sender, TappedEventArgs e)
+    {
+        SelectCurrentWord();
+        _isDoubleTapped = true;
+        _editor.BeginWordSelection();
+        e.Handled = true;
+    }
+
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         bool success = GetPositionFromCursor(e, out int column, out int line);
@@ -396,9 +407,15 @@ public partial class CodeEditor : UserControl
         _editor.CapturePreferredCursorCharacter();
     }
 
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
+    {
+        _isDoubleTapped = false;
+    }
+
     private void PointerDragged(PointerDragHandler.PointerDragArgs args)
     {
         var e = args.SourcePointerEventArgs;
+
         SetSelectionRangeFromDrag(e);
     }
 
@@ -408,9 +425,17 @@ public partial class CodeEditor : UserControl
         if (!success)
             return;
 
-        _editor.SetSelectionMode(true);
-        _editor.CursorPosition = new(line, column);
-        _editor.CapturePreferredCursorCharacter();
+        if (_isDoubleTapped)
+        {
+            var position = new LinePosition(line, column);
+            _editor.SetWordSelection(position);
+        }
+        else
+        {
+            _editor.SetSelectionMode(true);
+            _editor.CursorPosition = new(line, column);
+            _editor.CapturePreferredCursorCharacter();
+        }
     }
 
     private bool GetPositionFromCursor(PointerEventArgs e, out int column, out int line)
@@ -872,11 +897,8 @@ public partial class CodeEditor : UserControl
 
     private void SelectCurrentWord()
     {
-        _editor.SetSelectionMode(false);
-        _editor.MoveCursorNextWord();
-        _editor.SetSelectionMode(true);
-        _editor.MoveCursorLeftWord();
-        _editor.InvertSelectionCursorPosition();
+        var word = _editor.GetWordPosition();
+        _editor.SelectionLineSpan = word;
     }
 
     private void MoveCursorPageStart()
