@@ -38,11 +38,7 @@ public partial class CodeEditorLine : UserControl
         set
         {
             SetValue(SelectedLineProperty, value);
-            var backgroundBrush = value
-                ? _selectedLineBackgroundBrush
-                : _unselectedLineBackgroundBrush;
-
-            lineContentPanel.Background = backgroundBrush;
+            SetCursorLineBackgroundHint(value);
             cursor.SetVisible(value);
         }
     }
@@ -88,6 +84,15 @@ public partial class CodeEditorLine : UserControl
     {
         SyntaxNodeHoverHighlight = new(syntaxNodeHoverHighlight);
         SelectionHighlight = new(selectionHighlight);
+    }
+
+    public void SetCursorLineBackgroundHint(bool value)
+    {
+        var backgroundBrush = value
+            ? _selectedLineBackgroundBrush
+            : _unselectedLineBackgroundBrush;
+
+        lineContentPanel.Background = backgroundBrush;
     }
 
     public HighlightHandler GetHighlightHandler(HighlightKind kind)

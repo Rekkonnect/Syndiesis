@@ -287,6 +287,7 @@ public partial class CodeEditor : UserControl
             return;
 
         line.SelectedLine = true;
+        line.SetCursorLineBackgroundHint(!_editor.HasSelection);
         line.RestartCursorAnimation();
     }
 
