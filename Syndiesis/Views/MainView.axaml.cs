@@ -138,6 +138,7 @@ public partial class MainView : UserControl
     public void ApplyCurrentSettings()
     {
         ApplyCurrentSettingsWithoutAnalysis();
+        ViewModel.Editor.IndentationOptions = AppSettings.Instance.IndentationOptions;
         ForceRedoAnalysis();
     }
 

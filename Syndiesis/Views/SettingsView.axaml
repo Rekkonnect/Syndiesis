@@ -2,8 +2,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="400"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
              x:Class="Syndiesis.Views.SettingsView"
+             xmlns:sc="using:Syndiesis.Controls.Settings"
              >
 
   <Grid
@@ -169,52 +170,17 @@
           />
         </CheckBox>
 
-        <Grid>
-
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="120" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
-
-          <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-          </Grid.RowDefinitions>
-
-          <Slider
-            Name="typingDelaySlider"
-            Value="150"
-            Minimum="50"
-            Maximum="1000"
-            SmallChange="50"
-            LargeChange="100"
-            Grid.Column="1"
-            Grid.RowSpan="2"
-            Margin="15 0 0 0"
-            Foreground="#009099"
-            Background="#00232E"
-        />
-          <TextBlock
-            HorizontalAlignment="Right"
-            VerticalAlignment="Center"
-            FontFamily="{StaticResource AptosDisplayFontFamily}"
-            FontSize="16"
-            Text="Typing delay wait"
-          />
-
-          <TextBlock
-            HorizontalAlignment="Right"
-            VerticalAlignment="Bottom"
-            FontFamily="{StaticResource AptosDisplayFontFamily}"
-            FontSize="14"
-            Grid.RowSpan="2"
+        <sc:LabelledSlider
+          Name="typingDelaySlider"
+          NameText="Typing delay wait"
           >
-            <TextBlock.Inlines>
-              <Run Text="1000" Name="sliderValueDisplay" />
-              <Run Text="ms" />
-            </TextBlock.Inlines>
-          </TextBlock>
+        </sc:LabelledSlider>
 
-        </Grid>
+        <sc:LabelledSlider
+          Name="indentationWidthSlider"
+          NameText="Indentation width"
+          >
+        </sc:LabelledSlider>
 
       </StackPanel>
 
