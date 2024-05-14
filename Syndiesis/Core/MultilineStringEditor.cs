@@ -288,6 +288,10 @@ public sealed class MultilineStringEditor
 
         RemoveEnd(startLine, startColumn);
         RemoveStart(endLine, endColumn);
+        if (LineLength(endLine) is 0)
+        {
+            RemoveLine(endLine);
+        }
 
         int nextStart = startLine + 1;
         int previousEnd = endLine - 1;
