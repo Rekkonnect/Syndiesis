@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Syndiesis.Core;
-using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -148,7 +147,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return children;
     }
 
-    private SyntaxTreeListNode CreateEndOfFileDisplayNode(SyntaxToken token)
+    private static SyntaxTreeListNode CreateEndOfFileDisplayNode(SyntaxToken token)
     {
         return new()
         {
@@ -157,7 +156,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private SyntaxTreeListNodeLine CreateEndOfFileDisplayNodeLine()
+    private static SyntaxTreeListNodeLine CreateEndOfFileDisplayNodeLine()
     {
         var eofRun = CreateEofRun();
 
@@ -178,6 +177,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return new()
         {
             NodeLine = CreateDisplayNodeLine(token),
+            ChildRetriever = () => CreatePropertyAnalysisChildren(token),
             AssociatedSyntaxObjectContent = token,
         };
     }
@@ -202,23 +202,85 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
     private SyntaxTreeListNodeLine CreateDisplayNodeLine(SyntaxToken token)
     {
-        var text = token.ValueText;
+        string text = DisplayStringForText(token, token.Text);
+        return LineForNodeValue(text);
+    }
 
+    private string DisplayStringForText(SyntaxToken token, string text)
+    {
         if (IsStringLiteralKind(token.Kind()))
         {
             text = SimplifyWhitespace(text);
         }
 
-        var inlines = new InlineCollection()
+        return text;
+    }
+
+    private IReadOnlyList<SyntaxTreeListNode> CreatePropertyAnalysisChildren(SyntaxToken token)
+    {
+        string text = DisplayStringForText(token, token.Text);
+        var textLine = CreateNodeForNodeValue(text, nameof(SyntaxToken.Text));
+
+        string valueText = DisplayStringForText(token, token.ValueText);
+        var valueTextLine = CreateNodeForNodeValue(valueText, nameof(SyntaxToken.ValueText));
+
+        var value = token.Value;
+        if (value is string valueString)
         {
-            Run(text, Styles.RawValueBrush),
+            value = DisplayStringForText(token, valueString);
+        }
+        var valueLine = CreateNodeForNodeValue(value, nameof(SyntaxToken.Value));
+
+        return
+        [
+            textLine,
+            valueTextLine,
+            valueLine
+        ];
+    }
+
+    private SyntaxTreeListNode CreateNodeForNodeValue(
+        object? value,
+        string? propertyName = null)
+    {
+        var line = LineForNodeValue(value, propertyName);
+        line.NodeTypeDisplay = Styles.PropertyAnalysisValueDisplay;
+        return new()
+        {
+            NodeLine = line,
         };
+    }
+
+    private SyntaxTreeListNodeLine LineForNodeValue(object? value, string? propertyName = null)
+    {
+        var inlines = new InlineCollection();
+
+        AppendPropertyDetail(propertyName, inlines);
+        var valueRun = RunForObjectValue(value);
+        inlines.Add(valueRun);
 
         return new()
         {
             Inlines = inlines,
             NodeTypeDisplay = Styles.DisplayValueDisplay,
         };
+    }
+
+    private static Run RunForObjectValue(object? value)
+    {
+        if (value is null)
+            return CreateNullValueRun();
+
+        var text = value.ToString()!;
+        return Run(text, Styles.RawValueBrush);
+    }
+
+    private static Run CreateNullValueRun()
+    {
+        const string nullDisplay = "[null]";
+        var run = Run(nullDisplay, Styles.WhitespaceTriviaKindBrush);
+        run.FontStyle = FontStyle.Italic;
+        return run;
     }
 
     private void AppendTriviaList(SyntaxTriviaList triviaList, List<SyntaxTreeListNode> children)
@@ -832,7 +894,8 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             }
 
             const string truncationSuffix = "...";
-            if (trimmedText.Length == truncationLength + truncationSuffix.Length)
+            int remaining = source.Length - i;
+            if (trimmedText.Length >= truncationLength && remaining > truncationSuffix.Length)
             {
                 trimmedText.Append(truncationSuffix);
                 break;
@@ -846,8 +909,12 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     {
         var span = trivia.Span;
         var lineSpan = trivia.SyntaxTree!.GetLineSpan(span).Span;
-        int startLine = lineSpan.Start.Line;
-        int endLine = lineSpan.End.Line;
+        int startLine = lineSpan.Start.Line + 1;
+        int endLine = lineSpan.End.Line + 1;
+        if (lineSpan.End.Character is 0)
+        {
+            endLine--;
+        }
 
         if (startLine == endLine)
         {
@@ -1071,6 +1138,9 @@ partial class NodeLineCreator
         public const string TokenList = "TL";
         public const string DisplayValue = "D";
 
+        // this is empty for now
+        public const string PropertyAnalysisValue = "";
+
         public const string WhitespaceTrivia = "_";
         public const string CommentTrivia = "/*";
         public const string DirectiveTrivia = "#";
@@ -1136,6 +1206,9 @@ partial class NodeLineCreator
             = new(Types.Token, TokenKindColor);
         public static readonly NodeTypeDisplay DisplayValueDisplay
             = new(Types.DisplayValue, DisplayValueNodeTypeColor);
+
+        public static readonly NodeTypeDisplay PropertyAnalysisValueDisplay
+            = new(Types.PropertyAnalysisValue, DisplayValueNodeTypeColor);
 
         public static readonly NodeTypeDisplay WhitespaceTriviaDisplay
             = new(Types.WhitespaceTrivia, WhitespaceTriviaNodeTypeColor);
