@@ -674,7 +674,7 @@ public partial class CodeEditor : UserControl
     {
         var modifiers = e.KeyModifiers;
 
-        bool hasControl = modifiers.HasFlag(KeyModifiers.Control);
+        bool hasControl = modifiers.HasFlag(OperatingSystem.IsMacOS() ? KeyModifiers.Meta : KeyModifiers.Control);
         bool hasShift = modifiers.HasFlag(KeyModifiers.Shift);
 
         switch (e.Key)
