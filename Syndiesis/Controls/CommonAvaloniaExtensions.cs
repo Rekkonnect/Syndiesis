@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Styling;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;
@@ -45,6 +46,15 @@ public static partial class CommonAvaloniaExtensions
     public static Thickness WithBottom(this Thickness thickness, double bottom)
     {
         return new(thickness.Left, thickness.Top, thickness.Right, bottom);
+    }
+
+    public static async Task<bool> HasFormatAsync(this IClipboard? clipboard, string format)
+    {
+        if (clipboard is null)
+            return false;
+
+        var formats = await clipboard.GetFormatsAsync();
+        return formats.Contains(format);
     }
 }
 
@@ -107,8 +117,7 @@ public static partial class CommonAvaloniaExtensions
         if (clipboard is null)
             return false;
 
-        var data = await clipboard.GetDataAsync(CodeEditorDataObject.Formats.CodeEditor);
-        return data is not null;
+        return await clipboard.HasFormatAsync(CodeEditorDataObject.Formats.CodeEditor);
     }
 
     public static void AddIfNotContained(this ControlList controls, Control control)

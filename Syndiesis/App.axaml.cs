@@ -34,7 +34,6 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
         ResourceManager = new(this);
-        AppSettings.TryLoad();
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -42,6 +41,7 @@ public partial class App : Application
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
             SetupSerilog(desktop);
+            AppSettings.TryLoad();
 
             desktop.MainWindow = new MainWindow
             {
