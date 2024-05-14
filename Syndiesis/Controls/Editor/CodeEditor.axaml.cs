@@ -137,7 +137,7 @@ public partial class CodeEditor : UserControl
         horizontalScrollBar.ScrollChanged += OnHorizontalScroll;
 
         _dragHandler.Dragged += PointerDragged;
-        _dragHandler.Attach(this);
+        _dragHandler.Attach(codeEditorContent);
 
         DoubleTapped += HandleDoubleTapped;
     }
