@@ -11,7 +11,7 @@
   
   <Application.Resources>
     <FontFamily x:Key="AptosFontFamily">avares://Syndiesis/Assets/Fonts/Aptos#Aptos</FontFamily>
-    <FontFamily x:Key="AptosDisplayFontFamily">avares://Syndiesis/Assets/Fonts/Aptos-Display#Aptos Display</FontFamily>
+    <FontFamily x:Key="AptosDisplayFontFamily">avares://Syndiesis/Assets/Fonts/Aptos-Display#Aptos</FontFamily>
     <FontFamily x:Key="FiraCodeFontFamily">avares://Syndiesis/Assets/Fonts/Fira-Code#Fira Code</FontFamily>
     <FontFamily x:Key="FontAwesomeFontFamily">avares://Syndiesis/Assets/Fonts/FontAwesome#FontAwesome</FontFamily>
     <FontFamily x:Key="FontAwesomeBrandsFontFamily">avares://Syndiesis/Assets/Fonts/FontAwesome#FontAwesome Brands</FontFamily>
