@@ -4,9 +4,6 @@
              x:Class="Syndiesis.App"
              RequestedThemeVariant="Dark"
              >
-  <Application.DataTemplates>
-    <local:ViewLocator/>
-  </Application.DataTemplates>
 
   <Application.Styles>
     <FluentTheme />

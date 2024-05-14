@@ -1,4 +1,5 @@
-﻿using Syndiesis.Utilities;
+﻿using Syndiesis.Core;
+using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 

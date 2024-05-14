@@ -1,32 +1,10 @@
-﻿using Avalonia;
-using Avalonia.ReactiveUI;
-using Avalonia.Styling;
-using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Numerics;
 
 namespace Syndiesis.Utilities;
 
 public static class ConvenienceExtensions
 {
-    public static void ApplySetter(this Setter setter, AvaloniaObject control)
-    {
-        if (setter is DynamicSetter dynamicSetter)
-        {
-            dynamicSetter.Apply();
-        }
-
-        control.SetValue(setter.Property!, setter.Value);
-    }
-
-    public static ValueWithBinding GetValueWithBinding(
-        this AvaloniaObject obj, AvaloniaProperty property)
-    {
-        var current = obj.GetValue(property);
-        var subject = obj.GetBindingSubject(property);
-        return new(current, subject);
-    }
-
     public static T? ValueAtOrDefault<T>(this IReadOnlyList<T> list, int index)
     {
         if (index < 0)
@@ -67,17 +45,5 @@ public static class ConvenienceExtensions
             min = b;
             max = a;
         }
-    }
-
-    public static bool HasAnyTrivia(this SyntaxNode node)
-    {
-        return node.HasLeadingTrivia
-            || node.HasTrailingTrivia;
-    }
-
-    public static bool HasAnyTrivia(this SyntaxToken token)
-    {
-        return token.HasLeadingTrivia
-            || token.HasTrailingTrivia;
     }
 }

@@ -1,6 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Threading;
-using Syndiesis.Utilities.Specific;
+using Syndiesis.Core;
 using System;
 
 namespace Syndiesis.Controls.SyntaxVisualization;

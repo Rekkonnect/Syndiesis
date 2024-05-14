@@ -4,6 +4,7 @@ using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Styling;
+using Syndiesis.Core;
 using Syndiesis.Utilities;
 using System;
 using System.Linq;

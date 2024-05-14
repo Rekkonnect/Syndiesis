@@ -1,4 +1,4 @@
-﻿using Syndiesis.Utilities;
+﻿using Syndiesis.Core;
 using System.Text.Json.Serialization;
 
 namespace Syndiesis;

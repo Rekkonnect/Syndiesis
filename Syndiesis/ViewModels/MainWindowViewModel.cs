@@ -1,4 +1,4 @@
-﻿using Syndiesis.Utilities;
+﻿using Syndiesis.Core;
 
 namespace Syndiesis.ViewModels;
 

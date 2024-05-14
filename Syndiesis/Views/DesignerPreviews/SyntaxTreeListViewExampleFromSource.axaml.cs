@@ -19,7 +19,7 @@ public partial class SyntaxTreeListViewExampleFromSource : SyntaxTreeListView
                 where TGeometry : unmanaged, IGeometry<TGeometry, TVertex>, IIndexedGeometry
                 where TVertex : unmanaged, IVertex
             {
-                if (currentIndices + 1 >= maxBufferSize || currentVertexs + 1 >= maxBufferSize)
+                if (currentIndices + 1 >= maxBufferSize || currentVertices + 1 >= maxBufferSize)
                 {
                     Flush();
                 }
