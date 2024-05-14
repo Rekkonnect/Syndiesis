@@ -1,19 +1,34 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Serilog;
+using Serilog.Events;
 using Syndiesis.ViewModels;
 using Syndiesis.Views;
+using System;
 
 namespace Syndiesis;
 
 public partial class App : Application
 {
+    public const LogEventLevel DefaultLogEventLevel =
+#if DEBUG
+        LogEventLevel.Debug
+#else
+        LogEventLevel.Information
+#endif
+        ;
+
+    public static new App Current => (Application.Current as App)!;
+
     public static AppResourceManager CurrentResourceManager
-        => (Current as App)!.ResourceManager;
+        => Current.ResourceManager;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public AppResourceManager ResourceManager { get; private set; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
+    public ExceptionListener ExceptionListener { get; } = new();
 
     public override void Initialize()
     {
@@ -26,6 +41,8 @@ public partial class App : Application
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
+            SetupSerilog(desktop);
+
             desktop.MainWindow = new MainWindow
             {
                 DataContext = new MainWindowViewModel(),
@@ -33,5 +50,26 @@ public partial class App : Application
         }
 
         base.OnFrameworkInitializationCompleted();
+    }
+
+    private void SetupSerilog(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Is(DefaultLogEventLevel)
+            .WriteTo.File(
+                "logs/syndiesis-main.txt",
+                rollingInterval: RollingInterval.Day,
+                outputTemplate: LoggerExtensionsEx.DefaultOutputTemplate)
+            .CreateLogger()
+            ;
+
+        desktop.Exit += LogApplicationExit;
+
+        Log.Information("---- Application is starting -- Serilog was setup");
+    }
+
+    private static void LogApplicationExit(object? sender, EventArgs e)
+    {
+        LoggerExtensionsEx.LogMethodInvocation(nameof(LogApplicationExit));
     }
 }

@@ -43,4 +43,3 @@ public sealed class AdvancedLazy<T>
         _value = default;
     }
 }
-

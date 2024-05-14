@@ -1,4 +1,5 @@
-﻿using Syndiesis.Utilities;
+﻿using Serilog;
+using Syndiesis.Utilities;
 using System;
 using System.Threading.Tasks;
 
@@ -65,12 +66,23 @@ public class AnalysisPipelineHandler
 
         try
         {
-            var result = await AnalysisExecution.Execute(_pendingSource, token);
-            AnalysisCompleted!(result);
+            Log.Information($"Began analysis using {AnalysisExecution.GetType()}");
+            var profiling = new SimpleProfiling();
+            using (profiling.BeginProcess())
+            {
+                var result = await AnalysisExecution.Execute(_pendingSource, token);
+                AnalysisCompleted!(result);
+            }
+
+            var results = profiling.SnapshotResults!;
+            Log.Information(
+                $"Analysis took {results.Time.TotalMilliseconds:N2}ms - " +
+                $"Memory was adjusted by {results.Memory:N0} bytes");
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-            AnalysisFailed?.Invoke(new(e));
+            App.Current.ExceptionListener.HandleException(ex, "Analysis failed");
+            AnalysisFailed?.Invoke(new(ex));
         }
         _finishedAnalysis = true;
     }

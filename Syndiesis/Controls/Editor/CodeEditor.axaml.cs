@@ -18,8 +18,8 @@ namespace Syndiesis.Controls;
 /// range of text, inserting new lines, copying and pasting text.
 /// </summary>
 /// <remarks>
-/// It is not meant to provide support for features like autocompletion, or more
-/// advanced IDE features. Those features are outside of the scope of this program.
+/// It is not meant to provide support for features like autocompletion, code fixes,
+/// or other advanced IDE features. Those features are outside of the scope of this program.
 /// </remarks>
 public partial class CodeEditor : UserControl
 {

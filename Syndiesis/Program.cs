@@ -1,5 +1,4 @@
 ﻿using Avalonia;
-using Avalonia.ReactiveUI;
 using System;
 
 namespace Syndiesis;
@@ -22,6 +21,6 @@ internal class Program
         return AppBuilder.Configure<App>()
             .UsePlatformDetect()
             .LogToTrace()
-            .UseReactiveUI();
+            ;
     }
 }

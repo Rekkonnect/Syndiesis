@@ -167,8 +167,6 @@ public sealed class MultilineStringEditor
             return;
 
         var previousLine = LineAt(line);
-        int removedLength = column;
-        int remainingLength = previousLine.Length - column;
         if (count >= column)
         {
             count -= column;
@@ -198,13 +196,11 @@ public sealed class MultilineStringEditor
 
     public void RemoveForwardsAt(int line, int column, int count)
     {
-        // TODO FIX BASED ON ABOVE
         if (count <= 0)
             return;
 
         var previousLine = LineAt(line);
         int removedLength = previousLine.Length - column;
-        int remainingLength = column;
         if (count >= removedLength)
         {
             count -= removedLength;
@@ -221,7 +217,6 @@ public sealed class MultilineStringEditor
             {
                 var trimmedLine = previousLine[..column];
                 SetLine(line, trimmedLine);
-                previousLine = trimmedLine;
             }
 
             if (nextLineIndex < _lines.Count)

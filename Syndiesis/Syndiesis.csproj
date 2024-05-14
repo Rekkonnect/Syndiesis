@@ -31,10 +31,13 @@
     <PackageReference Include="Avalonia" Version="11.0.10" />
     <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="11.0.10" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
     <PackageReference Include="Garyon" Version="0.3.3" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
+    <PackageReference Include="Serilog" Version="3.1.1" />
+    <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+    <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="4.1.0" />
   </ItemGroup>
   
 </Project>

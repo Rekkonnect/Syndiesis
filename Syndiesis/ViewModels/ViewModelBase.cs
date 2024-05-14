@@ -1,7 +1,3 @@
-﻿using ReactiveUI;
+﻿namespace Syndiesis.ViewModels;
 
-namespace Syndiesis.ViewModels;
-
-public class ViewModelBase : ReactiveObject
-{
-}
+public abstract class ViewModelBase;

@@ -30,8 +30,11 @@ public sealed record SyntaxObjectInfo(
         {
             return tree?.GetLineSpan(span).Span ?? default;
         }
-        catch
+        catch (Exception ex)
         {
+            App.Current.ExceptionListener.HandleException(ex,
+                $"{nameof(LineSpanOrDefault)} threw unexpectedly");
+
 #if DEBUG
             throw;
 #else

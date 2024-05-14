@@ -1,4 +1,5 @@
-﻿using Syndiesis.Controls.SyntaxVisualization.Creation;
+﻿using Serilog;
+using Syndiesis.Controls.SyntaxVisualization.Creation;
 using System;
 using System.IO;
 using System.Text.Json;
@@ -30,11 +31,12 @@ public sealed class AppSettings
                 return false;
 
             Instance = returned;
+            Log.Information($"Settings loaded from '{path}'");
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            // TODO log
+            App.Current.ExceptionListener.HandleException(ex, $"Failed to load settings from '{path}'");
             return false;
         }
     }
@@ -46,11 +48,12 @@ public sealed class AppSettings
             var json = JsonSerializer.Serialize(
                 Instance, AppSettingsSerializationContext.CustomDefault.AppSettings);
             File.WriteAllText(path, json);
+            Log.Information($"Settings saved to '{path}'");
             return true;
         }
-        catch
+        catch (Exception ex)
         {
-            // TODO log
+            App.Current.ExceptionListener.HandleException(ex, $"Failed to save settings to '{path}'");
             return false;
         }
     }

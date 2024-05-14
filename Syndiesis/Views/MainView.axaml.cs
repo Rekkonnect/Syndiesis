@@ -2,8 +2,10 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Microsoft.CodeAnalysis.Text;
+using Serilog;
 using Syndiesis.Controls;
 using Syndiesis.Core;
+using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
 using System;
 using System.Threading.Tasks;
@@ -39,6 +41,8 @@ public partial class MainView : UserControl
 
             """;
 
+        LoggerExtensionsEx.LogMethodInvocation(nameof(InitializeView));
+
         codeEditor.Editor = ViewModel.Editor;
         codeEditor.SetSource(initializingSource);
         codeEditor.CursorPosition = new(4, 48);
@@ -68,7 +72,21 @@ public partial class MainView : UserControl
 
     private void ExpandAllClick(object? sender, RoutedEventArgs e)
     {
-        syntaxTreeView.listView.RootNode.SetExpansionWithoutAnimationRecursively(true);
+        ExpandAllNodes();
+    }
+
+    private void ExpandAllNodes()
+    {
+        Log.Information("Began expanding all nodes");
+        var profiling = new SimpleProfiling();
+        using (profiling.BeginProcess())
+        {
+            syntaxTreeView.listView.RootNode.SetExpansionWithoutAnimationRecursively(true);
+        }
+        var results = profiling.SnapshotResults!;
+        Log.Information(
+            $"Expanding all nodes took {results.Time.TotalMilliseconds:N2}ms " +
+            $"and reserved {results.Memory:N0} bytes");
     }
 
     private void CollapseAllClick(object? sender, RoutedEventArgs e)
@@ -176,13 +194,14 @@ public partial class MainView : UserControl
 
             """;
 
+        LoggerExtensionsEx.LogMethodInvocation(nameof(Reset));
+
         SetSource(defaultCode);
     }
 
     private void SetSource(string source)
     {
         var analysisPipelineHandler = AnalysisPipelineHandler;
-        var viewModel = ViewModel;
 
         analysisPipelineHandler.IgnoreInputDelayOnce();
         codeEditor.SetSource(source);
