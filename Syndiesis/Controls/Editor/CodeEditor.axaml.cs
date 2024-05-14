@@ -139,7 +139,7 @@ public partial class CodeEditor : UserControl
         _dragHandler.Dragged += PointerDragged;
         _dragHandler.Attach(codeEditorContent);
 
-        DoubleTapped += HandleDoubleTapped;
+        codeEditorContent.DoubleTapped += HandleDoubleTapped;
     }
 
     private bool _isUpdatingScrollLimits = false;
