@@ -304,12 +304,20 @@ public partial class CodeEditor : UserControl
 
         if (_hoveredListNode is not null)
         {
-            var syntaxObject = _hoveredListNode.AssociatedSyntaxObject;
-
-            if (syntaxObject is not null)
+            var current = _hoveredListNode;
+            while (current is not null)
             {
-                var span = _hoveredListNode.NodeLine.DisplayLineSpan;
-                SetHoverSpan(span, HighlightKind.SyntaxNodeHover);
+                var currentLine = current.NodeLine;
+                var syntaxObject = currentLine.AssociatedSyntaxObject;
+
+                if (syntaxObject is not null)
+                {
+                    var span = currentLine.DisplayLineSpan;
+                    SetHoverSpan(span, HighlightKind.SyntaxNodeHover);
+                    break;
+                }
+
+                current = current.ParentNode;
             }
         }
     }
@@ -391,9 +399,17 @@ public partial class CodeEditor : UserControl
 
     private void HandleDoubleTapped(object? sender, TappedEventArgs e)
     {
-        SelectCurrentWord();
         _isDoubleTapped = true;
+
+        var lineLength = _editor.MultilineEditor.LineLength(_editor.CursorLineIndex);
+        var cursorCharacterIndex = _editor.CursorCharacterIndex;
+        if (lineLength > 0 && cursorCharacterIndex >= lineLength)
+        {
+            _editor.CursorCharacterIndex = lineLength - 1;
+        }
+
         _editor.BeginWordSelection();
+        SelectCurrentWord();
         e.Handled = true;
     }
 
