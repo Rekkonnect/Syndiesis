@@ -4,14 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              xmlns:controls="using:Syndiesis.Controls"
+             Cursor="Ibeam"
              d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Syndiesis.Controls.CodeEditorContentPanel">
-
-  <UserControl.Styles>
-    <Style Selector="controls|CodeEditorContentPanel:pointerover">
-      <Setter Property="Cursor" Value="Ibeam" />
-    </Style>
-  </UserControl.Styles>
 
   <StackPanel Name="codeLinesPanel" />
 

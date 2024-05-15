@@ -451,8 +451,8 @@ public partial class CodeEditor : UserControl
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        bool success = GetPositionFromCursor(e, out int column, out int line);
-        if (!success)
+        bool containedInBounds = GetPositionFromCursor(e, out int column, out int line);
+        if (!containedInBounds)
             return;
 
         bool inRangeSelection = e.KeyModifiers.HasFlag(KeyModifiers.Shift);
@@ -475,9 +475,7 @@ public partial class CodeEditor : UserControl
 
     private void SetSelectionRangeFromDrag(PointerEventArgs e)
     {
-        bool success = GetPositionFromCursor(e, out int column, out int line);
-        if (!success)
-            return;
+        GetPositionFromCursor(e, out int column, out int line);
 
         if (_isDoubleTapped)
         {
@@ -494,13 +492,8 @@ public partial class CodeEditor : UserControl
 
     private bool GetPositionFromCursor(PointerEventArgs e, out int column, out int line)
     {
-        line = 0;
-        column = 0;
-
         var canvasOffset = e.GetPosition(codeCanvas);
         bool contained = codeCanvas.Bounds.Contains(canvasOffset);
-        if (!contained)
-            return false;
 
         int pointerLine = (int)(canvasOffset.Y / LineHeight);
         int pointerColumn = (int)((canvasOffset.X + GetHorizontalContentOffset()) / CharWidth);
@@ -510,23 +503,24 @@ public partial class CodeEditor : UserControl
             line = _editor.LineCount - 1;
         }
 
-        // this is a guard clause for when clicking within the designer
-        // if we ever encounter a multiline string editor with no lines, we can
-        // also evade that exception
-        column = 0;
         if (line < 0)
         {
-            return false;
+            line = 0;
         }
 
         column = pointerColumn;
+        if (column < 0)
+        {
+            column = 0;
+        }
+
         int lineLength = _editor.MultilineEditor.LineLength(line);
         if (column > lineLength)
         {
             column = lineLength;
         }
 
-        return true;
+        return contained;
     }
 
     protected override Size MeasureOverride(Size availableSize)
