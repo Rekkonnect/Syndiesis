@@ -1,5 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
-using Syndiesis.Controls.SyntaxVisualization.Creation;
+using Syndiesis.Core.DisplayAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 

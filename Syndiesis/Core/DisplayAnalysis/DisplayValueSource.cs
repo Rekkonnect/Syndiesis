@@ -1,4 +1,4 @@
-﻿namespace Syndiesis.Controls.SyntaxVisualization.Creation;
+﻿namespace Syndiesis.Core.DisplayAnalysis;
 
 public readonly record struct DisplayValueSource(
     DisplayValueSource.SymbolKind Kind, string? Name)

@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Avalonia.Styling;
-using Syndiesis.Utilities;
 using System;
 
 namespace Syndiesis.Controls;

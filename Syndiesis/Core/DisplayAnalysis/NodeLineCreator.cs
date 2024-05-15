@@ -2,8 +2,7 @@
 using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Syndiesis.Core;
+using Syndiesis.Controls;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,7 +10,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Syndiesis.Controls.SyntaxVisualization.Creation;
+namespace Syndiesis.Core.DisplayAnalysis;
 
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
 
@@ -21,6 +20,9 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     private const string missingTokenDisplayString = "[Missing]";
 
     private readonly NodeLineCreationOptions _options = options;
+
+    private static readonly InterestingPropertyFilterCache _propertyCache
+        = new(SyntaxNodePropertyFilter.Instance);
 
     public SyntaxTreeListNode CreateRootNodeOrToken(
         SyntaxNodeOrToken nodeOrToken, DisplayValueSource valueSource = default)
@@ -411,60 +413,8 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     private static IReadOnlyList<PropertyInfo> GetInterestingPropertiesForNodeType(SyntaxNode node)
     {
         var nodeType = node.GetType();
-        var properties = nodeType.GetProperties();
-        var interestingTypeProperties = properties.Where(FilterNodeProperty)
-            .ToArray();
-
-        return interestingTypeProperties;
-    }
-
-    private static bool FilterNodeProperty(PropertyInfo propertyInfo)
-    {
-        var name = propertyInfo.Name;
-
-        // we don't like infinite recursion
-        if (name is nameof(SyntaxNode.Parent))
-            return false;
-
-        bool extraFilter = IsExtraProperty(propertyInfo, name);
-        if (extraFilter)
-            return false;
-
-        var type = propertyInfo.PropertyType;
-
-        if (type.IsGenericType)
-        {
-            var interfaces = type.GetInterfaces();
-            bool isListOfSyntaxNodes = interfaces.Any(
-                i => i.IsAssignableTo(typeof(ReadOnlySyntaxNodeList)));
-            return isListOfSyntaxNodes;
-        }
-
-        if (IsSyntaxNodeType(type))
-            return true;
-
-        return type == typeof(SyntaxTokenList)
-            || type == typeof(SyntaxTriviaList)
-            || type == typeof(SyntaxToken)
-            || type == typeof(SyntaxTrivia)
-            ;
-    }
-
-    private static bool IsExtraProperty(PropertyInfo propertyInfo, string name)
-    {
-        if (name is nameof(UsingDirectiveSyntax.Name))
-        {
-            if (propertyInfo.DeclaringType == typeof(UsingDirectiveSyntax))
-                return true;
-        }
-
-        if (name is nameof(DirectiveTriviaSyntax.DirectiveNameToken))
-        {
-            if (propertyInfo.DeclaringType == typeof(DirectiveTriviaSyntax))
-                return true;
-        }
-
-        return false;
+        var properties = _propertyCache.FilterForType(nodeType).Properties;
+        return properties;
     }
 
     private bool ShouldIncludeValue(object? value)
@@ -514,21 +464,6 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
             default:
                 return false;
-        }
-    }
-
-    private static bool IsSyntaxNodeType(Type type)
-    {
-        var current = type;
-        while (true)
-        {
-            if (current is null)
-                return false;
-
-            if (current == typeof(SyntaxNode))
-                return true;
-
-            current = current.BaseType;
         }
     }
 

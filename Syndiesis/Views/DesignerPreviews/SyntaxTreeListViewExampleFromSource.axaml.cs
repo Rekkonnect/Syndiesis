@@ -1,6 +1,6 @@
-using Syndiesis.Controls;
-using Syndiesis.Controls.SyntaxVisualization.Creation;
 using Microsoft.CodeAnalysis.CSharp;
+using Syndiesis.Controls;
+using Syndiesis.Core.DisplayAnalysis;
 
 namespace Syndiesis.Views.DesignerPreviews;
 

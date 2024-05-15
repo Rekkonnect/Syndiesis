@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Syndiesis.Controls.SyntaxVisualization.Creation;
+namespace Syndiesis.Core.DisplayAnalysis;
 
 public sealed record SyntaxObjectInfo(
     object SyntaxObject, TextSpan Span, TextSpan FullSpan)

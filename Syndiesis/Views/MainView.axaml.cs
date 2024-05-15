@@ -8,7 +8,6 @@ using Syndiesis.Core;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Views;

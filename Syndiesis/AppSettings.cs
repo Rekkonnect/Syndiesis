@@ -1,5 +1,5 @@
 ﻿using Serilog;
-using Syndiesis.Controls.SyntaxVisualization.Creation;
+using Syndiesis.Core.DisplayAnalysis;
 using System;
 using System.IO;
 using System.Text.Json;

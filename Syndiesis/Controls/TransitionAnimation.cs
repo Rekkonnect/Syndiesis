@@ -1,6 +1,5 @@
 ﻿using Avalonia.Animation;
 using Avalonia.Styling;
-using Syndiesis.Utilities;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;

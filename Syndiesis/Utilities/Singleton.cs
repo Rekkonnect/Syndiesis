@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Syndiesis.Utilities;
+﻿namespace Syndiesis.Utilities;
 
 public sealed class Singleton<T>
     where T : new()

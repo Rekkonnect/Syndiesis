@@ -3,8 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Media;
 using Microsoft.CodeAnalysis.Text;
-using Syndiesis.Controls.SyntaxVisualization.Creation;
-using Syndiesis.Utilities;
+using Syndiesis.Core.DisplayAnalysis;
 
 namespace Syndiesis.Controls;
 
