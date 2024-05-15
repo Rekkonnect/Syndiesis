@@ -1,6 +1,38 @@
 # Changelog
 
-## 1.0.2
+## v1.0.3
+
+### Features
+
+- Code editor
+  - Improved double-click word selection
+- Syntax tree view
+  - Detailed property display of display values
+  - Moving cursor by right-clicking on node
+  - Display `GetStructure()` on structured syntax trivia
+- General
+  - Include usage reference
+  - Logging
+  - Support running on macOS (thanks @elvodqa)
+  - Better scroll handling
+
+### Bugfixes
+
+- Code editor
+  - Extra retained line after deleting multiline content
+  - Clicking outside code editor content (i.e. scroll bars) handling text selection
+  - Handle mouse dragging to select text outside of bounds of code editor
+  - Improve cursor icon persistence
+- Syntax tree view
+  - Disabled text line display correctly displays affected lines
+
+### Performance
+
+- Removed unused `Avalonia.ReactiveUI` library
+- Improved hovering on node lines in deep nodes
+- Faster syntax object property value retrieval
+
+## v1.0.2
 
 ### Features
 
@@ -25,7 +57,7 @@
 - Syntax tree view
   - Support `PreprocessingMessageTrivia`
 
-## 1.0.1
+## v1.0.1
 
 ### Features
 
@@ -57,6 +89,6 @@
 
 - Some async operations are now performed outside the UI thread to avoid hiccups.
 
-## 1.0.0
+## v1.0.0
 
 Initial release.
