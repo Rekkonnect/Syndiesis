@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Garyon.Extensions;
 using Microsoft.CodeAnalysis.Text;
 using Serilog;
 using Syndiesis.Controls;
@@ -61,6 +62,7 @@ public partial class MainView : UserControl
         syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
 
         InitializeButtonEvents();
+        InitializeComboBoxEvents();
     }
 
     private void InitializeButtonEvents()
@@ -70,6 +72,12 @@ public partial class MainView : UserControl
         settingsButton.Click += HandleSettingsClick;
         collapseAllButton.Click += CollapseAllClick;
         expandAllButton.Click += ExpandAllClick;
+    }
+
+    private void InitializeComboBoxEvents()
+    {
+        viewModeComboBox.SelectedItem = SyntaxTree;
+        viewModeComboBox.SelectionChanged += HandleViewModeClick;
     }
 
     private void ExpandAllClick(object? sender, RoutedEventArgs e)
@@ -94,6 +102,21 @@ public partial class MainView : UserControl
     private void CollapseAllClick(object? sender, RoutedEventArgs e)
     {
         syntaxTreeView.listView.CollapseAll();
+    }
+
+    private void HandleViewModeClick(object? sender, RoutedEventArgs e)
+    {
+        switch (((ComboBoxItem)viewModeComboBox.SelectedItem!).Name)
+        {
+            case "SyntaxTree":
+                break;
+
+            case "IL":
+                break;
+
+            case "CS":
+                break;
+        }
     }
 
     private void HandleSettingsClick(object? sender, RoutedEventArgs e)

@@ -84,6 +84,25 @@
             Margin="0 0 20 0"
             HorizontalAlignment="Right"
             >
+            
+            <ComboBox
+              Name="viewModeComboBox"
+              Width="100"
+              >
+              <ComboBoxItem
+                Content="Syntax Tree"
+                Name="SyntaxTree"
+                />
+              <ComboBoxItem
+                Content="IL"
+                Name="IL"
+                />
+              <ComboBoxItem
+                Content="C#"
+                Name="CS"
+                />
+            </ComboBox>
+            
             <Button
               VerticalAlignment="Stretch"
               Name="collapseAllButton"
