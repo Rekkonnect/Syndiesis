@@ -10,6 +10,7 @@
   - Detailed property display of display values
   - Moving cursor by right-clicking on node
   - Display `GetStructure()` on structured syntax trivia
+  - Display missing nodes without constraints
 - General
   - Include usage reference
   - Logging
@@ -25,6 +26,7 @@
   - Improve cursor icon persistence
 - Syntax tree view
   - Disabled text line display correctly displays affected lines
+  - Missing nodes or tokens no longer have children when inside a syntax list
 
 ### Performance
 

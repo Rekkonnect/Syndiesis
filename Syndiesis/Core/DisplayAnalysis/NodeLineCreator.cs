@@ -28,7 +28,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         SyntaxNodeOrToken nodeOrToken, DisplayValueSource valueSource = default)
     {
         var rootLine = CreateNodeOrTokenLine(nodeOrToken, valueSource);
-        var children = () => CreateNodeOrTokenChildren(nodeOrToken);
+        var children = GetChildRetrieverForNodeOrToken(nodeOrToken);
         return new SyntaxTreeListNode
         {
             NodeLine = rootLine,
@@ -37,14 +37,15 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private IReadOnlyList<SyntaxTreeListNode> CreateNodeOrTokenChildren(SyntaxNodeOrToken nodeOrToken)
+    private Func<IReadOnlyList<SyntaxTreeListNode>>? GetChildRetrieverForNodeOrToken(
+        SyntaxNodeOrToken nodeOrToken)
     {
         if (nodeOrToken.IsNode)
         {
-            return CreateNodeChildren(nodeOrToken.AsNode()!);
+            return GetChildRetrieverForNode(nodeOrToken.AsNode()!);
         }
 
-        return CreateTokenChildren(nodeOrToken.AsToken());
+        return GetChildRetrieverForToken(nodeOrToken.AsToken());
     }
 
     private SyntaxTreeListNodeLine CreateNodeOrTokenLine(
@@ -62,13 +63,21 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         SyntaxNode node, DisplayValueSource valueSource = default)
     {
         var rootLine = CreateNodeLine(node, valueSource);
-        var children = () => CreateNodeChildren(node);
+        var children = GetChildRetrieverForNode(node);
         return new SyntaxTreeListNode
         {
             NodeLine = rootLine,
             ChildRetriever = children,
             AssociatedSyntaxObjectContent = node,
         };
+    }
+
+    private Func<IReadOnlyList<SyntaxTreeListNode>>? GetChildRetrieverForNode(SyntaxNode node)
+    {
+        if (node.IsMissing && !node.HasAnyTrivia())
+            return null;
+
+        return () => CreateNodeChildren(node);
     }
 
     public SyntaxTreeListNode CreateTokenNode(
@@ -91,6 +100,9 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             case SyntaxKind.XmlTextLiteralNewLineToken:
                 return null;
         }
+
+        if (token.IsMissing && !token.HasAnyTrivia())
+            return null;
 
         return () => CreateTokenChildren(token);
     }
@@ -448,10 +460,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             case SyntaxToken token:
                 if (token.IsMissing)
                 {
-                    if (!_options.ShowTrivia || !token.HasAnyTrivia())
-                    {
-                        return false;
-                    }
+                    return true;
                 }
 
                 return token != default;
