@@ -23,9 +23,9 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     private readonly NodeLineCreationOptions _options = options;
 
     public SyntaxTreeListNode CreateRootNodeOrToken(
-        SyntaxNodeOrToken nodeOrToken, string? propertyName = null)
+        SyntaxNodeOrToken nodeOrToken, DisplayValueSource valueSource = default)
     {
-        var rootLine = CreateNodeOrTokenLine(nodeOrToken, propertyName);
+        var rootLine = CreateNodeOrTokenLine(nodeOrToken, valueSource);
         var children = () => CreateNodeOrTokenChildren(nodeOrToken);
         return new SyntaxTreeListNode
         {
@@ -46,19 +46,20 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     }
 
     private SyntaxTreeListNodeLine CreateNodeOrTokenLine(
-        SyntaxNodeOrToken nodeOrToken, string? propertyName)
+        SyntaxNodeOrToken nodeOrToken, DisplayValueSource valueSource)
     {
         if (nodeOrToken.IsNode)
         {
-            return CreateNodeLine(nodeOrToken.AsNode()!, propertyName);
+            return CreateNodeLine(nodeOrToken.AsNode()!, valueSource);
         }
 
-        return CreateTokenNodeLine(nodeOrToken.AsToken(), propertyName);
+        return CreateTokenNodeLine(nodeOrToken.AsToken(), valueSource);
     }
 
-    public SyntaxTreeListNode CreateRootNode(SyntaxNode node, string? propertyName = null)
+    public SyntaxTreeListNode CreateRootNode(
+        SyntaxNode node, DisplayValueSource valueSource = default)
     {
-        var rootLine = CreateNodeLine(node, propertyName);
+        var rootLine = CreateNodeLine(node, valueSource);
         var children = () => CreateNodeChildren(node);
         return new SyntaxTreeListNode
         {
@@ -68,9 +69,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    public SyntaxTreeListNode CreateTokenNode(SyntaxToken token, string? propertyName = null)
+    public SyntaxTreeListNode CreateTokenNode(
+        SyntaxToken token, DisplayValueSource valueSource = default)
     {
-        var rootLine = CreateTokenNodeLine(token, propertyName);
+        var rootLine = CreateTokenNodeLine(token, valueSource);
         var children = GetChildRetrieverForToken(token);
         return new SyntaxTreeListNode
         {
@@ -91,9 +93,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return () => CreateTokenChildren(token);
     }
 
-    public SyntaxTreeListNode CreateRootNode(ReadOnlySyntaxNodeList node, string? propertyName = null)
+    public SyntaxTreeListNode CreateRootNode(
+        ReadOnlySyntaxNodeList node, DisplayValueSource valueSource = default)
     {
-        var rootLine = CreateSyntaxListLine(node, propertyName);
+        var rootLine = CreateSyntaxListLine(node, valueSource);
         var children = () => CreateNodeListChildren(node);
         return new SyntaxTreeListNode
         {
@@ -219,17 +222,17 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     private IReadOnlyList<SyntaxTreeListNode> CreatePropertyAnalysisChildren(SyntaxToken token)
     {
         string text = DisplayStringForText(token, token.Text);
-        var textLine = CreateNodeForNodeValue(text, nameof(SyntaxToken.Text));
+        var textLine = CreateNodeForNodeValue(text, Property(nameof(SyntaxToken.Text)));
 
         string valueText = DisplayStringForText(token, token.ValueText);
-        var valueTextLine = CreateNodeForNodeValue(valueText, nameof(SyntaxToken.ValueText));
+        var valueTextLine = CreateNodeForNodeValue(valueText, Property(nameof(SyntaxToken.ValueText)));
 
         var value = token.Value;
         if (value is string valueString)
         {
             value = DisplayStringForText(token, valueString);
         }
-        var valueLine = CreateNodeForNodeValue(value, nameof(SyntaxToken.Value));
+        var valueLine = CreateNodeForNodeValue(value, Property(nameof(SyntaxToken.Value)));
 
         return
         [
@@ -241,9 +244,9 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
     private SyntaxTreeListNode CreateNodeForNodeValue(
         object? value,
-        string? propertyName = null)
+        DisplayValueSource valueSource = default)
     {
-        var line = LineForNodeValue(value, propertyName);
+        var line = LineForNodeValue(value, valueSource);
         line.NodeTypeDisplay = Styles.PropertyAnalysisValueDisplay;
         return new()
         {
@@ -251,11 +254,12 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private SyntaxTreeListNodeLine LineForNodeValue(object? value, string? propertyName = null)
+    private SyntaxTreeListNodeLine LineForNodeValue(
+        object? value, DisplayValueSource valueSource = default)
     {
         var inlines = new InlineCollection();
 
-        AppendPropertyDetail(propertyName, inlines);
+        AppendvalueSource(valueSource, inlines);
         var valueRun = RunForObjectValue(value);
         inlines.Add(valueRun);
 
@@ -310,25 +314,27 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
                 continue;
             }
 
+            var valueSource = Property(property.Name);
+
             switch (value)
             {
                 case SyntaxNode childNode:
-                    var childNodeElement = CreateRootNode(childNode, property.Name);
+                    var childNodeElement = CreateRootNode(childNode, valueSource);
                     children.Add(childNodeElement);
                     break;
 
                 case ReadOnlySyntaxNodeList childNodeList:
-                    var childNodeListElement = CreateRootNode(childNodeList, property.Name);
+                    var childNodeListElement = CreateRootNode(childNodeList, valueSource);
                     children.Add(childNodeListElement);
                     break;
 
                 case SyntaxToken token:
-                    var tokenNode = CreateTokenNode(token, property.Name);
+                    var tokenNode = CreateTokenNode(token, valueSource);
                     children.Add(tokenNode);
                     break;
 
                 case SyntaxTokenList tokenList:
-                    var tokenListNode = CreateTokenListNode(tokenList, property.Name);
+                    var tokenListNode = CreateTokenListNode(tokenList, valueSource);
                     children.Add(tokenListNode);
                     break;
             }
@@ -339,9 +345,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return children;
     }
 
-    private SyntaxTreeListNode CreateTokenListNode(SyntaxTokenList list, string? propertyName)
+    private SyntaxTreeListNode CreateTokenListNode(
+        SyntaxTokenList list, DisplayValueSource valueSource)
     {
-        var node = CreateTokenListNodeLine(list, propertyName);
+        var node = CreateTokenListNodeLine(list, valueSource);
         var children = () => CreateTokenListChildren(list);
 
         return new()
@@ -352,9 +359,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private SyntaxTreeListNodeLine CreateTokenListNodeLine(SyntaxTokenList list, string? propertyName)
+    private SyntaxTreeListNodeLine CreateTokenListNodeLine(
+        SyntaxTokenList list, DisplayValueSource valueSource)
     {
-        var inlines = CreateBasicTypeNameInlines(list, propertyName);
+        var inlines = CreateBasicTypeNameInlines(list, valueSource);
 
         return new()
         {
@@ -524,9 +532,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         }
     }
 
-    public SyntaxTreeListNodeLine CreateNodeLine(SyntaxNode node, string? propertyName = null)
+    public SyntaxTreeListNodeLine CreateNodeLine(
+        SyntaxNode node, DisplayValueSource valueSource = default)
     {
-        var inlines = CreateBasicTypeNameInlines(node, propertyName);
+        var inlines = CreateBasicTypeNameInlines(node, valueSource);
 
         return new()
         {
@@ -536,7 +545,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     }
 
     public SyntaxTreeListNodeLine CreateSyntaxListLine(
-        ReadOnlySyntaxNodeList list, string? propertyName = null)
+        ReadOnlySyntaxNodeList list, DisplayValueSource valueSource = default)
     {
         var listType = list.GetType();
         if (listType.IsGenericType)
@@ -549,7 +558,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
             if (isSyntaxList)
             {
-                return CreateBasicSyntaxListLine(list, propertyName);
+                return CreateBasicSyntaxListLine(list, valueSource);
             }
 
             var typeArgument = listType.GenericTypeArguments[0];
@@ -561,7 +570,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
                 var invokedMethod = this.GetType()
                     .GetMethod(nameof(methodName))
                     !.MakeGenericMethod([typeArgument]);
-                var result = invokedMethod.Invoke(this, [list, propertyName])
+                var result = invokedMethod.Invoke(this, [list, valueSource])
                     as SyntaxTreeListNodeLine;
                 return result!;
             }
@@ -571,7 +580,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
                 var invokedMethod = this.GetType()
                     .GetMethod(nameof(methodName))
                     !.MakeGenericMethod([typeArgument]);
-                var result = invokedMethod.Invoke(this, [list, propertyName])
+                var result = invokedMethod.Invoke(this, [list, valueSource])
                     as SyntaxTreeListNodeLine;
                 return result!;
             }
@@ -581,9 +590,9 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     }
 
     public SyntaxTreeListNodeLine CreateBasicSyntaxListLine(
-        ReadOnlySyntaxNodeList node, string? propertyName = null)
+        ReadOnlySyntaxNodeList node, DisplayValueSource valueSource)
     {
-        var inlines = CreateBasicTypeNameInlines(node, propertyName);
+        var inlines = CreateBasicTypeNameInlines(node, valueSource);
 
         return new()
         {
@@ -593,10 +602,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     }
 
     public SyntaxTreeListNodeLine CreateSyntaxListLine<T>(
-        SyntaxList<T> node, string? propertyName = null)
+        SyntaxList<T> node, DisplayValueSource valueSource = default)
         where T : SyntaxNode
     {
-        var inlines = CreateBasicTypeNameInlines(node, propertyName);
+        var inlines = CreateBasicTypeNameInlines(node, valueSource);
 
         return new()
         {
@@ -606,10 +615,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     }
 
     public SyntaxTreeListNodeLine CreateSeparatedSyntaxListLine<T>(
-        SeparatedSyntaxList<T> node, string? propertyName = null)
+        SeparatedSyntaxList<T> node, DisplayValueSource valueSource)
         where T : SyntaxNode
     {
-        var inlines = CreateBasicTypeNameInlines(node, propertyName);
+        var inlines = CreateBasicTypeNameInlines(node, valueSource);
 
         return new()
         {
@@ -618,23 +627,25 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private InlineCollection CreateBasicTypeNameInlines(object value, string? propertyName)
+    private InlineCollection CreateBasicTypeNameInlines(
+        object value, DisplayValueSource valueSource)
     {
         var inlines = new InlineCollection();
         var type = value.GetType();
 
-        AppendPropertyDetail(propertyName, inlines);
+        AppendvalueSource(valueSource, inlines);
         AppendTypeDetails(type, inlines);
 
         return inlines;
     }
 
-    public SyntaxTreeListNodeLine CreateTokenNodeLine(SyntaxToken token, string? propertyName)
+    public SyntaxTreeListNodeLine CreateTokenNodeLine(
+        SyntaxToken token, DisplayValueSource valueSource)
     {
         var inlines = new InlineCollection();
 
-        AppendPropertyDetail(propertyName, inlines);
-        AppendTokenKindDetails(token, propertyName, inlines);
+        AppendvalueSource(valueSource, inlines);
+        AppendTokenKindDetails(token, valueSource.Name, inlines);
 
         return new()
         {
@@ -650,7 +661,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         Func<IReadOnlyList<SyntaxTreeListNode>>? children = null;
         if (structure is not null)
         {
-            var structureNode = CreateRootNode(structure, "Structure");
+            var valueSource = new DisplayValueSource(
+                DisplayValueSource.SymbolKind.Method,
+                nameof(SyntaxTrivia.GetStructure));
+            var structureNode = CreateRootNode(structure, valueSource);
             children = () => [structureNode];
         }
 
@@ -1046,11 +1060,40 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return Run("      ", Styles.RawValueBrush);
     }
 
-    private void AppendPropertyDetail(string? propertyName, InlineCollection inlines)
+    private void AppendvalueSource(
+        DisplayValueSource valueSource,
+        InlineCollection inlines)
     {
-        if (propertyName is null)
+        if (valueSource.IsDefault)
             return;
 
+        switch (valueSource.Kind)
+        {
+            case DisplayValueSource.SymbolKind.Property:
+                AppendPropertyDetail(valueSource.Name!, inlines);
+                break;
+
+            case DisplayValueSource.SymbolKind.Method:
+                AppendMethodDetail(valueSource, inlines);
+                break;
+        }
+    }
+
+    private void AppendMethodDetail(
+        DisplayValueSource valueSource, InlineCollection inlines)
+    {
+        var propertyNameRun = Run(valueSource.Name!, Styles.MethodBrush);
+        var parenthesesRun = Run("()", Styles.RawValueBrush);
+        var colonRun = Run(":  ", Styles.SplitterBrush);
+        inlines.AddRange([
+            propertyNameRun,
+            parenthesesRun,
+            colonRun
+        ]);
+    }
+
+    private void AppendPropertyDetail(string propertyName, InlineCollection inlines)
+    {
         var propertyNameRun = Run(propertyName, Styles.PropertyBrush);
         var colonRun = Run(":  ", Styles.SplitterBrush);
         inlines.Add(propertyNameRun);
@@ -1108,6 +1151,11 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     {
         return new(text) { Foreground = brush };
     }
+
+    private static DisplayValueSource Property(string name)
+    {
+        return new(DisplayValueSource.SymbolKind.Property, name);
+    }
 }
 
 partial class NodeLineCreator
@@ -1153,6 +1201,7 @@ partial class NodeLineCreator
         public static readonly Color ClassMainColor = Color.FromUInt32(0xFF33E5A5);
         public static readonly Color ClassSecondaryColor = Color.FromUInt32(0xFF008052);
         public static readonly Color PropertyColor = Color.FromUInt32(0xFFE5986C);
+        public static readonly Color MethodColor = Color.FromUInt32(0xFFFFF4B9);
         public static readonly Color SplitterColor = Color.FromUInt32(0xFFB4B4B4);
         public static readonly Color KeywordColor = Color.FromUInt32(0xFF38A0FF);
         public static readonly Color WhitespaceTriviaColor = Color.FromUInt32(0xFFB3B3B3);
@@ -1176,6 +1225,7 @@ partial class NodeLineCreator
         public static readonly SolidColorBrush ClassMainBrush = new(ClassMainColor);
         public static readonly SolidColorBrush ClassSecondaryBrush = new(ClassSecondaryColor);
         public static readonly SolidColorBrush PropertyBrush = new(PropertyColor);
+        public static readonly SolidColorBrush MethodBrush = new(MethodColor);
         public static readonly SolidColorBrush SplitterBrush = new(SplitterColor);
         public static readonly SolidColorBrush KeywordBrush = new(KeywordColor);
         public static readonly SolidColorBrush WhitespaceTriviaBrush = new(WhitespaceTriviaColor);
