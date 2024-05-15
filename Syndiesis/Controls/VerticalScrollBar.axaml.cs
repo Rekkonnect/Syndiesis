@@ -29,10 +29,8 @@ public partial class VerticalScrollBar : BaseScrollBar
 
     protected override void HandleDragging(PointerDragHandler.PointerDragArgs args)
     {
-        var heightStep = args.Delta.Y;
-        var progressStep = heightStep / draggableRectangleCanvas.Bounds.Height;
-        var translatedStep = progressStep * ValidValueRange;
-        Step(translatedStep);
+        var step = CalculateStep(args.TotalDelta.Y, draggableRectangleCanvas.Bounds.Height);
+        Step(step);
     }
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -48,7 +46,7 @@ public partial class VerticalScrollBar : BaseScrollBar
         var availableHeight = draggableRectangleCanvas.Bounds.Height;
         var valueRange = ValidValueRange;
         var window = ScrollWindowLength;
-        var start = StartPosition - MinValue;
+        var start = DisplayStartPosition - MinValue;
 
         Canvas.SetTop(draggableRectangle, PixelValue(start));
         draggableRectangle.Height = PixelValue(window);

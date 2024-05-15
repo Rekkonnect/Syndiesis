@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls;
+﻿using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -93,6 +94,8 @@ public abstract class BaseScrollBar : UserControl
         }
     }
 
+    public double DisplayStartPosition => DisplayPosition(_startPosition);
+
     private double _endPosition = 5;
 
     public double EndPosition
@@ -109,6 +112,8 @@ public abstract class BaseScrollBar : UserControl
             UpdateIfNotPaused();
         }
     }
+
+    public double DisplayEndPosition => DisplayPosition(_endPosition);
 
     public double ScrollWindowLength => EndPosition - StartPosition;
 
@@ -129,6 +134,18 @@ public abstract class BaseScrollBar : UserControl
         }
     }
 
+    private double _minVisibleStep = 0;
+
+    public double MinVisibleStep
+    {
+        get => _minVisibleStep;
+        set
+        {
+            _minVisibleStep = value;
+            UpdateIfNotPaused();
+        }
+    }
+
     public abstract ScrollBarStepButtonContainer PreviousButtonContainer { get; }
     public abstract ScrollBarStepButtonContainer NextButtonContainer { get; }
 
@@ -138,6 +155,8 @@ public abstract class BaseScrollBar : UserControl
 
     private bool _hasChanges = false;
     private int _updateLocks = 0;
+
+    private double _dragInitialStartPosition;
 
     protected readonly PointerDragHandler DragHandler = new();
 
@@ -201,8 +220,24 @@ public abstract class BaseScrollBar : UserControl
 
     protected void InitializeDraggableHandler()
     {
+        DragHandler.DragStarted += HandleDragStart;
         DragHandler.Dragged += HandleDragging;
         DragHandler.Attach(DraggableRectangle);
+    }
+
+    protected abstract void HandleDragging(PointerDragHandler.PointerDragArgs args);
+
+    private void HandleDragStart(Point startPoint)
+    {
+        _dragInitialStartPosition = StartPosition;
+    }
+
+    protected double CalculateStep(double totalStep, double dimensionLength)
+    {
+        var previousOffset = StartPosition - _dragInitialStartPosition;
+        var previousDimensionOffsetLength = previousOffset / ValidValueRange * dimensionLength;
+        var valueStep = totalStep - previousDimensionOffsetLength;
+        return valueStep / dimensionLength * ValidValueRange;
     }
 
     private void HandlePointerOverRectangle(object? sender, PointerEventArgs e)
@@ -211,6 +246,18 @@ public abstract class BaseScrollBar : UserControl
         bool isHovered = draggableRectangle.IsPointerOver || DragHandler.IsActivelyDragging;
         var brush = BrushForHoverState(isHovered);
         draggableRectangle.Fill = brush;
+    }
+
+    public double DisplayPosition(double actual)
+    {
+        var minStep = MinVisibleStep;
+        var position = actual;
+        if (minStep is 0)
+            return position;
+
+        var stepCount = position / minStep;
+        var roundedSteps = Math.Round(stepCount);
+        return roundedSteps * minStep;
     }
 
     private void HandlePreviousClick(object? sender, RoutedEventArgs e)
@@ -222,8 +269,6 @@ public abstract class BaseScrollBar : UserControl
     {
         Step(SmallStep);
     }
-
-    protected abstract void HandleDragging(PointerDragHandler.PointerDragArgs args);
 
     private void UpdateIfNotPaused()
     {

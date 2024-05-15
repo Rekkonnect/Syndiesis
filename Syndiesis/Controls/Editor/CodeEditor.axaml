@@ -57,6 +57,7 @@
           MinValue="0"
           MaxValue="5"
           HasAvailableScroll="False"
+          MinVisibleStep="1"
           />
       </Panel>
       <Panel

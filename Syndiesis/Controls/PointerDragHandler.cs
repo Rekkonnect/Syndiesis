@@ -9,7 +9,7 @@ public class PointerDragHandler
     private Point? _sourcePoint;
     private Point _previousPoint;
 
-    public event Action? DragStarted;
+    public event Action<Point>? DragStarted;
     public event Action<PointerDragArgs>? Dragged;
     public event Action? DragEnded;
 
@@ -27,7 +27,7 @@ public class PointerDragHandler
         var position = e.GetPosition(null);
         _sourcePoint = position;
         _previousPoint = position;
-        DragStarted?.Invoke();
+        DragStarted?.Invoke(position);
     }
 
     private void HandlePointerReleased(object? sender, PointerReleasedEventArgs e)

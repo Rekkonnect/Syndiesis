@@ -23,10 +23,8 @@ public partial class HorizontalScrollBar : BaseScrollBar
 
     protected override void HandleDragging(PointerDragHandler.PointerDragArgs args)
     {
-        var widthStep = args.Delta.X;
-        var progressStep = widthStep / draggableRectangleCanvas.Bounds.Width;
-        var translatedStep = progressStep * ValidValueRange;
-        Step(translatedStep);
+        var step = CalculateStep(args.TotalDelta.X, draggableRectangleCanvas.Bounds.Width);
+        Step(step);
     }
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -42,7 +40,7 @@ public partial class HorizontalScrollBar : BaseScrollBar
         var availableWidth = draggableRectangleCanvas.Bounds.Width;
         var valueRange = ValidValueRange;
         var window = ScrollWindowLength;
-        var start = StartPosition - MinValue;
+        var start = DisplayStartPosition - MinValue;
 
         Canvas.SetLeft(draggableRectangle, PixelValue(start));
         draggableRectangle.Width = PixelValue(window);
