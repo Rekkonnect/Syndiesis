@@ -1,7 +1,7 @@
 ﻿using Avalonia.Input;
 using System;
 
-namespace Syndiesis.Controls;
+namespace Syndiesis.Utilities;
 
 public static class KeyModifierFacts
 {
@@ -21,7 +21,7 @@ public static class KeyModifierFacts
 
         if (modifiers.HasFlag(controlKey))
         {
-            return (modifiers & ~controlKey) | KeyModifiers.Control;
+            return modifiers & ~controlKey | KeyModifiers.Control;
         }
 
         return modifiers;

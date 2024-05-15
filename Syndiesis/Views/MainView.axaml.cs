@@ -8,6 +8,7 @@ using Syndiesis.Core;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Views;
@@ -70,6 +71,13 @@ public partial class MainView : UserControl
         settingsButton.Click += HandleSettingsClick;
         collapseAllButton.Click += CollapseAllClick;
         expandAllButton.Click += ExpandAllClick;
+        githubButton.Click += GitHubClick;
+    }
+
+    private void GitHubClick(object? sender, RoutedEventArgs e)
+    {
+        const string githubLink = "https://github.com/Rekkonnect/Syndiesis";
+        ProcessUtilities.OpenUrl(githubLink);
     }
 
     private void ExpandAllClick(object? sender, RoutedEventArgs e)

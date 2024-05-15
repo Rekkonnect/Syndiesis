@@ -67,6 +67,17 @@
             >
             <Button
               VerticalAlignment="Stretch"
+              Name="githubButton"
+              >
+              <TextBlock
+                Text="GitHub"
+                TextAlignment="Center"
+                VerticalAlignment="Center"
+                />
+            </Button>
+
+            <Button
+              VerticalAlignment="Stretch"
               Name="settingsButton"
               >
               <TextBlock

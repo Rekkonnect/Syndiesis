@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Microsoft.CodeAnalysis;
+using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
