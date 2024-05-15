@@ -3,9 +3,11 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Serilog;
 using Serilog.Events;
+using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
 using Syndiesis.Views;
 using System;
+using System.Reflection;
 
 namespace Syndiesis;
 
@@ -25,7 +27,11 @@ public partial class App : Application
         => Current.ResourceManager;
 
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
+
     public AppResourceManager ResourceManager { get; private set; }
+
+    public AppInfo AppInfo { get; private set; }
+
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
 
     public ExceptionListener ExceptionListener { get; } = new();
@@ -34,6 +40,17 @@ public partial class App : Application
     {
         AvaloniaXamlLoader.Load(this);
         ResourceManager = new(this);
+        AppInfo = CreateAppInfo();
+    }
+
+    private AppInfo CreateAppInfo()
+    {
+        var assembly = GetType().Assembly;
+        return new()
+        {
+            InformationalVersion = InformationalVersion.Parse(
+                assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!)
+        };
     }
 
     public override void OnFrameworkInitializationCompleted()

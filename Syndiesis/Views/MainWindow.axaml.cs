@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using System;
 
 namespace Syndiesis.Views;
 
@@ -11,6 +12,13 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         InitializeEvents();
+        InitializeHeader();
+    }
+
+    private void InitializeHeader()
+    {
+        var infoVersion = App.Current.AppInfo.InformationalVersion;
+        Title = $"Syndiesis v{infoVersion.Version} [{infoVersion.CommitSha![^7..]}]";
     }
 
     private void InitializeEvents()

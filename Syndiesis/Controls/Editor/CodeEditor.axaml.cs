@@ -686,13 +686,11 @@ public partial class CodeEditor : UserControl
         _editor.InsertText(e.Text);
     }
 
-    private static readonly KeyModifiers ctrlModifier = OperatingSystem.IsMacOS() ? KeyModifiers.Meta : KeyModifiers.Control;
-
     protected override void OnKeyDown(KeyEventArgs e)
     {
         var modifiers = e.KeyModifiers;
-        
-        bool hasControl = modifiers.HasFlag(ctrlModifier);
+
+        bool hasControl = modifiers.HasFlag(KeyModifierFacts.ControlKeyModifier);
         bool hasShift = modifiers.HasFlag(KeyModifiers.Shift);
 
         switch (e.Key)
