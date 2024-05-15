@@ -199,7 +199,6 @@ public partial class SyntaxTreeListView : UserControl
         else
         {
             _allowedHover = true;
-            RootNode.EvaluateHoveringRecursively(e);
         }
     }
 
