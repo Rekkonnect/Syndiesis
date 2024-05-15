@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Garyon.Extensions;
 using Microsoft.CodeAnalysis.Text;
 using Serilog;
 using Syndiesis.Controls;
