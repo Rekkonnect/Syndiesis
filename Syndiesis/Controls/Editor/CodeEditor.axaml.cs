@@ -304,22 +304,58 @@ public partial class CodeEditor : UserControl
 
         if (_hoveredListNode is not null)
         {
-            var current = _hoveredListNode;
-            while (current is not null)
+            var current = DeepestWithSyntaxObject(_hoveredListNode);
+            if (current is not null)
             {
                 var currentLine = current.NodeLine;
-                var syntaxObject = currentLine.AssociatedSyntaxObject;
-
-                if (syntaxObject is not null)
-                {
-                    var span = currentLine.DisplayLineSpan;
-                    SetHoverSpan(span, HighlightKind.SyntaxNodeHover);
-                    break;
-                }
-
-                current = current.ParentNode;
+                var span = currentLine.DisplayLineSpan;
+                SetHoverSpan(span, HighlightKind.SyntaxNodeHover);
             }
         }
+    }
+
+    public void PlaceCursorAtNodeStart(SyntaxTreeListNode node)
+    {
+        var deepest = DeepestWithSyntaxObject(node);
+        if (deepest is null)
+            return;
+
+        var start = deepest.AssociatedSyntaxObject!.LineSpan.Start;
+        CursorPosition = start;
+    }
+
+    public void SelectTextOfNode(SyntaxTreeListNode node)
+    {
+        var deepest = DeepestWithSyntaxObject(node);
+        if (deepest is null)
+            return;
+
+        var lineSpan = deepest.AssociatedSyntaxObject!.LineSpan;
+        var start = lineSpan.Start;
+        var end = lineSpan.End;
+        _editor.SetSelectionMode(false);
+        CursorPosition = end;
+        _editor.SetSelectionMode(true);
+        CursorPosition = start;
+    }
+
+    private SyntaxTreeListNode? DeepestWithSyntaxObject(SyntaxTreeListNode? node)
+    {
+        var current = node;
+        while (current is not null)
+        {
+            var currentLine = current.NodeLine;
+            var syntaxObject = currentLine.AssociatedSyntaxObject;
+
+            if (syntaxObject is not null)
+            {
+                return current;
+            }
+
+            current = current.ParentNode;
+        }
+
+        return null;
     }
 
     private void ShowCurrentTextSelection()

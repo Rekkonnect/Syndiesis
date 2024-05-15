@@ -40,6 +40,10 @@ public partial class SyntaxTreeListView : UserControl
 
     public SyntaxTree? AnalyzedTree { get; set; }
 
+    public event Action<SyntaxTreeListNode?>? HoveredNode;
+    public event Action<SyntaxTreeListNode>? RequestedPlaceCursorAtNode;
+    public event Action<SyntaxTreeListNode>? RequestedSelectTextAtNode;
+
     private void HandleRootNodeSizeAdjusted(object? sender, SizeChangedEventArgs e)
     {
         UpdateScrollLimits();
@@ -56,8 +60,6 @@ public partial class SyntaxTreeListView : UserControl
         UpdateScrollLimits();
         CorrectContainedNodeWidths(Bounds.Size);
     }
-
-    public event Action<SyntaxTreeListNode?>? HoveredNode;
 
     public SyntaxTreeListView()
     {
@@ -163,6 +165,33 @@ public partial class SyntaxTreeListView : UserControl
     {
         base.OnPointerMoved(e);
         EvaluateHovering(e);
+    }
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+
+        var properties = e.GetCurrentPoint(this).Properties;
+        if (properties.IsRightButtonPressed)
+        {
+            var modifiers = e.KeyModifiers.NormalizeByPlatform();
+            switch (modifiers)
+            {
+                case KeyModifiers.Control:
+                    if (_hoveredNode is null)
+                        break;
+
+                    RequestedPlaceCursorAtNode?.Invoke(_hoveredNode);
+                    break;
+
+                case KeyModifiers.Control | KeyModifiers.Shift:
+                    if (_hoveredNode is null)
+                        break;
+
+                    RequestedSelectTextAtNode?.Invoke(_hoveredNode);
+                    break;
+            }
+        }
     }
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)

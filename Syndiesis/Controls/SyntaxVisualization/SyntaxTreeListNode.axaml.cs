@@ -248,10 +248,16 @@ public partial class SyntaxTreeListNode : UserControl
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
+
         EvaluateHovering(e);
-        if (ListView?.IsHovered(this) is true)
+
+        var properties = e.GetCurrentPoint(this).Properties;
+        if (properties.IsLeftButtonPressed)
         {
-            ToggleExpansion();
+            if (ListView?.IsHovered(this) is true)
+            {
+                ToggleExpansion();
+            }
         }
     }
 

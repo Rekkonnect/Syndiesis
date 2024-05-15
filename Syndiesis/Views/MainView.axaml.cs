@@ -54,6 +54,8 @@ public partial class MainView : UserControl
         codeEditor.CodeChanged += TriggerPipeline;
         codeEditor.CursorMoved += HandleCursorPositionChanged;
         syntaxTreeView.listView.HoveredNode += HandleHoveredNode;
+        syntaxTreeView.listView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
+        syntaxTreeView.listView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
         syntaxTreeView.NewRootNodeLoaded += HandleNewRootNodeLoaded;
 
         syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
@@ -144,6 +146,16 @@ public partial class MainView : UserControl
     private void HandleHoveredNode(SyntaxTreeListNode? obj)
     {
         codeEditor.ShowHoveredSyntaxNode(obj);
+    }
+
+    private void HandleRequestedSelectTextAtNode(SyntaxTreeListNode node)
+    {
+        codeEditor.SelectTextOfNode(node);
+    }
+
+    private void HandleRequestedPlaceCursorAtNode(SyntaxTreeListNode node)
+    {
+        codeEditor.PlaceCursorAtNodeStart(node);
     }
 
     private void TriggerPipeline()
