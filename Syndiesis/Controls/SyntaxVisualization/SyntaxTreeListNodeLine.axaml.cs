@@ -17,6 +17,9 @@ namespace Syndiesis.Controls;
 
 public partial class SyntaxTreeListNodeLine : UserControl
 {
+    private readonly CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
+    private readonly CancellationTokenFactory _pulseGroupedRunsCancellationTokenFactory = new();
+
     private GroupedRunInline? _hoveredRunInline;
 
     public static readonly StyledProperty<bool> IsExpandedProperty =
@@ -151,12 +154,12 @@ public partial class SyntaxTreeListNodeLine : UserControl
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
-        DiscoverHoveredInline(e);
+        DiscoverHoveredInlineEvaluate(e);
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        DiscoverHoveredInline(e);
+        DiscoverHoveredInlineEvaluate(e);
 
         var pointerPoint = e.GetCurrentPoint(this);
         var properties = pointerPoint.Properties;
@@ -195,34 +198,37 @@ public partial class SyntaxTreeListNodeLine : UserControl
 
     private void PulseCopiedLine()
     {
+        _pulseLineCancellationTokenFactory.Cancel();
         var color = Color.FromArgb(192, 128, 128, 128);
         var animation = CreateColorPulseAnimation(this, color, BackgroundProperty);
         animation.Duration = TimeSpan.FromMilliseconds(750);
         animation.Easing = Singleton<CubicEaseOut>.Instance;
-        _ = animation.RunAsync(this);
+        _ = animation.RunAsync(this, _pulseLineCancellationTokenFactory.CurrentToken);
     }
 
     private void PulseCopiedTextInline()
     {
+        _pulseGroupedRunsCancellationTokenFactory.Cancel();
         var color = Color.FromArgb(192, 128, 128, 128);
         var animation = CreateColorPulseAnimation(
             textPartHoverRectangle, color, Rectangle.FillProperty);
-        animation.Duration = TimeSpan.FromMilliseconds(300);
+        animation.Duration = TimeSpan.FromMilliseconds(500);
         animation.Easing = Singleton<CubicEaseOut>.Instance;
-        _ = animation.RunAsync(textPartHoverRectangle);
+        _ = animation.RunAsync(
+            textPartHoverRectangle,
+            _pulseGroupedRunsCancellationTokenFactory.CurrentToken);
+    }
+
+    private void DiscoverHoveredInlineEvaluate(PointerEventArgs e)
+    {
+        DiscoverHoveredInline(e);
+        ReEvaluateKeyModifiers(e.KeyModifiers);
     }
 
     private void DiscoverHoveredInline(PointerEventArgs e)
     {
         var pointerPoint = e.GetCurrentPoint(descriptionText);
-        bool canCopy = CanCopyPartialTextBlock(e);
-
-        GroupedRunInline? hoveredInline = null;
-        if (canCopy)
-        {
-            hoveredInline = descriptionText.HitTestGroupedRun(pointerPoint.Position);
-        }
-
+        var hoveredInline = descriptionText.HitTestGroupedRun(pointerPoint.Position);
         SetBackgroundHoverForInline(hoveredInline);
     }
 
@@ -234,28 +240,24 @@ public partial class SyntaxTreeListNodeLine : UserControl
     public void ReEvaluateKeyModifiers(KeyModifiers modifiers)
     {
         var canCopy = CanCopyPartialTextBlock(modifiers);
-        if (!canCopy)
-        {
-            ClearHoveredInline();
-        }
-        else
-        {
-            // discover based on current pointer position?
-        }
+        textPartHoverRectangle.IsVisible = canCopy && _hoveredRunInline is not null;
     }
 
     private void SetBackgroundHoverForInline(GroupedRunInline? hoveredInline)
     {
+        textPartHoverRectangle.IsVisible = hoveredInline is not null;
+        UpdateHoveredInline(hoveredInline);
+    }
+
+    private void UpdateHoveredInline(GroupedRunInline? hoveredInline)
+    {
+        if (_hoveredRunInline == hoveredInline)
+            return;
+
         _hoveredRunInline = hoveredInline;
 
-        if (hoveredInline is null)
+        if (hoveredInline is not null)
         {
-            textPartHoverRectangle.IsVisible = false;
-        }
-        else
-        {
-            textPartHoverRectangle.IsVisible = true;
-
             const double extraWidth = 0.7;
             const double extraHeight = 0;
 
@@ -265,13 +267,8 @@ public partial class SyntaxTreeListNodeLine : UserControl
             Canvas.SetTop(textPartHoverRectangle, bounds.Top - extraHeight + descriptionBounds.Top);
             textPartHoverRectangle.Width = bounds.Width + 2 * extraWidth;
             textPartHoverRectangle.Height = bounds.Height + 2 * extraHeight;
+            _pulseGroupedRunsCancellationTokenFactory.Cancel();
         }
-    }
-
-    private static bool CanCopyPartialTextBlock(PointerEventArgs e)
-    {
-        return e.KeyModifiers.NormalizeByPlatform()
-            is (KeyModifiers.Control | KeyModifiers.Shift);
     }
 
     private static bool CanCopyPartialTextBlock(KeyModifiers modifiers)
