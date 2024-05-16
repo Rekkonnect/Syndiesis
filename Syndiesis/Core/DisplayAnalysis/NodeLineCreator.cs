@@ -3,6 +3,7 @@ using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Syndiesis.Controls;
+using Syndiesis.Controls.Inlines;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -271,15 +272,15 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     private SyntaxTreeListNodeLine LineForNodeValue(
         object? value, DisplayValueSource valueSource = default)
     {
-        var inlines = new InlineCollection();
+        var inlines = new GroupedRunInlineCollection();
 
-        AppendvalueSource(valueSource, inlines);
+        AppendValueSource(valueSource, inlines);
         var valueRun = RunForObjectValue(value);
         inlines.Add(valueRun);
 
         return new()
         {
-            Inlines = inlines,
+            GroupedRunInlines = inlines,
             NodeTypeDisplay = Styles.DisplayValueDisplay,
         };
     }
@@ -380,7 +381,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
         return new()
         {
-            Inlines = inlines,
+            GroupedRunInlines = inlines,
             NodeTypeDisplay = Styles.TokenListNodeDisplay,
         };
     }
@@ -483,7 +484,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
         return new()
         {
-            Inlines = inlines,
+            GroupedRunInlines = inlines,
             NodeTypeDisplay = Styles.ClassNodeDisplay,
         };
     }
@@ -540,7 +541,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
         return new()
         {
-            Inlines = inlines,
+            GroupedRunInlines = inlines,
             NodeTypeDisplay = Styles.SyntaxListNodeDisplay,
         };
     }
@@ -553,7 +554,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
         return new()
         {
-            Inlines = inlines,
+            GroupedRunInlines = inlines,
             NodeTypeDisplay = Styles.SyntaxListNodeDisplay,
         };
     }
@@ -566,18 +567,18 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
         return new()
         {
-            Inlines = inlines,
+            GroupedRunInlines = inlines,
             NodeTypeDisplay = Styles.SyntaxListNodeDisplay,
         };
     }
 
-    private InlineCollection CreateBasicTypeNameInlines(
+    private GroupedRunInlineCollection CreateBasicTypeNameInlines(
         object value, DisplayValueSource valueSource)
     {
-        var inlines = new InlineCollection();
+        var inlines = new GroupedRunInlineCollection();
         var type = value.GetType();
 
-        AppendvalueSource(valueSource, inlines);
+        AppendValueSource(valueSource, inlines);
         AppendTypeDetails(type, inlines);
 
         return inlines;
@@ -586,14 +587,14 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     public SyntaxTreeListNodeLine CreateTokenNodeLine(
         SyntaxToken token, DisplayValueSource valueSource)
     {
-        var inlines = new InlineCollection();
+        var inlines = new GroupedRunInlineCollection();
 
-        AppendvalueSource(valueSource, inlines);
+        AppendValueSource(valueSource, inlines);
         AppendTokenKindDetails(token, valueSource.Name, inlines);
 
         return new()
         {
-            Inlines = inlines,
+            GroupedRunInlines = inlines,
             NodeTypeDisplay = Styles.TokenNodeDisplay,
         };
     }
@@ -622,18 +623,18 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
     public SyntaxTreeListNodeLine CreateTriviaLine(SyntaxTrivia trivia)
     {
-        var inlines = new InlineCollection();
+        var inlines = new GroupedRunInlineCollection();
 
         var display = FormatTriviaDisplay(trivia, inlines);
 
         return new()
         {
-            Inlines = inlines,
+            GroupedRunInlines = inlines,
             NodeTypeDisplay = display,
         };
     }
 
-    private NodeTypeDisplay FormatTriviaDisplay(SyntaxTrivia trivia, InlineCollection inlines)
+    private NodeTypeDisplay FormatTriviaDisplay(SyntaxTrivia trivia, GroupedRunInlineCollection inlines)
     {
         var structure = trivia.GetStructure();
         if (structure is null)
@@ -645,7 +646,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     }
 
     private NodeTypeDisplay FormatStructuredTriviaDisplay(
-        SyntaxTrivia trivia, InlineCollection inlines)
+        SyntaxTrivia trivia, GroupedRunInlineCollection inlines)
     {
         var kind = trivia.Kind();
         bool isDirective = SyntaxFacts.IsPreprocessorDirective(kind);
@@ -690,7 +691,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     }
 
     private NodeTypeDisplay FormatUnstructuredTriviaDisplay(
-        SyntaxTrivia trivia, InlineCollection inlines)
+        SyntaxTrivia trivia, GroupedRunInlineCollection inlines)
     {
         var kind = trivia.Kind();
         switch (kind)
@@ -775,14 +776,14 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     private static void AddTriviaKindWithSplitter(
         SyntaxTrivia trivia,
         IBrush brush,
-        InlineCollection inlines)
+        GroupedRunInlineCollection inlines)
     {
         inlines.Add(NewValueKindSplitterRun());
 
         var triviaKindText = trivia.Kind().ToString();
         var triviaKindRun = Run(triviaKindText, brush);
         triviaKindRun.FontStyle = FontStyle.Italic;
-        inlines.Add(triviaKindRun);
+        inlines.AddSingle(triviaKindRun);
     }
 
     private static string EndOfLineTriviaText(SyntaxTrivia trivia)
@@ -941,7 +942,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         }
     }
 
-    private void AppendTokenKindDetails(SyntaxToken token, string? propertyName, InlineCollection inlines)
+    private void AppendTokenKindDetails(SyntaxToken token, string? propertyName, GroupedRunInlineCollection inlines)
     {
         var kind = token.Kind();
         var kindName = kind.ToString();
@@ -1004,9 +1005,9 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return Run("      ", Styles.RawValueBrush);
     }
 
-    private void AppendvalueSource(
+    private void AppendValueSource(
         DisplayValueSource valueSource,
-        InlineCollection inlines)
+        GroupedRunInlineCollection inlines)
     {
         if (valueSource.IsDefault)
             return;
@@ -1024,7 +1025,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     }
 
     private void AppendMethodDetail(
-        DisplayValueSource valueSource, InlineCollection inlines)
+        DisplayValueSource valueSource, GroupedRunInlineCollection inlines)
     {
         var propertyNameRun = Run(valueSource.Name!, Styles.MethodBrush);
         var parenthesesRun = Run("()", Styles.RawValueBrush);
@@ -1036,7 +1037,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         ]);
     }
 
-    private void AppendPropertyDetail(string propertyName, InlineCollection inlines)
+    private void AppendPropertyDetail(string propertyName, GroupedRunInlineCollection inlines)
     {
         var propertyNameRun = Run(propertyName, Styles.PropertyBrush);
         var colonRun = Run(":  ", Styles.SplitterBrush);
@@ -1044,7 +1045,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         inlines.Add(colonRun);
     }
 
-    private void AppendTypeDetails(Type type, InlineCollection inlines)
+    private void AppendTypeDetails(Type type, GroupedRunInlineCollection inlines)
     {
         if (type.IsGenericType)
         {

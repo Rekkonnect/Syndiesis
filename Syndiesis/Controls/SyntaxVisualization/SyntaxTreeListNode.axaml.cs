@@ -254,9 +254,12 @@ public partial class SyntaxTreeListNode : UserControl
         var properties = e.GetCurrentPoint(this).Properties;
         if (properties.IsLeftButtonPressed)
         {
-            if (ListView?.IsHovered(this) is true)
+            if (e.KeyModifiers is KeyModifiers.None)
             {
-                ToggleExpansion();
+                if (ListView?.IsHovered(this) is true)
+                {
+                    ToggleExpansion();
+                }
             }
         }
     }
