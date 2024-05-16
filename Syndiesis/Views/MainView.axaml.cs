@@ -26,8 +26,6 @@ public partial class MainView : UserControl
         InitializeView();
         InitializeEvents();
         ApplyCurrentSettingsWithoutAnalysis();
-
-        Focusable = true;
     }
 
     private void InitializeView()
@@ -237,12 +235,15 @@ public partial class MainView : UserControl
     protected override void OnGotFocus(GotFocusEventArgs e)
     {
         base.OnGotFocus(e);
-        codeEditor.Focus();
+        if (!e.Handled)
+        {
+            codeEditor.Focus();
+        }
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        var modifiers = e.KeyModifiers;
+        var modifiers = e.KeyModifiers.NormalizeByPlatform();
 
         bool hasControl = modifiers.HasFlag(KeyModifiers.Control);
 
@@ -265,6 +266,25 @@ public partial class MainView : UserControl
                 break;
         }
 
+        if (!e.Handled)
+        {
+            var nodeLine = syntaxTreeView.listView.CurrentHoveredNode?.NodeLine;
+            nodeLine?.ReEvaluateKeyModifiers(modifiers);
+        }
+
         base.OnKeyDown(e);
+    }
+
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        var modifiers = e.KeyModifiers.NormalizeByPlatform();
+
+        if (!e.Handled)
+        {
+            var nodeLine = syntaxTreeView.listView.CurrentHoveredNode?.NodeLine;
+            nodeLine?.ReEvaluateKeyModifiers(modifiers);
+        }
+
+        base.OnKeyUp(e);
     }
 }

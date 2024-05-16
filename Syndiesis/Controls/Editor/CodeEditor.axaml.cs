@@ -128,7 +128,6 @@ public partial class CodeEditor : UserControl
     {
         InitializeComponent();
         InitializeEvents();
-        Focusable = true;
     }
 
     private void InitializeEvents()

@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
@@ -145,16 +144,6 @@ public partial class SyntaxTreeListNodeLine : UserControl
         InitializeComponent();
     }
 
-    protected override void OnKeyDown(KeyEventArgs e)
-    {
-        ReEvaluateKeyModifiers(e.KeyModifiers);
-    }
-
-    protected override void OnKeyUp(KeyEventArgs e)
-    {
-        ReEvaluateKeyModifiers(e.KeyModifiers);
-    }
-
     protected override void OnPointerExited(PointerEventArgs e)
     {
         ClearHoveredInline();
@@ -242,7 +231,7 @@ public partial class SyntaxTreeListNodeLine : UserControl
         SetBackgroundHoverForInline(null);
     }
 
-    private void ReEvaluateKeyModifiers(KeyModifiers modifiers)
+    public void ReEvaluateKeyModifiers(KeyModifiers modifiers)
     {
         var canCopy = CanCopyPartialTextBlock(modifiers);
         if (!canCopy)

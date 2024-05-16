@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Styling;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -61,6 +62,39 @@ public static partial class CommonAvaloniaExtensions
 // Control
 public static partial class CommonAvaloniaExtensions
 {
+    public static TAncestor? AncestorOf<TAncestor>(this Control control)
+        where TAncestor : InputElement
+    {
+        var parent = control.Parent;
+        while (parent is not null)
+        {
+            if (parent is TAncestor ancestor)
+                return ancestor;
+
+            parent = parent.Parent;
+        }
+
+        return null;
+    }
+
+    public static bool LoseFocus(this Control control)
+    {
+        var parent = control.Parent;
+        while (parent is not null)
+        {
+            if (parent is InputElement parentControl)
+            {
+                var focused = parentControl.Focus();
+                if (focused)
+                    return true;
+            }
+
+            parent = parent.Parent;
+        }
+
+        return false;
+    }
+
     public static void InvalidateAll(this Control control)
     {
         control.InvalidateArrange();
