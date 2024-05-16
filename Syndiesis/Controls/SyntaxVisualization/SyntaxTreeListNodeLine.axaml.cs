@@ -256,7 +256,7 @@ public partial class SyntaxTreeListNodeLine : UserControl
         {
             textPartHoverRectangle.IsVisible = true;
 
-            const double extraWidth = 0;
+            const double extraWidth = 0.7;
             const double extraHeight = 0;
 
             var bounds = descriptionText.RunBounds(hoveredInline)!.Value;

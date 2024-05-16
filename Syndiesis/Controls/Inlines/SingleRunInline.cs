@@ -10,6 +10,12 @@ public sealed class SingleRunInline(Run run) : GroupedRunInline
 
     public override IEnumerable<object> InlineObjects => [Run];
 
+    public SingleRunInline(Run run, string overrideText)
+        : this(run)
+    {
+        OverrideText = overrideText;
+    }
+
     public override void AppendToInlines(InlineCollection inlines)
     {
         inlines.Add(Run);

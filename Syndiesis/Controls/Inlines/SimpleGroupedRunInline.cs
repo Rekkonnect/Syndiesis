@@ -10,6 +10,13 @@ public sealed class SimpleGroupedRunInline : GroupedRunInline
 
     public override IEnumerable<object> InlineObjects => Children;
 
+    public SimpleGroupedRunInline() { }
+
+    public SimpleGroupedRunInline(IEnumerable<Run> children)
+    {
+        Children.AddRange(children);
+    }
+
     protected override int CalculatedTextLength()
     {
         int length = 0;

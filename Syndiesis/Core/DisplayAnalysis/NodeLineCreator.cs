@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Documents;
+﻿using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -6,6 +7,7 @@ using Syndiesis.Controls;
 using Syndiesis.Controls.Inlines;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -176,11 +178,11 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
     private static SyntaxTreeListNodeLine CreateEndOfFileDisplayNodeLine()
     {
-        var eofRun = CreateEofRun();
+        var eofRun = new SingleRunInline(CreateEofRun());
 
         return new()
         {
-            Inlines = [eofRun],
+            GroupedRunInlines = [eofRun],
             NodeTypeDisplay = Styles.DisplayValueDisplay,
         };
     }
@@ -220,8 +222,9 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
     private SyntaxTreeListNodeLine CreateDisplayNodeLine(SyntaxToken token)
     {
-        string text = DisplayStringForText(token, token.Text);
-        return LineForNodeValue(text);
+        var fullText = token.Text;
+        string text = DisplayStringForText(token, fullText);
+        return LineForNodeValue(text, fullText);
     }
 
     private string DisplayStringForText(SyntaxToken token, string text)
@@ -236,18 +239,30 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
     private IReadOnlyList<SyntaxTreeListNode> CreatePropertyAnalysisChildren(SyntaxToken token)
     {
-        string text = DisplayStringForText(token, token.Text);
-        var textLine = CreateNodeForNodeValue(text, Property(nameof(SyntaxToken.Text)));
+        var fullText = token.Text;
+        string text = DisplayStringForText(token, fullText);
+        var textLine = CreateNodeForNodeValue(
+            text,
+            fullText,
+            Property(nameof(SyntaxToken.Text)));
 
-        string valueText = DisplayStringForText(token, token.ValueText);
-        var valueTextLine = CreateNodeForNodeValue(valueText, Property(nameof(SyntaxToken.ValueText)));
+        var fullValueText = token.ValueText;
+        string valueText = DisplayStringForText(token, fullValueText);
+        var valueTextLine = CreateNodeForNodeValue(
+            valueText,
+            fullValueText,
+            Property(nameof(SyntaxToken.ValueText)));
 
         var value = token.Value;
+        var fullValue = value;
         if (value is string valueString)
         {
             value = DisplayStringForText(token, valueString);
         }
-        var valueLine = CreateNodeForNodeValue(value, Property(nameof(SyntaxToken.Value)));
+        var valueLine = CreateNodeForNodeValue(
+            value,
+            fullValue,
+            Property(nameof(SyntaxToken.Value)));
 
         return
         [
@@ -259,9 +274,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
     private SyntaxTreeListNode CreateNodeForNodeValue(
         object? value,
+        object? fullValue,
         DisplayValueSource valueSource = default)
     {
-        var line = LineForNodeValue(value, valueSource);
+        var line = LineForNodeValue(value, fullValue, valueSource);
         line.NodeTypeDisplay = Styles.PropertyAnalysisValueDisplay;
         return new()
         {
@@ -270,12 +286,12 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     }
 
     private SyntaxTreeListNodeLine LineForNodeValue(
-        object? value, DisplayValueSource valueSource = default)
+        object? value, object? fullValue, DisplayValueSource valueSource = default)
     {
         var inlines = new GroupedRunInlineCollection();
 
         AppendValueSource(valueSource, inlines);
-        var valueRun = RunForObjectValue(value);
+        var valueRun = RunForObjectValue(value, fullValue);
         inlines.Add(valueRun);
 
         return new()
@@ -285,13 +301,15 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private static Run RunForObjectValue(object? value)
+    private static SingleRunInline RunForObjectValue(object? value, object? fullValue)
     {
         if (value is null)
-            return CreateNullValueRun();
+            return new SingleRunInline(CreateNullValueRun());
 
         var text = value.ToString()!;
-        return Run(text, Styles.RawValueBrush);
+        var fullText = fullValue!.ToString()!;
+        var run = Run(text, Styles.RawValueBrush);
+        return new SingleRunInline(run, fullText);
     }
 
     private static Run CreateNullValueRun()
@@ -652,9 +670,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         bool isDirective = SyntaxFacts.IsPreprocessorDirective(kind);
         if (isDirective)
         {
-            var displayText = CommentTriviaText(trivia);
+            var displayText = CommentTriviaText(trivia, out var fullString);
             var displayTextRun = Run(displayText, Styles.WhitespaceTriviaBrush);
-            inlines.Add(displayTextRun);
+            var group = new SingleRunInline(displayTextRun, fullString);
+            inlines.Add(group);
 
             AddTriviaKindWithSplitter(
                 trivia,
@@ -671,7 +690,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             {
                 var displayText = trivia.Kind().ToString();
                 var displayTextRun = Run(displayText, Styles.CommentTriviaContentBrush);
-                inlines.Add(displayTextRun);
+                inlines.AddSingle(displayTextRun);
 
                 return Styles.CommentTriviaDisplay;
             }
@@ -680,7 +699,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             {
                 var displayText = trivia.Kind().ToString();
                 var displayTextRun = Run(displayText, Styles.WhitespaceTriviaBrush);
-                inlines.Add(displayTextRun);
+                inlines.AddSingle(displayTextRun);
 
                 return Styles.WhitespaceTriviaDisplay;
             }
@@ -700,7 +719,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             {
                 var displayText = WhitespaceTriviaText(trivia);
                 var displayTextRun = Run(displayText, Styles.WhitespaceTriviaBrush);
-                inlines.Add(displayTextRun);
+                inlines.AddSingle(displayTextRun);
 
                 AddTriviaKindWithSplitter(
                     trivia,
@@ -717,9 +736,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             case SyntaxKind.SkippedTokensTrivia:
             case SyntaxKind.ConflictMarkerTrivia:
             {
-                var displayText = CommentTriviaText(trivia);
+                var displayText = CommentTriviaText(trivia, out var fullString);
                 var displayTextRun = Run(displayText, Styles.CommentTriviaContentBrush);
-                inlines.Add(displayTextRun);
+                var group = new SingleRunInline(displayTextRun, fullString);
+                inlines.Add(group);
 
                 AddTriviaKindWithSplitter(
                     trivia,
@@ -731,9 +751,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             case SyntaxKind.PreprocessingMessageTrivia:
             case SyntaxKind.BadDirectiveTrivia:
             {
-                var displayText = CommentTriviaText(trivia);
+                var displayText = CommentTriviaText(trivia, out var fullString);
                 var displayTextRun = Run(displayText, Styles.WhitespaceTriviaBrush);
-                inlines.Add(displayTextRun);
+                var group = new SingleRunInline(displayTextRun, fullString);
+                inlines.Add(group);
 
                 AddTriviaKindWithSplitter(
                     trivia,
@@ -746,7 +767,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             {
                 var disabledText = DisabledTextTriviaText(trivia);
                 var disabledTextRun = Run(disabledText, Styles.DisabledTextTriviaContentBrush);
-                inlines.Add(disabledTextRun);
+                inlines.AddSingle(disabledTextRun);
 
                 AddTriviaKindWithSplitter(
                     trivia,
@@ -759,7 +780,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             {
                 var eolText = EndOfLineTriviaText(trivia);
                 var displayTextRun = Run(eolText, Styles.WhitespaceTriviaBrush);
-                inlines.Add(displayTextRun);
+                inlines.AddSingle(displayTextRun);
 
                 AddTriviaKindWithSplitter(
                     trivia,
@@ -809,10 +830,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return text;
     }
 
-    private string CommentTriviaText(SyntaxTrivia trivia)
+    private string CommentTriviaText(SyntaxTrivia trivia, out string fullString)
     {
-        var text = trivia.ToFullString();
-        return SimplifyWhitespace(text);
+        fullString = trivia.ToFullString();
+        return SimplifyWhitespace(fullString);
     }
 
     private string SimplifyWhitespace(string source)
@@ -957,32 +978,31 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         var kindRun = Run(kindName, kindBrush);
         kindRun.FontStyle = FontStyle.Italic;
 
-        inlines.AddRange([
-            displayTextRun,
-            NewValueKindSplitterRun(),
-            kindRun,
-        ]);
+        inlines.Add(displayTextRun);
+        inlines.Add(NewValueKindSplitterRun());
+        inlines.AddSingle(kindRun);
     }
 
-    private Run CreateDisplayTextRun(SyntaxToken token, SyntaxKind kind, bool isKeyword)
+    private SingleRunInline CreateDisplayTextRun(SyntaxToken token, SyntaxKind kind, bool isKeyword)
     {
         if (kind is SyntaxKind.EndOfFileToken)
         {
-            return CreateEofRun();
+            return new(CreateEofRun());
         }
 
         if (kind is SyntaxKind.XmlTextLiteralNewLineToken)
         {
             var eolText = CreateDisplayStringForEndOfLineText(token.ToFullString());
-            return Run(eolText, Styles.RawValueBrush);
+            return new(Run(eolText, Styles.RawValueBrush));
         }
 
         if (token.IsMissing)
         {
-            return CreateMissingTokenRun();
+            return new(CreateMissingTokenRun());
         }
 
         var displayText = token.ToString();
+        var fullText = displayText;
         var displayBrush = isKeyword
             ? Styles.KeywordBrush
             : Styles.RawValueBrush;
@@ -992,7 +1012,8 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             displayText = SimplifyWhitespace(displayText);
         }
 
-        return Run(displayText, displayBrush);
+        var run = Run(displayText, displayBrush);
+        return new SingleRunInline(run, fullText);
     }
 
     private static Run CreateMissingTokenRun()
@@ -1029,10 +1050,13 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     {
         var propertyNameRun = Run(valueSource.Name!, Styles.MethodBrush);
         var parenthesesRun = Run("()", Styles.RawValueBrush);
-        var colonRun = Run(":  ", Styles.SplitterBrush);
-        inlines.AddRange([
+        var frontGroup = new SimpleGroupedRunInline([
             propertyNameRun,
             parenthesesRun,
+        ]);
+        var colonRun = Run(":  ", Styles.SplitterBrush);
+        inlines.AddRange([
+            frontGroup,
             colonRun
         ]);
     }
@@ -1041,11 +1065,17 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     {
         var propertyNameRun = Run(propertyName, Styles.PropertyBrush);
         var colonRun = Run(":  ", Styles.SplitterBrush);
-        inlines.Add(propertyNameRun);
+        inlines.AddSingle(propertyNameRun);
         inlines.Add(colonRun);
     }
 
     private void AppendTypeDetails(Type type, GroupedRunInlineCollection inlines)
+    {
+        var typeNameRun = TypeDetailsGroupedRun(type);
+        inlines.Add(typeNameRun);
+    }
+
+    private GroupedRunInline TypeDetailsGroupedRun(Type type)
     {
         if (type.IsGenericType)
         {
@@ -1057,14 +1087,17 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
                 string name = originalDefinition.Name[..^2];
                 var outerRun = Run($"{name}<", Styles.SyntaxListBrush);
                 var closingTag = Run(">", Styles.SyntaxListBrush);
-
-                inlines.Add(outerRun);
                 var argument = type.GenericTypeArguments[0];
-                AppendTypeDetails(argument, inlines);
-                inlines.Add(closingTag);
+                var inner = TypeDetailsGroupedRun(argument);
+
+                return new ComplexGroupedRunInline([
+                    outerRun,
+                    inner,
+                    closingTag,
+                ]);
             }
 
-            return;
+            throw new UnreachableException("We should have handled any incoming generic type");
         }
 
         var typeName = type.Name;
@@ -1072,9 +1105,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         if (typeName is nameof(SyntaxTokenList))
         {
             var suffixNameRun = Run(typeName, Styles.TokenListBrush);
-
-            inlines.Add(suffixNameRun);
-            return;
+            return new SingleRunInline(suffixNameRun);
         }
 
         const string syntaxSuffix = "Syntax";
@@ -1083,13 +1114,14 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             var primaryClassNameRun = Run(typeName[..^syntaxSuffix.Length], Styles.ClassMainBrush);
             var suffixNameRun = Run(syntaxSuffix, Styles.ClassSecondaryBrush);
 
-            inlines.Add(primaryClassNameRun);
-            inlines.Add(suffixNameRun);
-            return;
+            return new SimpleGroupedRunInline([
+                primaryClassNameRun,
+                suffixNameRun,
+            ]);
         }
 
         var typeNameRun = Run(typeName, Styles.ClassMainBrush);
-        inlines.Add(typeNameRun);
+        return new SingleRunInline(typeNameRun);
     }
 
     private static Run Run(string text, IBrush brush)

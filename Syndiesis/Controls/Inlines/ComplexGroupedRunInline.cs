@@ -11,6 +11,13 @@ public sealed class ComplexGroupedRunInline : GroupedRunInline
 
     public override IEnumerable<object> InlineObjects => Children.Select(s => s.AvailableObject)!;
 
+    public ComplexGroupedRunInline() { }
+
+    public ComplexGroupedRunInline(IEnumerable<RunOrGrouped> children)
+    {
+        Children.AddRange(children);
+    }
+
     protected override int CalculatedTextLength()
     {
         int length = 0;
