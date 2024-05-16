@@ -32,21 +32,37 @@ public class GroupedRunInlineTextBlock : TextBlock
         return GroupedRunForPosition(index);
     }
 
-    // ComplexGroupedRunInline is not recursively evaluated here
     public GroupedRunInline? GroupedRunForPosition(int index)
     {
-        if (_groupedInlines is null)
+        return GroupedRunForPositionCore(index, _groupedInlines, 0);
+    }
+
+    private GroupedRunInline? GroupedRunForPositionCore(
+        int index,
+        IReadOnlyList<object>? groupedInlines,
+        int startIndex)
+    {
+        if (groupedInlines is null)
             return default;
 
-        int currentIndex = 0;
-        for (int i = 0; i < _groupedInlines.Count; i++)
+        int currentIndex = startIndex;
+        for (int i = 0; i < groupedInlines.Count; i++)
         {
-            var current = _groupedInlines[i];
+            var current = RunOrGrouped.FromObject(groupedInlines[i]);
             var length = GroupedRunInline.GetTextLength(current);
             int endIndex = currentIndex + length;
             if (currentIndex <= index && index < endIndex)
             {
-                return current.Grouped;
+                var grouped = current.Grouped;
+                if (grouped is ComplexGroupedRunInline complex)
+                {
+                    var childrenInlines = complex.InlineObjects
+                        .ToReadOnlyListOrExisting();
+                    var result = GroupedRunForPositionCore(index, childrenInlines, currentIndex);
+                    if (result is not null)
+                        return result;
+                }
+                return grouped;
             }
             currentIndex += length;
         }
