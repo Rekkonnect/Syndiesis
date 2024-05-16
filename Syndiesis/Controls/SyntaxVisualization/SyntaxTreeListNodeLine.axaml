@@ -23,7 +23,7 @@
         Canvas.Top="4"
         Width="89"
         Height="18"
-        Fill="#20DDDDDD"
+        Fill="#40808080"
         IsVisible="False"
         RadiusX="3"
         RadiusY="3"

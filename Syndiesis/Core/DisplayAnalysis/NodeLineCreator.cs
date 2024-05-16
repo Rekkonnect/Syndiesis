@@ -1184,7 +1184,7 @@ partial class NodeLineCreator
         public static readonly Color WhitespaceTriviaColor = Color.FromUInt32(0xFFB3B3B3);
         public static readonly Color WhitespaceTriviaKindColor = Color.FromUInt32(0xFF808080);
         public static readonly Color TokenKindColor = Color.FromUInt32(0xFF7A68E5);
-        public static readonly Color FadeTokenKindColor = Color.FromUInt32(0xFF443A80);
+        public static readonly Color FadeTokenKindColor = Color.FromUInt32(0xFF514599);
         public static readonly Color TokenListColor = Color.FromUInt32(0xFF74A3FF);
         public static readonly Color SyntaxListColor = Color.FromUInt32(0xFF79BCA4);
         public static readonly Color EofColor = Color.FromUInt32(0xFF76788B);
