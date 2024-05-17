@@ -533,8 +533,8 @@ public sealed class CursoredStringEditor
             return;
 
         GetCurrentTextPosition(out int line, out int column);
-        _editor.RemoveBackwardsAt(line, column, 1);
         MoveCursorLeft();
+        _editor.RemoveBackwardsAt(line, column, 1);
         CapturePreferredCursorCharacter();
         TriggerCodeChanged();
     }
