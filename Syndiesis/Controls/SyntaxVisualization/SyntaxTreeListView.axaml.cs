@@ -273,7 +273,7 @@ public partial class SyntaxTreeListView : UserControl
 
     private Size CorrectContainedNodeWidths(Size availableSize)
     {
-        topLevelNodeContent.MinWidth = contentCanvas.Bounds.Width + extraScrollWidth;
+        topLevelNodeContent.MinWidth = availableSize.Width;
         CorrectPositionFromHorizontalScroll(availableSize);
         return availableSize;
     }
