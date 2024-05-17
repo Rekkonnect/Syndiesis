@@ -51,7 +51,7 @@ public class GroupedRunInlineTextBlock : TextBlock
             var current = RunOrGrouped.FromObject(groupedInlines[i]);
             var length = GroupedRunInline.GetTextLength(current);
             int endIndex = currentIndex + length;
-            if (currentIndex <= index && index < endIndex)
+            if (currentIndex <= index && index <= endIndex)
             {
                 var grouped = current.Grouped;
                 if (grouped is ComplexGroupedRunInline complex)
@@ -62,7 +62,8 @@ public class GroupedRunInlineTextBlock : TextBlock
                     if (result is not null)
                         return result;
                 }
-                return grouped;
+                if (grouped is not null)
+                    return grouped;
             }
             currentIndex += length;
         }
