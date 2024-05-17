@@ -9,6 +9,7 @@ using Avalonia.Media;
 using Avalonia.Styling;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.Inlines;
+using Syndiesis.Controls.Toast;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
 using System;
@@ -170,29 +171,59 @@ public partial class SyntaxTreeListNodeLine : UserControl
             {
                 case KeyModifiers.Control:
                 {
-                    // copy entire line
-                    var text = descriptionText.Inlines!.Text;
-                    _ = this.SetClipboardTextAsync(text)
-                        .ConfigureAwait(false);
-                    PulseCopiedLine();
+                    CopyEntireLineContent();
                     break;
                 }
 
                 case KeyModifiers.Control | KeyModifiers.Shift:
                 {
-                    // copy hovered inline
-                    // we have already evaluated the hovered inline, so we
-                    // can just evaluate the field
-                    if (_hoveredRunInline is null)
-                        break;
-
-                    var text = _hoveredRunInline.EffectiveText();
-                    _ = this.SetClipboardTextAsync(text)
-                        .ConfigureAwait(false);
-                    PulseCopiedTextInline();
+                    CopyHoveredInlineContent();
                     break;
                 }
             }
+        }
+    }
+
+    private void CopyHoveredInlineContent()
+    {
+        if (_hoveredRunInline is null)
+            return;
+
+        var text = _hoveredRunInline.EffectiveText();
+        _ = this.SetClipboardTextAsync(text)
+            .ConfigureAwait(false);
+        PulseCopiedTextInline();
+
+        var toastContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
+        if (toastContainer is not null)
+        {
+            var popup = new ToastNotificationPopup();
+            popup.defaultTextBlock.Text = $"""
+                Copied partial line content:
+                {text}
+                """;
+            var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
+            _ = toastContainer.Show(popup, animation);
+        }
+    }
+
+    private void CopyEntireLineContent()
+    {
+        var text = descriptionText.Inlines!.Text;
+        _ = this.SetClipboardTextAsync(text)
+            .ConfigureAwait(false);
+        PulseCopiedLine();
+
+        var toastContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
+        if (toastContainer is not null)
+        {
+            var popup = new ToastNotificationPopup();
+            popup.defaultTextBlock.Text = $"""
+                Copied entire line content:
+                {text}
+                """;
+            var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
+            _ = toastContainer.Show(popup, animation);
         }
     }
 

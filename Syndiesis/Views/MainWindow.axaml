@@ -11,6 +11,7 @@
         xmlns:syntax="using:Syndiesis.Controls.SyntaxVisualization"
         xmlns:previews="using:Syndiesis.Views.DesignerPreviews"
         xmlns:views="using:Syndiesis.Views"
+        xmlns:toast="using:Syndiesis.Controls.Toast"
         Icon="/Assets/Icons/logo.png"
         Title="Syndiesis"
         >
@@ -25,15 +26,21 @@
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
-  <TransitioningContentControl
-    Name="pageTransition"
-    >
-    <TransitioningContentControl.PageTransition>
-      <controls:DrillTransition Duration="00:00:00.400" />
-    </TransitioningContentControl.PageTransition>
+  <Panel>
+    <TransitioningContentControl
+      Name="pageTransition"
+      >
+      <TransitioningContentControl.PageTransition>
+        <controls:DrillTransition Duration="00:00:00.400" />
+      </TransitioningContentControl.PageTransition>
 
-    <views:MainView
-      Name="mainView"
-      />
-  </TransitioningContentControl>
+      <views:MainView
+        Name="mainView"
+        />
+    </TransitioningContentControl>
+    
+    <toast:ToastNotificationContainer
+      Name="ToastNotificationContainer"
+    />
+  </Panel>
 </Window>
