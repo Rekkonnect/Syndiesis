@@ -41,6 +41,8 @@ public partial class SyntaxTreeListView : UserControl
 
     public SyntaxTree? AnalyzedTree { get; set; }
 
+    public SyntaxTreeListNode? CurrentHoveredNode => _hoveredNode;
+
     public event Action<SyntaxTreeListNode?>? HoveredNode;
     public event Action<SyntaxTreeListNode>? RequestedPlaceCursorAtNode;
     public event Action<SyntaxTreeListNode>? RequestedSelectTextAtNode;

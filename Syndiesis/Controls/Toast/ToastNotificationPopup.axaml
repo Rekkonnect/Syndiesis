@@ -1,0 +1,52 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             xmlns:toast="using:Syndiesis.Controls.Toast"
+             x:Class="Syndiesis.Controls.Toast.ToastNotificationPopup">
+
+  <Panel
+    Name="outerPanel"
+    HorizontalAlignment="Center"
+    VerticalAlignment="Center"
+    >
+
+    <Rectangle
+      Name="backgroundFill"
+      Fill="#004044"
+      RadiusX="4"
+      RadiusY="4"
+      />
+    
+    <ContentControl
+      Name="popupContent"
+      HorizontalAlignment="Center"
+      VerticalAlignment="Center"
+      Margin="20 20 20 20"
+      MaxWidth="500"
+      >
+      <TextBlock
+        FontFamily="{StaticResource AptosDisplayFontFamily}"
+        FontSize="16"
+        TextWrapping="Wrap"
+        TextAlignment="Center"
+        Name="defaultTextBlock"
+        >
+        &lt;veryempty&gt;
+      </TextBlock>
+      
+    </ContentControl>
+
+    <toast:ToastProgressBar
+      Name="progressBar"
+      HorizontalAlignment="Center"
+      VerticalAlignment="Bottom"
+      Height="5"
+      Width="100"
+      Margin="20 0 20 0"
+      ClipToBounds="True"
+      />
+  </Panel>
+  
+</UserControl>

@@ -5,6 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              MinWidth="600"
              MinHeight="300"
+             Focusable="True"
              xmlns:controls="using:Syndiesis.Controls"
              xmlns:syntax="using:Syndiesis.Controls.SyntaxVisualization"
              xmlns:previews="using:Syndiesis.Views.DesignerPreviews"
