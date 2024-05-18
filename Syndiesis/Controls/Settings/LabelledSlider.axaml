@@ -11,7 +11,7 @@
   <Grid>
 
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="120" />
+      <ColumnDefinition Width="220" />
       <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
 
@@ -37,7 +37,8 @@
       FontSize="16"
       Name="NameTextBlock"
       Text="Typing delay wait"
-          />
+      TextAlignment="Right"
+        />
 
     <TextBlock
       HorizontalAlignment="Right"
@@ -47,7 +48,8 @@
       Grid.RowSpan="2"
       Name="ValueTextBlock"
       Text="600 ms"
-          />
+      TextAlignment="Right"
+        />
 
   </Grid>
 

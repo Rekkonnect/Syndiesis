@@ -1,14 +1,16 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Syndiesis.Utilities;
 using System;
 
 namespace Syndiesis.Views;
 
 public partial class SettingsView : UserControl
 {
-    private int TypingDelayMilliseconds => (int)typingDelaySlider.ValueSlider.Value;
-    private int IndentationWidth => (int)indentationWidthSlider.ValueSlider.Value;
+    private int TypingDelayMilliseconds => typingDelaySlider.ValueSlider.Value.RoundInt32();
+    private int IndentationWidth => indentationWidthSlider.ValueSlider.Value.RoundInt32();
+    private int RecursiveExpansionDepth => recursiveExpansionDepthSlider.ValueSlider.Value.RoundInt32();
 
     private TimeSpan TypingDelay => TimeSpan.FromMilliseconds(TypingDelayMilliseconds);
 
@@ -25,6 +27,7 @@ public partial class SettingsView : UserControl
     {
         typingDelaySlider.ValueSlider.ValueChanged += OnDelaySliderValueChanged;
         indentationWidthSlider.ValueSlider.ValueChanged += OnIndentationSliderValueChanged;
+        recursiveExpansionDepthSlider.ValueSlider.ValueChanged += OnRecursiveExpansionDepthValueChanged;
         saveButton.Click += OnSaveClicked;
     }
 
@@ -35,6 +38,7 @@ public partial class SettingsView : UserControl
         enableExpandAllButtonCheck.IsChecked = settings.EnableExpandingAllNodes;
         typingDelaySlider.ValueSlider.Value = settings.UserInputDelay.TotalMilliseconds;
         indentationWidthSlider.ValueSlider.Value = settings.IndentationOptions.IndentationWidth;
+        recursiveExpansionDepthSlider.ValueSlider.Value = settings.RecursiveExpansionDepth;
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -79,6 +83,16 @@ public partial class SettingsView : UserControl
         typingDelaySlider.ValueText = $"{TypingDelayMilliseconds} ms";
     }
 
+    private void OnRecursiveExpansionDepthValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
+    {
+        UpdateRecursiveExpansionDepthValue();
+    }
+
+    private void UpdateRecursiveExpansionDepthValue()
+    {
+        recursiveExpansionDepthSlider.ValueText = $"{RecursiveExpansionDepth} levels";
+    }
+
     private void InitializeSliders()
     {
         {
@@ -94,6 +108,15 @@ public partial class SettingsView : UserControl
             var valueSlider = indentationWidthSlider.ValueSlider;
             valueSlider.Minimum = 1;
             valueSlider.Maximum = 12;
+            valueSlider.Value = 4;
+            valueSlider.SmallChange = 1;
+            valueSlider.LargeChange = 2;
+        }
+
+        {
+            var valueSlider = recursiveExpansionDepthSlider.ValueSlider;
+            valueSlider.Minimum = 3;
+            valueSlider.Maximum = 10;
             valueSlider.Value = 4;
             valueSlider.SmallChange = 1;
             valueSlider.LargeChange = 2;

@@ -62,8 +62,8 @@
 
 
     <StackPanel
-      MaxWidth="380"
-      MinWidth="380"
+      MaxWidth="520"
+      MinWidth="520"
       Background="#001116"
       Grid.Column="1"
     >
@@ -179,6 +179,12 @@
         <sc:LabelledSlider
           Name="indentationWidthSlider"
           NameText="Indentation width"
+          >
+        </sc:LabelledSlider>
+
+        <sc:LabelledSlider
+          Name="recursiveExpansionDepthSlider"
+          NameText="Recursive expansion depth"
           >
         </sc:LabelledSlider>
 

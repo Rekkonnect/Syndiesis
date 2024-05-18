@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Avalonia.Controls;
+using System;
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace Syndiesis.Utilities;
@@ -45,5 +47,10 @@ public static class ConvenienceExtensions
             min = b;
             max = a;
         }
+    }
+
+    public static int RoundInt32(this double value)
+    {
+        return (int)Math.Round(value);
     }
 }

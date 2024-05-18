@@ -3,6 +3,9 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Metsys.Bson;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Serilog;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
@@ -251,15 +254,28 @@ public partial class SyntaxTreeListNode : UserControl
 
         EvaluateHovering(e);
 
+        var modifiers = e.KeyModifiers.NormalizeByPlatform();
         var properties = e.GetCurrentPoint(this).Properties;
         if (properties.IsLeftButtonPressed)
         {
-            if (e.KeyModifiers is KeyModifiers.None)
+            if (ListView?.IsHovered(this) is not true)
+                return;
+
+            switch (modifiers)
             {
-                if (ListView?.IsHovered(this) is true)
-                {
+                case KeyModifiers.None:
                     ToggleExpansion();
-                }
+                    break;
+
+                case KeyModifiers.Alt:
+                    EnsureInitializedChildren(true);
+                    foreach (var node in LazyChildren)
+                    {
+                        int depth = AppSettings.Instance.RecursiveExpansionDepth;
+                        node.SetExpansionWithoutAnimationRecursively(true, depth);
+                    }
+                    Expand();
+                    break;
             }
         }
     }
@@ -274,12 +290,15 @@ public partial class SyntaxTreeListNode : UserControl
         ExpandOrCollapse(newToggle);
     }
 
-    public void SetExpansionWithoutAnimationRecursively(bool expand)
+    public void SetExpansionWithoutAnimationRecursively(bool expand, int depth = int.MaxValue)
     {
+        if (depth <= 0)
+            return;
+
         EnsureInitializedChildren(expand);
         foreach (var node in LazyChildren)
         {
-            node.SetExpansionWithoutAnimationRecursively(expand);
+            node.SetExpansionWithoutAnimationRecursively(expand, depth - 1);
         }
         SetExpansionWithoutAnimation(expand);
     }

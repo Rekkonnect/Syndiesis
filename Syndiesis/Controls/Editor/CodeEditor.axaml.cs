@@ -148,7 +148,7 @@ public partial class CodeEditor : UserControl
         if (_isUpdatingScrollLimits)
             return;
 
-        var newLineOffset = (int)Math.Round(verticalScrollBar.StartPosition);
+        var newLineOffset = verticalScrollBar.StartPosition.RoundInt32();
         LineOffset = newLineOffset;
         UpdateVisibleCursor();
     }
