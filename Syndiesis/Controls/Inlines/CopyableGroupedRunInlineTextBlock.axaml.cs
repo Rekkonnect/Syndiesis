@@ -38,6 +38,7 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
     public CopyableGroupedRunInlineTextBlock()
     {
         InitializeComponent();
+        ClipToBounds = false;
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
