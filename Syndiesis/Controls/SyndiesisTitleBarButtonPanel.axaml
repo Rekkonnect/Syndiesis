@@ -1,0 +1,56 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             Width="150"
+             d:DesignHeight="30"
+             x:Class="Syndiesis.Controls.SyndiesisTitleBarButtonPanel">
+
+  <UserControl.Styles>
+    <Style Selector=":is(Button):pressed">
+      <Setter Property="RenderTransform" Value="none" />
+    </Style>
+
+    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#99AAAAAA"/>
+      <Setter Property="Foreground" Value="#FF000000"/>
+    </Style>
+
+    <Style Selector=":is(Button)">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="CornerRadius" Value="0" />
+      <Setter Property="BorderThickness" Value="0" />
+      <Setter Property="VerticalAlignment" Value="Stretch" />
+      <Setter Property="HorizontalAlignment" Value="Stretch" />
+      <Setter Property="VerticalContentAlignment" Value="Center" />
+      <Setter Property="HorizontalContentAlignment" Value="Center" />
+    </Style>
+  </UserControl.Styles>
+
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="*"/>
+    </Grid.ColumnDefinitions>
+
+    <Button
+      Name="minimizeButton"
+      Background="#80006060"
+      />
+
+    <Button
+      Name="maximizeButton"
+      Background="#80606010"
+      Grid.Column="1"
+      />
+
+    <Button
+      Name="closeButton"
+      Background="#80B02010"
+      Grid.Column="2"
+      />
+  </Grid>
+
+</UserControl>

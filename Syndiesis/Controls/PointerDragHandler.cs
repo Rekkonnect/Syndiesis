@@ -54,6 +54,7 @@ public class PointerDragHandler
             Delta = delta,
             TotalDelta = totalDelta,
             DragSourcePoint = source,
+            CurrentPoint = current,
             SourcePointerEventArgs = e,
         };
         Dragged?.Invoke(args);
@@ -64,6 +65,7 @@ public class PointerDragHandler
         public required Vector Delta { get; init; }
         public required Vector TotalDelta { get; init; }
         public required Point DragSourcePoint { get; init; }
+        public required Point CurrentPoint { get; init; }
         public required PointerEventArgs SourcePointerEventArgs { get; init; }
     }
 }

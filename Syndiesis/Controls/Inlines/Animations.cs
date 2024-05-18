@@ -44,4 +44,41 @@ public static class Animations
             }
         };
     }
+
+    public static Animation CreateOpacityPulseAnimation(
+        Control control,
+        double opacity,
+        AvaloniaProperty<double> opacityProperty)
+    {
+        return new()
+        {
+            Children =
+            {
+                new KeyFrame()
+                {
+                    Cue = new(0),
+                    Setters =
+                    {
+                        new Setter()
+                        {
+                            Property = opacityProperty,
+                            Value = opacity,
+                        }
+                    },
+                },
+                new KeyFrame()
+                {
+                    Cue = new(1),
+                    Setters =
+                    {
+                        new Setter()
+                        {
+                            Property = opacityProperty,
+                            Value = control.GetValue(opacityProperty),
+                        }
+                    },
+                },
+            }
+        };
+    }
 }

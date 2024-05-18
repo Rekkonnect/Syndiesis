@@ -9,6 +9,7 @@ using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
+using Syndiesis.Views;
 using System;
 
 namespace Syndiesis.Controls;

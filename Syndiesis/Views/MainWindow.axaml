@@ -6,6 +6,9 @@
         mc:Ignorable="d" d:DesignWidth="1450" d:DesignHeight="850"
         MinWidth="600"
         MinHeight="400"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
         x:Class="Syndiesis.Views.MainWindow"
         xmlns:controls="using:Syndiesis.Controls"
         xmlns:syntax="using:Syndiesis.Controls.SyntaxVisualization"
@@ -16,9 +19,16 @@
         Title="Syndiesis"
         >
 
+  <NativeMenu.Menu>
+    <NativeMenu>
+    </NativeMenu>
+  </NativeMenu.Menu>
+  
   <Window.Styles>
     <Style Selector="Button">
       <Setter Property="Background" Value="#005055" />
+      <Setter Property="FontFamily" Value="{StaticResource AptosDisplayFontFamily}" />
+      <Setter Property="FontSize" Value="16" />
     </Style>
   </Window.Styles>
 
@@ -26,21 +36,33 @@
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
-  <Panel>
-    <TransitioningContentControl
-      Name="pageTransition"
-      >
-      <TransitioningContentControl.PageTransition>
-        <controls:DrillTransition Duration="00:00:00.400" />
-      </TransitioningContentControl.PageTransition>
-
-      <views:MainView
-        Name="mainView"
-        />
-    </TransitioningContentControl>
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
     
-    <toast:ToastNotificationContainer
-      Name="ToastNotificationContainer"
-    />
-  </Panel>
+    <controls:SyndiesisTitleBar />
+
+    <Panel
+      Grid.Row="1"
+      >
+      <TransitioningContentControl
+        Name="pageTransition"
+        >
+        <TransitioningContentControl.PageTransition>
+          <controls:DrillTransition Duration="00:00:00.400" />
+        </TransitioningContentControl.PageTransition>
+
+        <views:MainView
+          Name="mainView"
+          />
+      </TransitioningContentControl>
+    
+      <toast:ToastNotificationContainer
+        Name="ToastNotificationContainer"
+      />
+    </Panel>
+
+  </Grid>
 </Window>

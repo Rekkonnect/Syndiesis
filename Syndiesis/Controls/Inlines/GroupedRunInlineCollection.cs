@@ -21,6 +21,12 @@ public sealed class GroupedRunInlineCollection : AvaloniaList<object>
     }
 #pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 
+    public GroupedRunInlineCollection() { }
+    public GroupedRunInlineCollection(IEnumerable<RunOrGrouped> items) 
+    {
+        AddRange(items);
+    }
+
     public void Add(RunOrGrouped run)
     {
         base.Add(run.AvailableObject!);

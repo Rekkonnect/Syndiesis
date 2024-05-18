@@ -3,7 +3,9 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
+using Avalonia.Reactive;
 using Avalonia.Styling;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,6 +27,12 @@ public static partial class CommonAvaloniaExtensions
     {
         source.Clear();
         source.AddRange(values);
+    }
+
+    public static void Subscribe<T>(this IObservable<T> observable, Action<T> action)
+    {
+        var observer = new AnonymousObserver<T>(action);
+        observable.Subscribe(observer);
     }
 }
 
@@ -55,6 +63,20 @@ public static partial class CommonAvaloniaExtensions
 
         var formats = await clipboard.GetFormatsAsync();
         return formats.Contains(format);
+    }
+
+    public static void InvertMaximizedWindowState(this Window window)
+    {
+        window.WindowState = InvertMaximizedState(window.WindowState);
+    }
+
+    public static WindowState InvertMaximizedState(this WindowState windowState)
+    {
+        return windowState switch
+        {
+            WindowState.Normal => WindowState.Maximized,
+            _ => WindowState.Normal,
+        };
     }
 }
 
