@@ -3,7 +3,6 @@
 public enum DragHandling
 {
     Enabled,
-    Cancelling,
     DisabledNext,
     Disabled,
 }

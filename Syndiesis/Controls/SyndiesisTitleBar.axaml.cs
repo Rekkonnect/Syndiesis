@@ -54,10 +54,6 @@ public partial class SyndiesisTitleBar : UserControl
         switch (_dragHandling)
         {
             case DragHandling.DisabledNext:
-                _dragHandling = DragHandling.Cancelling;
-                break;
-
-            case DragHandling.Cancelling:
                 _dragHandling = DragHandling.Enabled;
                 break;
 
@@ -78,8 +74,11 @@ public partial class SyndiesisTitleBar : UserControl
 
     private void MoveWindowPosition(PointerDragHandler.PointerDragArgs obj)
     {
-        if (_dragHandling is not DragHandling.Enabled)
-            return;
+        switch (_dragHandling)
+        {
+            case not DragHandling.Enabled:
+                return;
+        }
 
         if (obj.Delta is (0, 0))
             return;
