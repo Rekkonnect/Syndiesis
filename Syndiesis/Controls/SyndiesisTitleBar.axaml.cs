@@ -90,9 +90,6 @@ public partial class SyndiesisTitleBar : UserControl
         if (window is null)
             return;
 
-        if (window.WindowState is WindowState.Maximized)
-            return;
-
         var currentPoint = window.PointToScreen(obj.CurrentPoint);
         if (_previousDragPosition == currentPoint)
             return;
@@ -100,6 +97,11 @@ public partial class SyndiesisTitleBar : UserControl
         var offset = currentPoint - _dragStartPosition;
         window.Position = _windowStartPosition + offset;
         _previousDragPosition = currentPoint;
+
+        if (window.WindowState is WindowState.Maximized)
+        {
+            window.WindowState = WindowState.Normal;
+        }
     }
 
     private void HandleTopDoubleTapped(object? sender, TappedEventArgs e)

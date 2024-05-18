@@ -78,6 +78,26 @@ public static partial class CommonAvaloniaExtensions
             _ => WindowState.Normal,
         };
     }
+
+    /// <summary>
+    /// This is preferred over <see cref="Window.OffScreenMargin"/>. The property returns 7,
+    /// but content still appears clipped. With manual testing, 7.5 is found to be the real value
+    /// we should use.
+    /// </summary>
+    /// <param name="window"></param>
+    /// <returns></returns>
+    public static Thickness SpeculatedOffScreenMargin(this Window window)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            if (window.WindowState is WindowState.Maximized)
+            {
+                return new(7.5);
+            }
+        }
+
+        return default;
+    }
 }
 
 // Control

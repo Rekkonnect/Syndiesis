@@ -72,7 +72,7 @@ public partial class SyndiesisTitleBarButtonPanel : UserControl
         {
             case WindowState.Maximized:
                 SetMaximizeButton(App.Current.ResourceManager.RestoreDownIconGeometry);
-                window.Padding = window.OffScreenMargin;
+                window.Padding = window.SpeculatedOffScreenMargin();
                 break;
 
             default:
