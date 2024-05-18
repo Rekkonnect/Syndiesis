@@ -9,9 +9,9 @@ using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 
-namespace Syndiesis.Controls;
+namespace Syndiesis.Controls.AnalysisVisualization;
 
-public partial class SyntaxTreeListNode : UserControl
+public partial class AnalysisTreeListNode : UserControl
 {
     private static readonly CancellationTokenFactory _expansionAnimationCancellationTokenFactory = new();
 
@@ -31,12 +31,12 @@ public partial class SyntaxTreeListNode : UserControl
         set => NodeLine.AssociatedSyntaxObject = value;
     }
 
-    public static readonly StyledProperty<SyntaxTreeListNodeLine> NodeLineProperty =
-        AvaloniaProperty.Register<CodeEditorLine, SyntaxTreeListNodeLine>(
+    public static readonly StyledProperty<AnalysisTreeListNodeLine> NodeLineProperty =
+        AvaloniaProperty.Register<CodeEditorLine, AnalysisTreeListNodeLine>(
             nameof(NodeLine),
             defaultValue: new());
 
-    public SyntaxTreeListNodeLine NodeLine
+    public AnalysisTreeListNodeLine NodeLine
     {
         get => GetValue(NodeLineProperty);
         set
@@ -48,7 +48,7 @@ public partial class SyntaxTreeListNode : UserControl
     }
 
     // Only here for the designer preview
-    public AvaloniaList<SyntaxTreeListNode> ChildNodes
+    public AvaloniaList<AnalysisTreeListNode> ChildNodes
     {
         set
         {
@@ -59,9 +59,9 @@ public partial class SyntaxTreeListNode : UserControl
 
     public bool HasChildren => NodeLine.HasChildren;
 
-    private AdvancedLazy<IReadOnlyList<SyntaxTreeListNode>>? _childRetriever;
+    private AdvancedLazy<IReadOnlyList<AnalysisTreeListNode>>? _childRetriever;
 
-    public Func<IReadOnlyList<SyntaxTreeListNode>>? ChildRetriever
+    public Func<IReadOnlyList<AnalysisTreeListNode>>? ChildRetriever
     {
         get => _childRetriever?.Factory;
         set
@@ -79,7 +79,7 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
-    public IReadOnlyList<SyntaxTreeListNode> LazyChildren
+    public IReadOnlyList<AnalysisTreeListNode> LazyChildren
     {
         get
         {
@@ -87,7 +87,7 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
-    public IReadOnlyList<SyntaxTreeListNode> DemandedChildren
+    public IReadOnlyList<AnalysisTreeListNode> DemandedChildren
     {
         get
         {
@@ -96,11 +96,11 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
-    internal SyntaxTreeListView? ListView { get; set; }
+    internal AnalysisTreeListView? ListView { get; set; }
 
     public int Depth { get; private set; }
 
-    public SyntaxTreeListNode? ParentNode
+    public AnalysisTreeListNode? ParentNode
     {
         get
         {
@@ -108,7 +108,7 @@ public partial class SyntaxTreeListNode : UserControl
             while (current is not null)
             {
                 var parent = current.Parent;
-                if (parent is SyntaxTreeListNode node)
+                if (parent is AnalysisTreeListNode node)
                     return node;
 
                 current = parent;
@@ -118,7 +118,7 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
-    public SyntaxTreeListNode()
+    public AnalysisTreeListNode()
     {
         InitializeComponent();
         expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Expanded);
@@ -204,7 +204,7 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
-    internal void SetListViewRecursively(SyntaxTreeListView listView)
+    internal void SetListViewRecursively(AnalysisTreeListView listView)
     {
         ListView = listView;
 

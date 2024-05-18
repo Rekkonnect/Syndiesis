@@ -4,6 +4,7 @@ using Avalonia.Interactivity;
 using Microsoft.CodeAnalysis.Text;
 using Serilog;
 using Syndiesis.Controls;
+using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
@@ -148,17 +149,17 @@ public partial class MainView : UserControl
         syntaxTreeView.listView.HighlightPosition(index);
     }
 
-    private void HandleHoveredNode(SyntaxTreeListNode? obj)
+    private void HandleHoveredNode(AnalysisTreeListNode? obj)
     {
         codeEditor.ShowHoveredSyntaxNode(obj);
     }
 
-    private void HandleRequestedSelectTextAtNode(SyntaxTreeListNode node)
+    private void HandleRequestedSelectTextAtNode(AnalysisTreeListNode node)
     {
         codeEditor.SelectTextOfNode(node);
     }
 
-    private void HandleRequestedPlaceCursorAtNode(SyntaxTreeListNode node)
+    private void HandleRequestedPlaceCursorAtNode(AnalysisTreeListNode node)
     {
         codeEditor.PlaceCursorAtNodeStart(node);
     }

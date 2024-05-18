@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Microsoft.CodeAnalysis.Text;
+using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
 using System;
@@ -39,7 +40,7 @@ public partial class CodeEditor : UserControl
 
     private int _lineOffset;
 
-    private SyntaxTreeListNode? _hoveredListNode;
+    private AnalysisTreeListNode? _hoveredListNode;
 
     public int LineOffset
     {
@@ -93,7 +94,7 @@ public partial class CodeEditor : UserControl
         }
     }
 
-    public SyntaxTreeListView? AssociatedTreeView { get; set; }
+    public AnalysisTreeListView? AssociatedTreeView { get; set; }
 
     private void HandleCursorMoved(LinePosition position)
     {
@@ -291,7 +292,7 @@ public partial class CodeEditor : UserControl
         line.RestartCursorAnimation();
     }
 
-    public void ShowHoveredSyntaxNode(SyntaxTreeListNode? listNode)
+    public void ShowHoveredSyntaxNode(AnalysisTreeListNode? listNode)
     {
         _hoveredListNode = listNode;
         ShowCurrentHoveredSyntaxNode();
@@ -313,7 +314,7 @@ public partial class CodeEditor : UserControl
         }
     }
 
-    public void PlaceCursorAtNodeStart(SyntaxTreeListNode node)
+    public void PlaceCursorAtNodeStart(AnalysisTreeListNode node)
     {
         var deepest = DeepestWithSyntaxObject(node);
         if (deepest is null)
@@ -323,7 +324,7 @@ public partial class CodeEditor : UserControl
         CursorPosition = start;
     }
 
-    public void SelectTextOfNode(SyntaxTreeListNode node)
+    public void SelectTextOfNode(AnalysisTreeListNode node)
     {
         var deepest = DeepestWithSyntaxObject(node);
         if (deepest is null)
@@ -338,7 +339,7 @@ public partial class CodeEditor : UserControl
         CursorPosition = start;
     }
 
-    private SyntaxTreeListNode? DeepestWithSyntaxObject(SyntaxTreeListNode? node)
+    private AnalysisTreeListNode? DeepestWithSyntaxObject(AnalysisTreeListNode? node)
     {
         var current = node;
         while (current is not null)
@@ -930,7 +931,7 @@ public partial class CodeEditor : UserControl
         AssociatedTreeView?.OverrideHover(discovered);
     }
 
-    private SyntaxTreeListNode? DiscoverParentNodeCoveringSelection()
+    private AnalysisTreeListNode? DiscoverParentNodeCoveringSelection()
     {
         var span = _editor.SelectionLineSpan;
         var start = span.Start;

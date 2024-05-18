@@ -5,7 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="150"
              xmlns:controls="using:Syndiesis.Controls"
              xmlns:ce="using:Syndiesis.Controls.Extensions"
-             x:Class="Syndiesis.Controls.SyntaxTreeListNode">
+             x:Class="Syndiesis.Controls.AnalysisVisualization.AnalysisTreeListNode">
   <StackPanel
     Name="outerStackPanel"
     HorizontalAlignment="Stretch"

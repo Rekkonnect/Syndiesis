@@ -5,16 +5,18 @@ using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Media;
 using Microsoft.CodeAnalysis.Text;
+using Syndiesis.Controls;
 using Syndiesis.Controls.Inlines;
+using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
 using Syndiesis.Views;
 using System;
 
-namespace Syndiesis.Controls;
+namespace Syndiesis.Controls.AnalysisVisualization;
 
-public partial class SyntaxTreeListNodeLine : UserControl
+public partial class AnalysisTreeListNodeLine : UserControl
 {
     private readonly CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
 
@@ -60,7 +62,7 @@ public partial class SyntaxTreeListNodeLine : UserControl
     public static readonly StyledProperty<Color> NodeTypeColorProperty =
         AvaloniaProperty.Register<CodeEditorLine, Color>(
             nameof(NodeTypeColor),
-            defaultValue: NodeLineCreator.Styles.ClassMainColor);
+            defaultValue: SyntaxViewNodeLineCreator.Styles.ClassMainColor);
 
     public Color NodeTypeColor
     {
@@ -117,7 +119,7 @@ public partial class SyntaxTreeListNodeLine : UserControl
             var nodeType = NodeTypeText;
             switch (nodeType)
             {
-                case NodeLineCreator.Types.DisplayValue:
+                case SyntaxViewNodeLineCreator.Types.DisplayValue:
                     return syntaxObject.Span;
             }
 
@@ -138,7 +140,7 @@ public partial class SyntaxTreeListNodeLine : UserControl
         }
     }
 
-    public SyntaxTreeListNodeLine()
+    public AnalysisTreeListNodeLine()
     {
         InitializeComponent();
     }

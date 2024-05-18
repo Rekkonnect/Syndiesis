@@ -7,7 +7,7 @@
              MinHeight="300"
              Focusable="True"
              xmlns:controls="using:Syndiesis.Controls"
-             xmlns:syntax="using:Syndiesis.Controls.SyntaxVisualization"
+             xmlns:syntax="using:Syndiesis.Controls.AnalysisVisualization"
              xmlns:previews="using:Syndiesis.Views.DesignerPreviews"
              x:Class="Syndiesis.Views.MainView"
              >
@@ -158,7 +158,7 @@
           BorderThickness="2"
           Grid.Column="2"
         >
-          <syntax:CoverableSyntaxTreeListView
+          <syntax:CoverableAnalysisTreeListView
             Name="syntaxTreeView"
           />
         </Border>

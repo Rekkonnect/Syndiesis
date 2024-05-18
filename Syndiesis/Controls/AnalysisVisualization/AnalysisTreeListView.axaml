@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Syndiesis.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Syndiesis.Controls.SyntaxTreeListView">
+             x:Class="Syndiesis.Controls.AnalysisVisualization.AnalysisTreeListView">
 
   <Panel Name="backgroundPanel"
          Background="#001116"

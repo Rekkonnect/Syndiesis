@@ -3,13 +3,13 @@ using Avalonia.Threading;
 using Syndiesis.Core;
 using System;
 
-namespace Syndiesis.Controls.SyntaxVisualization;
+namespace Syndiesis.Controls.AnalysisVisualization;
 
-public partial class CoverableSyntaxTreeListView : UserControl
+public partial class CoverableAnalysisTreeListView : UserControl
 {
     public event Action? NewRootNodeLoaded;
 
-    public CoverableSyntaxTreeListView()
+    public CoverableAnalysisTreeListView()
     {
         InitializeComponent();
         InitializeCover();

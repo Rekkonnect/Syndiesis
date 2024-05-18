@@ -40,10 +40,4 @@
     <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="4.1.0" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Compile Update="Controls\SyndiesisTitleBar.axaml.cs">
-      <DependentUpon>SyndiesisTitleBar.axaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  
 </Project>

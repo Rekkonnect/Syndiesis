@@ -2,7 +2,7 @@
 using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Syndiesis.Controls;
+using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using System;
 using System.Collections.Generic;
@@ -15,22 +15,42 @@ namespace Syndiesis.Core.DisplayAnalysis;
 
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
 
-public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
+public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions options)
+    : BaseNodeLineCreator(options)
 {
     private const string eofDisplayString = "[EOF]";
     private const string missingTokenDisplayString = "[Missing]";
 
-    private readonly NodeLineCreationOptions _options = options;
-
     private static readonly InterestingPropertyFilterCache _propertyCache
         = new(SyntaxNodePropertyFilter.Instance);
 
-    public SyntaxTreeListNode CreateRootNodeOrToken(
+    public override AnalysisTreeListNode? CreateRootViewNode(
+        object? value, DisplayValueSource valueSource = default)
+    {
+        switch (value)
+        {
+            case SyntaxNodeOrToken nodeOrToken:
+                return CreateRootNodeOrToken(nodeOrToken, valueSource);
+
+            case SyntaxNode node:
+                return CreateRootNode(node, valueSource);
+
+            case SyntaxToken token:
+                return CreateRootToken(token, valueSource);
+
+            case ReadOnlySyntaxNodeList nodeList:
+                return CreateRootNodeList(nodeList, valueSource);
+        }
+
+        return null;
+    }
+
+    public AnalysisTreeListNode CreateRootNodeOrToken(
         SyntaxNodeOrToken nodeOrToken, DisplayValueSource valueSource = default)
     {
         var rootLine = CreateNodeOrTokenLine(nodeOrToken, valueSource);
         var children = GetChildRetrieverForNodeOrToken(nodeOrToken);
-        return new SyntaxTreeListNode
+        return new AnalysisTreeListNode
         {
             NodeLine = rootLine,
             ChildRetriever = children,
@@ -38,7 +58,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private Func<IReadOnlyList<SyntaxTreeListNode>>? GetChildRetrieverForNodeOrToken(
+    private Func<IReadOnlyList<AnalysisTreeListNode>>? GetChildRetrieverForNodeOrToken(
         SyntaxNodeOrToken nodeOrToken)
     {
         if (nodeOrToken.IsNode)
@@ -49,7 +69,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return GetChildRetrieverForToken(nodeOrToken.AsToken());
     }
 
-    private SyntaxTreeListNodeLine CreateNodeOrTokenLine(
+    private AnalysisTreeListNodeLine CreateNodeOrTokenLine(
         SyntaxNodeOrToken nodeOrToken, DisplayValueSource valueSource)
     {
         if (nodeOrToken.IsNode)
@@ -60,12 +80,12 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return CreateTokenNodeLine(nodeOrToken.AsToken(), valueSource);
     }
 
-    public SyntaxTreeListNode CreateRootNode(
+    public AnalysisTreeListNode CreateRootNode(
         SyntaxNode node, DisplayValueSource valueSource = default)
     {
         var rootLine = CreateNodeLine(node, valueSource);
         var children = GetChildRetrieverForNode(node);
-        return new SyntaxTreeListNode
+        return new AnalysisTreeListNode
         {
             NodeLine = rootLine,
             ChildRetriever = children,
@@ -73,7 +93,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private Func<IReadOnlyList<SyntaxTreeListNode>>? GetChildRetrieverForNode(SyntaxNode node)
+    private Func<IReadOnlyList<AnalysisTreeListNode>>? GetChildRetrieverForNode(SyntaxNode node)
     {
         if (node.IsMissing && !node.HasAnyTrivia())
             return null;
@@ -81,12 +101,12 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return () => CreateNodeChildren(node);
     }
 
-    public SyntaxTreeListNode CreateTokenNode(
+    public AnalysisTreeListNode CreateRootToken(
         SyntaxToken token, DisplayValueSource valueSource = default)
     {
         var rootLine = CreateTokenNodeLine(token, valueSource);
         var children = GetChildRetrieverForToken(token);
-        return new SyntaxTreeListNode
+        return new AnalysisTreeListNode
         {
             NodeLine = rootLine,
             ChildRetriever = children,
@@ -94,7 +114,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private Func<IReadOnlyList<SyntaxTreeListNode>>? GetChildRetrieverForToken(SyntaxToken token)
+    private Func<IReadOnlyList<AnalysisTreeListNode>>? GetChildRetrieverForToken(SyntaxToken token)
     {
         switch (token.Kind())
         {
@@ -108,12 +128,12 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return () => CreateTokenChildren(token);
     }
 
-    public SyntaxTreeListNode CreateRootNode(
+    public AnalysisTreeListNode CreateRootNodeList(
         ReadOnlySyntaxNodeList node, DisplayValueSource valueSource = default)
     {
         var rootLine = CreateSyntaxListLine(node, valueSource);
         var children = () => CreateNodeListChildren(node);
-        return new SyntaxTreeListNode
+        return new AnalysisTreeListNode
         {
             NodeLine = rootLine,
             ChildRetriever = children,
@@ -121,21 +141,21 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private IReadOnlyList<SyntaxTreeListNode> CreateTokenChildren(SyntaxToken token)
+    private IReadOnlyList<AnalysisTreeListNode> CreateTokenChildren(SyntaxToken token)
     {
         int triviaCount = 0;
         SyntaxTriviaList leadingTrivia = default;
         SyntaxTriviaList trailingTrivia = default;
-        if (_options.ShowTrivia)
+        if (Options.ShowTrivia)
         {
             leadingTrivia = token.LeadingTrivia;
             trailingTrivia = token.TrailingTrivia;
             triviaCount = leadingTrivia.Count + trailingTrivia.Count;
         }
-        var children = new List<SyntaxTreeListNode>(triviaCount + 1);
+        var children = new List<AnalysisTreeListNode>(triviaCount + 1);
 
         // they will be sorted anyway
-        if (_options.ShowTrivia)
+        if (Options.ShowTrivia)
         {
             AppendTriviaList(leadingTrivia, children);
             AppendTriviaList(trailingTrivia, children);
@@ -165,7 +185,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return children;
     }
 
-    private static SyntaxTreeListNode CreateEndOfFileDisplayNode(SyntaxToken token)
+    private static AnalysisTreeListNode CreateEndOfFileDisplayNode(SyntaxToken token)
     {
         return new()
         {
@@ -174,7 +194,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private static SyntaxTreeListNodeLine CreateEndOfFileDisplayNodeLine()
+    private static AnalysisTreeListNodeLine CreateEndOfFileDisplayNodeLine()
     {
         var eofRun = new SingleRunInline(CreateEofRun());
 
@@ -190,7 +210,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return Run(eofDisplayString, Styles.EofBrush);
     }
 
-    private SyntaxTreeListNode CreateDisplayNode(SyntaxToken token)
+    private AnalysisTreeListNode CreateDisplayNode(SyntaxToken token)
     {
         return new()
         {
@@ -218,7 +238,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             ;
     }
 
-    private SyntaxTreeListNodeLine CreateDisplayNodeLine(SyntaxToken token)
+    private AnalysisTreeListNodeLine CreateDisplayNodeLine(SyntaxToken token)
     {
         var fullText = token.Text;
         string text = DisplayStringForText(token, fullText);
@@ -235,7 +255,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return text;
     }
 
-    private IReadOnlyList<SyntaxTreeListNode> CreatePropertyAnalysisChildren(SyntaxToken token)
+    private IReadOnlyList<AnalysisTreeListNode> CreatePropertyAnalysisChildren(SyntaxToken token)
     {
         var fullText = token.Text;
         string text = DisplayStringForText(token, fullText);
@@ -270,7 +290,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         ];
     }
 
-    private SyntaxTreeListNode CreateNodeForNodeValue(
+    private AnalysisTreeListNode CreateNodeForNodeValue(
         object? value,
         object? fullValue,
         DisplayValueSource valueSource = default)
@@ -283,7 +303,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private SyntaxTreeListNodeLine LineForNodeValue(
+    private AnalysisTreeListNodeLine LineForNodeValue(
         object? value, object? fullValue, DisplayValueSource valueSource = default)
     {
         var inlines = new GroupedRunInlineCollection();
@@ -318,9 +338,9 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return run;
     }
 
-    private void AppendTriviaList(SyntaxTriviaList triviaList, List<SyntaxTreeListNode> children)
+    private void AppendTriviaList(SyntaxTriviaList triviaList, List<AnalysisTreeListNode> children)
     {
-        if (_options.ShowTrivia)
+        if (Options.ShowTrivia)
         {
             foreach (var trivia in triviaList)
             {
@@ -330,11 +350,11 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         }
     }
 
-    private IReadOnlyList<SyntaxTreeListNode> CreateNodeChildren(SyntaxNode node)
+    private IReadOnlyList<AnalysisTreeListNode> CreateNodeChildren(SyntaxNode node)
     {
         var properties = GetInterestingPropertiesForNodeType(node);
 
-        var children = new List<SyntaxTreeListNode>(properties.Count);
+        var children = new List<AnalysisTreeListNode>(properties.Count);
 
         foreach (var property in properties)
         {
@@ -347,27 +367,10 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
             var valueSource = Property(property.Name);
 
-            switch (value)
+            var childNode = CreateRootViewNode(value, valueSource);
+            if (childNode is not null)
             {
-                case SyntaxNode childNode:
-                    var childNodeElement = CreateRootNode(childNode, valueSource);
-                    children.Add(childNodeElement);
-                    break;
-
-                case ReadOnlySyntaxNodeList childNodeList:
-                    var childNodeListElement = CreateRootNode(childNodeList, valueSource);
-                    children.Add(childNodeListElement);
-                    break;
-
-                case SyntaxToken token:
-                    var tokenNode = CreateTokenNode(token, valueSource);
-                    children.Add(tokenNode);
-                    break;
-
-                case SyntaxTokenList tokenList:
-                    var tokenListNode = CreateTokenListNode(tokenList, valueSource);
-                    children.Add(tokenListNode);
-                    break;
+                children.Add(childNode);
             }
         }
 
@@ -376,7 +379,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return children;
     }
 
-    private SyntaxTreeListNode CreateTokenListNode(
+    private AnalysisTreeListNode CreateTokenListNode(
         SyntaxTokenList list, DisplayValueSource valueSource)
     {
         var node = CreateTokenListNodeLine(list, valueSource);
@@ -390,7 +393,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private SyntaxTreeListNodeLine CreateTokenListNodeLine(
+    private AnalysisTreeListNodeLine CreateTokenListNodeLine(
         SyntaxTokenList list, DisplayValueSource valueSource)
     {
         var inlines = CreateBasicTypeNameInlines(list, valueSource);
@@ -402,15 +405,15 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    private IReadOnlyList<SyntaxTreeListNode> CreateTokenListChildren(SyntaxTokenList list)
+    private IReadOnlyList<AnalysisTreeListNode> CreateTokenListChildren(SyntaxTokenList list)
     {
         return list
-            .Select(s => CreateTokenNode(s))
+            .Select(s => CreateRootToken(s))
             .ToList()
             ;
     }
 
-    private IReadOnlyList<SyntaxTreeListNode> CreateNodeListChildren(ReadOnlySyntaxNodeList list)
+    private IReadOnlyList<AnalysisTreeListNode> CreateNodeListChildren(ReadOnlySyntaxNodeList list)
     {
         var listType = list.GetType();
         if (listType.IsGenericType)
@@ -431,7 +434,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
             ;
     }
 
-    private IReadOnlyList<SyntaxTreeListNode> CreateNodeListChildren(SyntaxNodeOrTokenList list)
+    private IReadOnlyList<AnalysisTreeListNode> CreateNodeListChildren(SyntaxNodeOrTokenList list)
     {
         return list
             .Select(s => CreateRootNodeOrToken(s))
@@ -466,7 +469,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
                 return tokenList.Count > 0;
 
             case SyntaxTriviaList triviaList:
-                if (!_options.ShowTrivia)
+                if (!Options.ShowTrivia)
                     return false;
 
                 if (triviaList == default)
@@ -483,7 +486,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
                 return token != default;
 
             case SyntaxTrivia trivia:
-                if (!_options.ShowTrivia)
+                if (!Options.ShowTrivia)
                     return false;
 
                 return trivia != default;
@@ -493,7 +496,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         }
     }
 
-    public SyntaxTreeListNodeLine CreateNodeLine(
+    public AnalysisTreeListNodeLine CreateNodeLine(
         SyntaxNode node, DisplayValueSource valueSource = default)
     {
         var inlines = CreateBasicTypeNameInlines(node, valueSource);
@@ -505,7 +508,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    public SyntaxTreeListNodeLine CreateSyntaxListLine(
+    public AnalysisTreeListNodeLine CreateSyntaxListLine(
         ReadOnlySyntaxNodeList list, DisplayValueSource valueSource = default)
     {
         var listType = list.GetType();
@@ -532,7 +535,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
                     .GetMethod(nameof(methodName))
                     !.MakeGenericMethod([typeArgument]);
                 var result = invokedMethod.Invoke(this, [list, valueSource])
-                    as SyntaxTreeListNodeLine;
+                    as AnalysisTreeListNodeLine;
                 return result!;
             }
             if (genericDefinition == typeof(SeparatedSyntaxList<>))
@@ -542,7 +545,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
                     .GetMethod(nameof(methodName))
                     !.MakeGenericMethod([typeArgument]);
                 var result = invokedMethod.Invoke(this, [list, valueSource])
-                    as SyntaxTreeListNodeLine;
+                    as AnalysisTreeListNodeLine;
                 return result!;
             }
         }
@@ -550,7 +553,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         throw new ArgumentException("Invalid syntax node list type");
     }
 
-    public SyntaxTreeListNodeLine CreateBasicSyntaxListLine(
+    public AnalysisTreeListNodeLine CreateBasicSyntaxListLine(
         ReadOnlySyntaxNodeList node, DisplayValueSource valueSource)
     {
         var inlines = CreateBasicTypeNameInlines(node, valueSource);
@@ -562,7 +565,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    public SyntaxTreeListNodeLine CreateSyntaxListLine<T>(
+    public AnalysisTreeListNodeLine CreateSyntaxListLine<T>(
         SyntaxList<T> node, DisplayValueSource valueSource = default)
         where T : SyntaxNode
     {
@@ -575,7 +578,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    public SyntaxTreeListNodeLine CreateSeparatedSyntaxListLine<T>(
+    public AnalysisTreeListNodeLine CreateSeparatedSyntaxListLine<T>(
         SeparatedSyntaxList<T> node, DisplayValueSource valueSource)
         where T : SyntaxNode
     {
@@ -600,7 +603,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         return inlines;
     }
 
-    public SyntaxTreeListNodeLine CreateTokenNodeLine(
+    public AnalysisTreeListNodeLine CreateTokenNodeLine(
         SyntaxToken token, DisplayValueSource valueSource)
     {
         var inlines = new GroupedRunInlineCollection();
@@ -615,11 +618,11 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    public SyntaxTreeListNode CreateTriviaNode(SyntaxTrivia trivia)
+    public AnalysisTreeListNode CreateTriviaNode(SyntaxTrivia trivia)
     {
         var line = CreateTriviaLine(trivia);
         var structure = trivia.GetStructure();
-        Func<IReadOnlyList<SyntaxTreeListNode>>? children = null;
+        Func<IReadOnlyList<AnalysisTreeListNode>>? children = null;
         if (structure is not null)
         {
             var valueSource = new DisplayValueSource(
@@ -637,7 +640,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
         };
     }
 
-    public SyntaxTreeListNodeLine CreateTriviaLine(SyntaxTrivia trivia)
+    public AnalysisTreeListNodeLine CreateTriviaLine(SyntaxTrivia trivia)
     {
         var inlines = new GroupedRunInlineCollection();
 
@@ -836,7 +839,7 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
 
     private string SimplifyWhitespace(string source)
     {
-        return SimplifyWhitespace(source, _options.TruncationLimit);
+        return SimplifyWhitespace(source, Options.TruncationLimit);
     }
 
     private static string SimplifyWhitespace(string source, int truncationLength)
@@ -1133,13 +1136,13 @@ public sealed partial class NodeLineCreator(NodeLineCreationOptions options)
     }
 }
 
-partial class NodeLineCreator
+partial class SyntaxViewNodeLineCreator
 {
-    public sealed class SyntaxTreeViewNodeObjectSpanComparer : IComparer<SyntaxTreeListNode>
+    public sealed class SyntaxTreeViewNodeObjectSpanComparer : IComparer<AnalysisTreeListNode>
     {
         public static SyntaxTreeViewNodeObjectSpanComparer Instance { get; } = new();
 
-        public int Compare(SyntaxTreeListNode? x, SyntaxTreeListNode? y)
+        public int Compare(AnalysisTreeListNode? x, AnalysisTreeListNode? y)
         {
             ArgumentNullException.ThrowIfNull(x, nameof(x));
             ArgumentNullException.ThrowIfNull(y, nameof(y));
@@ -1151,7 +1154,7 @@ partial class NodeLineCreator
     }
 }
 
-partial class NodeLineCreator
+partial class SyntaxViewNodeLineCreator
 {
     public static class Types
     {

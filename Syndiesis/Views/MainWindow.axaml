@@ -11,7 +11,7 @@
         ExtendClientAreaTitleBarHeightHint="-1"
         x:Class="Syndiesis.Views.MainWindow"
         xmlns:controls="using:Syndiesis.Controls"
-        xmlns:syntax="using:Syndiesis.Controls.SyntaxVisualization"
+        xmlns:syntax="using:Syndiesis.Controls.AnalysisVisualization"
         xmlns:previews="using:Syndiesis.Views.DesignerPreviews"
         xmlns:views="using:Syndiesis.Views"
         xmlns:toast="using:Syndiesis.Controls.Toast"

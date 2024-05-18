@@ -13,7 +13,7 @@ public class SyntaxNodeAnalysisExecution : IAnalysisExecution
         string source,
         CancellationToken token)
     {
-        var creator = new NodeLineCreator(NodeLineOptions);
+        var creator = new SyntaxViewNodeLineCreator(NodeLineOptions);
 
         var syntaxTree = CSharpSyntaxTree.ParseText(source, cancellationToken: token);
         if (token.IsCancellationRequested)

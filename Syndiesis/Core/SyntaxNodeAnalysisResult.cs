@@ -1,9 +1,9 @@
-﻿using Syndiesis.Controls;
+﻿using Syndiesis.Controls.AnalysisVisualization;
 
 namespace Syndiesis.Core;
 
-public sealed class SyntaxNodeAnalysisResult(SyntaxTreeListNode nodeRoot)
+public sealed class SyntaxNodeAnalysisResult(AnalysisTreeListNode nodeRoot)
     : AnalysisResult
 {
-    public SyntaxTreeListNode NodeRoot { get; set; } = nodeRoot;
+    public AnalysisTreeListNode NodeRoot { get; set; } = nodeRoot;
 }

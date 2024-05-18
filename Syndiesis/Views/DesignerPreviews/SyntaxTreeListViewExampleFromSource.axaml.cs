@@ -1,12 +1,12 @@
 using Microsoft.CodeAnalysis.CSharp;
-using Syndiesis.Controls;
+using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
 
 namespace Syndiesis.Views.DesignerPreviews;
 
-public partial class SyntaxTreeListViewExampleFromSource : SyntaxTreeListView
+public partial class AnalysisTreeListViewExampleFromSource : AnalysisTreeListView
 {
-    public SyntaxTreeListViewExampleFromSource()
+    public AnalysisTreeListViewExampleFromSource()
     {
         InitializeComponent();
         TriggerCodeExample();
@@ -27,7 +27,7 @@ public partial class SyntaxTreeListViewExampleFromSource : SyntaxTreeListView
             """;
 
         var options = new NodeLineCreationOptions();
-        var creator = new NodeLineCreator(options);
+        var creator = new SyntaxViewNodeLineCreator(options);
 
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
         var compilationUnitRoot = syntaxTree.GetCompilationUnitRoot();
