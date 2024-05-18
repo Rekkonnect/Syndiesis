@@ -7,7 +7,7 @@
 
   <Border
     Name="progressBorder"
-    Background="#A0002022"
+    Background="#60000000"
     CornerRadius="15 15 0 0"
     ClipToBounds="True"
     >

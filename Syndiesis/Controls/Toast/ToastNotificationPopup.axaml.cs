@@ -1,6 +1,7 @@
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
+using Avalonia.Media;
 using Avalonia.Styling;
 using System;
 using System.Threading;
@@ -10,6 +11,18 @@ namespace Syndiesis.Controls.Toast;
 
 public partial class ToastNotificationPopup : UserControl
 {
+    public Color BackgroundFill
+    {
+        set
+        {
+            var brush = new SolidColorBrush(value);
+            backgroundFill.Fill = brush;
+            var hsv = value.ToHsv();
+            var progressBarColor = new HsvColor(hsv.A, hsv.H, hsv.S, hsv.V + 0.4);
+            progressBar.ProgressBarBrush = new SolidColorBrush(progressBarColor.ToRgb());
+        }
+    }
+
     public ToastNotificationPopup()
     {
         InitializeComponent();

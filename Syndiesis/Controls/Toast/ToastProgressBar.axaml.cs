@@ -1,5 +1,6 @@
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Media;
 using System;
 
 namespace Syndiesis.Controls.Toast;
@@ -44,6 +45,12 @@ public partial class ToastProgressBar : UserControl
 
     public double ValueRange => MaxValue - MinValue;
     public double Progress => (CurrentValue - MinValue) / ValueRange;
+
+    public IBrush? ProgressBarBrush
+    {
+        get => progressRectangle.Fill;
+        set => progressRectangle.Fill = value;
+    }
 
     public ToastProgressBar()
     {

@@ -1,8 +1,11 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Interactivity;
+using Avalonia.Media;
+using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
 using System;
+using System.IO;
 
 namespace Syndiesis.Views;
 
@@ -55,12 +58,46 @@ public partial class SettingsView : UserControl
     private void SaveSettings()
     {
         var settings = AppSettings.Instance;
+        SetSettingsValues(settings);
+        var path = AppSettings.DefaultPath;
+        bool success = AppSettings.TrySave(path);
+        var notificationContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
+        if (success)
+        {
+            if (notificationContainer is not null)
+            {
+                var popup = new ToastNotificationPopup();
+                popup.defaultTextBlock.Text = "Settings saved successfully";
+                var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
+                _ = notificationContainer.Show(popup, animation);
+            }
+        }
+        else
+        {
+            if (notificationContainer is not null)
+            {
+                var fileInfo = new FileInfo(path);
+                var popup = new ToastNotificationPopup();
+                popup.BackgroundFill = Color.FromUInt32(0xFF660030);
+                popup.defaultTextBlock.Text = $"""
+                    Failed to save settings to path:
+                    '{fileInfo.FullName}'
+                    Please check the logs for details.
+                    """;
+                var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(4));
+                _ = notificationContainer.Show(popup, animation);
+            }
+        }
+        SettingsSaved?.Invoke();
+    }
+
+    private void SetSettingsValues(AppSettings settings)
+    {
         settings.UserInputDelay = TypingDelay;
+        settings.RecursiveExpansionDepth = RecursiveExpansionDepth;
         settings.IndentationOptions.IndentationWidth = IndentationWidth;
         settings.EnableExpandingAllNodes = enableExpandAllButtonCheck.IsChecked is true;
         settings.NodeLineOptions.ShowTrivia = showTriviaCheck.IsChecked is true;
-        AppSettings.TrySave();
-        SettingsSaved?.Invoke();
     }
 
     private void OnIndentationSliderValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
