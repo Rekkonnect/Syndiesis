@@ -266,25 +266,6 @@ public partial class MainView : UserControl
                 break;
         }
 
-        if (!e.Handled)
-        {
-            var nodeLine = syntaxTreeView.listView.CurrentHoveredNode?.NodeLine;
-            nodeLine?.descriptionText.ReEvaluateKeyModifiers(modifiers);
-        }
-
         base.OnKeyDown(e);
-    }
-
-    protected override void OnKeyUp(KeyEventArgs e)
-    {
-        var modifiers = e.KeyModifiers.NormalizeByPlatform();
-
-        if (!e.Handled)
-        {
-            var nodeLine = syntaxTreeView.listView.CurrentHoveredNode?.NodeLine;
-            nodeLine?.descriptionText.ReEvaluateKeyModifiers(modifiers);
-        }
-
-        base.OnKeyUp(e);
     }
 }
