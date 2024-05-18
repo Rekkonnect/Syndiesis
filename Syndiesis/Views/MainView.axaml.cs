@@ -269,7 +269,7 @@ public partial class MainView : UserControl
         if (!e.Handled)
         {
             var nodeLine = syntaxTreeView.listView.CurrentHoveredNode?.NodeLine;
-            nodeLine?.ReEvaluateKeyModifiers(modifiers);
+            nodeLine?.descriptionText.ReEvaluateKeyModifiers(modifiers);
         }
 
         base.OnKeyDown(e);
@@ -282,7 +282,7 @@ public partial class MainView : UserControl
         if (!e.Handled)
         {
             var nodeLine = syntaxTreeView.listView.CurrentHoveredNode?.NodeLine;
-            nodeLine?.ReEvaluateKeyModifiers(modifiers);
+            nodeLine?.descriptionText.ReEvaluateKeyModifiers(modifiers);
         }
 
         base.OnKeyUp(e);

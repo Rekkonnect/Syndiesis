@@ -1,0 +1,37 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:inlines="using:Syndiesis.Controls.Inlines"
+             x:Class="Syndiesis.Controls.Inlines.CopyableGroupedRunInlineTextBlock">
+
+  <Panel>
+
+    <Canvas>
+      <Rectangle
+        Name="textPartHoverRectangle"
+        Canvas.Left="60"
+        Canvas.Top="4"
+        Width="89"
+        Height="18"
+        Fill="#40808080"
+        IsVisible="False"
+        RadiusX="3"
+        RadiusY="3"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
+      />
+    </Canvas>
+
+    <inlines:GroupedRunInlineTextBlock
+      FontFamily="{StaticResource AptosFontFamily}"
+      Grid.Column="2"
+      FontSize="16"
+      VerticalAlignment="Center"
+      Name="containedText"
+      />
+
+  </Panel>
+  
+</UserControl>
