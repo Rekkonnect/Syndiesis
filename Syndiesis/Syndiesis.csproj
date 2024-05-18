@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Metadata">
-    <Version>1.0.3</Version>
+    <Version>1.1.0</Version>
     <Authors>Alex Kalfakakos</Authors>
     <Copyright>© 2024 Alex Kalfakakos</Copyright>
     <Description>The most revolutionary syntax visualizer for C#</Description>

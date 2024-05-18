@@ -98,8 +98,6 @@ public partial class AnalysisTreeListNode : UserControl
 
     internal AnalysisTreeListView? ListView { get; set; }
 
-    public int Depth { get; private set; }
-
     public AnalysisTreeListNode? ParentNode
     {
         get
@@ -150,11 +148,9 @@ public partial class AnalysisTreeListNode : UserControl
         innerStackPanel.Children.ClearSetValues(value);
         // this is necessary to avoid overriding the height of the node
         expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Collapsed);
-        var nextDepth = Depth + 1;
         foreach (var child in value)
         {
             child.ListView = ListView;
-            child.Depth = nextDepth;
         }
     }
 

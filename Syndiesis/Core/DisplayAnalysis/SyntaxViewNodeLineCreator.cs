@@ -13,6 +13,7 @@ using System.Text;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
+using ChildRetrieverFunc = Func<IReadOnlyList<AnalysisTreeListNode>>;
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
 
 public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions options)
@@ -40,6 +41,9 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
 
             case ReadOnlySyntaxNodeList nodeList:
                 return CreateRootNodeList(nodeList, valueSource);
+
+            case SyntaxTokenList tokenList:
+                return CreateRootTokenList(tokenList, valueSource);
         }
 
         return null;
@@ -58,7 +62,7 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
         };
     }
 
-    private Func<IReadOnlyList<AnalysisTreeListNode>>? GetChildRetrieverForNodeOrToken(
+    private ChildRetrieverFunc? GetChildRetrieverForNodeOrToken(
         SyntaxNodeOrToken nodeOrToken)
     {
         if (nodeOrToken.IsNode)
@@ -93,7 +97,7 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
         };
     }
 
-    private Func<IReadOnlyList<AnalysisTreeListNode>>? GetChildRetrieverForNode(SyntaxNode node)
+    private ChildRetrieverFunc? GetChildRetrieverForNode(SyntaxNode node)
     {
         if (node.IsMissing && !node.HasAnyTrivia())
             return null;
@@ -114,7 +118,7 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
         };
     }
 
-    private Func<IReadOnlyList<AnalysisTreeListNode>>? GetChildRetrieverForToken(SyntaxToken token)
+    private ChildRetrieverFunc? GetChildRetrieverForToken(SyntaxToken token)
     {
         switch (token.Kind())
         {
@@ -180,7 +184,7 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
             }
         }
 
-        children.Sort(SyntaxTreeViewNodeObjectSpanComparer.Instance);
+        children.Sort(AnalysisTreeViewNodeObjectSpanComparer.Instance);
 
         return children;
     }
@@ -241,101 +245,23 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
     private AnalysisTreeListNodeLine CreateDisplayNodeLine(SyntaxToken token)
     {
         var fullText = token.Text;
-        string text = DisplayStringForText(token, fullText);
-        return LineForNodeValue(text, fullText);
-    }
-
-    private string DisplayStringForText(SyntaxToken token, string text)
-    {
-        if (IsStringLiteralKind(token.Kind()))
-        {
-            text = SimplifyWhitespace(text);
-        }
-
-        return text;
+        var line = LineForNodeValue(fullText);
+        line.NodeTypeDisplay = Styles.DisplayValueDisplay;
+        return line;
     }
 
     private IReadOnlyList<AnalysisTreeListNode> CreatePropertyAnalysisChildren(SyntaxToken token)
     {
-        var fullText = token.Text;
-        string text = DisplayStringForText(token, fullText);
-        var textLine = CreateNodeForNodeValue(
-            text,
-            fullText,
-            Property(nameof(SyntaxToken.Text)));
-
-        var fullValueText = token.ValueText;
-        string valueText = DisplayStringForText(token, fullValueText);
-        var valueTextLine = CreateNodeForNodeValue(
-            valueText,
-            fullValueText,
-            Property(nameof(SyntaxToken.ValueText)));
-
+        var text = token.Text;
+        var valueText = token.ValueText;
         var value = token.Value;
-        var fullValue = value;
-        if (value is string valueString)
-        {
-            value = DisplayStringForText(token, valueString);
-        }
-        var valueLine = CreateNodeForNodeValue(
-            value,
-            fullValue,
-            Property(nameof(SyntaxToken.Value)));
 
         return
         [
-            textLine,
-            valueTextLine,
-            valueLine
+            CreateNodeForSimplePropertyValue(text, nameof(SyntaxToken.Text)),
+            CreateNodeForSimplePropertyValue(valueText, nameof(SyntaxToken.ValueText)),
+            CreateNodeForSimplePropertyValue(value, nameof(SyntaxToken.Value))
         ];
-    }
-
-    private AnalysisTreeListNode CreateNodeForNodeValue(
-        object? value,
-        object? fullValue,
-        DisplayValueSource valueSource = default)
-    {
-        var line = LineForNodeValue(value, fullValue, valueSource);
-        line.NodeTypeDisplay = Styles.PropertyAnalysisValueDisplay;
-        return new()
-        {
-            NodeLine = line,
-        };
-    }
-
-    private AnalysisTreeListNodeLine LineForNodeValue(
-        object? value, object? fullValue, DisplayValueSource valueSource = default)
-    {
-        var inlines = new GroupedRunInlineCollection();
-
-        AppendValueSource(valueSource, inlines);
-        var valueRun = RunForObjectValue(value, fullValue);
-        inlines.Add(valueRun);
-
-        return new()
-        {
-            GroupedRunInlines = inlines,
-            NodeTypeDisplay = Styles.DisplayValueDisplay,
-        };
-    }
-
-    private static SingleRunInline RunForObjectValue(object? value, object? fullValue)
-    {
-        if (value is null)
-            return new SingleRunInline(CreateNullValueRun());
-
-        var text = value.ToString()!;
-        var fullText = fullValue!.ToString()!;
-        var run = Run(text, Styles.RawValueBrush);
-        return new SingleRunInline(run, fullText);
-    }
-
-    private static Run CreateNullValueRun()
-    {
-        const string nullDisplay = "[null]";
-        var run = Run(nullDisplay, Styles.WhitespaceTriviaKindBrush);
-        run.FontStyle = FontStyle.Italic;
-        return run;
     }
 
     private void AppendTriviaList(SyntaxTriviaList triviaList, List<AnalysisTreeListNode> children)
@@ -374,12 +300,12 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
             }
         }
 
-        children.Sort(SyntaxTreeViewNodeObjectSpanComparer.Instance);
+        children.Sort(AnalysisTreeViewNodeObjectSpanComparer.Instance);
 
         return children;
     }
 
-    private AnalysisTreeListNode CreateTokenListNode(
+    private AnalysisTreeListNode CreateRootTokenList(
         SyntaxTokenList list, DisplayValueSource valueSource)
     {
         var node = CreateTokenListNodeLine(list, valueSource);
@@ -622,7 +548,7 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
     {
         var line = CreateTriviaLine(trivia);
         var structure = trivia.GetStructure();
-        Func<IReadOnlyList<AnalysisTreeListNode>>? children = null;
+        ChildRetrieverFunc? children = null;
         if (structure is not null)
         {
             var valueSource = new DisplayValueSource(
@@ -814,76 +740,10 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
         return CreateDisplayStringForEndOfLineText(text);
     }
 
-    private static string CreateDisplayStringForEndOfLineText(string text)
-    {
-        switch (text)
-        {
-            case "\r\n":
-                return """\r\n""";
-            case "\r":
-                return """\r""";
-            case "\n":
-                return """\n""";
-        }
-
-        // do not bother escaping the unusual EOL trivia token we receive;
-        // handle this another time
-        return text;
-    }
-
     private string CommentTriviaText(SyntaxTrivia trivia, out string fullString)
     {
         fullString = trivia.ToFullString();
         return SimplifyWhitespace(fullString);
-    }
-
-    private string SimplifyWhitespace(string source)
-    {
-        return SimplifyWhitespace(source, Options.TruncationLimit);
-    }
-
-    private static string SimplifyWhitespace(string source, int truncationLength)
-    {
-        var trimmedText = new StringBuilder(source.Length);
-        bool hasWhitespace = false;
-
-        for (int i = 0; i < source.Length; i++)
-        {
-            var c = source[i];
-            switch (c)
-            {
-                case ' ':
-                case '\r':
-                case '\n':
-                case '\t':
-                {
-                    if (hasWhitespace)
-                    {
-                        continue;
-                    }
-
-                    hasWhitespace = true;
-                    trimmedText.Append(' ');
-
-                    break;
-                }
-
-                default:
-                    hasWhitespace = false;
-                    trimmedText.Append(c);
-                    break;
-            }
-
-            const string truncationSuffix = "...";
-            int remaining = source.Length - i;
-            if (trimmedText.Length >= truncationLength && remaining > truncationSuffix.Length)
-            {
-                trimmedText.Append(truncationSuffix);
-                break;
-            }
-        }
-
-        return trimmedText.ToString();
     }
 
     private static string DisabledTextTriviaText(SyntaxTrivia trivia)
@@ -1022,54 +882,6 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
         return Run(missingTokenDisplayString, Styles.MissingTokenIndicatorBrush);
     }
 
-    private static Run NewValueKindSplitterRun()
-    {
-        return Run("      ", Styles.RawValueBrush);
-    }
-
-    private void AppendValueSource(
-        DisplayValueSource valueSource,
-        GroupedRunInlineCollection inlines)
-    {
-        if (valueSource.IsDefault)
-            return;
-
-        switch (valueSource.Kind)
-        {
-            case DisplayValueSource.SymbolKind.Property:
-                AppendPropertyDetail(valueSource.Name!, inlines);
-                break;
-
-            case DisplayValueSource.SymbolKind.Method:
-                AppendMethodDetail(valueSource, inlines);
-                break;
-        }
-    }
-
-    private void AppendMethodDetail(
-        DisplayValueSource valueSource, GroupedRunInlineCollection inlines)
-    {
-        var propertyNameRun = Run(valueSource.Name!, Styles.MethodBrush);
-        var parenthesesRun = Run("()", Styles.RawValueBrush);
-        var frontGroup = new SimpleGroupedRunInline([
-            propertyNameRun,
-            parenthesesRun,
-        ]);
-        var colonRun = Run(":  ", Styles.SplitterBrush);
-        inlines.AddRange([
-            frontGroup,
-            colonRun
-        ]);
-    }
-
-    private void AppendPropertyDetail(string propertyName, GroupedRunInlineCollection inlines)
-    {
-        var propertyNameRun = Run(propertyName, Styles.PropertyBrush);
-        var colonRun = Run(":  ", Styles.SplitterBrush);
-        inlines.AddSingle(propertyNameRun);
-        inlines.Add(colonRun);
-    }
-
     private void AppendTypeDetails(Type type, GroupedRunInlineCollection inlines)
     {
         var typeNameRun = TypeDetailsGroupedRun(type);
@@ -1084,8 +896,8 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
             if (originalDefinition == typeof(SeparatedSyntaxList<>) ||
                 originalDefinition == typeof(SyntaxList<>))
             {
-                // remove the `1 suffix
-                string name = originalDefinition.Name[..^2];
+                const string genericSuffix = "`1";
+                string name = originalDefinition.Name[..^genericSuffix.Length];
                 var outerRun = Run($"{name}<", Styles.SyntaxListBrush);
                 var closingTag = Run(">", Styles.SyntaxListBrush);
                 var argument = type.GenericTypeArguments[0];
@@ -1124,48 +936,17 @@ public sealed partial class SyntaxViewNodeLineCreator(NodeLineCreationOptions op
         var typeNameRun = Run(typeName, Styles.ClassMainBrush);
         return new SingleRunInline(typeNameRun);
     }
-
-    private static Run Run(string text, IBrush brush)
-    {
-        return new(text) { Foreground = brush };
-    }
-
-    private static DisplayValueSource Property(string name)
-    {
-        return new(DisplayValueSource.SymbolKind.Property, name);
-    }
 }
 
 partial class SyntaxViewNodeLineCreator
 {
-    public sealed class SyntaxTreeViewNodeObjectSpanComparer : IComparer<AnalysisTreeListNode>
-    {
-        public static SyntaxTreeViewNodeObjectSpanComparer Instance { get; } = new();
-
-        public int Compare(AnalysisTreeListNode? x, AnalysisTreeListNode? y)
-        {
-            ArgumentNullException.ThrowIfNull(x, nameof(x));
-            ArgumentNullException.ThrowIfNull(y, nameof(y));
-
-            var xObject = x.AssociatedSyntaxObject!.Span;
-            var yObject = y.AssociatedSyntaxObject!.Span;
-            return xObject.CompareTo(yObject);
-        }
-    }
-}
-
-partial class SyntaxViewNodeLineCreator
-{
-    public static class Types
+    public abstract class Types : CommonTypes
     {
         public const string Node = "N";
         public const string SyntaxList = "SL";
         public const string Token = "T";
         public const string TokenList = "TL";
         public const string DisplayValue = "D";
-
-        // this is empty for now
-        public const string PropertyAnalysisValue = "";
 
         public const string WhitespaceTrivia = "_";
         public const string CommentTrivia = "/*";
@@ -1174,14 +955,10 @@ partial class SyntaxViewNodeLineCreator
         public const string EndOfLineTrivia = @"\n";
     }
 
-    public static class Styles
+    public abstract class Styles : CommonStyles
     {
         public static readonly Color ClassMainColor = Color.FromUInt32(0xFF33E5A5);
         public static readonly Color ClassSecondaryColor = Color.FromUInt32(0xFF008052);
-        public static readonly Color PropertyColor = Color.FromUInt32(0xFFE5986C);
-        public static readonly Color MethodColor = Color.FromUInt32(0xFFFFF4B9);
-        public static readonly Color SplitterColor = Color.FromUInt32(0xFFB4B4B4);
-        public static readonly Color KeywordColor = Color.FromUInt32(0xFF38A0FF);
         public static readonly Color WhitespaceTriviaColor = Color.FromUInt32(0xFFB3B3B3);
         public static readonly Color WhitespaceTriviaKindColor = Color.FromUInt32(0xFF808080);
         public static readonly Color TokenKindColor = Color.FromUInt32(0xFF7A68E5);
@@ -1189,7 +966,6 @@ partial class SyntaxViewNodeLineCreator
         public static readonly Color TokenListColor = Color.FromUInt32(0xFF74A3FF);
         public static readonly Color SyntaxListColor = Color.FromUInt32(0xFF79BCA4);
         public static readonly Color EofColor = Color.FromUInt32(0xFF76788B);
-        public static readonly Color RawValueColor = Color.FromUInt32(0xFFE4E4E4);
         public static readonly Color WhitespaceTriviaNodeTypeColor = Color.FromUInt32(0xFF7C7C7C);
         public static readonly Color DisplayValueNodeTypeColor = Color.FromUInt32(0xFFCC935F);
         public static readonly Color CommentTriviaNodeTypeColor = Color.FromUInt32(0xFF00A858);
@@ -1202,10 +978,6 @@ partial class SyntaxViewNodeLineCreator
 
         public static readonly SolidColorBrush ClassMainBrush = new(ClassMainColor);
         public static readonly SolidColorBrush ClassSecondaryBrush = new(ClassSecondaryColor);
-        public static readonly SolidColorBrush PropertyBrush = new(PropertyColor);
-        public static readonly SolidColorBrush MethodBrush = new(MethodColor);
-        public static readonly SolidColorBrush SplitterBrush = new(SplitterColor);
-        public static readonly SolidColorBrush KeywordBrush = new(KeywordColor);
         public static readonly SolidColorBrush WhitespaceTriviaBrush = new(WhitespaceTriviaColor);
         public static readonly SolidColorBrush WhitespaceTriviaKindBrush = new(WhitespaceTriviaKindColor);
         public static readonly SolidColorBrush TokenKindBrush = new(TokenKindColor);
@@ -1213,7 +985,6 @@ partial class SyntaxViewNodeLineCreator
         public static readonly SolidColorBrush TokenListBrush = new(TokenListColor);
         public static readonly SolidColorBrush SyntaxListBrush = new(SyntaxListColor);
         public static readonly SolidColorBrush EofBrush = new(EofColor);
-        public static readonly SolidColorBrush RawValueBrush = new(RawValueColor);
         public static readonly SolidColorBrush WhitespaceTriviaNodeTypeBrush = new(WhitespaceTriviaNodeTypeColor);
         public static readonly SolidColorBrush DisplayValueNodeTypeBrush = new(DisplayValueNodeTypeColor);
         public static readonly SolidColorBrush CommentTriviaNodeTypeBrush = new(CommentTriviaNodeTypeColor);
@@ -1234,9 +1005,6 @@ partial class SyntaxViewNodeLineCreator
             = new(Types.Token, TokenKindColor);
         public static readonly NodeTypeDisplay DisplayValueDisplay
             = new(Types.DisplayValue, DisplayValueNodeTypeColor);
-
-        public static readonly NodeTypeDisplay PropertyAnalysisValueDisplay
-            = new(Types.PropertyAnalysisValue, DisplayValueNodeTypeColor);
 
         public static readonly NodeTypeDisplay WhitespaceTriviaDisplay
             = new(Types.WhitespaceTrivia, WhitespaceTriviaNodeTypeColor);
