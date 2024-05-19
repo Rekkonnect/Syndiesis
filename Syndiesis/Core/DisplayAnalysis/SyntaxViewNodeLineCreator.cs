@@ -346,9 +346,6 @@ partial class SyntaxAnalysisNodeCreator
     public sealed class SyntaxTokenRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxToken>(creator)
     {
-        private const string eofDisplayString = "[EOF]";
-        private const string missingTokenDisplayString = "[Missing]";
-
         public override AnalysisTreeListNodeLine CreateNodeLine(
             SyntaxToken token, DisplayValueSource valueSource)
         {
@@ -372,7 +369,7 @@ partial class SyntaxAnalysisNodeCreator
                     return null;
             }
 
-            if (token.IsMissing && !token.HasAnyTrivia())
+            if (token.IsFullEmpty())
                 return null;
 
             return () => CreateTokenChildren(token);
@@ -431,7 +428,7 @@ partial class SyntaxAnalysisNodeCreator
                 }
                 default:
                 {
-                    if (token.ValueText.Length > 0)
+                    if (token.Text.Length > 0)
                     {
                         var displayNode = CreateDisplayNode(token);
                         children.Add(displayNode);
@@ -509,6 +506,12 @@ partial class SyntaxAnalysisNodeCreator
             }
 
             var displayText = token.ToString();
+
+            if (displayText.Length is 0)
+            {
+                return new(CreateEmptyValueRun());
+            }
+
             var fullText = displayText;
             var displayBrush = isKeyword
                 ? Styles.KeywordBrush
@@ -563,11 +566,13 @@ partial class SyntaxAnalysisNodeCreator
 
         private static Run CreateEofRun()
         {
+            const string eofDisplayString = "[EOF]";
             return Run(eofDisplayString, Styles.EofBrush);
         }
 
         private static Run CreateMissingTokenRun()
         {
+            const string missingTokenDisplayString = "[missing]";
             return Run(missingTokenDisplayString, Styles.MissingTokenIndicatorBrush);
         }
     }
@@ -695,7 +700,7 @@ partial class SyntaxAnalysisNodeCreator
             {
                 return null;
             }
-            
+
             var valueSource = new DisplayValueSource(
                 DisplayValueSource.SymbolKind.Method,
                 nameof(SyntaxTrivia.GetStructure));
@@ -799,7 +804,7 @@ partial class SyntaxAnalysisNodeCreator
 
             throw new ArgumentException("Unexpected trivia syntax kind");
         }
-        
+
         private NodeTypeDisplay FormatStructuredTriviaDisplay(
             SyntaxTrivia trivia, GroupedRunInlineCollection inlines)
         {

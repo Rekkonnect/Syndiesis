@@ -15,4 +15,14 @@ public static class SyntaxExtensions
         return token.HasLeadingTrivia
             || token.HasTrailingTrivia;
     }
+
+    public static bool IsEmpty(this SyntaxToken token)
+    {
+        return token.Span.IsEmpty;
+    }
+
+    public static bool IsFullEmpty(this SyntaxToken token)
+    {
+        return token.FullSpan.IsEmpty;
+    }
 }

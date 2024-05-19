@@ -144,6 +144,12 @@ public abstract partial class BaseAnalysisNodeCreator(AnalysisNodeCreationOption
         return new(DisplayValueSource.SymbolKind.Property, name);
     }
 
+    protected static Run CreateEmptyValueRun()
+    {
+        const string emptyValueDisplay = "[empty]";
+        return Run(emptyValueDisplay, CommonStyles.NullValueBrush);
+    }
+
     protected static Run CreateNullValueRun()
     {
         const string nullDisplay = "[null]";
