@@ -80,6 +80,9 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTrivia trivia:
                 return trivia.SyntaxTree;
 
+            case SyntaxTriviaList triviaList:
+                return triviaList.FirstOrDefault().SyntaxTree;
+
             case IReadOnlyList<object?> nodeList:
                 return GetSyntaxTree(nodeList.FirstOrDefault());
 
@@ -106,6 +109,9 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTrivia trivia:
                 return trivia.Span;
 
+            case SyntaxTriviaList triviaList:
+                return triviaList.Span;
+
             case IReadOnlyList<object?> nodeList:
                 return ExtractSpanFromList(nodeList, GetSpan);
 
@@ -128,6 +134,9 @@ public sealed record SyntaxObjectInfo(
 
             case SyntaxTrivia trivia:
                 return trivia.FullSpan;
+
+            case SyntaxTriviaList triviaList:
+                return triviaList.FullSpan;
 
             case IReadOnlyList<object?> nodeList:
                 return ExtractSpanFromList(nodeList, GetFullSpan);
