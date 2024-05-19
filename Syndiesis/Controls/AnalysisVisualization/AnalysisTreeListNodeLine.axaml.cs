@@ -5,13 +5,10 @@ using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Media;
 using Microsoft.CodeAnalysis.Text;
-using Syndiesis.Controls;
 using Syndiesis.Controls.Inlines;
-using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
-using Syndiesis.Views;
 using System;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
