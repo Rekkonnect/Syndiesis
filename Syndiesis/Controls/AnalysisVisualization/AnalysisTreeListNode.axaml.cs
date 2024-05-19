@@ -61,9 +61,8 @@ public partial class AnalysisTreeListNode : UserControl
 
     private AdvancedLazy<IReadOnlyList<AnalysisTreeListNode>>? _childRetriever;
 
-    public Func<IReadOnlyList<AnalysisTreeListNode>>? ChildRetriever
+    public AnalysisNodeChildRetriever? ChildRetriever
     {
-        get => _childRetriever?.Factory;
         set
         {
             if (value is null)
@@ -72,7 +71,8 @@ public partial class AnalysisTreeListNode : UserControl
             }
             else
             {
-                _childRetriever = new(value);
+                // if only delegates could be converted more seamlessly
+                _childRetriever = new(new Func<IReadOnlyList<AnalysisTreeListNode>>(value));
             }
 
             NodeLine.HasChildren = value is not null;

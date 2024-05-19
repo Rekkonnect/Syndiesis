@@ -62,7 +62,7 @@ public partial class AnalysisTreeListNodeLine : UserControl
     public static readonly StyledProperty<Color> NodeTypeColorProperty =
         AvaloniaProperty.Register<CodeEditorLine, Color>(
             nameof(NodeTypeColor),
-            defaultValue: SyntaxViewNodeLineCreator.Styles.ClassMainColor);
+            defaultValue: SyntaxAnalysisNodeCreator.Styles.ClassMainColor);
 
     public Color NodeTypeColor
     {
@@ -119,7 +119,7 @@ public partial class AnalysisTreeListNodeLine : UserControl
             var nodeType = NodeTypeText;
             switch (nodeType)
             {
-                case SyntaxViewNodeLineCreator.Types.DisplayValue:
+                case SyntaxAnalysisNodeCreator.Types.DisplayValue:
                     return syntaxObject.Span;
             }
 

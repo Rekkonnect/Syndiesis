@@ -7,13 +7,13 @@ namespace Syndiesis.Core;
 
 public class SyntaxNodeAnalysisExecution : IAnalysisExecution
 {
-    public NodeLineCreationOptions NodeLineOptions { get; set; } = new();
+    public AnalysisNodeCreationOptions NodeLineOptions { get; set; } = new();
 
     public Task<AnalysisResult> Execute(
         string source,
         CancellationToken token)
     {
-        var creator = new SyntaxViewNodeLineCreator(NodeLineOptions);
+        var creator = new SyntaxAnalysisNodeCreator(NodeLineOptions);
 
         var syntaxTree = CSharpSyntaxTree.ParseText(source, cancellationToken: token);
         if (token.IsCancellationRequested)

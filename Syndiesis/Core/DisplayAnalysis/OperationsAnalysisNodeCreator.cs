@@ -1,16 +1,14 @@
 ﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
-using System;
 using System.Collections.Generic;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-using ChildRetrieverFunc = Func<IReadOnlyList<AnalysisTreeListNode>>;
-
-public sealed partial class OperationsViewNodeLineCreator(NodeLineCreationOptions options)
-    : BaseNodeLineCreator(options)
+public sealed partial class OperationsAnalysisNodeCreator(AnalysisNodeCreationOptions options)
+    : BaseAnalysisNodeCreator(options)
 {
-    private readonly SyntaxViewNodeLineCreator _syntaxCreator = new(options);
+    private readonly SemanticModelAnalysisNodeCreator _semanticCreator = new(options);
+    private readonly SyntaxAnalysisNodeCreator _syntaxCreator = new(options);
 
     private static readonly IOperationPropertyFilterCache _propertyCache = new();
 
@@ -25,7 +23,9 @@ public sealed partial class OperationsViewNodeLineCreator(NodeLineCreationOption
         }
 
         // fallback
-        return _syntaxCreator.CreateRootViewNode(value, valueSource);
+        return _syntaxCreator.CreateRootViewNode(value, valueSource)
+            ?? _semanticCreator.CreateRootViewNode(value, valueSource)
+            ;
     }
 
     private AnalysisTreeListNode CreateRootOperation(
@@ -50,7 +50,7 @@ public sealed partial class OperationsViewNodeLineCreator(NodeLineCreationOption
         return null;
     }
 
-    private ChildRetrieverFunc? GetChildRetrieverForOperation(IOperation operation)
+    private AnalysisNodeChildRetriever? GetChildRetrieverForOperation(IOperation operation)
     {
         // TODO: Implement
         return null;

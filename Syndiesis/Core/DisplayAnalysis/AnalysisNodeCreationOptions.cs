@@ -1,6 +1,6 @@
 ﻿namespace Syndiesis.Core.DisplayAnalysis;
 
-public sealed class NodeLineCreationOptions
+public sealed class AnalysisNodeCreationOptions
 {
     public bool ShowTrivia = true;
 

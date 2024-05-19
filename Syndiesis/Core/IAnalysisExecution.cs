@@ -6,7 +6,7 @@ namespace Syndiesis.Core;
 
 public interface IAnalysisExecution
 {
-    public NodeLineCreationOptions NodeLineOptions { get; set; }
+    public AnalysisNodeCreationOptions NodeLineOptions { get; set; }
 
     public Task<AnalysisResult> Execute(
         string source,

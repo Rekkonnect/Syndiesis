@@ -2,13 +2,16 @@
 using Avalonia.Media;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
+using System.Collections.Generic;
 using System.Text;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-public abstract partial class BaseNodeLineCreator(NodeLineCreationOptions options)
+public delegate IReadOnlyList<AnalysisTreeListNode> AnalysisNodeChildRetriever();
+
+public abstract partial class BaseAnalysisNodeCreator(AnalysisNodeCreationOptions options)
 {
-    protected readonly NodeLineCreationOptions Options = options;
+    protected readonly AnalysisNodeCreationOptions Options = options;
 
     public abstract AnalysisTreeListNode? CreateRootViewNode(
         object? value, DisplayValueSource valueSource = default);
@@ -221,7 +224,48 @@ public abstract partial class BaseNodeLineCreator(NodeLineCreationOptions option
     }
 }
 
-partial class BaseNodeLineCreator
+partial class BaseAnalysisNodeCreator
+{
+    /// <summary>
+    /// An <see cref="AnalysisTreeListNode"/> creator, creating root nodes for the given
+    /// values. The creator is provided access to the <see cref="BaseAnalysisNodeCreator"/>
+    /// that encapsulates all other <see cref="RootViewNodeCreator{TValue, TCreator}"/>
+    /// instances, allowing interaction between different types of nodes.
+    /// </summary>
+    /// <typeparam name="TValue"></typeparam>
+    /// <typeparam name="TCreator"></typeparam>
+    /// <param name="creator"></param>
+    public abstract class RootViewNodeCreator<TValue, TCreator>(TCreator creator)
+        where TCreator : BaseAnalysisNodeCreator
+    {
+        public TCreator Creator { get; } = creator;
+
+        public AnalysisNodeCreationOptions Options => Creator.Options;
+
+        public virtual object? AssociatedSyntaxObject(TValue value) => value;
+
+        public AnalysisTreeListNode CreateNode(
+            TValue value, DisplayValueSource valueSource = default)
+        {
+            var rootLine = CreateNodeLine(value, valueSource);
+            var children = GetChildRetriever(value);
+            var syntaxObject = AssociatedSyntaxObject(value);
+            return new AnalysisTreeListNode
+            {
+                NodeLine = rootLine,
+                ChildRetriever = children,
+                AssociatedSyntaxObjectContent = syntaxObject,
+            };
+        }
+
+        public abstract AnalysisNodeChildRetriever? GetChildRetriever(TValue value);
+
+        public abstract AnalysisTreeListNodeLine CreateNodeLine(
+            TValue value, DisplayValueSource valueSource);
+    }
+}
+
+partial class BaseAnalysisNodeCreator
 {
     public abstract class CommonTypes
     {
