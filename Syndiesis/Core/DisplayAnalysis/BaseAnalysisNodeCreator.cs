@@ -122,7 +122,7 @@ public abstract partial class BaseAnalysisNodeCreator
         return new()
         {
             GroupedRunInlines = inlines,
-            NodeTypeDisplay = CommonStyles.PropertyAnalysisValueDisplay,
+            NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
         };
     }
 
@@ -349,13 +349,52 @@ partial class BaseAnalysisNodeCreator
                 return new(CreateNullValueRun());
 
             var type = value.GetType();
-            if (IsSimpleType(type))
+            bool isNullable = type.IsNullableValueType();
+            if (isNullable)
             {
-                return Creator.RunForSimpleObjectValue(value);
+                object? innerValue = (value as dynamic).Value;
+                return BasicValueInline(innerValue);
+            }
+
+            switch (type.GetTypeCode())
+            {
+                case TypeCode.Empty:
+                case TypeCode.Object:
+                    break;
+
+                case TypeCode.Boolean:
+                    return FormatBoolean((bool)value);
+
+                default:
+                    return Creator.RunForSimpleObjectValue(value);
             }
 
             var typeName = type.Name;
             return new(Run(typeName, CommonStyles.ClassMainBrush));
+        }
+
+        private SingleRunInline FormatBoolean(bool value)
+        {
+            return new(RunForBoolean(value));
+        }
+
+        private Run RunForBoolean(bool value)
+        {
+            return value switch
+            {
+                true => TrueRun(),
+                false => FalseRun(),
+            };
+        }
+
+        private static Run TrueRun()
+        {
+            return Run("true", CommonStyles.KeywordBrush);
+        }
+
+        private static Run FalseRun()
+        {
+            return Run("false", CommonStyles.KeywordBrush);
         }
 
         private IReadOnlyList<AnalysisTreeListNode> GetChildren(object value)

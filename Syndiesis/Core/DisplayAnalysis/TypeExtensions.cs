@@ -1,6 +1,4 @@
-﻿using Syndiesis.Controls.AnalysisVisualization;
-using System;
-using System.Collections.Generic;
+﻿using System;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
