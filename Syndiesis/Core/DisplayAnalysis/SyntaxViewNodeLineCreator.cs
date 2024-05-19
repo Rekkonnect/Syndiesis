@@ -7,6 +7,7 @@ using Syndiesis.Controls.Inlines;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -20,6 +21,7 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         = new(SyntaxNodePropertyFilter.Instance);
 
     // node creators
+    private readonly SyntaxTreeRootViewNodeCreator _treeCreator;
     private readonly NodeOrTokenRootViewNodeCreator _nodeOrTokenCreator;
     private readonly SyntaxNodeRootViewNodeCreator _syntaxNodeCreator;
     private readonly SyntaxTokenRootViewNodeCreator _syntaxTokenCreator;
@@ -31,6 +33,7 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
     public SyntaxAnalysisNodeCreator(AnalysisNodeCreationOptions options)
         : base(options)
     {
+        _treeCreator = new(this);
         _nodeOrTokenCreator = new(this);
         _syntaxNodeCreator = new(this);
         _syntaxTokenCreator = new(this);
@@ -45,6 +48,9 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
     {
         switch (value)
         {
+            case SyntaxTree tree:
+                return CreateRootTree(tree, valueSource);
+
             case SyntaxNodeOrToken nodeOrToken:
                 return CreateRootNodeOrToken(nodeOrToken, valueSource);
 
@@ -68,6 +74,12 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         }
 
         return null;
+    }
+
+    public AnalysisTreeListNode CreateRootTree(
+        SyntaxTree tree, DisplayValueSource valueSource = default)
+    {
+        return _treeCreator.CreateNode(tree, valueSource);
     }
 
     public AnalysisTreeListNode CreateRootNodeOrToken(
@@ -255,8 +267,7 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
             ]);
         }
 
-        var typeNameRun = Run(typeName, Styles.ClassMainBrush);
-        return new SingleRunInline(typeNameRun);
+        return CreateBasicClassInline(typeName);
     }
 }
 
@@ -264,6 +275,52 @@ partial class SyntaxAnalysisNodeCreator
 {
     public abstract class SyntaxRootViewNodeCreator<TValue>(SyntaxAnalysisNodeCreator creator)
         : RootViewNodeCreator<TValue, SyntaxAnalysisNodeCreator>(creator);
+
+    public sealed class SyntaxTreeRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
+        : SyntaxRootViewNodeCreator<SyntaxTree>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            SyntaxTree tree, DisplayValueSource valueSource)
+        {
+            var inlines = Creator.CreateBasicTypeNameInlines(tree, valueSource);
+
+            var language = tree.GetLanguage();
+
+            return new()
+            {
+                GroupedRunInlines = inlines,
+                NodeTypeDisplay = DisplayForLanguage(language),
+            };
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(SyntaxTree tree)
+        {
+            return () => GetChildren(tree);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(SyntaxTree tree)
+        {
+            var root = tree.GetRoot();
+            return [
+                Creator.CreateRootNode(root, MethodSource(nameof(SyntaxTree.GetRoot))),
+
+                // Uncomment once the generic display is ready
+                //Creator.CreateRootGeneric(tree.Options, Property(nameof(SyntaxTree.Options))),
+            ];
+        }
+
+        private static NodeTypeDisplay DisplayForLanguage(
+            [NotNull]
+            string? language)
+        {
+            return language switch
+            {
+                LanguageNames.CSharp => Styles.CSharpTreeDisplay,
+                LanguageNames.VisualBasic => Styles.VisualBasicTreeDisplay,
+                _ => throw new ArgumentException("Invalid language"),
+            };
+        }
+    }
 
     public sealed class NodeOrTokenRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxNodeOrToken>(creator)
@@ -701,9 +758,7 @@ partial class SyntaxAnalysisNodeCreator
                 return null;
             }
 
-            var valueSource = new DisplayValueSource(
-                DisplayValueSource.SymbolKind.Method,
-                nameof(SyntaxTrivia.GetStructure));
+            var valueSource = MethodSource(nameof(SyntaxTrivia.GetStructure));
             var structureNode = Creator.CreateRootNode(structure, valueSource);
             return () => [structureNode];
         }
@@ -992,6 +1047,9 @@ partial class SyntaxAnalysisNodeCreator
 {
     public abstract class Types : CommonTypes
     {
+        public const string CSharpTree = "C#";
+        public const string VisualBasicTree = "VB";
+
         public const string Node = "N";
         public const string SyntaxList = "SL";
         public const string Token = "T";
@@ -1008,11 +1066,11 @@ partial class SyntaxAnalysisNodeCreator
 
     public abstract class Styles : CommonStyles
     {
-        public static readonly Color ClassMainColor = Color.FromUInt32(0xFF33E5A5);
-        public static readonly SolidColorBrush ClassMainBrush = new(ClassMainColor);
+        public static readonly Color CSharpTreeColor = Color.FromUInt32(0xFF33E5A5);
+        public static readonly SolidColorBrush CSharpTreeBrush = new(CSharpTreeColor);
 
-        public static readonly Color ClassSecondaryColor = Color.FromUInt32(0xFF008052);
-        public static readonly SolidColorBrush ClassSecondaryBrush = new(ClassSecondaryColor);
+        public static readonly Color VisualBasicTreeColor = Color.FromUInt32(0xFF74A3FF);
+        public static readonly SolidColorBrush VisualBasicTreeBrush = new(VisualBasicTreeColor);
 
         public static readonly Color WhitespaceTriviaColor = Color.FromUInt32(0xFFB3B3B3);
         public static readonly SolidColorBrush WhitespaceTriviaBrush = new(WhitespaceTriviaColor);
@@ -1068,6 +1126,14 @@ partial class SyntaxAnalysisNodeCreator
         public static readonly Color MissingTokenIndicatorColor = Color.FromUInt32(0xFF8B4D4D);
         public static readonly SolidColorBrush MissingTokenIndicatorBrush = new(MissingTokenIndicatorColor);
 
+        // Tree displays
+        public static readonly NodeTypeDisplay CSharpTreeDisplay
+            = new(Types.CSharpTree, CSharpTreeColor);
+
+        public static readonly NodeTypeDisplay VisualBasicTreeDisplay
+            = new(Types.VisualBasicTree, VisualBasicTreeColor);
+
+        // Node displays
         public static readonly NodeTypeDisplay ClassNodeDisplay
             = new(Types.Node, ClassMainColor);
 
@@ -1086,6 +1152,7 @@ partial class SyntaxAnalysisNodeCreator
         public static readonly NodeTypeDisplay TriviaListDisplay
             = new(Types.TriviaList, BasicTriviaNodeTypeColor);
 
+        // Trivia displays
         public static readonly NodeTypeDisplay WhitespaceTriviaDisplay
             = new(Types.WhitespaceTrivia, WhitespaceTriviaColor);
 

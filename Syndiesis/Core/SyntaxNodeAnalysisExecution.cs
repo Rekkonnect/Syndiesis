@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
+using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,15 +20,26 @@ public class SyntaxNodeAnalysisExecution : IAnalysisExecution
         if (token.IsCancellationRequested)
             return Task.FromCanceled<AnalysisResult>(token);
 
-        var compilationUnitRoot = syntaxTree.GetCompilationUnitRoot(token);
-        if (token.IsCancellationRequested)
-            return Task.FromCanceled<AnalysisResult>(token);
+        AnalysisTreeListNode root;
 
-        var nodeRoot = creator.CreateRootNode(compilationUnitRoot);
-        if (token.IsCancellationRequested)
-            return Task.FromCanceled<AnalysisResult>(token);
+        if (NodeLineOptions.ShowSyntaxTreeRootNode)
+        {
+            root = creator.CreateRootTree(syntaxTree);
+            if (token.IsCancellationRequested)
+                return Task.FromCanceled<AnalysisResult>(token);
+        }
+        else
+        {
+            var treeRoot = syntaxTree.GetRoot(token);
+            if (token.IsCancellationRequested)
+                return Task.FromCanceled<AnalysisResult>(token);
 
-        var result = new SyntaxNodeAnalysisResult(nodeRoot);
+            root = creator.CreateRootNode(treeRoot);
+            if (token.IsCancellationRequested)
+                return Task.FromCanceled<AnalysisResult>(token);
+        }
+
+        var result = new SyntaxNodeAnalysisResult(root);
         return Task.FromResult<AnalysisResult>(result);
     }
 }

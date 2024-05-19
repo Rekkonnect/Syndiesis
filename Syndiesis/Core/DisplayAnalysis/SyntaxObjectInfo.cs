@@ -71,6 +71,9 @@ public sealed record SyntaxObjectInfo(
     {
         switch (x)
         {
+            case SyntaxTree tree:
+                return tree;
+
             case SyntaxNode node:
                 return node.SyntaxTree;
 
@@ -93,13 +96,16 @@ public sealed record SyntaxObjectInfo(
                 return null;
         }
 
-        throw new ArgumentException("Unknown object to get FullSpan from");
+        throw new ArgumentException("Unknown object to get SyntaxTree from");
     }
 
     private static TextSpan GetSpan(object x)
     {
         switch (x)
         {
+            case SyntaxTree tree:
+                return tree.GetRoot().Span;
+
             case SyntaxNode node:
                 return node.Span;
 
@@ -126,6 +132,9 @@ public sealed record SyntaxObjectInfo(
     {
         switch (x)
         {
+            case SyntaxTree tree:
+                return tree.GetRoot().FullSpan;
+
             case SyntaxNode node:
                 return node.FullSpan;
 
