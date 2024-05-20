@@ -6,6 +6,7 @@ using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -18,23 +19,70 @@ public abstract partial class BaseAnalysisNodeCreator
 {
     protected readonly AnalysisNodeCreationOptions Options;
 
-    private readonly GenericRootViewNodeCreator _genericCreator;
+    private readonly GeneralRootViewNodeCreator _generalCreator;
+    private readonly NullValueRootAnalysisNodeCreator _nullValueCreator;
+    private readonly BooleanRootAnalysisNodeCreator _booleanCreator;
 
     public BaseAnalysisNodeCreator(AnalysisNodeCreationOptions options)
     {
         Options = options;
 
-        _genericCreator = new(this);
+        _generalCreator = new(this);
+        _nullValueCreator = new(this);
+        _booleanCreator = new(this);
     }
 
     public abstract AnalysisTreeListNode? CreateRootViewNode(
         object? value, DisplayValueSource valueSource = default);
 
-    public AnalysisTreeListNode CreateRootGeneric(
+    public AnalysisTreeListNode CreateRootGeneral(
         object? value, DisplayValueSource valueSource = default)
     {
         return CreateRootViewNode(value, valueSource)
-            ?? _genericCreator.CreateNode(value, valueSource);
+            ?? CreateRootBasic(value, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootBasic(
+        object? value, DisplayValueSource valueSource = default)
+    {
+        if (value is null)
+            return _nullValueCreator.CreateNode(value, valueSource);
+
+        var type = value.GetType();
+        switch (value)
+        {
+            case bool b:
+                return _booleanCreator.CreateNode(b, valueSource);
+        }
+
+        if (IsSimpleType(type))
+        {
+
+        }
+
+        return _generalCreator.CreateNode(value, valueSource);
+    }
+
+    private static bool IsSimpleType(Type type)
+    {
+        switch (type.GetTypeCode())
+        {
+            case TypeCode.Empty:
+            case TypeCode.Object:
+                return false;
+        }
+
+        return true;
+    }
+
+    private AnalysisTreeListNode CreateRootNullableStruct<T>(
+        Nullable<T> value, DisplayValueSource valueSource = default)
+        where T : struct
+    {
+        Debug.Assert(value is not null);
+
+        var inner = value.Value;
+        return CreateRootBasic(inner, valueSource);
     }
 
     protected void AppendValueSource(
@@ -176,6 +224,11 @@ public abstract partial class BaseAnalysisNodeCreator
         return Run(emptyValueDisplay, CommonStyles.NullValueBrush);
     }
 
+    protected static SingleRunInline CreateNullValueSingleRun()
+    {
+        return new(CreateNullValueRun());
+    }
+
     protected static Run CreateNullValueRun()
     {
         const string nullDisplay = "[null]";
@@ -307,14 +360,18 @@ partial class BaseAnalysisNodeCreator
             TValue value, DisplayValueSource valueSource);
     }
 
-    public sealed class GenericRootViewNodeCreator(BaseAnalysisNodeCreator creator)
-        : RootViewNodeCreator<object?, BaseAnalysisNodeCreator>(creator)
+    public abstract class GeneralValueRootViewNodeCreator<TValue>(BaseAnalysisNodeCreator creator)
+        : RootViewNodeCreator<TValue, BaseAnalysisNodeCreator>(creator)
     {
-        public override object? AssociatedSyntaxObject(object? value)
+        public sealed override object? AssociatedSyntaxObject(TValue value)
         {
             return null;
         }
+    }
 
+    public sealed class GeneralRootViewNodeCreator(BaseAnalysisNodeCreator creator)
+        : GeneralValueRootViewNodeCreator<object?>(creator)
+    {
         public override AnalysisTreeListNodeLine CreateNodeLine(
             object? value, DisplayValueSource valueSource)
         {
@@ -362,39 +419,12 @@ partial class BaseAnalysisNodeCreator
                 case TypeCode.Object:
                     break;
 
-                case TypeCode.Boolean:
-                    return FormatBoolean((bool)value);
-
                 default:
                     return Creator.RunForSimpleObjectValue(value);
             }
 
             var typeName = type.Name;
             return new(Run(typeName, CommonStyles.ClassMainBrush));
-        }
-
-        private SingleRunInline FormatBoolean(bool value)
-        {
-            return new(RunForBoolean(value));
-        }
-
-        private Run RunForBoolean(bool value)
-        {
-            return value switch
-            {
-                true => TrueRun(),
-                false => FalseRun(),
-            };
-        }
-
-        private static Run TrueRun()
-        {
-            return Run("true", CommonStyles.KeywordBrush);
-        }
-
-        private static Run FalseRun()
-        {
-            return Run("false", CommonStyles.KeywordBrush);
         }
 
         private IReadOnlyList<AnalysisTreeListNode> GetChildren(object value)
@@ -428,25 +458,89 @@ partial class BaseAnalysisNodeCreator
             return true;
         }
 
-        private static bool IsSimpleType(Type type)
-        {
-            switch (type.GetTypeCode())
-            {
-                case TypeCode.Empty:
-                case TypeCode.Object:
-                    return false;
-            }
-
-            return true;
-        }
-
         private AnalysisTreeListNode CreateFromProperty(PropertyInfo property, object target)
         {
             var name = property.Name;
             var propertySource = Property(name);
 
             var value = property.GetValue(target);
-            return Creator.CreateRootGeneric(value, propertySource);
+            return Creator.CreateRootGeneral(value, propertySource);
+        }
+    }
+
+    public sealed class BooleanRootAnalysisNodeCreator(BaseAnalysisNodeCreator creator)
+        : GeneralValueRootViewNodeCreator<bool>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            bool value, DisplayValueSource valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+
+            Creator.AppendValueSource(valueSource, inlines);
+            var valueRun = SingleRunForBoolean(value);
+            inlines.Add(valueRun);
+
+            return new()
+            {
+                GroupedRunInlines = inlines,
+                NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
+            };
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(bool value)
+        {
+            return null;
+        }
+
+        private static SingleRunInline SingleRunForBoolean(bool value)
+        {
+            return new(RunForBoolean(value));
+        }
+
+        private static Run RunForBoolean(bool value)
+        {
+            return value switch
+            {
+                true => TrueRun(),
+                false => FalseRun(),
+            };
+        }
+
+        private static Run TrueRun()
+        {
+            return Run("true", CommonStyles.KeywordBrush);
+        }
+
+        private static Run FalseRun()
+        {
+            return Run("false", CommonStyles.KeywordBrush);
+        }
+    }
+
+    public sealed class NullValueRootAnalysisNodeCreator(BaseAnalysisNodeCreator creator)
+        : GeneralValueRootViewNodeCreator<object?>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            object? value, DisplayValueSource valueSource)
+        {
+            Debug.Assert(value is null);
+
+            var inlines = new GroupedRunInlineCollection();
+
+            Creator.AppendValueSource(valueSource, inlines);
+            var valueRun = CreateNullValueSingleRun();
+            inlines.Add(valueRun);
+
+            return new()
+            {
+                GroupedRunInlines = inlines,
+                NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
+            };
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
+        {
+            return null;
         }
     }
 }

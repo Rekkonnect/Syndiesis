@@ -304,8 +304,8 @@ partial class SyntaxAnalysisNodeCreator
             return [
                 Creator.CreateRootNode(root, MethodSource(nameof(SyntaxTree.GetRoot))),
 
-                // Uncomment once the generic display is ready
-                //Creator.CreateRootGeneric(tree.Options, Property(nameof(SyntaxTree.Options))),
+                // Uncomment once the general display is ready
+                //Creator.CreateRootGeneral(tree.Options, Property(nameof(SyntaxTree.Options))),
             ];
         }
 
