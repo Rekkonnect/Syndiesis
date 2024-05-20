@@ -7,6 +7,7 @@ using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using System;
 using System.Buffers;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -22,18 +23,24 @@ public abstract partial class BaseAnalysisNodeCreator
     protected readonly AnalysisNodeCreationOptions Options;
 
     private readonly GeneralRootViewNodeCreator _generalCreator;
+    private readonly PrimitiveRootViewNodeCreator _primitiveCreator;
     private readonly NullValueRootAnalysisNodeCreator _nullValueCreator;
     private readonly BooleanRootAnalysisNodeCreator _booleanCreator;
     private readonly EnumRootAnalysisNodeCreator _enumCreator;
+    private readonly EnumerableRootAnalysisNodeCreator _enumerableCreator;
+    private readonly DictionaryRootAnalysisNodeCreator _dictionaryCreator;
 
     public BaseAnalysisNodeCreator(AnalysisNodeCreationOptions options)
     {
         Options = options;
 
         _generalCreator = new(this);
+        _primitiveCreator = new(this);
         _nullValueCreator = new(this);
         _booleanCreator = new(this);
         _enumCreator = new(this);
+        _enumerableCreator = new(this);
+        _dictionaryCreator = new(this);
     }
 
     public abstract AnalysisTreeListNode? CreateRootViewNode(
@@ -52,11 +59,16 @@ public abstract partial class BaseAnalysisNodeCreator
         if (value is null)
             return _nullValueCreator.CreateNode(value, valueSource);
 
-        var type = value.GetType();
         switch (value)
         {
             case bool b:
                 return _booleanCreator.CreateNode(b, valueSource);
+        }
+
+        var type = value.GetType();
+        if (type.IsEnum)
+        {
+            return _enumCreator.CreateNode(value, valueSource);
         }
 
         if (type.IsNullableValueType())
@@ -64,20 +76,79 @@ public abstract partial class BaseAnalysisNodeCreator
             return CreateRootNullableStruct(value as dynamic, valueSource);
         }
 
-        switch (type.GetTypeCode())
+        if (IsPrimitiveType(type))
         {
-            case TypeCode.Empty:
-            case TypeCode.Object:
-                return _generalCreator.CreateNode(value, valueSource);
+            return _primitiveCreator.CreateNode(value, valueSource);
+        }
 
-            default:
-                return _generalCreator.CreateNode(value, valueSource);
+        if (IsDictionaryType(type))
+        {
+            return _dictionaryCreator.CreateNode(value, valueSource);
+        }
+
+        if (SupportsEnumeration(type))
+        {
+            return _enumerableCreator.CreateNode(value, valueSource);
         }
 
         return _generalCreator.CreateNode(value, valueSource);
     }
 
-    private GroupedRunInline TypeDetailsGroupedRun(Type type)
+    private static bool IsDictionaryType(Type type)
+    {
+        if (type is IDictionary)
+            return true;
+
+        return ContainsGenericVariant(type.GetInterfaces(), typeof(IDictionary<,>));
+    }
+
+    private static bool IsEnumerableType(Type type)
+    {
+        return type is IEnumerable;
+    }
+
+    private static bool SupportsEnumeration(Type type)
+    {
+        if (IsEnumerableType(type))
+            return true;
+
+        if (type.GetMethod(nameof(IEnumerable.GetEnumerator)) is not null)
+            return true;
+
+        return false;
+    }
+
+    private static bool ContainsGenericVariant(IReadOnlyList<Type> types, Type targetGeneric)
+    {
+        foreach (var type in types)
+        {
+            if (type.IsGenericVariantOf(targetGeneric))
+                return true;
+        }
+        return false;
+    }
+
+    private GroupedRunInline NestedTypeDisplayGroupedRun(Type type)
+    {
+        var rightmost = TypeDisplayGroupedRun(type);
+        var runList = new List<RunOrGrouped> { rightmost };
+
+        var outer = type.DeclaringType;
+        while (outer is not null)
+        {
+            runList.Add(CreateQualifierSeparatorRun());
+            runList.Add(TypeDisplayGroupedRun(type));
+            outer = outer.DeclaringType;
+        }
+
+        if (runList.Count is 1)
+            return rightmost;
+
+        runList.Reverse();
+        return new ComplexGroupedRunInline(runList);
+    }
+
+    private GroupedRunInline TypeDisplayGroupedRun(Type type)
     {
         var brush = GetBrushForTypeKind(type);
         if (type.IsGenericType)
@@ -91,7 +162,7 @@ public abstract partial class BaseAnalysisNodeCreator
             for (int i = 0; i < arguments.Length; i++)
             {
                 var argument = arguments[i];
-                var inner = TypeDetailsGroupedRun(argument);
+                var inner = TypeDisplayGroupedRun(argument);
                 innerRuns.Add(inner);
 
                 if (i < arguments.Length - 1)
@@ -107,9 +178,140 @@ public abstract partial class BaseAnalysisNodeCreator
             ]);
         }
 
-        var typeName = type.Name;
+        return GetPrimitiveTypeAliasDisplay(type)
+            ?? GetGeneralTypeDisplay(type.Name, brush);
+    }
 
-        return CreateBasicClassInline(typeName);
+    private static SingleRunInline? GetPrimitiveTypeAliasDisplay(Type type)
+    {
+        var brush = CommonStyles.KeywordBrush;
+        var alias = GetTypeAlias(type);
+        if (alias is null)
+            return null;
+        return new(Run(alias, brush));
+    }
+
+    private static SingleRunInline GetGeneralTypeDisplay(string typeName, SolidColorBrush brush)
+    {
+        var typeNameRun = Run(typeName, brush);
+        return new SingleRunInline(typeNameRun);
+    }
+
+#if false // generation of the code below
+using System;
+
+var types = """
+    byte
+    short
+    int
+    long
+    sbyte
+    ushort
+    uint
+    ulong
+    float
+    double
+    decimal
+    string
+    char
+    bool
+    object
+    void
+    """;
+
+var lines = types.AsSpan().EnumerateLines();
+foreach (var line in lines)
+{
+    Console.WriteLine(Code(line.ToString()));
+}
+
+static string Code(string type)
+{
+    return $$"""
+        if (type == typeof({{type}}))
+            return "{{type}}";
+
+        """;
+}
+#endif
+
+    private static bool IsPrimitiveType(Type type)
+    {
+        switch (type.GetTypeCode())
+        {
+            case TypeCode.Byte:
+            case TypeCode.SByte:
+            case TypeCode.Int16:
+            case TypeCode.UInt16:
+            case TypeCode.Int32:
+            case TypeCode.UInt32:
+            case TypeCode.Int64:
+            case TypeCode.UInt64:
+            case TypeCode.Single:
+            case TypeCode.Double:
+            case TypeCode.Decimal:
+            case TypeCode.String:
+            case TypeCode.Char:
+            case TypeCode.Boolean:
+                return true;
+        }
+
+        return type == typeof(object)
+            || type == typeof(void)
+            ;
+    }
+
+    private static string? GetTypeAlias(Type type)
+    {
+        if (type == typeof(byte))
+            return "byte";
+
+        if (type == typeof(short))
+            return "short";
+
+        if (type == typeof(int))
+            return "int";
+
+        if (type == typeof(long))
+            return "long";
+
+        if (type == typeof(sbyte))
+            return "sbyte";
+
+        if (type == typeof(ushort))
+            return "ushort";
+
+        if (type == typeof(uint))
+            return "uint";
+
+        if (type == typeof(ulong))
+            return "ulong";
+
+        if (type == typeof(float))
+            return "float";
+
+        if (type == typeof(double))
+            return "double";
+
+        if (type == typeof(decimal))
+            return "decimal";
+
+        if (type == typeof(string))
+            return "string";
+
+        if (type == typeof(char))
+            return "char";
+
+        if (type == typeof(bool))
+            return "bool";
+
+        if (type == typeof(object))
+            return "object";
+
+        if (type == typeof(void))
+            return "void";
+
+        return null;
     }
 
     private static SolidColorBrush GetBrushForTypeKind(Type type)
@@ -138,6 +340,11 @@ public abstract partial class BaseAnalysisNodeCreator
     private static Run CreateGenericArgumentSeparatorRun()
     {
         return Run(", ", CommonStyles.RawValueBrush);
+    }
+
+    private static Run CreateQualifierSeparatorRun()
+    {
+        return Run(".", CommonStyles.RawValueBrush);
     }
 
     // known unspeakable characters on compiler-generated names
@@ -415,7 +622,6 @@ partial class BaseAnalysisNodeCreator
     /// The type of the <see cref="BaseAnalysisNodeCreator"/> instance that is
     /// accessed for further processing.
     /// </typeparam>
-    /// <param name="creator"></param>
     public abstract class RootViewNodeCreator<TValue, TCreator>(TCreator creator)
         where TCreator : BaseAnalysisNodeCreator
     {
@@ -455,10 +661,10 @@ partial class BaseAnalysisNodeCreator
     }
 
     public sealed class GeneralRootViewNodeCreator(BaseAnalysisNodeCreator creator)
-        : GeneralValueRootViewNodeCreator<object?>(creator)
+        : GeneralValueRootViewNodeCreator<object>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            object? value, DisplayValueSource valueSource)
+            object value, DisplayValueSource valueSource)
         {
             var inlines = new GroupedRunInlineCollection();
 
@@ -473,7 +679,7 @@ partial class BaseAnalysisNodeCreator
             };
         }
 
-        public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
+        public override AnalysisNodeChildRetriever? GetChildRetriever(object value)
         {
             if (value is null)
                 return null;
@@ -485,10 +691,10 @@ partial class BaseAnalysisNodeCreator
             return () => GetChildren(value);
         }
 
-        private SingleRunInline BasicValueInline(object? value)
+        private GroupedRunInline BasicValueInline(object value)
         {
             if (value is null)
-                return new(CreateNullValueRun());
+                return new SingleRunInline(CreateNullValueRun());
 
             var type = value.GetType();
             bool isNullable = type.IsNullableValueType();
@@ -508,8 +714,7 @@ partial class BaseAnalysisNodeCreator
                     return Creator.RunForSimpleObjectValue(value);
             }
 
-            var typeName = type.Name;
-            return new(Run(typeName, CommonStyles.ClassMainBrush));
+            return Creator.NestedTypeDisplayGroupedRun(type);
         }
 
         private IReadOnlyList<AnalysisTreeListNode> GetChildren(object value)
@@ -550,6 +755,31 @@ partial class BaseAnalysisNodeCreator
 
             var value = property.GetValue(target);
             return Creator.CreateRootGeneral(value, propertySource);
+        }
+    }
+
+    public sealed class PrimitiveRootViewNodeCreator(BaseAnalysisNodeCreator creator)
+        : GeneralValueRootViewNodeCreator<object?>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            object? value, DisplayValueSource valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+
+            Creator.AppendValueSource(valueSource, inlines);
+            var run = Creator.RunForSimpleObjectValue(value);
+            inlines.Add(run);
+
+            return new()
+            {
+                GroupedRunInlines = inlines,
+                NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
+            };
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
+        {
+            return null;
         }
     }
 
@@ -611,8 +841,11 @@ partial class BaseAnalysisNodeCreator
             var inlines = new GroupedRunInlineCollection();
 
             Creator.AppendValueSource(valueSource, inlines);
-            var valueRun = Creator.RunForSimpleObjectValue(value);
-            inlines.Add(valueRun);
+            var typeRun = Creator.NestedTypeDisplayGroupedRun(value.GetType());
+            inlines.Add(typeRun);
+            inlines.Add(CreateQualifierSeparatorRun());
+            var valueRun = EnumValueRun(value);
+            inlines.AddSingle(valueRun);
 
             return new()
             {
@@ -624,6 +857,11 @@ partial class BaseAnalysisNodeCreator
         public override AnalysisNodeChildRetriever? GetChildRetriever(object value)
         {
             return null;
+        }
+
+        private static Run EnumValueRun(object value)
+        {
+            return Run(value.ToString()!, CommonStyles.ConstantMainBrush);
         }
     }
 
@@ -651,6 +889,119 @@ partial class BaseAnalysisNodeCreator
         public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
         {
             return null;
+        }
+    }
+
+    public sealed class EnumerableRootAnalysisNodeCreator(BaseAnalysisNodeCreator creator)
+        : BaseEnumerableRootAnalysisNodeCreator(creator)
+    {
+        public override AnalysisNodeChildRetriever? GetChildRetriever(object value)
+        {
+            var enumerable = Flatten(value);
+            if (enumerable.Count is 0)
+                return null;
+
+            return () => GetChildNodes(enumerable);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildNodes(IReadOnlyList<object> values)
+        {
+            return values
+                .Select(value => Creator.CreateRootGeneral(value))
+                .ToList()
+                ;
+        }
+
+        private static List<object> Flatten(object source)
+        {
+            if (source is IEnumerable enumerable)
+            {
+                return enumerable.Cast<object>().ToListOrExisting();
+            }
+
+            return EnumerateDynamic(source);
+        }
+
+        private static List<object> EnumerateDynamic(dynamic enumerable)
+        {
+            var result = new List<object>();
+            foreach (var value in enumerable)
+            {
+                result.Add(value);
+            }
+            return result;
+        }
+    }
+
+    public sealed class DictionaryRootAnalysisNodeCreator(BaseAnalysisNodeCreator creator)
+        : BaseEnumerableRootAnalysisNodeCreator(creator)
+    {
+        public override AnalysisNodeChildRetriever? GetChildRetriever(object value)
+        {
+            // TODO
+            return null;
+        }
+    }
+
+    public abstract class BaseEnumerableRootAnalysisNodeCreator(BaseAnalysisNodeCreator creator)
+        : GeneralValueRootViewNodeCreator<object>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            object value, DisplayValueSource valueSource)
+        {
+            var inlines = CreateNodeDisplayRuns(value, valueSource);
+
+            return new()
+            {
+                GroupedRunInlines = inlines,
+                NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
+            };
+        }
+
+        protected GroupedRunInlineCollection CreateNodeDisplayRuns(
+            object value, DisplayValueSource valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+
+            Creator.AppendValueSource(valueSource, inlines);
+            var typeRun = Creator.NestedTypeDisplayGroupedRun(value.GetType());
+            inlines.Add(typeRun);
+
+            var countDisplayRun = CountDisplayRunGroup(value);
+            if (countDisplayRun is not null)
+            {
+                inlines.Add(NewValueKindSplitterRun());
+                inlines.Add(countDisplayRun);
+            }
+
+            return inlines;
+        }
+
+        protected static GroupedRunInline? CountDisplayRunGroup(object value)
+        {
+            return CountDisplayRunGroup(value, nameof(ICollection.Count))
+                ?? CountDisplayRunGroup(value, nameof(Array.Length));
+        }
+
+        private static GroupedRunInline? CountDisplayRunGroup(object value, string propertyName)
+        {
+            var type = value.GetType();
+            var property = type.GetProperty(propertyName);
+            if (property is null)
+                return null;
+
+            if (property.PropertyType != typeof(int))
+                return null;
+
+            var propertyGroup = new SingleRunInline(Run(propertyName, CommonStyles.PropertyBrush));
+            var separator = Run(": ", CommonStyles.SplitterBrush);
+            int count = (int)property.GetValue(value)!;
+            var countRun = Run(count.ToString(), CommonStyles.RawValueBrush);
+            return new ComplexGroupedRunInline([
+                propertyGroup,
+                separator,
+                countRun,
+            ]);
         }
     }
 }
@@ -701,6 +1052,9 @@ partial class BaseAnalysisNodeCreator
 
         public static readonly Color DelegateMainColor = Color.FromUInt32(0xFF33E5A5);
         public static readonly SolidColorBrush DelegateMainBrush = new(DelegateMainColor);
+
+        public static readonly Color ConstantMainColor = Color.FromUInt32(0xFF7A68E5);
+        public static readonly SolidColorBrush ConstantMainBrush = new(ConstantMainColor);
 
         public static readonly NodeTypeDisplay PropertyAnalysisValueDisplay
             = new(CommonTypes.PropertyAnalysisValue, RawValueColor);

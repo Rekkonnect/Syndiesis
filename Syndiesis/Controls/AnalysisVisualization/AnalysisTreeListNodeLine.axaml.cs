@@ -137,6 +137,8 @@ public partial class AnalysisTreeListNodeLine : UserControl
         }
     }
 
+    public AnalysisNodeKind AnalysisNodeKind { get; set; }
+
     public AnalysisTreeListNodeLine()
     {
         InitializeComponent();
