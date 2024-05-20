@@ -1,10 +1,12 @@
 ﻿using Avalonia.Controls.Documents;
 using Avalonia.Media;
+using Garyon.Extensions;
 using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -22,6 +24,7 @@ public abstract partial class BaseAnalysisNodeCreator
     private readonly GeneralRootViewNodeCreator _generalCreator;
     private readonly NullValueRootAnalysisNodeCreator _nullValueCreator;
     private readonly BooleanRootAnalysisNodeCreator _booleanCreator;
+    private readonly EnumRootAnalysisNodeCreator _enumCreator;
 
     public BaseAnalysisNodeCreator(AnalysisNodeCreationOptions options)
     {
@@ -30,6 +33,7 @@ public abstract partial class BaseAnalysisNodeCreator
         _generalCreator = new(this);
         _nullValueCreator = new(this);
         _booleanCreator = new(this);
+        _enumCreator = new(this);
     }
 
     public abstract AnalysisTreeListNode? CreateRootViewNode(
@@ -55,12 +59,93 @@ public abstract partial class BaseAnalysisNodeCreator
                 return _booleanCreator.CreateNode(b, valueSource);
         }
 
-        if (IsSimpleType(type))
+        if (type.IsNullableValueType())
         {
+            return CreateRootNullableStruct(value as dynamic, valueSource);
+        }
 
+        switch (type.GetTypeCode())
+        {
+            case TypeCode.Empty:
+            case TypeCode.Object:
+                return _generalCreator.CreateNode(value, valueSource);
+
+            default:
+                return _generalCreator.CreateNode(value, valueSource);
         }
 
         return _generalCreator.CreateNode(value, valueSource);
+    }
+
+    private GroupedRunInline TypeDetailsGroupedRun(Type type)
+    {
+        var brush = GetBrushForTypeKind(type);
+        if (type.IsGenericType)
+        {
+            var originalDefinition = type.GetGenericTypeDefinition();
+            originalDefinition.Name.AsSpan().SplitOnce('`', out var name, out var aritySuffix);
+            var outerRun = Run($"{name}<", brush);
+            var closingTag = Run(">", brush);
+            var innerRuns = new List<RunOrGrouped>();
+            var arguments = type.GenericTypeArguments;
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                var argument = arguments[i];
+                var inner = TypeDetailsGroupedRun(argument);
+                innerRuns.Add(inner);
+
+                if (i < arguments.Length - 1)
+                {
+                    innerRuns.Add(CreateGenericArgumentSeparatorRun());
+                }
+            }
+
+            return new ComplexGroupedRunInline([
+                outerRun,
+                .. innerRuns,
+                closingTag,
+            ]);
+        }
+
+        var typeName = type.Name;
+
+        return CreateBasicClassInline(typeName);
+    }
+
+    private static SolidColorBrush GetBrushForTypeKind(Type type)
+    {
+        if (type.IsEnum)
+            return CommonStyles.EnumMainBrush;
+
+        if (type.IsInterface)
+            return CommonStyles.InterfaceMainBrush;
+
+        if (type.IsDelegate())
+            return CommonStyles.DelegateMainBrush;
+
+        if (type.IsClass)
+            return CommonStyles.ClassMainBrush;
+
+        if (type.IsValueType)
+            return CommonStyles.StructMainBrush;
+
+        if (type.IsVoid())
+            return CommonStyles.KeywordBrush;
+
+        throw new UnreachableException("Type kinds should have all been evaluated here");
+    }
+
+    private static Run CreateGenericArgumentSeparatorRun()
+    {
+        return Run(", ", CommonStyles.RawValueBrush);
+    }
+
+    // known unspeakable characters on compiler-generated names
+    private static readonly SearchValues<char> _unspeakableChars = SearchValues.Create("<>$#");
+
+    private static bool IsUnspeakableName(string name)
+    {
+        return name.AsSpan().ContainsAny(_unspeakableChars);
     }
 
     private static bool IsSimpleType(Type type)
@@ -517,6 +602,31 @@ partial class BaseAnalysisNodeCreator
         }
     }
 
+    public sealed class EnumRootAnalysisNodeCreator(BaseAnalysisNodeCreator creator)
+        : GeneralValueRootViewNodeCreator<object>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            object value, DisplayValueSource valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+
+            Creator.AppendValueSource(valueSource, inlines);
+            var valueRun = Creator.RunForSimpleObjectValue(value);
+            inlines.Add(valueRun);
+
+            return new()
+            {
+                GroupedRunInlines = inlines,
+                NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
+            };
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(object value)
+        {
+            return null;
+        }
+    }
+
     public sealed class NullValueRootAnalysisNodeCreator(BaseAnalysisNodeCreator creator)
         : GeneralValueRootViewNodeCreator<object?>(creator)
     {
@@ -578,6 +688,19 @@ partial class BaseAnalysisNodeCreator
 
         public static readonly Color ClassSecondaryColor = Color.FromUInt32(0xFF008052);
         public static readonly SolidColorBrush ClassSecondaryBrush = new(ClassSecondaryColor);
+
+        // TODO: Change colors
+        public static readonly Color StructMainColor = Color.FromUInt32(0xFF33E5A5);
+        public static readonly SolidColorBrush StructMainBrush = new(StructMainColor);
+
+        public static readonly Color InterfaceMainColor = Color.FromUInt32(0xFF33E5A5);
+        public static readonly SolidColorBrush InterfaceMainBrush = new(InterfaceMainColor);
+
+        public static readonly Color EnumMainColor = Color.FromUInt32(0xFF33E5A5);
+        public static readonly SolidColorBrush EnumMainBrush = new(EnumMainColor);
+
+        public static readonly Color DelegateMainColor = Color.FromUInt32(0xFF33E5A5);
+        public static readonly SolidColorBrush DelegateMainBrush = new(DelegateMainColor);
 
         public static readonly NodeTypeDisplay PropertyAnalysisValueDisplay
             = new(CommonTypes.PropertyAnalysisValue, RawValueColor);
