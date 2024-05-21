@@ -274,7 +274,13 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
 partial class SyntaxAnalysisNodeCreator
 {
     public abstract class SyntaxRootViewNodeCreator<TValue>(SyntaxAnalysisNodeCreator creator)
-        : RootViewNodeCreator<TValue, SyntaxAnalysisNodeCreator>(creator);
+        : RootViewNodeCreator<TValue, SyntaxAnalysisNodeCreator>(creator)
+    {
+        public override AnalysisNodeKind GetNodeKind(TValue value)
+        {
+            return AnalysisNodeKind.Syntax;
+        }
+    }
 
     public sealed class SyntaxTreeRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxTree>(creator)

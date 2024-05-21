@@ -342,10 +342,16 @@ public partial class CodeEditor : UserControl
     private AnalysisTreeListNode? DeepestWithSyntaxObject(AnalysisTreeListNode? node)
     {
         var current = node;
+        var sourceKind = node.NodeLine.AnalysisNodeKind;
         while (current is not null)
         {
             var currentLine = current.NodeLine;
             var syntaxObject = currentLine.AssociatedSyntaxObject;
+
+            if (current.NodeLine.AnalysisNodeKind != sourceKind)
+            {
+                return null;
+            }
 
             if (syntaxObject is not null)
             {

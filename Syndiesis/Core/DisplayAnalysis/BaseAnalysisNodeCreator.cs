@@ -633,12 +633,18 @@ partial class BaseAnalysisNodeCreator
 
         public virtual object? AssociatedSyntaxObject(TValue value) => value;
 
+        public virtual AnalysisNodeKind GetNodeKind(TValue value)
+        {
+            return AnalysisNodeKind.None;
+        }
+
         public AnalysisTreeListNode CreateNode(
             TValue value, DisplayValueSource valueSource = default)
         {
             var rootLine = CreateNodeLine(value, valueSource);
             var children = GetChildRetriever(value);
             var syntaxObject = AssociatedSyntaxObject(value);
+            rootLine.AnalysisNodeKind = GetNodeKind(value);
             return new AnalysisTreeListNode
             {
                 NodeLine = rootLine,

@@ -55,6 +55,7 @@ public partial class CoverableAnalysisTreeListView : UserControl
             {
                 case SyntaxNodeAnalysisResult syntaxNodeAnalysisResult:
                     listView.RootNode = syntaxNodeAnalysisResult.NodeRoot!;
+                    listView.TargetAnalysisNodeKind = AnalysisNodeKind.Syntax;
                     break;
             }
 

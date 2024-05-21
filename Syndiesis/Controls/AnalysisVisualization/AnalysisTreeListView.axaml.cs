@@ -41,6 +41,8 @@ public partial class AnalysisTreeListView : UserControl
 
     public SyntaxTree? AnalyzedTree { get; set; }
 
+    public AnalysisNodeKind TargetAnalysisNodeKind { get; set; }
+
     public AnalysisTreeListNode? CurrentHoveredNode => _hoveredNode;
 
     public event Action<AnalysisTreeListNode?>? HoveredNode;
@@ -375,12 +377,24 @@ public partial class AnalysisTreeListView : UserControl
         Debug.Assert(current is not null);
         while (true)
         {
+        start:
             var children = ExpandDemandChildren(current);
             if (children is [])
                 return current;
 
-            var last = children.Last();
-            current = last;
+            for (int i = children.Count - 1; i >= 0; i--)
+            {
+                var child = children[i];
+                if (child.NodeLine.AnalysisNodeKind != TargetAnalysisNodeKind)
+                {
+                    continue;
+                }
+
+                current = child;
+                goto start;
+            }
+
+            return current;
         }
     }
 
