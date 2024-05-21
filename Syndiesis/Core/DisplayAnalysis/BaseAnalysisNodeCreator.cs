@@ -16,6 +16,8 @@ using System.Text;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
+using KvpList = List<KeyValuePair<object, object?>>;
+
 public delegate IReadOnlyList<AnalysisTreeListNode> AnalysisNodeChildRetriever();
 
 public abstract partial class BaseAnalysisNodeCreator
@@ -691,7 +693,7 @@ partial class BaseAnalysisNodeCreator
             return () => GetChildren(value);
         }
 
-        private GroupedRunInline BasicValueInline(object value)
+        private GroupedRunInline BasicValueInline(object? value)
         {
             if (value is null)
                 return new SingleRunInline(CreateNullValueRun());
@@ -702,6 +704,13 @@ partial class BaseAnalysisNodeCreator
             {
                 object? innerValue = (value as dynamic).Value;
                 return BasicValueInline(innerValue);
+            }
+
+            var isKvp = type.GetGenericTypeDefinitionOrSame() == typeof(KeyValuePair<,>);
+            if (isKvp)
+            {
+                return KvpValueInline(value as dynamic);
+                // format kvp somehow?
             }
 
             switch (type.GetTypeCode())
@@ -715,6 +724,18 @@ partial class BaseAnalysisNodeCreator
             }
 
             return Creator.NestedTypeDisplayGroupedRun(type);
+        }
+
+        private GroupedRunInline KvpValueInline<TKey, TValue>(KeyValuePair<TKey, TValue> kvp)
+        {
+            var key = kvp.Key;
+            var value = kvp.Value;
+
+            return new ComplexGroupedRunInline([
+                BasicValueInline(key),
+                Run(":  ", CommonStyles.SplitterBrush),
+                BasicValueInline(value),
+            ]);
         }
 
         private IReadOnlyList<AnalysisTreeListNode> GetChildren(object value)
@@ -938,8 +959,57 @@ partial class BaseAnalysisNodeCreator
     {
         public override AnalysisNodeChildRetriever? GetChildRetriever(object value)
         {
-            // TODO
-            return null;
+            var enumerable = Flatten(value);
+            if (enumerable.Count is 0)
+                return null;
+
+            return () => GetChildNodes(enumerable);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildNodes(KvpList values)
+        {
+            return values
+                .Select(value => Creator.CreateRootGeneral(value))
+                .ToList()
+                ;
+        }
+
+        private static KvpList Flatten(object source)
+        {
+            if (source is IDictionary dictionary)
+            {
+                var result = new KvpList();
+                foreach (var key in dictionary.Keys)
+                {
+                    result.Add(new(key, dictionary[key]));
+                }
+                return result;
+            }
+
+            return FlattenGeneric(source as dynamic);
+        }
+
+        private static KvpList FlattenGeneric<TKey, TValue>(
+            IEnumerable<KeyValuePair<TKey, TValue>> dictionary)
+        {
+            var list = new KvpList();
+
+            foreach (var kvp in dictionary)
+            {
+                list.Add(new(kvp.Key!, kvp.Value));
+            }
+
+            return list;
+        }
+
+        private static List<object> EnumerateDynamic(dynamic enumerable)
+        {
+            var result = new List<object>();
+            foreach (var value in enumerable)
+            {
+                result.Add(value);
+            }
+            return result;
         }
     }
 
@@ -1040,17 +1110,16 @@ partial class BaseAnalysisNodeCreator
         public static readonly Color ClassSecondaryColor = Color.FromUInt32(0xFF008052);
         public static readonly SolidColorBrush ClassSecondaryBrush = new(ClassSecondaryColor);
 
-        // TODO: Change colors
-        public static readonly Color StructMainColor = Color.FromUInt32(0xFF33E5A5);
+        public static readonly Color StructMainColor = Color.FromUInt32(0xFF4DCA85);
         public static readonly SolidColorBrush StructMainBrush = new(StructMainColor);
 
-        public static readonly Color InterfaceMainColor = Color.FromUInt32(0xFF33E5A5);
+        public static readonly Color InterfaceMainColor = Color.FromUInt32(0xFFA2D080);
         public static readonly SolidColorBrush InterfaceMainBrush = new(InterfaceMainColor);
 
-        public static readonly Color EnumMainColor = Color.FromUInt32(0xFF33E5A5);
+        public static readonly Color EnumMainColor = Color.FromUInt32(0XFFB8D7A3);
         public static readonly SolidColorBrush EnumMainBrush = new(EnumMainColor);
 
-        public static readonly Color DelegateMainColor = Color.FromUInt32(0xFF33E5A5);
+        public static readonly Color DelegateMainColor = Color.FromUInt32(0xFF4BCBC8);
         public static readonly SolidColorBrush DelegateMainBrush = new(DelegateMainColor);
 
         public static readonly Color ConstantMainColor = Color.FromUInt32(0xFF7A68E5);
