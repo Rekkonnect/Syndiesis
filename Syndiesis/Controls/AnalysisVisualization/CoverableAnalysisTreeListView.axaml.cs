@@ -57,6 +57,11 @@ public partial class CoverableAnalysisTreeListView : UserControl
                     listView.RootNode = syntaxNodeAnalysisResult.NodeRoot!;
                     listView.TargetAnalysisNodeKind = AnalysisNodeKind.Syntax;
                     break;
+
+                case OperationAnalysisResult operationAnalysisResult:
+                    listView.RootNode = operationAnalysisResult.NodeRoot!;
+                    listView.TargetAnalysisNodeKind = AnalysisNodeKind.Operation;
+                    break;
             }
 
             var hideDuration = TimeSpan.FromMilliseconds(500);

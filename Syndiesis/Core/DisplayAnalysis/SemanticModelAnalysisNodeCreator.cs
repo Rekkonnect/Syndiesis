@@ -18,8 +18,9 @@ public sealed partial class SemanticModelAnalysisNodeCreator(AnalysisNodeCreatio
     {
         switch (value)
         {
-            case SemanticModel semanticModel:
-                return CreateRootSemanticModel(semanticModel, valueSource);
+            // TODO: Implement
+            //case SemanticModel semanticModel:
+            //    return CreateRootSemanticModel(semanticModel, valueSource);
         }
 
         // fallback

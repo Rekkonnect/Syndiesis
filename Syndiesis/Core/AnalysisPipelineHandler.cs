@@ -18,13 +18,25 @@ public class AnalysisPipelineHandler
 
     public TimeSpan UserInputDelay { get; set; } = AppSettings.Instance.UserInputDelay;
 
+    private SingleTreeCompilationSource _singleTreeCompilationSource = new();
+
     public IAnalysisExecution AnalysisExecution { get; set; }
+#if DEBUG
+#else
         = new SyntaxNodeAnalysisExecution();
+#endif
 
     public event Action? AnalysisRequested;
     public event Action? AnalysisBegun;
     public event Action<AnalysisResult>? AnalysisCompleted;
     public event Action<FailedAnalysisResult>? AnalysisFailed;
+
+    public AnalysisPipelineHandler()
+    {
+#if DEBUG
+        AnalysisExecution = new OperationAnalysisExecution(_singleTreeCompilationSource);
+#endif
+    }
 
     public void IgnoreInputDelayOnce()
     {

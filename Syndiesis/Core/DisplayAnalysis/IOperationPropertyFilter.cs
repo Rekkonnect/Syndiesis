@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
-using Syndiesis.Controls.AnalysisVisualization;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
@@ -33,6 +32,14 @@ public sealed class IOperationPropertyFilter : PropertyFilter
             // property return value filter below
             case nameof(IOperation.Parent):
                 return false;
+
+#pragma warning disable CS0618 // Type or member is obsolete
+
+            // Reomve obsolete members
+            case nameof(IOperation.Children):
+                return false;
+
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // We like all other publicly-exposed properties of the API
             default:

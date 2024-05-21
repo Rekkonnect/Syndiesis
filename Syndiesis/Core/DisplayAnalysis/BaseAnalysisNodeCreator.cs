@@ -130,7 +130,7 @@ public abstract partial class BaseAnalysisNodeCreator
         return false;
     }
 
-    private GroupedRunInline NestedTypeDisplayGroupedRun(Type type)
+    protected GroupedRunInline NestedTypeDisplayGroupedRun(Type type)
     {
         var rightmost = TypeDisplayGroupedRun(type);
         var runList = new List<RunOrGrouped> { rightmost };
@@ -139,7 +139,7 @@ public abstract partial class BaseAnalysisNodeCreator
         while (outer is not null)
         {
             runList.Add(CreateQualifierSeparatorRun());
-            runList.Add(TypeDisplayGroupedRun(type));
+            runList.Add(TypeDisplayGroupedRun(outer));
             outer = outer.DeclaringType;
         }
 
@@ -150,7 +150,7 @@ public abstract partial class BaseAnalysisNodeCreator
         return new ComplexGroupedRunInline(runList);
     }
 
-    private GroupedRunInline TypeDisplayGroupedRun(Type type)
+    protected GroupedRunInline TypeDisplayGroupedRun(Type type)
     {
         var brush = GetBrushForTypeKind(type);
         if (type.IsGenericType)
@@ -477,7 +477,6 @@ static string Code(string type)
 
         if (value is string stringValue)
         {
-            // truncate the string
             value = SimplifyWhitespace(stringValue);
         }
 
@@ -657,6 +656,15 @@ partial class BaseAnalysisNodeCreator
 
         public abstract AnalysisTreeListNodeLine CreateNodeLine(
             TValue value, DisplayValueSource valueSource);
+
+        protected AnalysisTreeListNode CreateFromProperty(PropertyInfo property, object target)
+        {
+            var name = property.Name;
+            var propertySource = Property(name);
+
+            var value = property.GetValue(target);
+            return Creator.CreateRootGeneral(value, propertySource);
+        }
     }
 
     public abstract class GeneralValueRootViewNodeCreator<TValue>(BaseAnalysisNodeCreator creator)
@@ -716,7 +724,6 @@ partial class BaseAnalysisNodeCreator
             if (isKvp)
             {
                 return KvpValueInline(value as dynamic);
-                // format kvp somehow?
             }
 
             switch (type.GetTypeCode())
@@ -773,15 +780,6 @@ partial class BaseAnalysisNodeCreator
                 return false;
 
             return true;
-        }
-
-        private AnalysisTreeListNode CreateFromProperty(PropertyInfo property, object target)
-        {
-            var name = property.Name;
-            var propertySource = Property(name);
-
-            var value = property.GetValue(target);
-            return Creator.CreateRootGeneral(value, propertySource);
         }
     }
 

@@ -186,14 +186,14 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         }
     }
 
-    private GroupedRunInlineCollection CreateBasicTypeNameInlines(
+    private GroupedRunInlineCollection CreateSyntaxTypeInlines(
         object value, DisplayValueSource valueSource)
     {
         var inlines = new GroupedRunInlineCollection();
         var type = value.GetType();
 
         AppendValueSource(valueSource, inlines);
-        AppendTypeDetails(type, inlines);
+        AppendSyntaxTypeDetails(type, inlines);
 
         return inlines;
     }
@@ -210,13 +210,13 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         return _syntaxTriviaListCreator.CreateNode(triviaList, valueSource);
     }
 
-    private void AppendTypeDetails(Type type, GroupedRunInlineCollection inlines)
+    private void AppendSyntaxTypeDetails(Type type, GroupedRunInlineCollection inlines)
     {
-        var typeNameRun = TypeDetailsGroupedRun(type);
+        var typeNameRun = SyntaxTypeDetailsGroupedRun(type);
         inlines.Add(typeNameRun);
     }
 
-    private GroupedRunInline TypeDetailsGroupedRun(Type type)
+    private GroupedRunInline SyntaxTypeDetailsGroupedRun(Type type)
     {
         if (type.IsGenericType)
         {
@@ -229,7 +229,7 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
                 var outerRun = Run($"{name}<", Styles.SyntaxListBrush);
                 var closingTag = Run(">", Styles.SyntaxListBrush);
                 var argument = type.GenericTypeArguments[0];
-                var inner = TypeDetailsGroupedRun(argument);
+                var inner = SyntaxTypeDetailsGroupedRun(argument);
 
                 return new ComplexGroupedRunInline([
                     outerRun,
@@ -288,7 +288,7 @@ partial class SyntaxAnalysisNodeCreator
         public override AnalysisTreeListNodeLine CreateNodeLine(
             SyntaxTree tree, DisplayValueSource valueSource)
         {
-            var inlines = Creator.CreateBasicTypeNameInlines(tree, valueSource);
+            var inlines = Creator.CreateSyntaxTypeInlines(tree, valueSource);
 
             var language = tree.GetLanguage();
 
@@ -357,7 +357,7 @@ partial class SyntaxAnalysisNodeCreator
         public override AnalysisTreeListNodeLine CreateNodeLine(
             SyntaxNode node, DisplayValueSource valueSource)
         {
-            var inlines = Creator.CreateBasicTypeNameInlines(node, valueSource);
+            var inlines = Creator.CreateSyntaxTypeInlines(node, valueSource);
 
             return new()
             {
@@ -673,7 +673,7 @@ partial class SyntaxAnalysisNodeCreator
         private AnalysisTreeListNodeLine CreateBasicSyntaxListLine(
             ReadOnlySyntaxNodeList node, DisplayValueSource valueSource)
         {
-            var inlines = Creator.CreateBasicTypeNameInlines(node, valueSource);
+            var inlines = Creator.CreateSyntaxTypeInlines(node, valueSource);
 
             return new()
             {
@@ -710,7 +710,7 @@ partial class SyntaxAnalysisNodeCreator
         public override AnalysisTreeListNodeLine CreateNodeLine(
             SyntaxTokenList list, DisplayValueSource valueSource)
         {
-            var inlines = Creator.CreateBasicTypeNameInlines(list, valueSource);
+            var inlines = Creator.CreateSyntaxTypeInlines(list, valueSource);
 
             return new()
             {
@@ -1020,7 +1020,7 @@ partial class SyntaxAnalysisNodeCreator
         public override AnalysisTreeListNodeLine CreateNodeLine(
             SyntaxTriviaList list, DisplayValueSource valueSource)
         {
-            var inlines = Creator.CreateBasicTypeNameInlines(list, valueSource);
+            var inlines = Creator.CreateSyntaxTypeInlines(list, valueSource);
 
             return new()
             {

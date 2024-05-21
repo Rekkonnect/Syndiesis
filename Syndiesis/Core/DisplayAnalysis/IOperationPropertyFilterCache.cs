@@ -1,4 +1,5 @@
-﻿using Garyon.Extensions;
+﻿using Garyon.DataStructures;
+using Garyon.Extensions;
 using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
 using System;
@@ -20,7 +21,7 @@ public sealed class IOperationPropertyFilterCache()
 
         var interfaces = OperationInterfaces(type);
 
-        var directInterfaces = type.GetInterfaceInheritanceTree()
+        var directInterfaces = GetInterfaceInheritanceTree(type)
             .Root.Children.Select(s => s.Value);
 
         // We want to make sure that there is only one operation interface at most,
@@ -52,5 +53,41 @@ public sealed class IOperationPropertyFilterCache()
     private static bool IsOperationInterface(Type type)
     {
         return type.IsOrImplements(typeof(IOperation));
+    }
+
+    // From Garyon, bugfixed
+    private static Tree<Type> GetInterfaceInheritanceTree(Type type)
+    {
+        var tree = new Tree<Type>(type);
+
+        var leaves = new Queue<TreeNode<Type>>();
+        leaves.Enqueue(tree.Root);
+
+        if (!type.CanInheritInterfaces())
+            return tree;
+
+        while (leaves.Any())
+        {
+            var node = leaves.Dequeue();
+            var nodeType = node.Value;
+
+            // Add the interfaces
+            var interfaces = nodeType.GetInterfaces();
+            foreach (var i in interfaces)
+            {
+                var interfaceNode = node.AddChild(i);
+                leaves.Enqueue(interfaceNode);
+
+                // Remove indirectly inherited interfaces
+                var currentParent = node.Parent;
+                while (currentParent is not null)
+                {
+                    currentParent.RemoveChild(i);
+                    currentParent = currentParent.Parent;
+                }
+            }
+        }
+
+        return tree;
     }
 }

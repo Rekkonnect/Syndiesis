@@ -71,6 +71,7 @@ public sealed record SyntaxObjectInfo(
     {
         switch (x)
         {
+            // Syntax
             case SyntaxTree tree:
                 return tree;
 
@@ -92,6 +93,13 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTokenList tokenList:
                 return tokenList.FirstOrDefault().SyntaxTree;
 
+            // Operation
+            case IOperation operation:
+                return operation.Syntax.SyntaxTree;
+
+            case OperationTree operationTree:
+                return operationTree.SyntaxTree;
+
             case null:
                 return null;
         }
@@ -103,6 +111,7 @@ public sealed record SyntaxObjectInfo(
     {
         switch (x)
         {
+            // Syntax
             case SyntaxTree tree:
                 return tree.GetRoot().Span;
 
@@ -123,6 +132,13 @@ public sealed record SyntaxObjectInfo(
 
             case SyntaxTokenList tokenList:
                 return ExtractSpanFromList(tokenList, GetSpan);
+
+            // Operation
+            case IOperation operation:
+                return operation.Syntax.Span;
+
+            case OperationTree operationTree:
+                return GetSpan(operationTree.SyntaxTree);
         }
 
         throw new ArgumentException("Unknown object to get Span from");
@@ -132,6 +148,7 @@ public sealed record SyntaxObjectInfo(
     {
         switch (x)
         {
+            // Operation
             case SyntaxTree tree:
                 return tree.GetRoot().FullSpan;
 
@@ -152,6 +169,13 @@ public sealed record SyntaxObjectInfo(
 
             case SyntaxTokenList tokenList:
                 return ExtractSpanFromList(tokenList, GetFullSpan);
+
+            // Operation
+            case IOperation operation:
+                return operation.Syntax.FullSpan;
+
+            case OperationTree operationTree:
+                return GetFullSpan(operationTree.SyntaxTree);
         }
 
         throw new ArgumentException("Unknown object to get FullSpan from");
