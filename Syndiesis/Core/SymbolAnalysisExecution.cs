@@ -4,26 +4,25 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 
-public class OperationAnalysisExecution(SingleTreeCompilationSource compilationSource)
+public class SymbolAnalysisExecution(SingleTreeCompilationSource compilationSource)
     : BaseAnalysisExecution(compilationSource)
 {
     protected override Task<AnalysisResult> ExecuteCore(
         CancellationToken token)
     {
-        var creator = new OperationsAnalysisNodeCreator(NodeLineOptions);
+        var creator = new SemanticModelAnalysisNodeCreator(NodeLineOptions);
 
         if (token.IsCancellationRequested)
             return Task.FromCanceled<AnalysisResult>(token);
 
         var compilation = CompilationSource.Compilation;
-        var tree = CompilationSource.Tree;
-        var operationTree = OperationTree.FromTree(compilation, tree!, token);
+        var assemblySymbol = compilation.Assembly;
 
         if (token.IsCancellationRequested)
             return Task.FromCanceled<AnalysisResult>(token);
 
-        var rootNode = creator.CreateRootOperationTree(operationTree!, default);
-        var result = new OperationAnalysisResult(rootNode);
+        var rootNode = creator.CreateRootViewNode(assemblySymbol!, default);
+        var result = new SymbolAnalysisResult(rootNode);
         return Task.FromResult<AnalysisResult>(result);
     }
 }

@@ -1,24 +1,19 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Syndiesis.Controls.AnalysisVisualization;
+﻿using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 
-public class SyntaxNodeAnalysisExecution : IAnalysisExecution
+public class SyntaxNodeAnalysisExecution(SingleTreeCompilationSource compilationSource)
+    : BaseAnalysisExecution(compilationSource)
 {
-    public AnalysisNodeCreationOptions NodeLineOptions { get; set; } = new();
-
-    public Task<AnalysisResult> Execute(
-        string source,
+    protected override Task<AnalysisResult> ExecuteCore(
         CancellationToken token)
     {
         var creator = new SyntaxAnalysisNodeCreator(NodeLineOptions);
 
-        var syntaxTree = CSharpSyntaxTree.ParseText(source, cancellationToken: token);
-        if (token.IsCancellationRequested)
-            return Task.FromCanceled<AnalysisResult>(token);
+        var syntaxTree = CompilationSource.Tree!;
 
         AnalysisTreeListNode root;
 

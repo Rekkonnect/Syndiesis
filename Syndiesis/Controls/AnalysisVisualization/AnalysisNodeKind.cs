@@ -4,6 +4,6 @@ public enum AnalysisNodeKind
 {
     None,
     Syntax,
-    Semantic,
+    Symbol,
     Operation,
 }

@@ -18,7 +18,7 @@ public partial class CoverableAnalysisTreeListView : UserControl
     private void InitializeCover()
     {
         var spinner = new LoadingSpinner();
-        _ = coverable.ShowCover(spinner, "Initializing application", TimeSpan.Zero);
+        coverable.ShowCover(spinner, "Initializing application", TimeSpan.Zero);
     }
 
     public void RegisterAnalysisPipelineHandler(
@@ -65,8 +65,7 @@ public partial class CoverableAnalysisTreeListView : UserControl
             }
 
             var hideDuration = TimeSpan.FromMilliseconds(500);
-            _ = coverable.HideCover(hideDuration)
-                .ConfigureAwait(false);
+            coverable.HideCover(hideDuration);
             NewRootNodeLoaded?.Invoke();
         }
 
@@ -82,8 +81,7 @@ public partial class CoverableAnalysisTreeListView : UserControl
             const string requestedText = """
                 Awaiting for further user input in the code editor
                 """;
-            _ = coverable.ShowCover(image, requestedText, showDuration)
-                .ConfigureAwait(false);
+            coverable.ShowCover(image, requestedText, showDuration);
         }
 
         Dispatcher.UIThread.Invoke(UIUpdate);

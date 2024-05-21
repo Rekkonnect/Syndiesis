@@ -1,14 +1,17 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Serilog;
 using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
+using Syndiesis.Controls.Tabs;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Views;
@@ -42,10 +45,33 @@ public partial class MainView : UserControl
 
         LoggerExtensionsEx.LogMethodInvocation(nameof(InitializeView));
 
+        ViewModel.CompilationSource.SetSource(initializingSource, default);
+
         codeEditor.Editor = ViewModel.Editor;
         codeEditor.SetSource(initializingSource);
         codeEditor.CursorPosition = new(4, 48);
         codeEditor.AssociatedTreeView = syntaxTreeView.listView;
+
+        analysisTreeViewTabs.Envelopes =
+        [
+            Envelope("Syntax", AnalysisNodeKind.Syntax),
+            Envelope("Operations", AnalysisNodeKind.Operation),
+            Envelope("Symbols", AnalysisNodeKind.Symbol),
+        ];
+
+        analysisTreeViewTabs.TabSelected += HandleSelectedAnalysisTab;
+
+        analysisTreeViewTabs.SelectIndex(0);
+
+        static TabEnvelope Envelope(string text, AnalysisNodeKind analysisKind)
+        {
+            return new()
+            {
+                Text = text,
+                MinWidth = 100,
+                TagValue = analysisKind,
+            };
+        }
     }
 
     private void InitializeEvents()
@@ -70,6 +96,15 @@ public partial class MainView : UserControl
         collapseAllButton.Click += CollapseAllClick;
         expandAllButton.Click += ExpandAllClick;
         githubButton.Click += GitHubClick;
+    }
+
+    private void HandleSelectedAnalysisTab(TabEnvelope tab)
+    {
+        var analysisKind = (AnalysisNodeKind)tab.TagValue!;
+        var analysisFactory = new AnalysisExecutionFactory(ViewModel.CompilationSource);
+        var analysisExecution = analysisFactory.CreateAnalysisExecution(analysisKind);
+        AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
+        _ = AnalysisPipelineHandler.ForceAnalysis();
     }
 
     private void GitHubClick(object? sender, RoutedEventArgs e)
@@ -180,7 +215,12 @@ public partial class MainView : UserControl
     private void ApplyCurrentSettingsWithoutAnalysis()
     {
         var settings = AppSettings.Instance;
-        AnalysisPipelineHandler.AnalysisExecution.NodeLineOptions = settings.NodeLineOptions;
+        var analysisExecution = AnalysisPipelineHandler.AnalysisExecution;
+        if (analysisExecution is not null)
+        {
+            analysisExecution.NodeLineOptions = settings.NodeLineOptions;
+        }
+
         AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
         expandAllButton.IsVisible = settings.EnableExpandingAllNodes;
     }

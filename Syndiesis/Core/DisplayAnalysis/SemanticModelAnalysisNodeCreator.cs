@@ -21,6 +21,8 @@ public sealed partial class SemanticModelAnalysisNodeCreator(AnalysisNodeCreatio
             // TODO: Implement
             //case SemanticModel semanticModel:
             //    return CreateRootSemanticModel(semanticModel, valueSource);
+            default:
+                break;
         }
 
         // fallback

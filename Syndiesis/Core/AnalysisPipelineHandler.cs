@@ -11,40 +11,36 @@ public class AnalysisPipelineHandler
 
     private readonly Delayer _delayer = new();
 
-    private string _pendingSource = string.Empty;
+    private string? _pendingSource = null;
     private volatile bool _finishedAnalysis = false;
 
     private volatile int _ignoredInputDelayTimes = 0;
 
     public TimeSpan UserInputDelay { get; set; } = AppSettings.Instance.UserInputDelay;
 
-    private SingleTreeCompilationSource _singleTreeCompilationSource = new();
-
-    public IAnalysisExecution AnalysisExecution { get; set; }
-#if DEBUG
-#else
-        = new SyntaxNodeAnalysisExecution();
-#endif
+    public BaseAnalysisExecution? AnalysisExecution { get; set; }
 
     public event Action? AnalysisRequested;
     public event Action? AnalysisBegun;
     public event Action<AnalysisResult>? AnalysisCompleted;
     public event Action<FailedAnalysisResult>? AnalysisFailed;
 
-    public AnalysisPipelineHandler()
-    {
-#if DEBUG
-        AnalysisExecution = new OperationAnalysisExecution(_singleTreeCompilationSource);
-#endif
-    }
-
     public void IgnoreInputDelayOnce()
     {
         _ignoredInputDelayTimes++;
     }
 
+    public async Task ForceAnalysis()
+    {
+        await PerformAnalysis()
+            .ConfigureAwait(false);
+    }
+
     public void InitiateAnalysis(string source)
     {
+        if (AnalysisExecution is null)
+            return;
+
         _pendingSource = source;
         if (_delayer.IsWaiting)
         {
@@ -78,7 +74,7 @@ public class AnalysisPipelineHandler
 
         try
         {
-            Log.Information($"Began analysis using {AnalysisExecution.GetType()}");
+            Log.Information($"Began analysis using {AnalysisExecution!.GetType()}");
             var profiling = new SimpleProfiling();
             using (profiling.BeginProcess())
             {
@@ -97,6 +93,7 @@ public class AnalysisPipelineHandler
             AnalysisFailed?.Invoke(new(ex));
         }
         _finishedAnalysis = true;
+        _pendingSource = null;
     }
 
     private void SetRequestedDelay()

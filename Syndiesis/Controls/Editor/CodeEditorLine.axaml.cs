@@ -5,6 +5,7 @@ using Avalonia.Controls.Shapes;
 using Avalonia.Media;
 using Syndiesis.Core;
 using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Syndiesis.Controls;
@@ -100,6 +101,7 @@ public partial class CodeEditorLine : UserControl
         {
             HighlightKind.SyntaxNodeHover => SyntaxNodeHoverHighlight,
             HighlightKind.Selection => SelectionHighlight,
+            _ => throw new InvalidEnumArgumentException(),
         };
     }
 
