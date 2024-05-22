@@ -140,9 +140,8 @@ public partial class AnalysisTreeListNode : UserControl
         if (_childRetriever.IsValueCreated)
             return;
 
-        await Task.Run(_childRetriever.GetValueAsync)
-            .ContinueWith(result => SetLoadedChildren(result.Result))
-            ;
+        var result = await Task.Run(_childRetriever.GetValueAsync);
+        SetLoadedChildren(result);
     }
 
     private void SetLoadedChildren(NodeBuilderChildren builders)
@@ -150,6 +149,7 @@ public partial class AnalysisTreeListNode : UserControl
         void UIUpdate()
         {
             var children = builders.Select(s => s.Build()).ToList();
+            _loadedChildren = children;
 
             innerStackPanel.Children.ClearSetValues(children);
             foreach (var child in children)
@@ -198,7 +198,7 @@ public partial class AnalysisTreeListNode : UserControl
         if (isHovered)
         {
             ListView?.OverrideHover(this);
-            RequestInitializedChildren();
+            _ = RequestInitializedChildren();
         }
         else
         {
@@ -278,17 +278,20 @@ public partial class AnalysisTreeListNode : UserControl
     private void ExpandRecursively()
     {
         int depth = AppSettings.Instance.RecursiveExpansionDepth;
-        _ = ExpandRecursivelyAsync(depth);
+        Task.Run(() => ExpandRecursivelyAsync(depth));
     }
 
     private async Task ExpandRecursivelyAsync(int depth)
     {
-        Expand();
+        if (depth <= 0)
+            return;
+
         await RequestInitializedChildren(true);
         foreach (var node in LazyChildren)
         {
             await node.ExpandRecursivelyAsync(depth - 1);
         }
+        Dispatcher.UIThread.Invoke(Expand);
     }
 
     public void ToggleExpansion()

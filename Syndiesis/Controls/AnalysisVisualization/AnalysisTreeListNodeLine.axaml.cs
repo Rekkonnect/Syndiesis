@@ -17,41 +17,38 @@ public partial class AnalysisTreeListNodeLine : UserControl
 {
     private readonly CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
 
-    public static readonly StyledProperty<bool> IsExpandedProperty =
-        AvaloniaProperty.Register<CodeEditorLine, bool>(nameof(IsExpanded), defaultValue: false);
+    private bool _isExpanded;
 
     public bool IsExpanded
     {
-        get => GetValue(IsExpandedProperty);
+        get => _isExpanded;
         set
         {
-            SetValue(IsExpandedProperty, value);
+            _isExpanded = value;
             visualExpandToggle.IsExpandingToggle = !value;
         }
     }
 
-    public static readonly StyledProperty<bool> HasChildrenProperty =
-        AvaloniaProperty.Register<CodeEditorLine, bool>(nameof(HasChildren), defaultValue: true);
+    private bool _hasChildren;
 
     public bool HasChildren
     {
-        get => GetValue(HasChildrenProperty);
+        get => _hasChildren;
         set
         {
-            SetValue(HasChildrenProperty, value);
+            _hasChildren = value;
             visualExpandToggle.IsVisible = value;
         }
     }
 
-    public static readonly StyledProperty<string> NodeTypeTextProperty =
-        AvaloniaProperty.Register<CodeEditorLine, string>(nameof(NodeTypeText), defaultValue: "N");
+    private string _nodeTypeText;
 
     public string NodeTypeText
     {
-        get => GetValue(NodeTypeTextProperty!);
+        get => _nodeTypeText;
         set
         {
-            SetValue(NodeTypeTextProperty!, value!);
+            _nodeTypeText = value;
             nodeTypeIconText.Text = value;
         }
     }
