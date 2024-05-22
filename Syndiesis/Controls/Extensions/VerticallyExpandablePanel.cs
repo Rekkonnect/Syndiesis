@@ -7,7 +7,6 @@ using Avalonia.Styling;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
 using System;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -54,29 +53,19 @@ public class VerticallyExpandablePanel : Panel
         }
     }
 
-    public bool AnimateHeightChanges { get; set; } = true;
-
-    private bool _pendingChildrenHeightChange;
-
-    protected override void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    public double ChildrenDesiredHeight
     {
-        base.ChildrenChanged(sender, e);
-        if (AnimateHeightChanges)
+        get
         {
-            _pendingChildrenHeightChange = true;
+            return Children.Sum(c => c.DesiredSize.Height);
         }
     }
 
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    public double ChildrenBoundsHeight
     {
-        base.OnSizeChanged(e);
-
-        if (Height is double.NaN)
-            return;
-        if (_pendingChildrenHeightChange && AnimateHeightChanges)
+        get
         {
-            _pendingChildrenHeightChange = false;
-            _ = AnimateCurrentHeight(default);
+            return Children.Sum(c => c.Bounds.Height);
         }
     }
 
@@ -173,11 +162,11 @@ public class VerticallyExpandablePanel : Panel
             .RunAsync(this, cancellationToken);
     }
 
-    private async Task AnimateCurrentHeight(
+    public async Task AnimateCurrentHeight(
         CancellationToken cancellationToken)
     {
-        double from = Height;
-        double to = ChildrenHeight;
+        double from = MaxHeight;
+        double to = ChildrenBoundsHeight;
 
         var animation = new Animation
         {
@@ -190,7 +179,7 @@ public class VerticallyExpandablePanel : Panel
                     Cue = new Cue(0.00),
                     Setters =
                     {
-                        new Setter(ChildrenHeightRatioProperty, from),
+                        new Setter(MaxHeightProperty, from),
                     }
                 },
                 new KeyFrame
@@ -198,7 +187,7 @@ public class VerticallyExpandablePanel : Panel
                     Cue = new Cue(1.00),
                     Setters =
                     {
-                        new Setter(ChildrenHeightRatioProperty, to),
+                        new Setter(MaxHeightProperty, to),
                     }
                 },
             }

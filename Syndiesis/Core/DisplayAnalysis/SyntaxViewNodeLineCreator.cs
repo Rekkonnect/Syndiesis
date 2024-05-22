@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -380,6 +381,9 @@ partial class SyntaxAnalysisNodeCreator
 
         private IReadOnlyList<AnalysisTreeListNode> CreateNodeChildren(SyntaxNode node)
         {
+            // FAKE DELAY TO TEST RESPONSIVENESS
+            Task.Delay(2000).Wait();
+
             var properties = GetInterestingPropertiesForNodeType(node);
 
             var children = new List<AnalysisTreeListNode>(properties.Count);
@@ -460,9 +464,6 @@ partial class SyntaxAnalysisNodeCreator
 
         private IReadOnlyList<AnalysisTreeListNode> CreateTokenChildren(SyntaxToken token)
         {
-            // FAKE DELAY TO TEST RESPONSIVENESS
-            //Task.Delay(2000).Wait();
-
             SyntaxTriviaList leadingTrivia = default;
             SyntaxTriviaList trailingTrivia = default;
             if (Options.ShowTrivia)

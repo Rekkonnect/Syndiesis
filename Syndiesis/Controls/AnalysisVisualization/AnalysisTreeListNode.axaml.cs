@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
+using Garyon.Extensions;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
@@ -55,7 +56,7 @@ public partial class AnalysisTreeListNode : UserControl
     {
         set
         {
-            innerStackPanel.Children.ClearSetValues(value);
+            SetChildNodes(value);
             NodeLine.HasChildren = value.Count > 0;
         }
     }
@@ -151,7 +152,7 @@ public partial class AnalysisTreeListNode : UserControl
             var children = builders.Select(s => s.Build()).ToList();
             _loadedChildren = children;
 
-            innerStackPanel.Children.ClearSetValues(children);
+            SetChildNodes(children);
             foreach (var child in children)
             {
                 child.ListView = ListView;
@@ -159,6 +160,12 @@ public partial class AnalysisTreeListNode : UserControl
         }
 
         Dispatcher.UIThread.Invoke(UIUpdate);
+    }
+
+    private void SetChildNodes(NodeChildren value)
+    {
+        innerStackPanel.Children.ClearSetValues(value);
+        //_ = expandableCanvas.AnimateCurrentHeight(default);
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)
@@ -281,17 +288,24 @@ public partial class AnalysisTreeListNode : UserControl
         Task.Run(() => ExpandRecursivelyAsync(depth));
     }
 
-    private async Task ExpandRecursivelyAsync(int depth)
+    public async Task ExpandAllRecursivelyAsync()
+    {
+        await ExpandRecursivelyAsync(int.MaxValue);
+    }
+
+    public async Task ExpandRecursivelyAsync(int depth)
     {
         if (depth <= 0)
             return;
 
-        await RequestInitializedChildren(true);
+        Dispatcher.UIThread.Invoke(Expand);
+        await RequestInitializedChildren();
+        var taskList = new List<Task>();
         foreach (var node in LazyChildren)
         {
-            await node.ExpandRecursivelyAsync(depth - 1);
+            taskList.Add(node.ExpandRecursivelyAsync(depth - 1));
         }
-        Dispatcher.UIThread.Invoke(Expand);
+        await taskList.WaitAll();
     }
 
     public void ToggleExpansion()

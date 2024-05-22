@@ -46,7 +46,7 @@ public partial class TabEnvelope : UserControl
             new ThicknessTransition
             {
                 Property = Layoutable.MarginProperty,
-                Duration = TimeSpan.FromMilliseconds(350),
+                Duration = TimeSpan.FromMilliseconds(2250),
                 Easing = Singleton<ExponentialEaseOut>.Instance,
             }
         ];
@@ -66,6 +66,6 @@ public partial class TabEnvelope : UserControl
 
     private double GetRequiredLowerBorderMarginTop()
     {
-        return _isSelected ? Bounds.Height : 2;
+        return _isSelected ? Bounds.Height : 3;
     }
 }

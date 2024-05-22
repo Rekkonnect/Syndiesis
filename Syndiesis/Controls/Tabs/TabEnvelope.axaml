@@ -30,7 +30,7 @@
       Name="lowerBorder"
       Background="#000000"
       CornerRadius="15 15 0 0"
-      Margin="0 2 0 0"
+      Margin="0 3 0 0"
     />
 
     <TextBlock

@@ -115,16 +115,16 @@ public partial class MainView : UserControl
 
     private void ExpandAllClick(object? sender, RoutedEventArgs e)
     {
-        ExpandAllNodes();
+        Task.Run(ExpandAllNodes);
     }
 
-    private void ExpandAllNodes()
+    private async Task ExpandAllNodes()
     {
         Log.Information("Began expanding all nodes");
         var profiling = new SimpleProfiling();
         using (profiling.BeginProcess())
         {
-            syntaxTreeView.listView.RootNode.SetExpansionWithoutAnimationRecursively(true);
+            await syntaxTreeView.listView.RootNode.ExpandAllRecursivelyAsync();
         }
         var results = profiling.SnapshotResults!;
         Log.Information(
