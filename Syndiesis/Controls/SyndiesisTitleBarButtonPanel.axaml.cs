@@ -84,14 +84,14 @@ public partial class SyndiesisTitleBarButtonPanel : UserControl
 
     private void SetMaximizeButton(Geometry geometry)
     {
-        maximizeButton.Content = Path(geometry);
+        maximizeButton.PathData = geometry;
     }
 
     private void InitializeIcons()
     {
-        minimizeButton.Content = Path(App.Current.ResourceManager.MinimizeIconGeometry);
-        maximizeButton.Content = Path(App.Current.ResourceManager.MaximizeIconGeometry);
-        closeButton.Content = Path(App.Current.ResourceManager.CloseIconGeometry);
+        minimizeButton.PathData = App.Current.ResourceManager.MinimizeIconGeometry;
+        maximizeButton.PathData = App.Current.ResourceManager.MaximizeIconGeometry;
+        closeButton.PathData = App.Current.ResourceManager.CloseIconGeometry;
     }
 
     private static Path Path(Geometry geometry)
