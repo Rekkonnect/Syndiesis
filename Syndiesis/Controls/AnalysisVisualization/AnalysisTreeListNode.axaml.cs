@@ -10,6 +10,7 @@ using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -149,6 +150,7 @@ public partial class AnalysisTreeListNode : UserControl
     {
         void UIUpdate()
         {
+            builders ??= [];
             var children = builders.Select(s => s.Build()).ToList();
             _loadedChildren = children;
 

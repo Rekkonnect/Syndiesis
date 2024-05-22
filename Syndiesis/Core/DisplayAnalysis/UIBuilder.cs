@@ -59,6 +59,11 @@ public static class UIBuilder
         public SyntaxObjectInfo? AssociatedSyntaxObject { get; }
             = SyntaxObjectInfo.GetInfoForObject(AssociatedSyntaxObjectContent);
 
+        public AnalysisTreeListNode WithAssociatedSyntaxObjectContent(object? content)
+        {
+            return new(NodeLine, ChildRetriever, content);
+        }
+
         public override SAnalysisTreeListNode Build()
         {
             return new()

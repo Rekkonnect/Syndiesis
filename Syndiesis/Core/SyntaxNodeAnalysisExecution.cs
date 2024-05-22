@@ -1,5 +1,4 @@
-﻿using Syndiesis.Controls.AnalysisVisualization;
-using Syndiesis.Core.DisplayAnalysis;
+﻿using Syndiesis.Core.DisplayAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,13 +10,14 @@ public class SyntaxNodeAnalysisExecution(SingleTreeCompilationSource compilation
     protected override Task<AnalysisResult> ExecuteCore(
         CancellationToken token)
     {
-        var creator = new SyntaxAnalysisNodeCreator(NodeLineOptions);
+        var container = CreateCreatorContainer();
+        var creator = container.SyntaxCreator;
 
         var syntaxTree = CompilationSource.Tree!;
 
         UIBuilder.AnalysisTreeListNode root;
 
-        if (NodeLineOptions.ShowSyntaxTreeRootNode)
+        if (CreationOptions.ShowSyntaxTreeRootNode)
         {
             root = creator.CreateRootTree(syntaxTree);
             if (token.IsCancellationRequested)

@@ -1,5 +1,4 @@
-﻿using Syndiesis.Core.DisplayAnalysis;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
@@ -10,7 +9,8 @@ public class SymbolAnalysisExecution(SingleTreeCompilationSource compilationSour
     protected override Task<AnalysisResult> ExecuteCore(
         CancellationToken token)
     {
-        var creator = new SemanticModelAnalysisNodeCreator(NodeLineOptions);
+        var container = CreateCreatorContainer();
+        var creator = container.SyntaxCreator;
 
         if (token.IsCancellationRequested)
             return Task.FromCanceled<AnalysisResult>(token);
@@ -22,7 +22,7 @@ public class SymbolAnalysisExecution(SingleTreeCompilationSource compilationSour
             return Task.FromCanceled<AnalysisResult>(token);
 
         var rootNode = creator.CreateRootViewNode(assemblySymbol!, default);
-        var result = new SymbolAnalysisResult(rootNode);
+        var result = new SymbolAnalysisResult(rootNode!);
         return Task.FromResult<AnalysisResult>(result);
     }
 }

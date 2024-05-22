@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
@@ -63,6 +64,9 @@ public sealed record SyntaxObjectInfo(
         }
 
         var span = GetSpan(x);
+        if (span == default)
+            return null;
+
         var fullSpan = GetFullSpan(x);
         return new(x, span, fullSpan);
     }
@@ -99,6 +103,10 @@ public sealed record SyntaxObjectInfo(
 
             case OperationTree operationTree:
                 return operationTree.SyntaxTree;
+
+            // Semantic model
+            case SemanticModel semanticModel:
+                return semanticModel.SyntaxTree;
 
             case null:
                 return null;
@@ -139,9 +147,13 @@ public sealed record SyntaxObjectInfo(
 
             case OperationTree operationTree:
                 return GetSpan(operationTree.SyntaxTree);
+
+            // Semantic model
+            case SemanticModel semanticModel:
+                return GetSpan(semanticModel.SyntaxTree);
         }
 
-        throw new ArgumentException("Unknown object to get Span from");
+        return default;
     }
 
     private static TextSpan GetFullSpan(object x)
@@ -176,9 +188,13 @@ public sealed record SyntaxObjectInfo(
 
             case OperationTree operationTree:
                 return GetFullSpan(operationTree.SyntaxTree);
+
+            // Semantic model
+            case SemanticModel semanticModel:
+                return GetFullSpan(semanticModel.SyntaxTree);
         }
 
-        throw new ArgumentException("Unknown object to get FullSpan from");
+        return default;
     }
 
     private static TextSpan ExtractSpanFromList<T>(
@@ -186,7 +202,7 @@ public sealed record SyntaxObjectInfo(
         Func<object, TextSpan> spanGetter)
     {
         if (nodeList.Count is 0)
-            throw new ArgumentException("Invalid empty list provided");
+            return default;
 
         var first = nodeList[0];
         var firstSpan = spanGetter(first!);

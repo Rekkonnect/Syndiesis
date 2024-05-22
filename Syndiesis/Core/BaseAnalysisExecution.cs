@@ -6,8 +6,13 @@ namespace Syndiesis.Core;
 
 public abstract class BaseAnalysisExecution(SingleTreeCompilationSource compilationSource)
 {
-    public AnalysisNodeCreationOptions NodeLineOptions { get; set; } = new();
+    public AnalysisNodeCreationOptions CreationOptions { get; set; } = new();
     public SingleTreeCompilationSource CompilationSource { get; } = compilationSource;
+
+    protected AnalysisNodeCreatorContainer CreateCreatorContainer()
+    {
+        return new(CreationOptions);
+    }
 
     public Task<AnalysisResult> ExecuteForCurrentCompilation(CancellationToken token)
     {

@@ -5,14 +5,14 @@ using System.Reflection;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-public sealed class IOperationPropertyFilter : PropertyFilter
+public sealed class ISymbolPropertyFilter : PropertyFilter
 {
-    public static readonly IOperationPropertyFilter Instance = new();
+    public static readonly ISymbolPropertyFilter Instance = new();
 
     public override PropertyFilterResult FilterProperties(Type type)
     {
         var properties = type.GetProperties();
-        var interestingTypeProperties = properties.Where(FilterOperationProperty)
+        var interestingTypeProperties = properties.Where(FilterSymbolProperty)
             .ToArray();
 
         return new()
@@ -21,24 +21,19 @@ public sealed class IOperationPropertyFilter : PropertyFilter
         };
     }
 
-    private static bool FilterOperationProperty(PropertyInfo propertyInfo)
+    private static bool FilterSymbolProperty(PropertyInfo propertyInfo)
     {
         var name = propertyInfo.Name;
 
         switch (name)
         {
             // Avoid recursion
-            case nameof(IOperation.Parent):
-            case nameof(IOperation.SemanticModel):
+            case nameof(ISymbol.ContainingAssembly):
+            case nameof(ISymbol.ContainingModule):
+            case nameof(ISymbol.ContainingNamespace):
+            case nameof(ISymbol.ContainingSymbol):
+            case nameof(ISymbol.ContainingType):
                 return false;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-
-            // Remove obsolete members
-            case nameof(IOperation.Children):
-                return false;
-
-#pragma warning restore CS0618 // Type or member is obsolete
 
             // We like all other publicly-exposed properties of the API
             default:

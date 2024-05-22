@@ -3,7 +3,6 @@
 namespace Syndiesis.Core;
 
 public sealed class OperationAnalysisResult(UIBuilder.AnalysisTreeListNode nodeRoot)
-    : AnalysisResult
+    : NodeRootAnalysisResult(nodeRoot)
 {
-    public UIBuilder.AnalysisTreeListNode NodeRoot { get; set; } = nodeRoot;
 }

@@ -30,8 +30,7 @@ public delegate IReadOnlyList<AnalysisTreeListNode> AnalysisNodeChildRetriever()
 
 public abstract partial class BaseAnalysisNodeCreator
 {
-    protected readonly AnalysisNodeCreationOptions Options;
-
+    // node creators
     private readonly GeneralRootViewNodeCreator _generalCreator;
     private readonly PrimitiveRootViewNodeCreator _primitiveCreator;
     private readonly NullValueRootAnalysisNodeCreator _nullValueCreator;
@@ -40,9 +39,16 @@ public abstract partial class BaseAnalysisNodeCreator
     private readonly EnumerableRootAnalysisNodeCreator _enumerableCreator;
     private readonly DictionaryRootAnalysisNodeCreator _dictionaryCreator;
 
-    public BaseAnalysisNodeCreator(AnalysisNodeCreationOptions options)
+    protected readonly AnalysisNodeCreationOptions Options;
+
+    public readonly AnalysisNodeCreatorContainer ParentContainer;
+
+    public BaseAnalysisNodeCreator(
+        AnalysisNodeCreationOptions options,
+        AnalysisNodeCreatorContainer parentContainer)
     {
         Options = options;
+        ParentContainer = parentContainer;
 
         _generalCreator = new(this);
         _primitiveCreator = new(this);
@@ -419,7 +425,7 @@ static string Code(string type)
         if (valueSource.IsAsync)
         {
             var awaitRun = CreateAwaitRun();
-            frontGroup.Children.Insert(0, awaitRun);
+            frontGroup.Children!.Insert(0, awaitRun);
         }
 
         var colonRun = Run(":  ", CommonStyles.SplitterBrush);
@@ -696,11 +702,32 @@ partial class BaseAnalysisNodeCreator
 
         protected AnalysisTreeListNode CreateFromProperty(PropertyInfo property, object target)
         {
-            var name = property.Name;
-            var propertySource = Property(name);
-
-            var value = property.GetValue(target);
+            ExtractPropertyDisplayValues(
+                property, target, out var value, out var propertySource);
             return Creator.CreateRootGeneral(value, propertySource);
+        }
+
+        protected AnalysisTreeListNode CreateFromPropertyWithSyntaxObject(
+            PropertyInfo property, object target)
+        {
+            ExtractPropertyDisplayValues(
+                property, target, out var value, out var propertySource);
+            var node = CreateFromProperty(property, target);
+            if (node.AssociatedSyntaxObject is not null)
+                return node;
+
+            return node.WithAssociatedSyntaxObjectContent(value);
+        }
+
+        private static void ExtractPropertyDisplayValues(
+            PropertyInfo property,
+            object target,
+            out object? value,
+            out DisplayValueSource propertySource)
+        {
+            var name = property.Name;
+            propertySource = Property(name);
+            value = property.GetValue(target);
         }
     }
 
@@ -796,6 +823,7 @@ partial class BaseAnalysisNodeCreator
             var properties = type.GetProperties(BindingFlags.Public | BindingFlags.Instance);
             return properties
                 .Where(FilterProperty)
+                .OrderBy(s => s.Name)
                 .Select(property => CreateFromProperty(property, value))
                 .ToList()
                 ;

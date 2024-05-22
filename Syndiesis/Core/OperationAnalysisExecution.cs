@@ -1,5 +1,4 @@
-﻿using Syndiesis.Core.DisplayAnalysis;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
@@ -10,7 +9,8 @@ public class OperationAnalysisExecution(SingleTreeCompilationSource compilationS
     protected override Task<AnalysisResult> ExecuteCore(
         CancellationToken token)
     {
-        var creator = new OperationsAnalysisNodeCreator(NodeLineOptions);
+        var container = CreateCreatorContainer();
+        var creator = container.OperationCreator;
 
         if (token.IsCancellationRequested)
             return Task.FromCanceled<AnalysisResult>(token);

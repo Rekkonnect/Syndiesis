@@ -79,7 +79,7 @@ public class AnalysisPipelineHandler
             using (profiling.BeginProcess())
             {
                 var result = await AnalysisExecution.Execute(_pendingSource, token);
-                AnalysisCompleted!(result);
+                AnalysisCompleted!.Invoke(result);
             }
 
             var results = profiling.SnapshotResults!;

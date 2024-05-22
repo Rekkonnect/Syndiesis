@@ -1,9 +1,13 @@
 ﻿using Avalonia.Media;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Operations;
+using SkiaSharp;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -21,19 +25,15 @@ public sealed partial class OperationsAnalysisNodeCreator
 {
     private static readonly IOperationPropertyFilterCache _propertyCache = new();
 
-    private readonly SemanticModelAnalysisNodeCreator _semanticCreator;
-    private readonly SyntaxAnalysisNodeCreator _syntaxCreator;
-
     // node creators
     private readonly OperationRootViewNodeCreator _operationCreator;
     private readonly OperationTreeRootViewNodeCreator _operationTreeCreator;
 
-    public OperationsAnalysisNodeCreator(AnalysisNodeCreationOptions options)
-        : base(options)
+    public OperationsAnalysisNodeCreator(
+        AnalysisNodeCreationOptions options,
+        AnalysisNodeCreatorContainer parentContainer)
+        : base(options, parentContainer)
     {
-        _semanticCreator = new(options);
-        _syntaxCreator = new(options);
-
         _operationCreator = new(this);
         _operationTreeCreator = new(this);
     }
@@ -46,11 +46,18 @@ public sealed partial class OperationsAnalysisNodeCreator
         {
             case IOperation operation:
                 return CreateRootOperation(operation, valueSource);
+
+            case OperationTree operationTree:
+                return CreateRootOperationTree(operationTree, valueSource);
+
+            case SyntaxNode syntaxNode:
+                return CreateRootSyntaxNode(syntaxNode, valueSource);
         }
 
         // fallback
-        return _syntaxCreator.CreateRootViewNode(value, valueSource)
-            ?? _semanticCreator.CreateRootViewNode(value, valueSource)
+        return ParentContainer.SyntaxCreator.CreateRootViewNode(value, valueSource)
+            ?? ParentContainer.SemanticCreator.CreateRootViewNode(value, valueSource)
+            ?? ParentContainer.SymbolCreator.CreateRootViewNode(value, valueSource)
             ;
     }
 
@@ -66,6 +73,14 @@ public sealed partial class OperationsAnalysisNodeCreator
         DisplayValueSource valueSource)
     {
         return _operationTreeCreator.CreateNode(operationTree, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootSyntaxNode(
+        SyntaxNode node,
+        DisplayValueSource valueSource)
+    {
+        return ParentContainer.SyntaxCreator.ChildlessSyntaxCreator
+            .CreateNode(node, valueSource);
     }
 }
 
@@ -86,12 +101,15 @@ partial class OperationsAnalysisNodeCreator
         public override AnalysisTreeListNodeLine CreateNodeLine(
             IOperation operation, DisplayValueSource valueSource)
         {
+            var inlines = new GroupedRunInlineCollection();
+            Creator.AppendValueSource(valueSource, inlines);
             var type = operation.GetType();
             var preferredType = _propertyCache.FilterForType(type).PreferredType ?? type;
             var inline = Creator.NestedTypeDisplayGroupedRun(preferredType);
+            inlines.Add(inline);
 
             return AnalysisTreeListNodeLine(
-                [inline],
+                inlines,
                 Styles.OperationDisplay);
         }
 
@@ -107,9 +125,40 @@ partial class OperationsAnalysisNodeCreator
             var preferredType = type.PreferredType;
 
             return properties
-                .Select(property => CreateFromProperty(property, operation))
+                .OrderBy(s => s.Name)
+                .Select(property => CreateFromPropertyWithSyntaxObject(property, operation))
                 .ToList()
                 ;
+        }
+
+        [Obsolete("Probably useless")]
+        private AnalysisTreeListNode CreateFromOperationProperty(
+            PropertyInfo property,
+            IOperation operation)
+        {
+            switch (property.Name)
+            {
+                case nameof(IBlockOperation.Operations):
+                {
+                    var node = CreateFromProperty(property, operation)
+                        with
+                        {
+                            AssociatedSyntaxObjectContent = operation.Syntax,
+                        };
+                    return node;
+                }
+                case nameof(ILoopOperation.ChildOperations):
+                {
+                    var node = CreateFromProperty(property, operation)
+                        with
+                    {
+                        AssociatedSyntaxObjectContent = operation.Syntax,
+                    };
+                    return node;
+                }
+            }
+
+            return CreateFromProperty(property, operation);
         }
     }
 

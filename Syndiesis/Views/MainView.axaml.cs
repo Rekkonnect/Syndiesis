@@ -30,6 +30,7 @@ public partial class MainView : UserControl
         InitializeView();
         InitializeEvents();
         ApplyCurrentSettingsWithoutAnalysis();
+        InitializeAnalysisView();
     }
 
     private void InitializeView()
@@ -55,13 +56,11 @@ public partial class MainView : UserControl
         analysisTreeViewTabs.Envelopes =
         [
             Envelope("Syntax", AnalysisNodeKind.Syntax),
-            Envelope("Operations", AnalysisNodeKind.Operation),
             Envelope("Symbols", AnalysisNodeKind.Symbol),
+            Envelope("Operations", AnalysisNodeKind.Operation),
         ];
 
         analysisTreeViewTabs.TabSelected += HandleSelectedAnalysisTab;
-
-        analysisTreeViewTabs.SelectIndex(0);
 
         static TabEnvelope Envelope(string text, AnalysisNodeKind analysisKind)
         {
@@ -104,6 +103,7 @@ public partial class MainView : UserControl
         var analysisFactory = new AnalysisExecutionFactory(ViewModel.CompilationSource);
         var analysisExecution = analysisFactory.CreateAnalysisExecution(analysisKind);
         AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
+        AnalysisPipelineHandler.IgnoreInputDelayOnce();
         _ = AnalysisPipelineHandler.ForceAnalysis();
     }
 
@@ -218,11 +218,16 @@ public partial class MainView : UserControl
         var analysisExecution = AnalysisPipelineHandler.AnalysisExecution;
         if (analysisExecution is not null)
         {
-            analysisExecution.NodeLineOptions = settings.NodeLineOptions;
+            analysisExecution.CreationOptions = settings.NodeLineOptions;
         }
 
         AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
         expandAllButton.IsVisible = settings.EnableExpandingAllNodes;
+    }
+
+    private void InitializeAnalysisView()
+    {
+        analysisTreeViewTabs.SelectIndex(0);
     }
 
     public void Reset()

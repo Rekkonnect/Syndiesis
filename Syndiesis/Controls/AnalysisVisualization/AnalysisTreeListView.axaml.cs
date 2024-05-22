@@ -7,6 +7,7 @@ using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
@@ -138,11 +139,17 @@ public partial class AnalysisTreeListView : UserControl
             return null;
 
         var current = startNode;
+        var targetKind = TargetAnalysisNodeKind;
         while (true)
         {
             var parentNode = current.ParentNode;
             if (parentNode is null)
                 return current;
+
+            if (current.NodeLine.AnalysisNodeKind != targetKind)
+            {
+                goto next;
+            }
 
             var displaySpan = parentNode.NodeLine.DisplaySpan;
             bool contained = displaySpan.Contains(start)
@@ -153,6 +160,7 @@ public partial class AnalysisTreeListView : UserControl
                 return parentNode;
             }
 
+        next:
             current = parentNode;
         }
     }
@@ -326,13 +334,34 @@ public partial class AnalysisTreeListView : UserControl
 
     public void HighlightPosition(int position)
     {
-        var node = GetNodeAtPosition(position);
+        var node = GetTargetKindNodeAtPosition(position);
         if (node is null)
             return;
 
         OverrideHover(node);
         BringToView(node);
         return;
+    }
+
+    private AnalysisTreeListNode? GetTargetKindNodeAtPosition(int position)
+    {
+        var node = GetNodeAtPosition(position);
+        if (node is null)
+            return null;
+
+        var current = node;
+        while (true)
+        {
+            if (current is null)
+                return null;
+
+            if (current.NodeLine.AnalysisNodeKind == TargetAnalysisNodeKind)
+            {
+                return current;
+            }
+
+            current = current.ParentNode;
+        }
     }
 
     private AnalysisTreeListNode? GetNodeAtPosition(int position)
@@ -356,7 +385,12 @@ public partial class AnalysisTreeListView : UserControl
             }
             var children = ExpandDemandChildren(current);
             var relevant = children
-                .FirstOrDefault(s => s.NodeLine.DisplaySpan.Contains(position));
+                .FirstOrDefault(s =>
+                {
+                    var nodeLine = s.NodeLine;
+                    return nodeLine.AnalysisNodeKind == TargetAnalysisNodeKind
+                        && nodeLine.DisplaySpan.Contains(position);
+                });
 
             // if no position corresponds to our tree, the position is within the node
             // but is not displayed in our tree (for example because trivia is hidden)

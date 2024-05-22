@@ -39,8 +39,13 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly SyntaxTriviaRootViewNodeCreator _syntaxTriviaCreator;
     private readonly SyntaxTriviaListRootViewNodeCreator _syntaxTriviaListCreator;
 
-    public SyntaxAnalysisNodeCreator(AnalysisNodeCreationOptions options)
-        : base(options)
+    // public for other creators to use
+    public readonly ChildlessSyntaxNodeRootViewNodeCreator ChildlessSyntaxCreator;
+
+    public SyntaxAnalysisNodeCreator(
+        AnalysisNodeCreationOptions options,
+        AnalysisNodeCreatorContainer parentContainer)
+        : base(options, parentContainer)
     {
         _treeCreator = new(this);
         _nodeOrTokenCreator = new(this);
@@ -50,6 +55,8 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         _syntaxTokenListCreator = new(this);
         _syntaxTriviaCreator = new(this);
         _syntaxTriviaListCreator = new(this);
+
+        ChildlessSyntaxCreator = new(this);
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode(
@@ -358,7 +365,7 @@ partial class SyntaxAnalysisNodeCreator
         }
     }
 
-    public sealed class SyntaxNodeRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
+    public class SyntaxNodeRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxNode>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
@@ -409,6 +416,15 @@ partial class SyntaxAnalysisNodeCreator
             children.Sort(AnalysisTreeViewNodeBuilderObjectSpanComparer.Instance);
 
             return children;
+        }
+    }
+
+    public class ChildlessSyntaxNodeRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
+        : SyntaxNodeRootViewNodeCreator(creator)
+    {
+        public override AnalysisNodeChildRetriever? GetChildRetriever(SyntaxNode node)
+        {
+            return null;
         }
     }
 

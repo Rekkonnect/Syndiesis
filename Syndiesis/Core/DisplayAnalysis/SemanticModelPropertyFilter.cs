@@ -5,9 +5,9 @@ using System.Reflection;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-public sealed class IOperationPropertyFilter : PropertyFilter
+public sealed class SemanticModelPropertyFilter : PropertyFilter
 {
-    public static readonly IOperationPropertyFilter Instance = new();
+    public static readonly SemanticModelPropertyFilter Instance = new();
 
     public override PropertyFilterResult FilterProperties(Type type)
     {
@@ -28,19 +28,14 @@ public sealed class IOperationPropertyFilter : PropertyFilter
         switch (name)
         {
             // Avoid recursion
-            case nameof(IOperation.Parent):
-            case nameof(IOperation.SemanticModel):
+            case nameof(SemanticModel.Compilation):
+            case nameof(SemanticModel.ParentModel):
+            case nameof(SemanticModel.SyntaxTree):
+
+            // Unimportant or overly specific properties
+            case nameof(SemanticModel.OriginalPositionForSpeculation):
                 return false;
 
-#pragma warning disable CS0618 // Type or member is obsolete
-
-            // Remove obsolete members
-            case nameof(IOperation.Children):
-                return false;
-
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            // We like all other publicly-exposed properties of the API
             default:
                 return true;
         }
