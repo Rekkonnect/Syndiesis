@@ -1,30 +1,35 @@
 ﻿using Avalonia.Collections;
 using Avalonia.Controls.Documents;
-using System;
+using Syndiesis.Core.DisplayAnalysis;
 using System.Collections.Generic;
 
 namespace Syndiesis.Controls.Inlines;
 
 public sealed class GroupedRunInlineCollection : AvaloniaList<object>
 {
-#pragma warning disable CS0809 // Obsolete member overrides non-obsolete member
-    [Obsolete("Use the other overloads", error: true)]
     public override void Add(object item)
     {
-        throw new InvalidOperationException("Use the other overloads");
+        var run = RunOrGrouped.FromObject(item);
+        Add(run);
     }
 
-    [Obsolete("Use the other overloads", error: true)]
     public override void AddRange(IEnumerable<object> items)
     {
-        throw new InvalidOperationException("Use the other overloads");
+        foreach (var item in items)
+        {
+            Add(item);
+        }
     }
-#pragma warning restore CS0809 // Obsolete member overrides non-obsolete member
 
     public GroupedRunInlineCollection() { }
     public GroupedRunInlineCollection(IEnumerable<RunOrGrouped> items) 
     {
         AddRange(items);
+    }
+
+    public void Add(GroupedRunInline.IBuilder builder)
+    {
+        base.Add(new RunOrGrouped(builder));
     }
 
     public void Add(RunOrGrouped run)
@@ -35,6 +40,11 @@ public sealed class GroupedRunInlineCollection : AvaloniaList<object>
     public void AddSingle(Run run)
     {
         Add(new SingleRunInline(run));
+    }
+
+    public void AddSingle(UIBuilder.Run run)
+    {
+        Add(new SingleRunInline.Builder(run));
     }
 
     public void AddRange(IEnumerable<RunOrGrouped> runs)
@@ -56,6 +66,33 @@ public sealed class GroupedRunInlineCollection : AvaloniaList<object>
         }
 
         return result;
+    }
+
+    public GroupedRunInlineCollection Build()
+    {
+        var result = new GroupedRunInlineCollection();
+        foreach (var obj in this)
+        {
+            result.Add(BuildObject(obj));
+        }
+        return result;
+    }
+
+    private static object BuildObject(object value)
+    {
+        switch (value)
+        {
+            case GroupedRunInline.IBuilder builder:
+                return builder.Build();
+
+            case RunOrGrouped run:
+                return run.Build();
+
+            case UIBuilder.Run run:
+                return run.Build();
+        }
+
+        return value;
     }
 
     public new RunOrGrouped this[int index]

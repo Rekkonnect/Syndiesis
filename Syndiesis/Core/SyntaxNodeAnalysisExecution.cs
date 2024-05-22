@@ -15,7 +15,7 @@ public class SyntaxNodeAnalysisExecution(SingleTreeCompilationSource compilation
 
         var syntaxTree = CompilationSource.Tree!;
 
-        AnalysisTreeListNode root;
+        UIBuilder.AnalysisTreeListNode root;
 
         if (NodeLineOptions.ShowSyntaxTreeRootNode)
         {

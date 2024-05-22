@@ -1,8 +1,18 @@
 ﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
+using Syndiesis.Controls.Inlines;
 using System.Collections.Generic;
 
 namespace Syndiesis.Core.DisplayAnalysis;
+
+using Run = UIBuilder.Run;
+using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
+using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
+
+using GroupedRunInline = GroupedRunInline.IBuilder;
+using SingleRunInline = SingleRunInline.Builder;
+using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
+using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
 
 public sealed partial class SemanticModelAnalysisNodeCreator(AnalysisNodeCreationOptions options)
     : BaseAnalysisNodeCreator(options)
@@ -35,13 +45,11 @@ public sealed partial class SemanticModelAnalysisNodeCreator(AnalysisNodeCreatio
     {
         var rootLine = CreateSemanticModelLine(semanticModel, valueSource);
         var children = GetChildRetrieverForSemanticModel(semanticModel);
-        return new AnalysisTreeListNode
-        {
-            NodeLine = rootLine,
-            ChildRetriever = children,
-            // TODO: Implement an association
-            AssociatedSyntaxObjectContent = null,
-        };
+        return AnalysisTreeListNode(
+            rootLine,
+            children,
+            null
+        );
     }
 
     private AnalysisTreeListNodeLine CreateSemanticModelLine(

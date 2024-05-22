@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls.Documents;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Garyon.Extensions;
 using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
@@ -15,6 +14,15 @@ using System.Reflection;
 using System.Text;
 
 namespace Syndiesis.Core.DisplayAnalysis;
+
+using Run = UIBuilder.Run;
+using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
+using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
+
+using GroupedRunInline = GroupedRunInline.IBuilder;
+using SingleRunInline = SingleRunInline.Builder;
+using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
+using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
 
 using KvpList = List<KeyValuePair<object, object?>>;
 
@@ -133,13 +141,13 @@ public abstract partial class BaseAnalysisNodeCreator
     protected GroupedRunInline NestedTypeDisplayGroupedRun(Type type)
     {
         var rightmost = TypeDisplayGroupedRun(type);
-        var runList = new List<RunOrGrouped> { rightmost };
+        var runList = new List<RunOrGrouped> { new(rightmost) };
 
         var outer = type.DeclaringType;
         while (outer is not null)
         {
             runList.Add(CreateQualifierSeparatorRun());
-            runList.Add(TypeDisplayGroupedRun(outer));
+            runList.Add(new(TypeDisplayGroupedRun(outer)));
             outer = outer.DeclaringType;
         }
 
@@ -165,7 +173,7 @@ public abstract partial class BaseAnalysisNodeCreator
             {
                 var argument = arguments[i];
                 var inner = TypeDisplayGroupedRun(argument);
-                innerRuns.Add(inner);
+                innerRuns.Add(new(inner));
 
                 if (i < arguments.Length - 1)
                 {
@@ -445,15 +453,17 @@ static string Code(string type)
         object? value,
         DisplayValueSource valueSource = default)
     {
-        var line = LineForNodeValue(value, valueSource);
-        return new()
-        {
-            NodeLine = line,
-        };
+        var line = LineForNodeValue(
+            value,
+            valueSource,
+            CommonStyles.PropertyAccessValueDisplay);
+        return AnalysisTreeListNode(line, null, null);
     }
 
     protected AnalysisTreeListNodeLine LineForNodeValue(
-        object? value, DisplayValueSource valueSource = default)
+        object? value,
+        DisplayValueSource valueSource,
+        NodeTypeDisplay nodeTypeDisplay)
     {
         var inlines = new GroupedRunInlineCollection();
 
@@ -461,11 +471,9 @@ static string Code(string type)
         var valueRun = RunForSimpleObjectValue(value);
         inlines.Add(valueRun);
 
-        return new()
-        {
-            GroupedRunInlines = inlines,
-            NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
-        };
+        return AnalysisTreeListNodeLine(
+            inlines,
+            CommonStyles.PropertyAccessValueDisplay);
     }
 
     protected SingleRunInline RunForSimpleObjectValue(object? value)
@@ -498,7 +506,35 @@ static string Code(string type)
 
     protected static Run Run(string text, IBrush brush)
     {
-        return new(text) { Foreground = brush };
+        return new(text, brush);
+    }
+
+    protected static Run Run(string text, IBrush brush, FontStyle fontStyle)
+    {
+        return new(
+            text,
+            brush,
+            fontStyle);
+    }
+
+    protected static AnalysisTreeListNodeLine AnalysisTreeListNodeLine(
+        GroupedRunInlineCollection inlines,
+        NodeTypeDisplay nodeTypeDisplay)
+    {
+        return new(
+            inlines,
+            nodeTypeDisplay);
+    }
+
+    protected static AnalysisTreeListNode AnalysisTreeListNode(
+        AnalysisTreeListNodeLine nodeLine,
+        AnalysisNodeChildRetriever? childRetriever,
+        object? associatedSyntaxObjectContent)
+    {
+        return new(
+            nodeLine,
+            childRetriever,
+            associatedSyntaxObjectContent);
     }
 
     protected static DisplayValueSource Property(string name)
@@ -525,8 +561,10 @@ static string Code(string type)
     protected static Run CreateNullValueRun()
     {
         const string nullDisplay = "[null]";
-        var run = Run(nullDisplay, CommonStyles.NullValueBrush);
-        run.FontStyle = FontStyle.Italic;
+        var run = Run(
+            nullDisplay,
+            CommonStyles.NullValueBrush,
+            FontStyle.Italic);
         return run;
     }
 
@@ -644,12 +682,11 @@ partial class BaseAnalysisNodeCreator
             var children = GetChildRetriever(value);
             var syntaxObject = AssociatedSyntaxObject(value);
             rootLine.AnalysisNodeKind = GetNodeKind(value);
-            return new AnalysisTreeListNode
-            {
-                NodeLine = rootLine,
-                ChildRetriever = children,
-                AssociatedSyntaxObjectContent = syntaxObject,
-            };
+            return AnalysisTreeListNode(
+                rootLine,
+                children,
+                syntaxObject
+            );
         }
 
         public abstract AnalysisNodeChildRetriever? GetChildRetriever(TValue value);
@@ -688,11 +725,9 @@ partial class BaseAnalysisNodeCreator
             var basicValueInline = BasicValueInline(value);
             inlines.Add(basicValueInline);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.PropertyAccessValueDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(object value)
@@ -745,9 +780,9 @@ partial class BaseAnalysisNodeCreator
             var value = kvp.Value;
 
             return new ComplexGroupedRunInline([
-                BasicValueInline(key),
+                new(BasicValueInline(key)),
                 Run(":  ", CommonStyles.SplitterBrush),
-                BasicValueInline(value),
+                new(BasicValueInline(value)),
             ]);
         }
 
@@ -795,11 +830,9 @@ partial class BaseAnalysisNodeCreator
             var run = Creator.RunForSimpleObjectValue(value);
             inlines.Add(run);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.PropertyAccessValueDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
@@ -820,11 +853,9 @@ partial class BaseAnalysisNodeCreator
             var valueRun = SingleRunForBoolean(value);
             inlines.Add(valueRun);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.PropertyAccessValueDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(bool value)
@@ -872,11 +903,9 @@ partial class BaseAnalysisNodeCreator
             var valueRun = EnumValueRun(value);
             inlines.AddSingle(valueRun);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.PropertyAccessValueDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(object value)
@@ -904,11 +933,9 @@ partial class BaseAnalysisNodeCreator
             var valueRun = CreateNullValueSingleRun();
             inlines.Add(valueRun);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.PropertyAccessValueDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
@@ -1025,11 +1052,9 @@ partial class BaseAnalysisNodeCreator
         {
             var inlines = CreateNodeDisplayRuns(value, valueSource);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = CommonStyles.PropertyAccessValueDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.PropertyAccessValueDisplay);
         }
 
         protected GroupedRunInlineCollection CreateNodeDisplayRuns(
@@ -1072,7 +1097,7 @@ partial class BaseAnalysisNodeCreator
             int count = (int)property.GetValue(value)!;
             var countRun = Run(count.ToString(), CommonStyles.RawValueBrush);
             return new ComplexGroupedRunInline([
-                propertyGroup,
+                new(propertyGroup),
                 separator,
                 countRun,
             ]);

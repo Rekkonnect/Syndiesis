@@ -48,6 +48,8 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
     protected override void OnPointerEntered(PointerEventArgs e)
     {
         var root = VisualRoot as InputElement;
+        if (root is null)
+            return;
         root!.KeyDown += HandleRootKeyEvent;
         root!.KeyUp += HandleRootKeyEvent;
     }
@@ -57,8 +59,10 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
         ClearHoveredInline();
 
         var root = VisualRoot as InputElement;
-        root!.KeyDown -= HandleRootKeyEvent;
-        root!.KeyUp -= HandleRootKeyEvent;
+        if (root is null)
+            return;
+        root.KeyDown -= HandleRootKeyEvent;
+        root.KeyUp -= HandleRootKeyEvent;
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)

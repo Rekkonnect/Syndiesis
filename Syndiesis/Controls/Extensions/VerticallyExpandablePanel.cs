@@ -7,6 +7,7 @@ using Avalonia.Styling;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
 using System;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,6 +54,32 @@ public class VerticallyExpandablePanel : Panel
         }
     }
 
+    public bool AnimateHeightChanges { get; set; } = true;
+
+    private bool _pendingChildrenHeightChange;
+
+    protected override void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        base.ChildrenChanged(sender, e);
+        if (AnimateHeightChanges)
+        {
+            _pendingChildrenHeightChange = true;
+        }
+    }
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        base.OnSizeChanged(e);
+
+        if (Height is double.NaN)
+            return;
+        if (_pendingChildrenHeightChange && AnimateHeightChanges)
+        {
+            _pendingChildrenHeightChange = false;
+            _ = AnimateCurrentHeight(default);
+        }
+    }
+
     protected override Size MeasureOverride(Size availableSize)
     {
         var totalSize = Size.Infinity;
@@ -67,6 +94,7 @@ public class VerticallyExpandablePanel : Panel
         totalSize = totalSize
             .WithHeight(height)
             ;
+
         return totalSize;
     }
 
@@ -136,6 +164,41 @@ public class VerticallyExpandablePanel : Panel
                     {
                         new Setter(ChildrenHeightRatioProperty, to),
                         new Setter(OpacityProperty, targetOpacity),
+                    }
+                },
+            }
+        };
+
+        await new TransitionAnimation(animation)
+            .RunAsync(this, cancellationToken);
+    }
+
+    private async Task AnimateCurrentHeight(
+        CancellationToken cancellationToken)
+    {
+        double from = Height;
+        double to = ChildrenHeight;
+
+        var animation = new Animation
+        {
+            Duration = TimeSpan.FromMilliseconds(300),
+            Easing = Singleton<CubicEaseOut>.Instance,
+            Children =
+            {
+                new KeyFrame
+                {
+                    Cue = new Cue(0.00),
+                    Setters =
+                    {
+                        new Setter(ChildrenHeightRatioProperty, from),
+                    }
+                },
+                new KeyFrame
+                {
+                    Cue = new Cue(1.00),
+                    Setters =
+                    {
+                        new Setter(ChildrenHeightRatioProperty, to),
                     }
                 },
             }

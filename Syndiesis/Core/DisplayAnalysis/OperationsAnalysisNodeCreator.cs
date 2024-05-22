@@ -1,10 +1,20 @@
 ﻿using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
+using Syndiesis.Controls.Inlines;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
+
+using Run = UIBuilder.Run;
+using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
+using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
+
+using GroupedRunInline = GroupedRunInline.IBuilder;
+using SingleRunInline = SingleRunInline.Builder;
+using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
+using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
 
 public sealed partial class OperationsAnalysisNodeCreator
     : BaseAnalysisNodeCreator
@@ -78,13 +88,11 @@ partial class OperationsAnalysisNodeCreator
         {
             var type = operation.GetType();
             var preferredType = _propertyCache.FilterForType(type).PreferredType ?? type;
-            var inlines = Creator.NestedTypeDisplayGroupedRun(preferredType);
+            var inline = Creator.NestedTypeDisplayGroupedRun(preferredType);
 
-            return new()
-            {
-                GroupedRunInlines = [inlines],
-                NodeTypeDisplay = Styles.OperationDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                [inline],
+                Styles.OperationDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(IOperation operation)
@@ -112,13 +120,11 @@ partial class OperationsAnalysisNodeCreator
             OperationTree operationTree, DisplayValueSource valueSource)
         {
             var type = operationTree.GetType();
-            var inlines = Creator.NestedTypeDisplayGroupedRun(type);
+            var inline = Creator.NestedTypeDisplayGroupedRun(type);
 
-            return new()
-            {
-                GroupedRunInlines = [inlines],
-                NodeTypeDisplay = Styles.OperationTreeDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                [inline],
+                Styles.OperationTreeDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(OperationTree operationTree)
@@ -151,13 +157,13 @@ partial class OperationsAnalysisNodeCreator
 
     public abstract class Styles : CommonStyles
     {
-        public static readonly Color OperationColor = Color.FromUInt32(0xFF33E5A5);
+        public static readonly Color OperationColor = InterfaceMainColor;
         public static readonly SolidColorBrush OperationBrush = new(OperationColor);
 
         public static readonly NodeTypeDisplay OperationDisplay
             = new(Types.Operation, OperationColor);
 
         public static readonly NodeTypeDisplay OperationTreeDisplay
-            = new(Types.OperationTree, OperationColor);
+            = new(Types.OperationTree, ClassMainColor);
     }
 }

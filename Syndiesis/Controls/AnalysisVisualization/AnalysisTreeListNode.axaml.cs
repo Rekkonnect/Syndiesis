@@ -3,13 +3,19 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Threading;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
+
+using NodeChildren = IReadOnlyList<AnalysisTreeListNode>;
+using NodeBuilderChildren = IReadOnlyList<UIBuilder.AnalysisTreeListNode>;
 
 public partial class AnalysisTreeListNode : UserControl
 {
@@ -31,17 +37,14 @@ public partial class AnalysisTreeListNode : UserControl
         set => NodeLine.AssociatedSyntaxObject = value;
     }
 
-    public static readonly StyledProperty<AnalysisTreeListNodeLine> NodeLineProperty =
-        AvaloniaProperty.Register<CodeEditorLine, AnalysisTreeListNodeLine>(
-            nameof(NodeLine),
-            defaultValue: new());
+    private AnalysisTreeListNodeLine _nodeLine = new();
 
     public AnalysisTreeListNodeLine NodeLine
     {
-        get => GetValue(NodeLineProperty);
+        get => _nodeLine;
         set
         {
-            SetValue(NodeLineProperty, value);
+            _nodeLine = value;
             topNodeContent.Content = value;
             value.HasChildren = _childRetriever is not null;
         }
@@ -59,7 +62,8 @@ public partial class AnalysisTreeListNode : UserControl
 
     public bool HasChildren => NodeLine.HasChildren;
 
-    private AdvancedLazy<IReadOnlyList<AnalysisTreeListNode>>? _childRetriever;
+    private AdvancedLazy<NodeBuilderChildren>? _childRetriever;
+    private NodeChildren? _loadedChildren;
 
     public AnalysisNodeChildRetriever? ChildRetriever
     {
@@ -68,31 +72,24 @@ public partial class AnalysisTreeListNode : UserControl
             if (value is null)
             {
                 _childRetriever = null;
+                innerStackPanel.Children.Clear();
             }
             else
             {
                 // if only delegates could be converted more seamlessly
-                _childRetriever = new(new Func<IReadOnlyList<AnalysisTreeListNode>>(value));
+                _childRetriever = new(new Func<NodeBuilderChildren>(value));
+                innerStackPanel.Children.ClearSetValue(new LoadingTreeListNode());
             }
 
             NodeLine.HasChildren = value is not null;
         }
     }
 
-    public IReadOnlyList<AnalysisTreeListNode> LazyChildren
+    public NodeChildren LazyChildren
     {
         get
         {
-            return _childRetriever?.ValueOrDefault ?? [];
-        }
-    }
-
-    public IReadOnlyList<AnalysisTreeListNode> DemandedChildren
-    {
-        get
-        {
-            EnsureInitializedChildren();
-            return _childRetriever?.Value ?? [];
+            return _loadedChildren ?? [];
         }
     }
 
@@ -119,7 +116,6 @@ public partial class AnalysisTreeListNode : UserControl
     public AnalysisTreeListNode()
     {
         InitializeComponent();
-        expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Expanded);
     }
 
     private static readonly Color _topLineHoverColor = Color.FromArgb(64, 128, 128, 128);
@@ -128,15 +124,15 @@ public partial class AnalysisTreeListNode : UserControl
     private readonly SolidColorBrush _topLineBackgroundBrush = new(Colors.Transparent);
     private readonly SolidColorBrush _expandableCanvasBackgroundBrush = new(Colors.Transparent);
 
-    public void EnsureInitializedChildren(bool flag)
+    public async Task RequestInitializedChildren(bool flag)
     {
         if (flag)
         {
-            EnsureInitializedChildren();
+            await RequestInitializedChildren();
         }
     }
 
-    public void EnsureInitializedChildren()
+    public async Task RequestInitializedChildren()
     {
         if (_childRetriever is null)
             return;
@@ -144,14 +140,25 @@ public partial class AnalysisTreeListNode : UserControl
         if (_childRetriever.IsValueCreated)
             return;
 
-        var value = _childRetriever.Value;
-        innerStackPanel.Children.ClearSetValues(value);
-        // this is necessary to avoid overriding the height of the node
-        expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Collapsed);
-        foreach (var child in value)
+        await Task.Run(_childRetriever.GetValueAsync)
+            .ContinueWith(result => SetLoadedChildren(result.Result))
+            ;
+    }
+
+    private void SetLoadedChildren(NodeBuilderChildren builders)
+    {
+        void UIUpdate()
         {
-            child.ListView = ListView;
+            var children = builders.Select(s => s.Build()).ToList();
+
+            innerStackPanel.Children.ClearSetValues(children);
+            foreach (var child in children)
+            {
+                child.ListView = ListView;
+            }
         }
+
+        Dispatcher.UIThread.Invoke(UIUpdate);
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)
@@ -191,8 +198,7 @@ public partial class AnalysisTreeListNode : UserControl
         if (isHovered)
         {
             ListView?.OverrideHover(this);
-            // when the user clicks on this node, the animation must not be broken
-            EnsureInitializedChildren();
+            RequestInitializedChildren();
         }
         else
         {
@@ -223,7 +229,9 @@ public partial class AnalysisTreeListNode : UserControl
     internal void UpdateHovering(bool isHovered)
     {
         var topLineBackgroundColor = isHovered ? _topLineHoverColor : Colors.Transparent;
-        var expandableCanvasBackgroundColor = isHovered ? _expandableCanvasHoverColor : Colors.Transparent;
+        var expandableCanvasBackgroundColor = isHovered
+            ? _expandableCanvasHoverColor
+            : Colors.Transparent;
         _topLineBackgroundBrush.Color = topLineBackgroundColor;
         _expandableCanvasBackgroundBrush.Color = expandableCanvasBackgroundColor;
 
@@ -261,15 +269,25 @@ public partial class AnalysisTreeListNode : UserControl
                     break;
 
                 case KeyModifiers.Alt:
-                    EnsureInitializedChildren(true);
-                    foreach (var node in LazyChildren)
-                    {
-                        int depth = AppSettings.Instance.RecursiveExpansionDepth;
-                        node.SetExpansionWithoutAnimationRecursively(true, depth);
-                    }
-                    Expand();
+                    ExpandRecursively();
                     break;
             }
+        }
+    }
+
+    private void ExpandRecursively()
+    {
+        int depth = AppSettings.Instance.RecursiveExpansionDepth;
+        _ = ExpandRecursivelyAsync(depth);
+    }
+
+    private async Task ExpandRecursivelyAsync(int depth)
+    {
+        Expand();
+        await RequestInitializedChildren(true);
+        foreach (var node in LazyChildren)
+        {
+            await node.ExpandRecursivelyAsync(depth - 1);
         }
     }
 
@@ -288,7 +306,7 @@ public partial class AnalysisTreeListNode : UserControl
         if (depth <= 0)
             return;
 
-        EnsureInitializedChildren(expand);
+        _ = RequestInitializedChildren(expand);
         foreach (var node in LazyChildren)
         {
             node.SetExpansionWithoutAnimationRecursively(expand, depth - 1);
@@ -298,7 +316,7 @@ public partial class AnalysisTreeListNode : UserControl
 
     public void SetExpansionWithoutAnimation(bool expand)
     {
-        EnsureInitializedChildren(expand);
+        _ = RequestInitializedChildren(expand);
         var state = expand ? ExpansionState.Expanded : ExpansionState.Collapsed;
         NodeLine.IsExpanded = expand;
         expandableCanvas.SetExpansionStateWithoutAnimation(state);
@@ -329,7 +347,7 @@ public partial class AnalysisTreeListNode : UserControl
         _expansionAnimationCancellationTokenFactory.Cancel();
 
         var animationToken = _expansionAnimationCancellationTokenFactory.CurrentToken;
-        EnsureInitializedChildren(expand);
+        _ = RequestInitializedChildren(expand);
         _ = expandableCanvas.SetExpansionState(expand, animationToken);
     }
 }

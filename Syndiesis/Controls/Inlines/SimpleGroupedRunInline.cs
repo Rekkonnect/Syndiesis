@@ -1,5 +1,7 @@
 ﻿using Avalonia.Controls.Documents;
+using Syndiesis.Core.DisplayAnalysis;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Syndiesis.Controls.Inlines;
@@ -38,5 +40,19 @@ public sealed class SimpleGroupedRunInline : GroupedRunInline
     public override void AppendToInlines(InlineCollection inlines)
     {
         inlines.AddRange(Children);
+    }
+
+    public sealed record Builder(
+        List<UIBuilder.Run>? Children = null)
+        : Builder<SimpleGroupedRunInline>()
+    {
+        public override SimpleGroupedRunInline Build()
+        {
+            if (Children is null)
+                return new();
+
+            var built = Children.Select(s => s.Build());
+            return new(built);
+        }
     }
 }

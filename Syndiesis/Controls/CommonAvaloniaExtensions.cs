@@ -23,6 +23,12 @@ public static partial class CommonAvaloniaExtensions
         control.SetValue(setter.Property!, setter.Value);
     }
 
+    public static void ClearSetValue<T>(this AvaloniaList<T> source, T value)
+    {
+        source.Clear();
+        source.Add(value);
+    }
+
     public static void ClearSetValues<T>(this AvaloniaList<T> source, IReadOnlyList<T> values)
     {
         source.Clear();

@@ -1,5 +1,4 @@
-﻿using Avalonia.Controls.Documents;
-using Avalonia.Media;
+﻿using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Syndiesis.Controls.AnalysisVisualization;
@@ -12,6 +11,15 @@ using System.Linq;
 using System.Reflection;
 
 namespace Syndiesis.Core.DisplayAnalysis;
+
+using Run = UIBuilder.Run;
+using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
+using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
+
+using GroupedRunInline = GroupedRunInline.IBuilder;
+using SingleRunInline = SingleRunInline.Builder;
+using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
+using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
 
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
 
@@ -233,7 +241,7 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
 
                 return new ComplexGroupedRunInline([
                     outerRun,
-                    inner,
+                    new(inner),
                     closingTag,
                 ]);
             }
@@ -292,11 +300,9 @@ partial class SyntaxAnalysisNodeCreator
 
             var language = tree.GetLanguage();
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = DisplayForLanguage(language),
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                DisplayForLanguage(language));
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(SyntaxTree tree)
@@ -359,11 +365,9 @@ partial class SyntaxAnalysisNodeCreator
         {
             var inlines = Creator.CreateSyntaxTypeInlines(node, valueSource);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = Styles.ClassNodeDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.ClassNodeDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(SyntaxNode node)
@@ -398,7 +402,7 @@ partial class SyntaxAnalysisNodeCreator
                 }
             }
 
-            children.Sort(AnalysisTreeViewNodeObjectSpanComparer.Instance);
+            children.Sort(AnalysisTreeViewNodeBuilderObjectSpanComparer.Instance);
 
             return children;
         }
@@ -415,11 +419,9 @@ partial class SyntaxAnalysisNodeCreator
             Creator.AppendValueSource(valueSource, inlines);
             AppendTokenKindDetails(token, valueSource.Name, inlines);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = Styles.TokenNodeDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.TokenNodeDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(SyntaxToken token)
@@ -449,8 +451,7 @@ partial class SyntaxAnalysisNodeCreator
             var kindBrush = needsFadeBrush
                 ? Styles.FadeTokenKindBrush
                 : Styles.TokenKindBrush;
-            var kindRun = Run(kindName, kindBrush);
-            kindRun.FontStyle = FontStyle.Italic;
+            var kindRun = Run(kindName, kindBrush, FontStyle.Italic);
 
             inlines.Add(displayTextRun);
             inlines.Add(NewValueKindSplitterRun());
@@ -459,6 +460,9 @@ partial class SyntaxAnalysisNodeCreator
 
         private IReadOnlyList<AnalysisTreeListNode> CreateTokenChildren(SyntaxToken token)
         {
+            // FAKE DELAY TO TEST RESPONSIVENESS
+            //Task.Delay(2000).Wait();
+
             SyntaxTriviaList leadingTrivia = default;
             SyntaxTriviaList trailingTrivia = default;
             if (Options.ShowTrivia)
@@ -499,7 +503,7 @@ partial class SyntaxAnalysisNodeCreator
                 }
             }
 
-            children.Sort(AnalysisTreeViewNodeObjectSpanComparer.Instance);
+            children.Sort(AnalysisTreeViewNodeBuilderObjectSpanComparer.Instance);
 
             return children;
         }
@@ -518,12 +522,11 @@ partial class SyntaxAnalysisNodeCreator
 
         private AnalysisTreeListNode CreateDisplayNode(SyntaxToken token)
         {
-            return new()
-            {
-                NodeLine = CreateDisplayNodeLine(token),
-                ChildRetriever = () => CreatePropertyAnalysisChildren(token),
-                AssociatedSyntaxObjectContent = token,
-            };
+            return AnalysisTreeListNode(
+                CreateDisplayNodeLine(token),
+                () => CreatePropertyAnalysisChildren(token),
+                token
+            );
         }
 
         private IReadOnlyList<AnalysisTreeListNode> CreatePropertyAnalysisChildren(SyntaxToken token)
@@ -543,8 +546,10 @@ partial class SyntaxAnalysisNodeCreator
         private AnalysisTreeListNodeLine CreateDisplayNodeLine(SyntaxToken token)
         {
             var fullText = token.Text;
-            var line = Creator.LineForNodeValue(fullText);
-            line.NodeTypeDisplay = Styles.DisplayValueDisplay;
+            var line = Creator.LineForNodeValue(
+                fullText,
+                default,
+                Styles.DisplayValueDisplay);
             return line;
         }
 
@@ -607,22 +612,20 @@ partial class SyntaxAnalysisNodeCreator
 
         private static AnalysisTreeListNode CreateEndOfFileDisplayNode(SyntaxToken token)
         {
-            return new()
-            {
-                NodeLine = CreateEndOfFileDisplayNodeLine(),
-                AssociatedSyntaxObjectContent = token,
-            };
+            return AnalysisTreeListNode(
+                CreateEndOfFileDisplayNodeLine(),
+                null,
+                token
+            );
         }
 
         private static AnalysisTreeListNodeLine CreateEndOfFileDisplayNodeLine()
         {
             var eofRun = new SingleRunInline(CreateEofRun());
 
-            return new()
-            {
-                GroupedRunInlines = [eofRun],
-                NodeTypeDisplay = Styles.DisplayValueDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                [eofRun],
+                Styles.DisplayValueDisplay);
         }
 
         private static Run CreateEofRun()
@@ -675,11 +678,9 @@ partial class SyntaxAnalysisNodeCreator
         {
             var inlines = Creator.CreateSyntaxTypeInlines(node, valueSource);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = Styles.SyntaxListNodeDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.SyntaxListNodeDisplay);
         }
 
         private IReadOnlyList<AnalysisTreeListNode> CreateNodeListChildren(ReadOnlySyntaxNodeList list)
@@ -712,11 +713,9 @@ partial class SyntaxAnalysisNodeCreator
         {
             var inlines = Creator.CreateSyntaxTypeInlines(list, valueSource);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = Styles.TokenListNodeDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.TokenListNodeDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(SyntaxTokenList list)
@@ -747,11 +746,7 @@ partial class SyntaxAnalysisNodeCreator
             Creator.AppendValueSource(valueSource, inlines);
             var display = FormatTriviaDisplay(trivia, inlines);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = display,
-            };
+            return AnalysisTreeListNodeLine(inlines, display);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(SyntaxTrivia trivia)
@@ -1002,8 +997,7 @@ partial class SyntaxAnalysisNodeCreator
             inlines.Add(NewValueKindSplitterRun());
 
             var triviaKindText = trivia.Kind().ToString();
-            var triviaKindRun = Run(triviaKindText, brush);
-            triviaKindRun.FontStyle = FontStyle.Italic;
+            var triviaKindRun = Run(triviaKindText, brush, FontStyle.Italic);
             inlines.AddSingle(triviaKindRun);
         }
 
@@ -1022,11 +1016,9 @@ partial class SyntaxAnalysisNodeCreator
         {
             var inlines = Creator.CreateSyntaxTypeInlines(list, valueSource);
 
-            return new()
-            {
-                GroupedRunInlines = inlines,
-                NodeTypeDisplay = Styles.TriviaListDisplay,
-            };
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.TriviaListDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(SyntaxTriviaList list)

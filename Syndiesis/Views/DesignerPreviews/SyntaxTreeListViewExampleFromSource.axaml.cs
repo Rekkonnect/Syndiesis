@@ -32,6 +32,6 @@ public partial class AnalysisTreeListViewExampleFromSource : AnalysisTreeListVie
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
 
         var nodeRoot = creator.CreateRootTree(syntaxTree);
-        RootNode = nodeRoot;
+        RootNode = nodeRoot.Build();
     }
 }

@@ -19,17 +19,14 @@ public partial class AnalysisTreeListView : UserControl
     private bool _allowedHover;
     private AnalysisTreeListNode? _hoveredNode;
 
-    public static readonly StyledProperty<AnalysisTreeListNode> RootNodeProperty =
-        AvaloniaProperty.Register<CodeEditorLine, AnalysisTreeListNode>(
-            nameof(RootNode),
-            defaultValue: new());
+    private AnalysisTreeListNode _rootNode = new();
 
     public AnalysisTreeListNode RootNode
     {
-        get => GetValue(RootNodeProperty);
+        get => _rootNode;
         set
         {
-            SetValue(RootNodeProperty, value);
+            _rootNode = value;
             topLevelNodeContent.Content = value;
 
             value.SetListViewRecursively(this);
@@ -352,7 +349,7 @@ public partial class AnalysisTreeListView : UserControl
         var current = RootNode;
         while (true)
         {
-            current.EnsureInitializedChildren();
+            _ = current.RequestInitializedChildren();
             if (!current.HasChildren)
             {
                 return current;
