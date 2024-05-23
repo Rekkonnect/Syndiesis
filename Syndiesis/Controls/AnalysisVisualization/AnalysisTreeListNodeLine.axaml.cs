@@ -41,7 +41,7 @@ public partial class AnalysisTreeListNodeLine : UserControl
         }
     }
 
-    private string _nodeTypeText;
+    private string _nodeTypeText = string.Empty;
 
     public string NodeTypeText
     {

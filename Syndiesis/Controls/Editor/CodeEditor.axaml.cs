@@ -229,7 +229,7 @@ public partial class CodeEditor : UserControl
 
     public static int VisibleLines(double height)
     {
-        return (int)(height / LineHeight);
+        return (int)(height / LineHeight) + 1;
     }
 
     private void ForceUpdateText()

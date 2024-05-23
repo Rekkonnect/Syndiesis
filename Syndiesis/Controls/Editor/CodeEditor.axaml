@@ -37,8 +37,8 @@
       </Panel>
       <Panel
         Grid.Column="1"
-        ZIndex="-10"
         Name="codeCanvasContainer"
+        controls:CursorContainer.Cursor="Ibeam"
         >
         <Canvas
           Name="codeCanvas"
