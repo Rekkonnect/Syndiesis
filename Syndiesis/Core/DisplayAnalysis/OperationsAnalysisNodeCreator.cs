@@ -33,8 +33,8 @@ public sealed partial class OperationsAnalysisNodeCreator
         : base(options, parentContainer)
     {
         _operationCreator = new(this);
-        _operationTreeCreator = new(this);
         _operationListCreator = new(this);
+        _operationTreeCreator = new(this);
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode(

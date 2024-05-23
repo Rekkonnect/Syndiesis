@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -108,6 +109,10 @@ public sealed record SyntaxObjectInfo(
             case SemanticModel semanticModel:
                 return semanticModel.SyntaxTree;
 
+            // Symbol
+            case ISymbol symbol:
+                return symbol.DeclaringSyntaxReferences.FirstOrDefault()?.SyntaxTree;
+
             case null:
                 return null;
         }
@@ -151,6 +156,14 @@ public sealed record SyntaxObjectInfo(
             // Semantic model
             case SemanticModel semanticModel:
                 return GetSpan(semanticModel.SyntaxTree);
+
+            // Symbol
+            case ISymbol symbol:
+                // NOTE: This will not work well for partial declarations.
+                // Partial declarations could have multiple such references, and thus
+                // result in inaccurate behavior when interacting with the code.
+                return symbol.DeclaringSyntaxReferences.FirstOrDefault()
+                    ?.GetSyntax().Span ?? default;
         }
 
         return default;
@@ -192,6 +205,14 @@ public sealed record SyntaxObjectInfo(
             // Semantic model
             case SemanticModel semanticModel:
                 return GetFullSpan(semanticModel.SyntaxTree);
+
+            // Symbol
+            case ISymbol symbol:
+                // NOTE: This will not work well for partial declarations.
+                // Partial declarations could have multiple such references, and thus
+                // result in inaccurate behavior when interacting with the code.
+                return symbol.DeclaringSyntaxReferences.FirstOrDefault()
+                    ?.GetSyntax().FullSpan ?? default;
         }
 
         return default;
@@ -201,7 +222,7 @@ public sealed record SyntaxObjectInfo(
         IReadOnlyList<T?> nodeList,
         Func<object, TextSpan> spanGetter)
     {
-        if (nodeList.Count is 0)
+        if (nodeList.IsEmpty())
             return default;
 
         var first = nodeList[0];
@@ -209,10 +230,49 @@ public sealed record SyntaxObjectInfo(
         if (nodeList.Count is 1)
             return firstSpan;
 
-        var start = firstSpan.Start;
-        var last = nodeList[^1];
-        var lastSpan = spanGetter(last!);
-        var end = lastSpan.End;
-        return TextSpan.FromBounds(start, end);
+        if (first is ISymbol symbol)
+        {
+            return Symbol();
+
+            TextSpan Symbol()
+            {
+                bool hasValid = !firstSpan.IsEmpty;
+                var start = firstSpan.Start;
+                var end = firstSpan.End;
+
+                int count = nodeList.Count;
+                for (int i = 1; i < count; i++)
+                {
+                    var node = nodeList[i]!;
+                    var span = spanGetter(node);
+                    if (span.IsEmpty)
+                        continue;
+
+                    if (!hasValid)
+                    {
+                        start = span.Start;
+                        end = span.End;
+                        hasValid = true;
+                        continue;
+                    }
+
+                    start = Math.Min(start, span.Start);
+                    end = Math.Max(end, span.End);
+                }
+
+                return TextSpan.FromBounds(start, end);
+            }
+        }
+
+        return General();
+
+        TextSpan General()
+        {
+            var start = firstSpan.Start;
+            var last = nodeList[^1];
+            var lastSpan = spanGetter(last!);
+            var end = lastSpan.End;
+            return TextSpan.FromBounds(start, end);
+        }
     }
 }

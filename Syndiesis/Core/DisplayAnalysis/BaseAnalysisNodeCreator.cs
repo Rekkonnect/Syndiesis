@@ -1176,7 +1176,7 @@ partial class BaseAnalysisNodeCreator
                 return null;
 
             var propertyGroup = new SingleRunInline(Run(propertyName, CommonStyles.PropertyBrush));
-            var separator = Run(": ", CommonStyles.SplitterBrush);
+            var separator = Run(":  ", CommonStyles.SplitterBrush);
             int count = (int)property.GetValue(value)!;
             var countRun = Run(count.ToString(), CommonStyles.RawValueBrush);
             return new ComplexGroupedRunInline([

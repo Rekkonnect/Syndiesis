@@ -10,7 +10,7 @@ public class SymbolAnalysisExecution(SingleTreeCompilationSource compilationSour
         CancellationToken token)
     {
         var container = CreateCreatorContainer();
-        var creator = container.SyntaxCreator;
+        var creator = container.SymbolCreator;
 
         if (token.IsCancellationRequested)
             return Task.FromCanceled<AnalysisResult>(token);

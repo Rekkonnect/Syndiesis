@@ -9,9 +9,20 @@ namespace Syndiesis.Core;
 public sealed class SingleTreeCompilationSource
 {
     public Compilation Compilation { get; private set; }
-        = CSharpCompilation.Create("Syndiesis.UserSource");
 
     public SyntaxTree? Tree { get; private set; }
+
+    public SingleTreeCompilationSource()
+    {
+        InitializeCompilation();
+    }
+
+    [MemberNotNull(nameof(Compilation))]
+    private void InitializeCompilation()
+    {
+        Compilation = CSharpCompilation.Create("Syndiesis.UserSource")
+            .WithReferences(CompilationReferences.CurrentNetVersion);
+    }
 
     [MemberNotNull(nameof(Tree))]
     public void SetSource(string source, CancellationToken cancellationToken)
