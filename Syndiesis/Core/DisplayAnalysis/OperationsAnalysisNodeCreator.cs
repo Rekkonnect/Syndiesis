@@ -1,13 +1,10 @@
 ﻿using Avalonia.Media;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Operations;
-using SkiaSharp;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -27,6 +24,7 @@ public sealed partial class OperationsAnalysisNodeCreator
 
     // node creators
     private readonly OperationRootViewNodeCreator _operationCreator;
+    private readonly OperationListRootViewNodeCreator _operationListCreator;
     private readonly OperationTreeRootViewNodeCreator _operationTreeCreator;
 
     public OperationsAnalysisNodeCreator(
@@ -36,6 +34,7 @@ public sealed partial class OperationsAnalysisNodeCreator
     {
         _operationCreator = new(this);
         _operationTreeCreator = new(this);
+        _operationListCreator = new(this);
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode(
@@ -46,6 +45,9 @@ public sealed partial class OperationsAnalysisNodeCreator
         {
             case IOperation operation:
                 return CreateRootOperation(operation, valueSource);
+
+            case IReadOnlyList<IOperation> operationList:
+                return CreateRootOperationList(operationList, valueSource);
 
             case OperationTree operationTree:
                 return CreateRootOperationTree(operationTree, valueSource);
@@ -66,6 +68,13 @@ public sealed partial class OperationsAnalysisNodeCreator
         DisplayValueSource valueSource)
     {
         return _operationCreator.CreateNode(operation, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootOperationList(
+        IReadOnlyList<IOperation> operations,
+        DisplayValueSource valueSource)
+    {
+        return _operationListCreator.CreateNode(operations, valueSource);
     }
 
     public AnalysisTreeListNode CreateRootOperationTree(
@@ -105,12 +114,35 @@ partial class OperationsAnalysisNodeCreator
             Creator.AppendValueSource(valueSource, inlines);
             var type = operation.GetType();
             var preferredType = _propertyCache.FilterForType(type).PreferredType ?? type;
-            var inline = Creator.NestedTypeDisplayGroupedRun(preferredType);
-            inlines.Add(inline);
+            var typeDetailsInline = TypeDetailsInline(preferredType);
+            inlines.Add(typeDetailsInline);
+            inlines.Add(NewValueKindSplitterRun());
+            var kindInline = CreateKindInline(operation.Kind);
+            inlines.Add(kindInline);
 
             return AnalysisTreeListNodeLine(
                 inlines,
                 Styles.OperationDisplay);
+        }
+
+        private GroupedRunInline TypeDetailsInline(Type type)
+        {
+            if (type == typeof(IOperation))
+            {
+                return new SingleRunInline(Run(type.Name, Styles.InterfaceMainBrush));
+            }
+
+            var typeName = type.Name;
+
+            const string operationSuffix = "Operation";
+            return TypeDisplayWithFadeSuffix(
+                typeName, operationSuffix,
+                Styles.InterfaceMainBrush, Styles.InterfaceSecondaryBrush);
+        }
+
+        private SingleRunInline CreateKindInline(OperationKind kind)
+        {
+            return new(Run(kind.ToString(), CommonStyles.ConstantMainBrush));
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(IOperation operation)
@@ -130,35 +162,41 @@ partial class OperationsAnalysisNodeCreator
                 .ToList()
                 ;
         }
+    }
 
-        [Obsolete("Probably useless")]
-        private AnalysisTreeListNode CreateFromOperationProperty(
-            PropertyInfo property,
-            IOperation operation)
+    public sealed class OperationListRootViewNodeCreator(OperationsAnalysisNodeCreator creator)
+        : OperationRootViewNodeCreator<IReadOnlyList<IOperation>>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            IReadOnlyList<IOperation> operations, DisplayValueSource valueSource)
         {
-            switch (property.Name)
-            {
-                case nameof(IBlockOperation.Operations):
-                {
-                    var node = CreateFromProperty(property, operation)
-                        with
-                        {
-                            AssociatedSyntaxObjectContent = operation.Syntax,
-                        };
-                    return node;
-                }
-                case nameof(ILoopOperation.ChildOperations):
-                {
-                    var node = CreateFromProperty(property, operation)
-                        with
-                    {
-                        AssociatedSyntaxObjectContent = operation.Syntax,
-                    };
-                    return node;
-                }
-            }
+            var inlines = new GroupedRunInlineCollection();
+            Creator.AppendValueSource(valueSource, inlines);
+            var type = operations.GetType();
+            var inline = Creator.NestedTypeDisplayGroupedRun(type);
+            inlines.Add(inline);
 
-            return CreateFromProperty(property, operation);
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.OperationListDisplay);
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(
+            IReadOnlyList<IOperation> operations)
+        {
+            if (operations.Count is 0)
+                return null;
+
+            return () => GetChildren(operations);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(
+            IReadOnlyList<IOperation> operations)
+        {
+            return operations
+                .Select(operation => Creator.CreateRootOperation(operation, default))
+                .ToList()
+                ;
         }
     }
 
@@ -201,16 +239,19 @@ partial class OperationsAnalysisNodeCreator
     public abstract class Types : CommonTypes
     {
         public const string Operation = "O";
+        public const string OperationList = "OL";
         public const string OperationTree = "OT";
     }
 
     public abstract class Styles : CommonStyles
     {
         public static readonly Color OperationColor = InterfaceMainColor;
-        public static readonly SolidColorBrush OperationBrush = new(OperationColor);
 
         public static readonly NodeTypeDisplay OperationDisplay
             = new(Types.Operation, OperationColor);
+
+        public static readonly NodeTypeDisplay OperationListDisplay
+            = new(Types.OperationList, StructMainColor);
 
         public static readonly NodeTypeDisplay OperationTreeDisplay
             = new(Types.OperationTree, ClassMainColor);

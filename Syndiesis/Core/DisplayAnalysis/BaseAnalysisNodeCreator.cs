@@ -567,11 +567,23 @@ static string Code(string type)
     protected static Run CreateNullValueRun()
     {
         const string nullDisplay = "[null]";
-        var run = Run(
-            nullDisplay,
+        return CreateFadeNullLikeStateRun(nullDisplay);
+    }
+
+    protected static Run CreateFadeNullLikeStateRun(string displayText)
+    {
+        return Run(
+            displayText,
             CommonStyles.NullValueBrush,
             FontStyle.Italic);
-        return run;
+    }
+
+    protected static Run CreateNullKeywordRun()
+    {
+        const string nullDisplay = "null";
+        return Run(
+            nullDisplay,
+            CommonStyles.KeywordBrush);
     }
 
     protected string SimplifyWhitespace(string source)
@@ -649,6 +661,23 @@ static string Code(string type)
     {
         var typeNameRun = Run(typeName, CommonStyles.ClassMainBrush);
         return new SingleRunInline(typeNameRun);
+    }
+
+    protected static GroupedRunInline TypeDisplayWithFadeSuffix(
+        string typeName, string suffix, IBrush main, IBrush fade)
+    {
+        if (typeName.EndsWith(suffix))
+        {
+            var primaryName = Run(typeName[..^suffix.Length], main);
+            var suffixNameRun = Run(suffix, fade);
+
+            return new SimpleGroupedRunInline([
+                primaryName,
+                suffixNameRun,
+            ]);
+        }
+
+        return new SingleRunInline(Run(typeName, main));
     }
 }
 
@@ -775,17 +804,27 @@ partial class BaseAnalysisNodeCreator
                 return new SingleRunInline(CreateNullValueRun());
 
             var type = value.GetType();
-            bool isNullable = type.IsNullableValueType();
+            var genericDeclaration = type.GetGenericTypeDefinitionOrSame();
+            bool isNullable = genericDeclaration == typeof(Nullable<>);
             if (isNullable)
             {
                 object? innerValue = (value as dynamic).Value;
                 return BasicValueInline(innerValue);
             }
 
-            var isKvp = type.GetGenericTypeDefinitionOrSame() == typeof(KeyValuePair<,>);
+            var isKvp = genericDeclaration == typeof(KeyValuePair<,>);
             if (isKvp)
             {
                 return KvpValueInline(value as dynamic);
+            }
+
+            var isOptional = genericDeclaration == typeof(Optional<>);
+            if (isOptional)
+            {
+                // using dynamic to bind to a generic function automatically
+                // converts the value into an Optional<object> with a [null]
+                // value instead of an [unspecified] one
+                return OptionalValueInline(value);
             }
 
             switch (type.GetTypeCode())
@@ -799,6 +838,22 @@ partial class BaseAnalysisNodeCreator
             }
 
             return Creator.NestedTypeDisplayGroupedRun(type);
+        }
+
+        private GroupedRunInline OptionalValueInline(object optional)
+        {
+            var type = optional.GetType();
+            var hasValue = (bool)type.GetProperty(nameof(Optional<object>.HasValue))
+                !.GetValue(optional)!;
+            if (!hasValue)
+            {
+                var displayRun = CreateFadeNullLikeStateRun("[unspecified]");
+                return new SingleRunInline(displayRun);
+            }
+
+            var value = type.GetProperty(nameof(Optional<object>.Value))
+                !.GetValue(optional);
+            return BasicValueInline(value);
         }
 
         private GroupedRunInline KvpValueInline<TKey, TValue>(KeyValuePair<TKey, TValue> kvp)
@@ -1172,6 +1227,9 @@ partial class BaseAnalysisNodeCreator
 
         public static readonly Color InterfaceMainColor = Color.FromUInt32(0xFFA2D080);
         public static readonly SolidColorBrush InterfaceMainBrush = new(InterfaceMainColor);
+
+        public static readonly Color InterfaceSecondaryColor = Color.FromUInt32(0xFF6D8C57);
+        public static readonly SolidColorBrush InterfaceSecondaryBrush = new(InterfaceSecondaryColor);
 
         public static readonly Color EnumMainColor = Color.FromUInt32(0XFFB8D7A3);
         public static readonly SolidColorBrush EnumMainBrush = new(EnumMainColor);

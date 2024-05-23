@@ -272,18 +272,8 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         }
 
         const string syntaxSuffix = "Syntax";
-        if (typeName.EndsWith(syntaxSuffix))
-        {
-            var primaryClassNameRun = Run(typeName[..^syntaxSuffix.Length], Styles.ClassMainBrush);
-            var suffixNameRun = Run(syntaxSuffix, Styles.ClassSecondaryBrush);
-
-            return new SimpleGroupedRunInline([
-                primaryClassNameRun,
-                suffixNameRun,
-            ]);
-        }
-
-        return CreateBasicClassInline(typeName);
+        return TypeDisplayWithFadeSuffix(
+            typeName, syntaxSuffix, Styles.ClassMainBrush, Styles.ClassSecondaryBrush);
     }
 }
 

@@ -40,6 +40,12 @@ public sealed class IOperationPropertyFilter : PropertyFilter
 
 #pragma warning restore CS0618 // Type or member is obsolete
 
+            // The kind is displayed next to the operation's type
+            case nameof(IOperation.Kind):
+            // The language is inferred from the syntax tree
+            case nameof(IOperation.Language):
+                return false;
+
             // We like all other publicly-exposed properties of the API
             default:
                 return true;
