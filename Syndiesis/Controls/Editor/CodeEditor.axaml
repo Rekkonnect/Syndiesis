@@ -22,19 +22,6 @@
         <RowDefinition Height="20"/>
       </Grid.RowDefinitions>
 
-      <Panel Width="70"
-             VerticalAlignment="Stretch"
-             HorizontalAlignment="Left"
-             Background="#00232E"
-             Grid.Column="0">
-
-        <controls:CodeEditorLineDisplayPanel
-          Name="lineDisplayPanel"
-          SelectedLineNumber="5"
-          LineNumberStart="1"
-          LastLineNumber="5"
-          />
-      </Panel>
       <Panel
         Grid.Column="1"
         Name="codeCanvasContainer"
@@ -50,6 +37,21 @@
             />
         </Canvas>
       </Panel>
+      
+      <Panel Width="70"
+             VerticalAlignment="Stretch"
+             HorizontalAlignment="Left"
+             Background="#00232E"
+             Grid.Column="0">
+
+        <controls:CodeEditorLineDisplayPanel
+          Name="lineDisplayPanel"
+          SelectedLineNumber="5"
+          LineNumberStart="1"
+          LastLineNumber="5"
+          />
+      </Panel>
+      
       <Panel
         Background="#003034"
         Grid.Column="2">

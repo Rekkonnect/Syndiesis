@@ -1,6 +1,9 @@
 ﻿using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.LogicalTree;
+using Avalonia.VisualTree;
+using System.Collections.Generic;
 
 namespace Syndiesis.Controls;
 
@@ -14,17 +17,82 @@ public class CursorContainer : AvaloniaObject
             typeof(CursorContainer),
             inherits: true);
 
-    static CursorContainer()
+    private static readonly VisualRootMappingDictionary _mappingDictionary = new();
+
+    private readonly InputElement _root;
+    private readonly List<ElementCursorMapping> _mappings = new();
+
+    private PointerEventArgs? _lastPointerEventArgs;
+
+    public CursorContainer(InputElement root)
     {
-        CursorProperty.Changed.AddClassHandler<InputElement>(HandleAttachedCursorChanged);
+        _root = root;
+        InitializeEvents();
     }
 
-    private static void HandleAttachedCursorChanged(
-        InputElement element, AvaloniaPropertyChangedEventArgs args)
+    private void InitializeEvents()
     {
-        var cursor = args.NewValue as AvaCursor;
-        if (cursor is null)
+        _root.PointerMoved += HandlePointerMoved;
+    }
+
+    private void HandlePointerMoved(object? sender, PointerEventArgs e)
+    {
+        _lastPointerEventArgs = e;
+        EvaluateCursor();
+    }
+
+    private void EvaluateCursor()
+    {
+        if (_lastPointerEventArgs is null)
             return;
+
+        int appliedIndex = int.MinValue;
+        AvaCursor? appliedCursor = null;
+
+        foreach (var mapping in _mappings)
+        {
+            var (element, cursor) = mapping;
+            var root = element.GetVisualRoot();
+            if (root is null)
+                continue;
+
+            if (element.ZIndex <= appliedIndex)
+                continue;
+
+            var position = _lastPointerEventArgs.GetPosition(element);
+            var zeroedBounds = element.Bounds.WithZeroOffset();
+            if (zeroedBounds.Contains(position))
+            {
+                appliedCursor = cursor;
+                appliedIndex = element.ZIndex;
+            }
+        }
+
+        _root.Cursor = appliedCursor;
+    }
+
+    public void Add(ElementCursorMapping mapping)
+    {
+        _mappings.Add(mapping);
+        var visual = mapping.Visual;
+        visual.AttachedToVisualTree += HandleAttached;
+        visual.DetachedFromLogicalTree += HandleDetached;
+    }
+
+    public void Add(Visual visual, AvaCursor cursor)
+    {
+        Add(new(visual, cursor));
+    }
+
+    private void Remove(Visual target)
+    {
+        int index = _mappings.FindIndex(s => s.Visual == target);
+        if (index < 0)
+            return;
+
+        target.AttachedToVisualTree -= HandleAttached;
+        target.DetachedFromLogicalTree -= HandleDetached;
+        _mappings.RemoveAt(index);
     }
 
     public static AvaCursor GetCursor(InputElement element)
@@ -32,48 +100,68 @@ public class CursorContainer : AvaloniaObject
         return element.GetValue(CursorProperty);
     }
 
+    private void HandleDetached(object? sender, LogicalTreeAttachmentEventArgs e)
+    {
+        EvaluateCursor();
+    }
+
+    private void HandleAttached(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        EvaluateCursor();
+    }
+
     public static void SetCursor(InputElement element, AvaCursor value)
     {
         element.SetValue(CursorProperty, value);
 
-        element.PointerEntered += HandlePointerEntered;
-        element.PointerExited += HandlePointerExited;
-        element.PointerPressed += HandlePointerPressed;
-        element.DoubleTapped += HandleTapped;
-        element.Tapped += HandleTapped;
+        element.AttachedToVisualTree += HandleElementAttached;
+    }
 
-        void HandlePointerEntered(object? sender, PointerEventArgs e)
-        {
-            if (sender != element)
-                return;
+    private static void HandleElementAttached(object? sender, VisualTreeAttachmentEventArgs e)
+    {
+        var root = e.Root as InputElement;
+        var element = sender as Control;
+        _mappingDictionary.Add(root!, element!, GetCursor(element!));
+    }
 
-            var top = TopLevel.GetTopLevel(element)!;
-            top.Cursor = value;
-        }
-        void HandlePointerExited(object? sender, PointerEventArgs e)
+    public sealed record ElementCursorMapping(Visual Visual, AvaCursor? Cursor);
+
+    private sealed class VisualRootMappingDictionary
+    {
+        private readonly Dictionary<InputElement, CursorContainer> _dictionary = new();
+
+        public CursorContainer? ContainerForRoot(InputElement root)
         {
-            HandleAbstractEvent(e.GetPosition(element));
-        }
-        void HandlePointerPressed(object? sender, PointerEventArgs e)
-        {
-            HandleAbstractEvent(e.GetPosition(element));
-        }
-        void HandleTapped(object? sender, TappedEventArgs e)
-        {
-            HandleAbstractEvent(e.GetPosition(element));
+            if (_dictionary.TryGetValue(root, out var value))
+                return value;
+
+            return null;
         }
 
-        void HandleAbstractEvent(Point position)
+        public void Add(InputElement root, Visual target, AvaCursor? cursor)
         {
-            var top = TopLevel.GetTopLevel(element)!;
+            Add(root, new(target, cursor));
+        }
 
-            if (element.Bounds.Contains(position))
+        public void Add(InputElement root, ElementCursorMapping mapping)
+        {
+            var contained = _dictionary.TryGetValue(root, out var container);
+            if (!contained)
             {
-                top.Cursor = value;
-                return;
+                container = new(root);
+                _dictionary.Add(root, container);
             }
 
-            top.Cursor = default;
+            container!.Add(mapping);
+        }
+
+        public void Remove(InputElement root, Visual target)
+        {
+            var contained = _dictionary.TryGetValue(root, out var container);
+            if (!contained)
+                return;
+
+            container!.Remove(target);
         }
     }
 }

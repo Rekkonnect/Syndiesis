@@ -62,6 +62,11 @@ public static partial class CommonAvaloniaExtensions
         return new(thickness.Left, thickness.Top, thickness.Right, bottom);
     }
 
+    public static Rect WithZeroOffset(this Rect rect)
+    {
+        return new(0, 0, rect.Width, rect.Height);
+    }
+
     public static async Task<bool> HasFormatAsync(this IClipboard? clipboard, string format)
     {
         if (clipboard is null)
