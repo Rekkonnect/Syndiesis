@@ -662,8 +662,8 @@ partial class SyntaxAnalysisNodeCreator
             {
                 var genericDefinition = listType.GetGenericTypeDefinition();
                 bool isSyntaxList =
-                        genericDefinition == typeof(SyntaxList<>)
-                        || genericDefinition == typeof(SeparatedSyntaxList<>)
+                    genericDefinition == typeof(SyntaxList<>)
+                    || genericDefinition == typeof(SeparatedSyntaxList<>)
                     ;
 
                 if (isSyntaxList)
@@ -684,9 +684,13 @@ partial class SyntaxAnalysisNodeCreator
         }
 
         private AnalysisTreeListNodeLine CreateBasicSyntaxListLine(
-            ReadOnlySyntaxNodeList node, DisplayValueSource valueSource)
+            ReadOnlySyntaxNodeList list, DisplayValueSource valueSource)
         {
-            var inlines = Creator.CreateSyntaxTypeInlines(node, valueSource);
+            var inlines = Creator.CreateSyntaxTypeInlines(list, valueSource);
+            AppendCountValueDisplay(
+                inlines,
+                list.Count,
+                nameof(ReadOnlySyntaxNodeList.Count));
 
             return AnalysisTreeListNodeLine(
                 inlines,
@@ -709,8 +713,8 @@ partial class SyntaxAnalysisNodeCreator
             }
 
             return list
-                    .Select(s => Creator.CreateRootNode(s))
-                    .ToList()
+                .Select(s => Creator.CreateRootNode(s))
+                .ToList()
                 ;
         }
     }
@@ -722,6 +726,10 @@ partial class SyntaxAnalysisNodeCreator
             SyntaxTokenList list, DisplayValueSource valueSource)
         {
             var inlines = Creator.CreateSyntaxTypeInlines(list, valueSource);
+            AppendCountValueDisplay(
+                inlines,
+                list.Count,
+                nameof(SyntaxTokenList.Count));
 
             return AnalysisTreeListNodeLine(
                 inlines,

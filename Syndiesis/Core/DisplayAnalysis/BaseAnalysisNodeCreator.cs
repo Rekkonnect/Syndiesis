@@ -557,6 +557,32 @@ static string Code(string type)
         return new(DisplayValueSource.SymbolKind.Method, name);
     }
 
+    protected static GroupedRunInline CountValueDisplay(
+        int count, string propertyName)
+    {
+        var propertyGroup = new SingleRunInline(Run(propertyName, CommonStyles.PropertyBrush));
+        var separator = Run(":  ", CommonStyles.SplitterBrush);
+        var countRun = Run(count.ToString(), CommonStyles.RawValueBrush);
+        return new ComplexGroupedRunInline([
+            new(propertyGroup),
+                separator,
+                countRun,
+            ]);
+    }
+
+    protected static void AppendCountValueDisplay(
+        GroupedRunInlineCollection inlines,
+        int count,
+        string propertyName)
+    {
+        var splitter = NewValueKindSplitterRun();
+        var display = CountValueDisplay(count, propertyName);
+        inlines.AddRange([
+            splitter,
+            display,
+        ]);
+    }
+
     protected static Run CreateEmptyValueRun()
     {
         const string emptyValueDisplay = "[empty]";
@@ -1179,15 +1205,8 @@ partial class BaseAnalysisNodeCreator
             if (property.PropertyType != typeof(int))
                 return null;
 
-            var propertyGroup = new SingleRunInline(Run(propertyName, CommonStyles.PropertyBrush));
-            var separator = Run(":  ", CommonStyles.SplitterBrush);
             int count = (int)property.GetValue(value)!;
-            var countRun = Run(count.ToString(), CommonStyles.RawValueBrush);
-            return new ComplexGroupedRunInline([
-                new(propertyGroup),
-                separator,
-                countRun,
-            ]);
+            return CountValueDisplay(count, propertyName);
         }
     }
 }
