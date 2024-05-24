@@ -6,24 +6,20 @@
         mc:Ignorable="d" d:DesignWidth="1450" d:DesignHeight="850"
         MinWidth="600"
         MinHeight="400"
-        ExtendClientAreaToDecorationsHint="True"
-        ExtendClientAreaChromeHints="NoChrome"
-        ExtendClientAreaTitleBarHeightHint="-1"
         x:Class="Syndiesis.Views.MainWindow"
         xmlns:controls="using:Syndiesis.Controls"
         xmlns:syntax="using:Syndiesis.Controls.AnalysisVisualization"
         xmlns:previews="using:Syndiesis.Views.DesignerPreviews"
         xmlns:views="using:Syndiesis.Views"
         xmlns:toast="using:Syndiesis.Controls.Toast"
+        WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaChromeHints="NoChrome"
+        ExtendClientAreaTitleBarHeightHint="-1"
         Icon="/Assets/Icons/logo.png"
         Title="Syndiesis"
         >
 
-  <NativeMenu.Menu>
-    <NativeMenu>
-    </NativeMenu>
-  </NativeMenu.Menu>
-  
   <Window.Styles>
     <Style Selector="Button">
       <Setter Property="Background" Value="#005055" />
@@ -36,16 +32,11 @@
     <vm:MainWindowViewModel/>
   </Design.DataContext>
 
-  <Grid>
-    <Grid.RowDefinitions>
-      <RowDefinition Height="Auto" />
-      <RowDefinition Height="*" />
-    </Grid.RowDefinitions>
-    
+  <DockPanel>
+
     <controls:SyndiesisTitleBar />
 
     <Panel
-      Grid.Row="1"
       >
       <TransitioningContentControl
         Name="pageTransition"
@@ -58,11 +49,11 @@
           Name="mainView"
           />
       </TransitioningContentControl>
-    
+
       <toast:ToastNotificationContainer
         Name="ToastNotificationContainer"
       />
     </Panel>
 
-  </Grid>
+  </DockPanel>
 </Window>
