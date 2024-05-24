@@ -1,9 +1,4 @@
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
-using Avalonia.Layout;
-using Syndiesis.Utilities;
-using System;
 
 namespace Syndiesis.Controls.Tabs;
 
@@ -34,22 +29,6 @@ public partial class TabEnvelope : UserControl
     public TabEnvelope()
     {
         InitializeComponent();
-        InitializeTransitions();
-    }
-
-    private void InitializeTransitions()
-    {
-        // NRE is thrown when setting transitions from XAML;
-        // the Transitions property is null and not initialized
-        lowerBorder.Transitions =
-        [
-            new ThicknessTransition
-            {
-                Property = Layoutable.MarginProperty,
-                Duration = TimeSpan.FromMilliseconds(2250),
-                Easing = Singleton<ExponentialEaseOut>.Instance,
-            }
-        ];
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)
@@ -60,12 +39,12 @@ public partial class TabEnvelope : UserControl
 
     private void UpdateLowerBorder()
     {
-        double top = GetRequiredLowerBorderMarginTop();
-        lowerBorder.Margin = lowerBorder.Margin.WithTop(top);
+        double bottom = GetRequiredLowerBorderMarginBottom();
+        lowerBorder.Margin = lowerBorder.Margin.WithBottom(bottom);
     }
 
-    private double GetRequiredLowerBorderMarginTop()
+    private double GetRequiredLowerBorderMarginBottom()
     {
-        return _isSelected ? Bounds.Height : 3;
+        return _isSelected ? Bounds.Height : 0;
     }
 }

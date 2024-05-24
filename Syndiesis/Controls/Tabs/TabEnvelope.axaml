@@ -7,13 +7,6 @@
 
   <Panel>
     <Border
-      Name="outerBorder"
-      Background="#38A0FF"
-      CornerRadius="15 15 0 0"
-      />
-
-    <Border
-      CornerRadius="15 15 0 0"
       Margin="0 3 0 0"
     >
       <Border.Background>
@@ -29,9 +22,69 @@
     <Border
       Name="lowerBorder"
       Background="#000000"
-      CornerRadius="15 15 0 0"
       Margin="0 3 0 0"
-    />
+    >
+      <Border.Transitions>
+        <Transitions>
+          <ThicknessTransition
+            Property="Margin"
+            Duration="0:00:00.250"
+            Easing="ExponentialEaseOut"
+            />
+        </Transitions>
+      </Border.Transitions>
+    </Border>
+
+    <Path Fill="Black">
+      <Path.Data>
+        <PathGeometry>
+          <PathFigure StartPoint="0,12" IsClosed="True">
+            <BezierSegment Point1="0,12" Point2="0,0" Point3="22,0" />
+            <BezierSegment Point1="22,0" Point2="0,0" Point3="0,0" />
+          </PathFigure>
+        </PathGeometry>
+      </Path.Data>
+    </Path>
+
+    <Path Fill="#38A0FF">
+      <Path.Data>
+        <PathGeometry>
+          <PathFigure StartPoint="20,0" IsClosed="True">
+            <BezierSegment Point1="20,0" Point2="0,0" Point3="0,12" />
+            <BezierSegment Point1="0,12" Point2="0,3" Point3="20,3" />
+          </PathFigure>
+        </PathGeometry>
+      </Path.Data>
+    </Path>
+
+    <Rectangle
+      Fill="#38A0FF"
+      Height="3"
+      VerticalAlignment="Top"
+      Margin="20 0 20 0"
+      />
+
+    <Path Fill="Black" HorizontalAlignment="Right">
+      <Path.Data>
+        <PathGeometry>
+          <PathFigure StartPoint="0,12" IsClosed="True">
+            <BezierSegment Point1="0,12" Point2="0,0" Point3="-22,0" />
+            <BezierSegment Point1="-22,0" Point2="0,0" Point3="0,0" />
+          </PathFigure>
+        </PathGeometry>
+      </Path.Data>
+    </Path>
+
+    <Path Fill="#38A0FF" HorizontalAlignment="Right">
+      <Path.Data>
+        <PathGeometry>
+          <PathFigure StartPoint="-20,0" IsClosed="True">
+            <BezierSegment Point1="-20,0" Point2="0,0" Point3="0,12" />
+            <BezierSegment Point1="0,12" Point2="0,3" Point3="-20,3" />
+          </PathFigure>
+        </PathGeometry>
+      </Path.Data>
+    </Path>
 
     <TextBlock
       Name="text"
