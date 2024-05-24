@@ -123,9 +123,10 @@ public partial class AnalysisTreeListView : UserControl
         InvalidateArrange();
     }
 
-    public void CollapseAll()
+    public void ResetToInitialRootView()
     {
         RootNode.SetExpansionWithoutAnimationRecursively(false);
+        RootNode.Expand();
         horizontalScrollBar.StartPosition = 0;
         verticalScrollBar.StartPosition = 0;
     }
@@ -435,12 +436,6 @@ public partial class AnalysisTreeListView : UserControl
         return node.LazyChildren;
     }
     #endregion
-
-    public void ResetViewToTopLeft()
-    {
-        horizontalScrollBar.SetStartPositionPreserveLength(0);
-        verticalScrollBar.SetStartPositionPreserveLength(0);
-    }
 
     public void BringToView(AnalysisTreeListNode node)
     {

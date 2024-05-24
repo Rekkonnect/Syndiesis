@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
 using Serilog;
@@ -103,7 +104,15 @@ public partial class MainView : UserControl
         var analysisExecution = analysisFactory.CreateAnalysisExecution(analysisKind);
         AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
         AnalysisPipelineHandler.IgnoreInputDelayOnce();
-        _ = AnalysisPipelineHandler.ForceAnalysis();
+        _ = ForceAnalysisResetView();
+    }
+
+    private async Task ForceAnalysisResetView()
+    {
+        await Task.Run(AnalysisPipelineHandler.ForceAnalysis);
+
+        Dispatcher.UIThread.Invoke(
+            syntaxTreeView.listView.ResetToInitialRootView);
     }
 
     private void GitHubClick(object? sender, RoutedEventArgs e)
@@ -114,7 +123,7 @@ public partial class MainView : UserControl
 
     private void CollapseAllClick(object? sender, RoutedEventArgs e)
     {
-        syntaxTreeView.listView.CollapseAll();
+        syntaxTreeView.listView.ResetToInitialRootView();
     }
 
     private void HandleSettingsClick(object? sender, RoutedEventArgs e)
