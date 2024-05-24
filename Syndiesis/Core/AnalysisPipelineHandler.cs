@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Serilog;
 using Syndiesis.Utilities;
 using System;
 using System.Threading.Tasks;
@@ -79,7 +80,10 @@ public class AnalysisPipelineHandler
             using (profiling.BeginProcess())
             {
                 var result = await AnalysisExecution.Execute(_pendingSource, token);
-                AnalysisCompleted!.Invoke(result);
+                if (!result.Failed)
+                {
+                    AnalysisCompleted!.Invoke(result);
+                }
             }
 
             var results = profiling.SnapshotResults!;

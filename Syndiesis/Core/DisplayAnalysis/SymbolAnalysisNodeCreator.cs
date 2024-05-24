@@ -1,7 +1,9 @@
 ﻿using Avalonia.Media;
 using Avalonia.OpenGL;
+using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
 using RoseLynn.CSharp;
+using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Utilities;
@@ -280,7 +282,7 @@ partial class SymbolAnalysisNodeCreator
         {
             if (type == typeof(ISymbol))
             {
-                return new SingleRunInline(Run(type.Name, Styles.InterfaceMainBrush));
+                return new SingleRunInline(Run(type.Name, CommonStyles.InterfaceMainBrush));
             }
 
             var typeName = type.Name;
@@ -288,7 +290,7 @@ partial class SymbolAnalysisNodeCreator
             const string symbolSuffix = "Symbol";
             return TypeDisplayWithFadeSuffix(
                 typeName, symbolSuffix,
-                Styles.InterfaceMainBrush, Styles.InterfaceSecondaryBrush);
+                CommonStyles.InterfaceMainBrush, CommonStyles.InterfaceSecondaryBrush);
         }
     }
 
@@ -813,6 +815,9 @@ partial class SymbolAnalysisNodeCreator
 
 partial class SymbolAnalysisNodeCreator
 {
+    public static SymbolStyles Styles
+        => AppSettings.Instance.StylePreferences.SymbolStyles!;
+
     public abstract class Types : CommonTypes
     {
         public const string Symbol = "S";
@@ -825,23 +830,23 @@ partial class SymbolAnalysisNodeCreator
         public const string AttributeDataList = "AL";
     }
 
-    public abstract class Styles : CommonStyles
+    public class SymbolStyles
     {
-        public static readonly Color SymbolColor = InterfaceMainColor;
-        public static readonly Color SymbolCollectionColor = StructMainColor;
-        public static readonly Color AttributeDataColor = ClassMainColor;
-        public static readonly Color AttributeDataListColor = Color.FromUInt32(0xFFDD1023);
+        public Color SymbolColor = CommonStyles.InterfaceMainColor;
+        public Color SymbolCollectionColor = CommonStyles.StructMainColor;
+        public Color AttributeDataColor = CommonStyles.ClassMainColor;
+        public Color AttributeDataListColor = Color.FromUInt32(0xFFDD1023);
 
-        public static readonly NodeTypeDisplay SymbolDisplay
-            = new(Types.Symbol, SymbolColor);
+        public NodeTypeDisplay SymbolDisplay
+            => new(Types.Symbol, SymbolColor);
 
-        public static readonly NodeTypeDisplay SymbolCollectionDisplay
-            = new(Types.SymbolCollection, SymbolCollectionColor);
+        public NodeTypeDisplay SymbolCollectionDisplay
+            => new(Types.SymbolCollection, SymbolCollectionColor);
 
-        public static readonly NodeTypeDisplay AttributeDataDisplay
-            = new(Types.AttributeData, AttributeDataColor);
+        public NodeTypeDisplay AttributeDataDisplay
+            => new(Types.AttributeData, AttributeDataColor);
 
-        public static readonly NodeTypeDisplay AttributeDataListDisplay
-            = new(Types.AttributeDataList, AttributeDataListColor);
+        public NodeTypeDisplay AttributeDataListDisplay
+            => new(Types.AttributeDataList, AttributeDataListColor);
     }
 }

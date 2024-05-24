@@ -1,5 +1,7 @@
 ﻿using Avalonia.Media;
+using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
+using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using System;
@@ -129,7 +131,7 @@ partial class OperationsAnalysisNodeCreator
         {
             if (type == typeof(IOperation))
             {
-                return new SingleRunInline(Run(type.Name, Styles.InterfaceMainBrush));
+                return new SingleRunInline(Run(type.Name, CommonStyles.InterfaceMainBrush));
             }
 
             var typeName = type.Name;
@@ -137,7 +139,7 @@ partial class OperationsAnalysisNodeCreator
             const string operationSuffix = "Operation";
             return TypeDisplayWithFadeSuffix(
                 typeName, operationSuffix,
-                Styles.InterfaceMainBrush, Styles.InterfaceSecondaryBrush);
+                CommonStyles.InterfaceMainBrush, CommonStyles.InterfaceSecondaryBrush);
         }
 
         private SingleRunInline CreateKindInline(OperationKind kind)
@@ -236,6 +238,9 @@ partial class OperationsAnalysisNodeCreator
 
 partial class OperationsAnalysisNodeCreator
 {
+    public static OperationStyles Styles
+        => AppSettings.Instance.StylePreferences.OperationStyles!;
+
     public abstract class Types : CommonTypes
     {
         public const string Operation = "O";
@@ -243,17 +248,17 @@ partial class OperationsAnalysisNodeCreator
         public const string OperationTree = "OT";
     }
 
-    public abstract class Styles : CommonStyles
+    public class OperationStyles
     {
-        public static readonly Color OperationColor = InterfaceMainColor;
+        public Color OperationColor = CommonStyles.InterfaceMainColor;
 
-        public static readonly NodeTypeDisplay OperationDisplay
-            = new(Types.Operation, OperationColor);
+        public NodeTypeDisplay OperationDisplay
+            => new(Types.Operation, OperationColor);
 
-        public static readonly NodeTypeDisplay OperationListDisplay
-            = new(Types.OperationList, StructMainColor);
+        public NodeTypeDisplay OperationListDisplay
+            => new(Types.OperationList, CommonStyles.StructMainColor);
 
-        public static readonly NodeTypeDisplay OperationTreeDisplay
-            = new(Types.OperationTree, ClassMainColor);
+        public NodeTypeDisplay OperationTreeDisplay
+            => new(Types.OperationTree, CommonStyles.ClassMainColor);
     }
 }

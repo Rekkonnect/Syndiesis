@@ -436,6 +436,12 @@ public partial class AnalysisTreeListView : UserControl
     }
     #endregion
 
+    public void ResetViewToTopLeft()
+    {
+        horizontalScrollBar.SetStartPositionPreserveLength(0);
+        verticalScrollBar.SetStartPositionPreserveLength(0);
+    }
+
     public void BringToView(AnalysisTreeListNode node)
     {
         var basis = contentCanvasContainer;

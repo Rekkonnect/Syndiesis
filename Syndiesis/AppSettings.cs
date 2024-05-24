@@ -15,6 +15,8 @@ public sealed class AppSettings
     public AnalysisNodeCreationOptions NodeLineOptions = new();
     public IndentationOptions IndentationOptions = new();
 
+    public StylePreferences StylePreferences = new();
+
     public TimeSpan UserInputDelay = TimeSpan.FromMilliseconds(600);
 
     public int RecursiveExpansionDepth = 4;

@@ -1,5 +1,7 @@
 ﻿using Avalonia.Media;
+using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
+using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using System.Collections.Generic;
@@ -104,16 +106,19 @@ partial class SemanticModelAnalysisNodeCreator
 
 partial class SemanticModelAnalysisNodeCreator
 {
+    public static SemanticModelStyles Styles
+        => AppSettings.Instance.StylePreferences.SemanticModelStyles!;
+
     public abstract class Types : CommonTypes
     {
         public const string SemanticModel = "SM";
     }
 
-    public abstract class Styles : CommonStyles
+    public class SemanticModelStyles
     {
-        public static readonly Color SemanticModelColor = ClassMainColor;
+        public Color SemanticModelColor = CommonStyles.ClassMainColor;
 
-        public static readonly NodeTypeDisplay SemanticModelDisplay
-            = new(Types.SemanticModel, SemanticModelColor);
+        public NodeTypeDisplay SemanticModelDisplay
+            => new(Types.SemanticModel, SemanticModelColor);
     }
 }

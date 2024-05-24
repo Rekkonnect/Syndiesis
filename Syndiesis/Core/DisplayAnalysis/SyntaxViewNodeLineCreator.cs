@@ -1,8 +1,11 @@
 ﻿using Avalonia.Media;
+using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
+using Syndiesis.InternalGenerators.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -273,7 +276,7 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
 
         const string syntaxSuffix = "Syntax";
         return TypeDisplayWithFadeSuffix(
-            typeName, syntaxSuffix, Styles.ClassMainBrush, Styles.ClassSecondaryBrush);
+            typeName, syntaxSuffix, CommonStyles.ClassMainBrush, CommonStyles.ClassSecondaryBrush);
     }
 }
 
@@ -570,7 +573,7 @@ partial class SyntaxAnalysisNodeCreator
             if (kind is SyntaxKind.XmlTextLiteralNewLineToken)
             {
                 var eolText = CreateDisplayStringForEndOfLineText(token.ToFullString());
-                return new(Run(eolText, Styles.RawValueBrush));
+                return new(Run(eolText, CommonStyles.RawValueBrush));
             }
 
             if (token.IsMissing)
@@ -587,8 +590,8 @@ partial class SyntaxAnalysisNodeCreator
 
             var fullText = displayText;
             var displayBrush = isKeyword
-                ? Styles.KeywordBrush
-                : Styles.RawValueBrush;
+                ? CommonStyles.KeywordBrush
+                : CommonStyles.RawValueBrush;
 
             if (IsStringLiteralKind(kind))
             {
@@ -1048,6 +1051,9 @@ partial class SyntaxAnalysisNodeCreator
 
 partial class SyntaxAnalysisNodeCreator
 {
+    public static SyntaxStyles Styles
+        => AppSettings.Instance.StylePreferences.SyntaxStyles!;
+
     public abstract class Types : CommonTypes
     {
         public const string CSharpTree = "C#";
@@ -1067,108 +1073,68 @@ partial class SyntaxAnalysisNodeCreator
         public const string EndOfLineTrivia = @"\n";
     }
 
-    public abstract class Styles : CommonStyles
+    [SolidColor("CSharpTree", 0xFF33E5A5)]
+    [SolidColor("VisualBasicTree", 0xFF74A3FF)]
+    [SolidColor("WhitespaceTrivia", 0xFFB3B3B3)]
+    [SolidColor("WhitespaceTriviaKind", 0xFF808080)]
+    [SolidColor("TokenKind", 0xFF7A68E5)]
+    [SolidColor("FadeTokenKind", 0xFF514599)]
+    [SolidColor("TokenList", 0xFF74A3FF)]
+    [SolidColor("SyntaxList", 0xFF79BCA4)]
+    [SolidColor("Eof", 0xFF76788B)]
+    [SolidColor("BasicTriviaNodeType", 0xFF7C7C7C)]
+    [SolidColor("WhitespaceTriviaNodeType", 0xFF7C7C7C)]
+    [SolidColor("TriviaListType", 0xFF7C7C7C)]
+    [SolidColor("DisplayValueNodeType", 0xFFCC935F)]
+    [SolidColor("CommentTriviaNodeType", 0xFF00A858)]
+    [SolidColor("CommentTriviaContent", 0xFF00703A)]
+    [SolidColor("CommentTriviaTokenKind", 0xFF004D28)]
+    [SolidColor("DisabledTextTriviaNodeType", 0xFF8B4D4D)]
+    [SolidColor("DisabledTextTriviaContent", 0xFF664747)]
+    [SolidColor("DisabledTextTriviaTokenKind", 0xFF4D3636)]
+    [SolidColor("MissingTokenIndicator", 0xFF8B4D4D)]
+    public partial class SyntaxStyles
     {
-        public static readonly Color CSharpTreeColor = Color.FromUInt32(0xFF33E5A5);
-        public static readonly SolidColorBrush CSharpTreeBrush = new(CSharpTreeColor);
-
-        public static readonly Color VisualBasicTreeColor = Color.FromUInt32(0xFF74A3FF);
-        public static readonly SolidColorBrush VisualBasicTreeBrush = new(VisualBasicTreeColor);
-
-        public static readonly Color WhitespaceTriviaColor = Color.FromUInt32(0xFFB3B3B3);
-        public static readonly SolidColorBrush WhitespaceTriviaBrush = new(WhitespaceTriviaColor);
-
-        public static readonly Color WhitespaceTriviaKindColor = Color.FromUInt32(0xFF808080);
-        public static readonly SolidColorBrush WhitespaceTriviaKindBrush = new(WhitespaceTriviaKindColor);
-
-        public static readonly Color TokenKindColor = Color.FromUInt32(0xFF7A68E5);
-        public static readonly SolidColorBrush TokenKindBrush = new(TokenKindColor);
-
-        public static readonly Color FadeTokenKindColor = Color.FromUInt32(0xFF514599);
-        public static readonly SolidColorBrush FadeTokenKindBrush = new(FadeTokenKindColor);
-
-        public static readonly Color TokenListColor = Color.FromUInt32(0xFF74A3FF);
-        public static readonly SolidColorBrush TokenListBrush = new(TokenListColor);
-
-        public static readonly Color SyntaxListColor = Color.FromUInt32(0xFF79BCA4);
-        public static readonly SolidColorBrush SyntaxListBrush = new(SyntaxListColor);
-
-        public static readonly Color EofColor = Color.FromUInt32(0xFF76788B);
-        public static readonly SolidColorBrush EofBrush = new(EofColor);
-
-        public static readonly Color BasicTriviaNodeTypeColor = Color.FromUInt32(0xFF7C7C7C);
-        public static readonly SolidColorBrush BasicTriviaNodeTypeBrush = new(BasicTriviaNodeTypeColor);
-
-        public static readonly Color WhitespaceTriviaNodeTypeColor = Color.FromUInt32(0xFF7C7C7C);
-        public static readonly SolidColorBrush WhitespaceTriviaNodeTypeBrush = new(WhitespaceTriviaNodeTypeColor);
-
-        public static readonly Color TriviaListTypeColor = Color.FromUInt32(0xFF7C7C7C);
-        public static readonly SolidColorBrush TriviaListTypeBrush = new(TriviaListTypeColor);
-
-        public static readonly Color DisplayValueNodeTypeColor = Color.FromUInt32(0xFFCC935F);
-        public static readonly SolidColorBrush DisplayValueNodeTypeBrush = new(DisplayValueNodeTypeColor);
-
-        public static readonly Color CommentTriviaNodeTypeColor = Color.FromUInt32(0xFF00A858);
-        public static readonly SolidColorBrush CommentTriviaNodeTypeBrush = new(CommentTriviaNodeTypeColor);
-
-        public static readonly Color CommentTriviaContentColor = Color.FromUInt32(0xFF00703A);
-        public static readonly SolidColorBrush CommentTriviaContentBrush = new(CommentTriviaContentColor);
-
-        public static readonly Color CommentTriviaTokenKindColor = Color.FromUInt32(0xFF004D28);
-        public static readonly SolidColorBrush CommentTriviaTokenKindBrush = new(CommentTriviaTokenKindColor);
-
-        public static readonly Color DisabledTextTriviaNodeTypeColor = Color.FromUInt32(0xFF8B4D4D);
-        public static readonly SolidColorBrush DisabledTextTriviaNodeTypeBrush = new(DisabledTextTriviaNodeTypeColor);
-
-        public static readonly Color DisabledTextTriviaContentColor = Color.FromUInt32(0xFF664747);
-        public static readonly SolidColorBrush DisabledTextTriviaContentBrush = new(DisabledTextTriviaContentColor);
-
-        public static readonly Color DisabledTextTriviaTokenKindColor = Color.FromUInt32(0xFF4D3636);
-        public static readonly SolidColorBrush DisabledTextTriviaTokenKindBrush = new(DisabledTextTriviaTokenKindColor);
-
-        public static readonly Color MissingTokenIndicatorColor = Color.FromUInt32(0xFF8B4D4D);
-        public static readonly SolidColorBrush MissingTokenIndicatorBrush = new(MissingTokenIndicatorColor);
-
         // Tree displays
-        public static readonly NodeTypeDisplay CSharpTreeDisplay
-            = new(Types.CSharpTree, CSharpTreeColor);
+        public NodeTypeDisplay CSharpTreeDisplay
+            => new(Types.CSharpTree, CSharpTreeColor);
 
-        public static readonly NodeTypeDisplay VisualBasicTreeDisplay
-            = new(Types.VisualBasicTree, VisualBasicTreeColor);
+        public NodeTypeDisplay VisualBasicTreeDisplay
+            => new(Types.VisualBasicTree, VisualBasicTreeColor);
 
         // Node displays
-        public static readonly NodeTypeDisplay ClassNodeDisplay
-            = new(Types.Node, ClassMainColor);
+        public NodeTypeDisplay ClassNodeDisplay
+            => new(Types.Node, CommonStyles.ClassMainColor);
 
-        public static readonly NodeTypeDisplay SyntaxListNodeDisplay
-            = new(Types.SyntaxList, SyntaxListColor);
+        public NodeTypeDisplay SyntaxListNodeDisplay
+            => new(Types.SyntaxList, SyntaxListColor);
 
-        public static readonly NodeTypeDisplay TokenListNodeDisplay
-            = new(Types.TokenList, TokenListColor);
+        public NodeTypeDisplay TokenListNodeDisplay
+            => new(Types.TokenList, TokenListColor);
 
-        public static readonly NodeTypeDisplay TokenNodeDisplay
-            = new(Types.Token, TokenKindColor);
+        public NodeTypeDisplay TokenNodeDisplay
+            => new(Types.Token, TokenKindColor);
 
-        public static readonly NodeTypeDisplay DisplayValueDisplay
-            = new(Types.DisplayValue, DisplayValueNodeTypeColor);
+        public NodeTypeDisplay DisplayValueDisplay
+            => new(Types.DisplayValue, DisplayValueNodeTypeColor);
 
-        public static readonly NodeTypeDisplay TriviaListDisplay
-            = new(Types.TriviaList, BasicTriviaNodeTypeColor);
+        public NodeTypeDisplay TriviaListDisplay
+            => new(Types.TriviaList, BasicTriviaNodeTypeColor);
 
         // Trivia displays
-        public static readonly NodeTypeDisplay WhitespaceTriviaDisplay
-            = new(Types.WhitespaceTrivia, WhitespaceTriviaColor);
+        public NodeTypeDisplay WhitespaceTriviaDisplay
+            => new(Types.WhitespaceTrivia, WhitespaceTriviaColor);
 
-        public static readonly NodeTypeDisplay DirectiveTriviaDisplay
-            = new(Types.DirectiveTrivia, BasicTriviaNodeTypeColor);
+        public NodeTypeDisplay DirectiveTriviaDisplay
+            => new(Types.DirectiveTrivia, BasicTriviaNodeTypeColor);
 
-        public static readonly NodeTypeDisplay EndOfLineTriviaDisplay
-            = new(Types.EndOfLineTrivia, BasicTriviaNodeTypeColor);
+        public NodeTypeDisplay EndOfLineTriviaDisplay
+            => new(Types.EndOfLineTrivia, BasicTriviaNodeTypeColor);
 
-        public static readonly NodeTypeDisplay CommentTriviaDisplay
-            = new(Types.CommentTrivia, CommentTriviaNodeTypeColor);
+        public NodeTypeDisplay CommentTriviaDisplay
+            => new(Types.CommentTrivia, CommentTriviaNodeTypeColor);
 
-        public static readonly NodeTypeDisplay DisabledTextTriviaDisplay
-            = new(Types.DisabledTextTrivia, DisabledTextTriviaNodeTypeColor);
+        public NodeTypeDisplay DisabledTextTriviaDisplay
+            => new(Types.DisabledTextTrivia, DisabledTextTriviaNodeTypeColor);
     }
 }

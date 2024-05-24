@@ -40,5 +40,16 @@
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
     <PackageReference Include="Serilog.Sinks.PeriodicBatching" Version="4.1.0" />
   </ItemGroup>
-  
+
+  <ItemGroup Label="Generator dependencies">
+    <PackageReference Include="Dentextist" Version="1.0.1" GeneratePathProperty="true" />
+    <PackageReference Include="RoseLynn.VS2019" Version="0.6.4.1" GeneratePathProperty="true" />
+    <PackageReference Include="RoseLynn.Generators" Version="0.6.4.1" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Syndiesis.InternalGenerators.Core\Syndiesis.InternalGenerators.Core.csproj" />
+    <ProjectReference Include="..\Syndiesis.InternalGenerators\Syndiesis.InternalGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
 </Project>

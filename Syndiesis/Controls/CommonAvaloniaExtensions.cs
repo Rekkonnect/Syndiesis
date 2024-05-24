@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Reactive;
 using Avalonia.Styling;
+using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -212,5 +213,47 @@ public static partial class CommonAvaloniaExtensions
         {
             controls.Add(control);
         }
+    }
+}
+
+// Dispatcher
+public static partial class CommonAvaloniaExtensions
+{
+    public static void ExecuteOrDispatch(this Dispatcher dispatcher, Action action)
+    {
+        bool access = dispatcher.CheckAccess();
+        if (access)
+        {
+            action();
+        }
+        else
+        {
+            dispatcher.Invoke(action);
+        }
+    }
+
+    public static void ExecuteOrDispatchUI(Action action)
+    {
+        var dispatcher = Dispatcher.UIThread;
+        dispatcher.ExecuteOrDispatch(action);
+    }
+
+    public static T ExecuteOrDispatch<T>(this Dispatcher dispatcher, Func<T> func)
+    {
+        bool access = dispatcher.CheckAccess();
+        if (access)
+        {
+            return func();
+        }
+        else
+        {
+            return dispatcher.Invoke(func);
+        }
+    }
+
+    public static T ExecuteOrDispatchUI<T>(Func<T> func)
+    {
+        var dispatcher = Dispatcher.UIThread;
+        return dispatcher.ExecuteOrDispatch(func);
     }
 }

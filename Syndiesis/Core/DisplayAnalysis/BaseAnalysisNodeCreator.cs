@@ -1,9 +1,12 @@
 ﻿using Avalonia.Media;
+using Avalonia.Threading;
 using Garyon.Extensions;
 using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
+using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
+using Syndiesis.InternalGenerators.Core;
 using System;
 using System.Buffers;
 using System.Collections;
@@ -25,6 +28,7 @@ using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
 
 using KvpList = List<KeyValuePair<object, object?>>;
+using static Syndiesis.Core.DisplayAnalysis.SyntaxAnalysisNodeCreator;
 
 public delegate IReadOnlyList<AnalysisTreeListNode> AnalysisNodeChildRetriever();
 
@@ -1190,60 +1194,35 @@ partial class BaseAnalysisNodeCreator
 
 partial class BaseAnalysisNodeCreator
 {
+    public static NodeCommonStyles CommonStyles { get; }
+        = Dispatcher.UIThread.ExecuteOrDispatch<NodeCommonStyles>(() => new());
+
     public abstract class CommonTypes
     {
         public const string PropertyAccessValue = ".";
         public const string PropertyAnalysisValue = "";
     }
 
-    public abstract class CommonStyles
+    [SolidColor("RawValue", 0xFFE4E4E4)]
+    [SolidColor("Keyword", 0xFF38A0FF)]
+    [SolidColor("NullValue", 0xFF808080)]
+    [SolidColor("Property", 0xFFE5986C)]
+    [SolidColor("Method", 0xFFFFF4B9)]
+    [SolidColor("Splitter", 0xFFB4B4B4)]
+    [SolidColor("ClassMain", 0xFF33E5A5)]
+    [SolidColor("ClassSecondary", 0xFF008052)]
+    [SolidColor("StructMain", 0xFF4DCA85)]
+    [SolidColor("InterfaceMain", 0xFFA2D080)]
+    [SolidColor("InterfaceSecondary", 0xFF6D8C57)]
+    [SolidColor("EnumMain", 0XFFB8D7A3)]
+    [SolidColor("DelegateMain", 0xFF4BCBC8)]
+    [SolidColor("ConstantMain", 0xFF7A68E5)]
+    public sealed partial class NodeCommonStyles
     {
-        public static readonly Color RawValueColor = Color.FromUInt32(0xFFE4E4E4);
-        public static readonly SolidColorBrush RawValueBrush = new(RawValueColor);
+        public NodeTypeDisplay PropertyAnalysisValueDisplay
+            => new(CommonTypes.PropertyAnalysisValue, RawValueColor);
 
-        public static readonly Color KeywordColor = Color.FromUInt32(0xFF38A0FF);
-        public static readonly SolidColorBrush KeywordBrush = new(KeywordColor);
-
-        public static readonly Color NullValueColor = Color.FromUInt32(0xFF808080);
-        public static readonly SolidColorBrush NullValueBrush = new(NullValueColor);
-
-        public static readonly Color PropertyColor = Color.FromUInt32(0xFFE5986C);
-        public static readonly SolidColorBrush PropertyBrush = new(PropertyColor);
-
-        public static readonly Color MethodColor = Color.FromUInt32(0xFFFFF4B9);
-        public static readonly SolidColorBrush MethodBrush = new(MethodColor);
-
-        public static readonly Color SplitterColor = Color.FromUInt32(0xFFB4B4B4);
-        public static readonly SolidColorBrush SplitterBrush = new(SplitterColor);
-
-        public static readonly Color ClassMainColor = Color.FromUInt32(0xFF33E5A5);
-        public static readonly SolidColorBrush ClassMainBrush = new(ClassMainColor);
-
-        public static readonly Color ClassSecondaryColor = Color.FromUInt32(0xFF008052);
-        public static readonly SolidColorBrush ClassSecondaryBrush = new(ClassSecondaryColor);
-
-        public static readonly Color StructMainColor = Color.FromUInt32(0xFF4DCA85);
-        public static readonly SolidColorBrush StructMainBrush = new(StructMainColor);
-
-        public static readonly Color InterfaceMainColor = Color.FromUInt32(0xFFA2D080);
-        public static readonly SolidColorBrush InterfaceMainBrush = new(InterfaceMainColor);
-
-        public static readonly Color InterfaceSecondaryColor = Color.FromUInt32(0xFF6D8C57);
-        public static readonly SolidColorBrush InterfaceSecondaryBrush = new(InterfaceSecondaryColor);
-
-        public static readonly Color EnumMainColor = Color.FromUInt32(0XFFB8D7A3);
-        public static readonly SolidColorBrush EnumMainBrush = new(EnumMainColor);
-
-        public static readonly Color DelegateMainColor = Color.FromUInt32(0xFF4BCBC8);
-        public static readonly SolidColorBrush DelegateMainBrush = new(DelegateMainColor);
-
-        public static readonly Color ConstantMainColor = Color.FromUInt32(0xFF7A68E5);
-        public static readonly SolidColorBrush ConstantMainBrush = new(ConstantMainColor);
-
-        public static readonly NodeTypeDisplay PropertyAnalysisValueDisplay
-            = new(CommonTypes.PropertyAnalysisValue, RawValueColor);
-
-        public static readonly NodeTypeDisplay PropertyAccessValueDisplay
-            = new(CommonTypes.PropertyAccessValue, PropertyColor);
+        public NodeTypeDisplay PropertyAccessValueDisplay
+            => new(CommonTypes.PropertyAccessValue, PropertyColor);
     }
 }
