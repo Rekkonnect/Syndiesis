@@ -19,8 +19,6 @@ public sealed class AppSettings
 
     public int RecursiveExpansionDepth = 4;
 
-    public bool EnableExpandingAllNodes = false;
-
     #region Persistence
     public static bool TryLoad(string path = DefaultPath)
     {

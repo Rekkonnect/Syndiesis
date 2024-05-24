@@ -107,23 +107,6 @@
                 VerticalAlignment="Center"
                 />
             </Button>
-
-            <!--
-            Expand all lags a lot because of the allocations,
-            so it's best not shown by default; can be enabled in settings
-            -->
-            <Button
-              VerticalAlignment="Stretch"
-              Name="expandAllButton"
-              Background="#770922"
-              IsVisible="False"
-              >
-              <TextBlock
-                Text="Expand all"
-                TextAlignment="Center"
-                VerticalAlignment="Center"
-                />
-            </Button>
           </StackPanel>
         </Grid>
       </Grid>

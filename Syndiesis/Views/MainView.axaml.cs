@@ -93,7 +93,6 @@ public partial class MainView : UserControl
         pasteOverButton.Click += HandlePasteOverClick;
         settingsButton.Click += HandleSettingsClick;
         collapseAllButton.Click += CollapseAllClick;
-        expandAllButton.Click += ExpandAllClick;
         githubButton.Click += GitHubClick;
     }
 
@@ -111,25 +110,6 @@ public partial class MainView : UserControl
     {
         const string githubLink = "https://github.com/Rekkonnect/Syndiesis";
         ProcessUtilities.OpenUrl(githubLink);
-    }
-
-    private void ExpandAllClick(object? sender, RoutedEventArgs e)
-    {
-        Task.Run(ExpandAllNodes);
-    }
-
-    private async Task ExpandAllNodes()
-    {
-        Log.Information("Began expanding all nodes");
-        var profiling = new SimpleProfiling();
-        using (profiling.BeginProcess())
-        {
-            await syntaxTreeView.listView.RootNode.ExpandAllRecursivelyAsync();
-        }
-        var results = profiling.SnapshotResults!;
-        Log.Information(
-            $"Expanding all nodes took {results.Time.TotalMilliseconds:N2}ms " +
-            $"and reserved {results.Memory:N0} bytes");
     }
 
     private void CollapseAllClick(object? sender, RoutedEventArgs e)
@@ -222,7 +202,6 @@ public partial class MainView : UserControl
         }
 
         AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
-        expandAllButton.IsVisible = settings.EnableExpandingAllNodes;
     }
 
     private void InitializeAnalysisView()
