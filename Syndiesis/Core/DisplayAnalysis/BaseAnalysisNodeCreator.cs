@@ -28,7 +28,6 @@ using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
 
 using KvpList = List<KeyValuePair<object, object?>>;
-using static Syndiesis.Core.DisplayAnalysis.SyntaxAnalysisNodeCreator;
 
 public delegate IReadOnlyList<AnalysisTreeListNode> AnalysisNodeChildRetriever();
 
@@ -466,7 +465,7 @@ static string Code(string type)
         var line = LineForNodeValue(
             value,
             valueSource,
-            CommonStyles.PropertyAccessValueDisplay);
+            CommonStyles.MemberAccessValueDisplay);
         return AnalysisTreeListNode(line, null, null);
     }
 
@@ -483,7 +482,7 @@ static string Code(string type)
 
         return AnalysisTreeListNodeLine(
             inlines,
-            CommonStyles.PropertyAccessValueDisplay);
+            CommonStyles.MemberAccessValueDisplay);
     }
 
     protected SingleRunInline RunForSimpleObjectValue(object? value)
@@ -712,6 +711,58 @@ static string Code(string type)
 
         return new SingleRunInline(Run(typeName, main));
     }
+
+    protected static Run CreateThrowsRun()
+    {
+        return Run("throws ", CommonStyles.ThrowsBrush);
+    }
+
+    protected static GroupedRunInline ThrowsExceptionClause(
+        string typeName)
+    {
+        var throws = CreateThrowsRun();
+        var group = TypeDisplayWithFadeSuffix(
+            typeName, "Exception",
+            CommonStyles.ClassMainBrush, CommonStyles.ClassSecondaryBrush);
+
+        return new ComplexGroupedRunInline([
+            throws,
+            new RunOrGrouped(group),
+        ]);
+    }
+
+    protected AnalysisTreeListNodeLine CreateThrowsExceptionNodeLine(
+        string typeName, DisplayValueSource valueSource)
+    {
+        var inlines = new GroupedRunInlineCollection();
+        AppendValueSource(valueSource, inlines);
+        var clause = ThrowsExceptionClause(typeName);
+        inlines.Add(clause);
+        return new(inlines, CommonStyles.ThrowsExceptionDisplay);
+    }
+
+    protected AnalysisTreeListNode CreateThrowsExceptionNode(
+        string typeName, DisplayValueSource valueSource)
+    {
+        var line = CreateThrowsExceptionNodeLine(typeName, valueSource);
+        return new(line, null, null);
+    }
+
+    protected AnalysisTreeListNode CreateGeneralOrThrowsExceptionNode<TException>(
+        bool condition,
+        Func<object?> getter,
+        DisplayValueSource valueSource)
+    {
+        if (condition)
+        {
+            return CreateRootGeneral(getter(), valueSource);
+        }
+        else
+        {
+            var exceptionTypeName = typeof(TException).Name;
+            return CreateThrowsExceptionNode(exceptionTypeName, valueSource);
+        }
+    }
 }
 
 partial class BaseAnalysisNodeCreator
@@ -816,7 +867,7 @@ partial class BaseAnalysisNodeCreator
 
             return AnalysisTreeListNodeLine(
                 inlines,
-                CommonStyles.PropertyAccessValueDisplay);
+                CommonStyles.MemberAccessValueDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(object value)
@@ -948,7 +999,7 @@ partial class BaseAnalysisNodeCreator
 
             return AnalysisTreeListNodeLine(
                 inlines,
-                CommonStyles.PropertyAccessValueDisplay);
+                CommonStyles.MemberAccessValueDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
@@ -971,7 +1022,7 @@ partial class BaseAnalysisNodeCreator
 
             return AnalysisTreeListNodeLine(
                 inlines,
-                CommonStyles.PropertyAccessValueDisplay);
+                CommonStyles.MemberAccessValueDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(bool value)
@@ -1021,7 +1072,7 @@ partial class BaseAnalysisNodeCreator
 
             return AnalysisTreeListNodeLine(
                 inlines,
-                CommonStyles.PropertyAccessValueDisplay);
+                CommonStyles.MemberAccessValueDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(object value)
@@ -1051,7 +1102,7 @@ partial class BaseAnalysisNodeCreator
 
             return AnalysisTreeListNodeLine(
                 inlines,
-                CommonStyles.PropertyAccessValueDisplay);
+                CommonStyles.MemberAccessValueDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
@@ -1170,7 +1221,7 @@ partial class BaseAnalysisNodeCreator
 
             return AnalysisTreeListNodeLine(
                 inlines,
-                CommonStyles.PropertyAccessValueDisplay);
+                CommonStyles.MemberAccessValueDisplay);
         }
 
         protected GroupedRunInlineCollection CreateNodeDisplayRuns(
@@ -1221,8 +1272,10 @@ partial class BaseAnalysisNodeCreator
 
     public abstract class CommonTypes
     {
-        public const string PropertyAccessValue = ".";
+        public const string MemberAccessValue = ".";
         public const string PropertyAnalysisValue = "";
+
+        public const string ThrowsException = "X";
     }
 
     [SolidColor("RawValue", 0xFFE4E4E4)]
@@ -1242,12 +1295,16 @@ partial class BaseAnalysisNodeCreator
     [SolidColor("LocalMain", 0xFF88E9FF)]
     [SolidColor("IdentifierWildcard", 0xFF548C99)]
     [SolidColor("IdentifierWildcardFaded", 0xFF385E66)]
+    [SolidColor("Throws", 0xFFB33E3E)]
     public sealed partial class NodeCommonStyles
     {
         public NodeTypeDisplay PropertyAnalysisValueDisplay
             => new(CommonTypes.PropertyAnalysisValue, RawValueColor);
 
-        public NodeTypeDisplay PropertyAccessValueDisplay
-            => new(CommonTypes.PropertyAccessValue, PropertyColor);
+        public NodeTypeDisplay MemberAccessValueDisplay
+            => new(CommonTypes.MemberAccessValue, PropertyColor);
+
+        public NodeTypeDisplay ThrowsExceptionDisplay
+            => new(CommonTypes.ThrowsException, ThrowsColor);
     }
 }

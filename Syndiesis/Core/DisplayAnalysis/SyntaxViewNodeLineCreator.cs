@@ -1,6 +1,7 @@
 ﻿using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
@@ -38,6 +39,8 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly SyntaxTokenListRootViewNodeCreator _syntaxTokenListCreator;
     private readonly SyntaxTriviaRootViewNodeCreator _syntaxTriviaCreator;
     private readonly SyntaxTriviaListRootViewNodeCreator _syntaxTriviaListCreator;
+    private readonly SyntaxReferenceRootViewNodeCreator _syntaxReferenceCreator;
+    private readonly TextSpanRootViewNodeCreator _textSpanCreator;
 
     // public for other creators to use
     public readonly ChildlessSyntaxNodeRootViewNodeCreator ChildlessSyntaxCreator;
@@ -55,6 +58,8 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         _syntaxTokenListCreator = new(this);
         _syntaxTriviaCreator = new(this);
         _syntaxTriviaListCreator = new(this);
+        _syntaxReferenceCreator = new(this);
+        _textSpanCreator = new(this);
 
         ChildlessSyntaxCreator = new(this);
     }
@@ -87,6 +92,12 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
 
             case SyntaxTriviaList triviaList:
                 return CreateRootTriviaList(triviaList, valueSource);
+
+            case SyntaxReference reference:
+                return CreateRootSyntaxReference(reference, valueSource);
+
+            case TextSpan span:
+                return CreateRootTextSpan(span, valueSource);
         }
 
         return null;
@@ -224,6 +235,18 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         SyntaxTriviaList triviaList, DisplayValueSource valueSource)
     {
         return _syntaxTriviaListCreator.CreateNode(triviaList, valueSource);
+    }
+
+    private AnalysisTreeListNode CreateRootSyntaxReference(
+        SyntaxReference reference, DisplayValueSource valueSource)
+    {
+        return _syntaxReferenceCreator.CreateNode(reference, valueSource);
+    }
+
+    private AnalysisTreeListNode CreateRootTextSpan(
+        TextSpan span, DisplayValueSource valueSource)
+    {
+        return _textSpanCreator.CreateNode(span, valueSource);
     }
 
     private void AppendSyntaxTypeDetails(Type type, GroupedRunInlineCollection inlines)
@@ -1049,6 +1072,99 @@ partial class SyntaxAnalysisNodeCreator
                 ;
         }
     }
+
+    public sealed class SyntaxReferenceRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
+        : SyntaxRootViewNodeCreator<SyntaxReference>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            SyntaxReference reference, DisplayValueSource valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+            Creator.AppendValueSource(valueSource, inlines);
+            var inline = Creator.NestedTypeDisplayGroupedRun(typeof(SyntaxReference));
+            inlines.Add(inline);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.SyntaxReferenceDisplay);
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(
+            SyntaxReference reference)
+        {
+            return () => GetChildren(reference);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(SyntaxReference reference)
+        {
+            return
+            [
+                Creator.CreateRootTextSpan(
+                    reference.Span!,
+                    Property(nameof(SyntaxReference.Span))),
+
+                Creator.CreateRootNode(
+                    reference.GetSyntax(),
+                    MethodSource(nameof(SyntaxReference.GetSyntax)))!,
+            ];
+        }
+    }
+
+    public sealed class TextSpanRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
+        : SyntaxRootViewNodeCreator<TextSpan>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            TextSpan span, DisplayValueSource valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+            Creator.AppendValueSource(valueSource, inlines);
+            var inline = Creator.NestedTypeDisplayGroupedRun(typeof(TextSpan));
+            inlines.Add(inline);
+            inlines.Add(NewValueKindSplitterRun());
+            var spanView = CreateSpanViewRun(span);
+            inlines.Add(spanView);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.TextSpanDisplay);
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(
+            TextSpan span)
+        {
+            return null;
+        }
+
+        private static ComplexGroupedRunInline CreateSpanViewRun(TextSpan span)
+        {
+            var startRun = new SingleRunInline(
+                Run(span.Start.ToString(), CommonStyles.RawValueBrush));
+
+            var rangeSplitterRun = Run("..", CommonStyles.SplitterBrush);
+
+            var endRun = new SingleRunInline(
+                Run(span.End.ToString(), CommonStyles.RawValueBrush));
+
+            var leftParenthesisRun = Run("  (", CommonStyles.SplitterBrush);
+            var lengthRun = new SingleRunInline(
+                Run(span.Length.ToString(), CommonStyles.RawValueBrush));
+            var rightParenthesisRun = Run(")", CommonStyles.SplitterBrush);
+
+            return new ComplexGroupedRunInline(
+            [
+                new RunOrGrouped(
+                    new ComplexGroupedRunInline(
+                    [
+                        new(startRun),
+                        rangeSplitterRun,
+                        new(endRun),
+                    ])),
+                leftParenthesisRun,
+                new(lengthRun),
+                rightParenthesisRun,
+            ]);
+        }
+    }
 }
 
 partial class SyntaxAnalysisNodeCreator
@@ -1067,6 +1183,11 @@ partial class SyntaxAnalysisNodeCreator
         public const string TokenList = "TL";
         public const string DisplayValue = "D";
         public const string TriviaList = "VL";
+
+        // using & to denote reference, there's too many types
+        // beginning with S and we want to avoid the confusion
+        public const string SyntaxReference = "&";
+        public const string TextSpan = "..";
 
         public const string WhitespaceTrivia = "_";
         public const string CommentTrivia = "/*";
@@ -1122,6 +1243,12 @@ partial class SyntaxAnalysisNodeCreator
 
         public NodeTypeDisplay TriviaListDisplay
             => new(Types.TriviaList, BasicTriviaNodeTypeColor);
+
+        public NodeTypeDisplay SyntaxReferenceDisplay
+            => new(Types.SyntaxReference, CommonStyles.ClassMainColor);
+
+        public NodeTypeDisplay TextSpanDisplay
+            => new(Types.TextSpan, CommonStyles.StructMainColor);
 
         // Trivia displays
         public NodeTypeDisplay WhitespaceTriviaDisplay

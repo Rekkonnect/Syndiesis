@@ -61,8 +61,8 @@ public sealed partial class OperationsAnalysisNodeCreator
 
         // fallback
         return ParentContainer.SyntaxCreator.CreateRootViewNode(value, valueSource)
-            ?? ParentContainer.SemanticCreator.CreateRootViewNode(value, valueSource)
             ?? ParentContainer.SymbolCreator.CreateRootViewNode(value, valueSource)
+            ?? ParentContainer.SemanticCreator.CreateRootViewNode(value, valueSource)
             ;
     }
 
