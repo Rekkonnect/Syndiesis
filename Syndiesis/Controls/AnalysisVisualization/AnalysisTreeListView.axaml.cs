@@ -130,8 +130,17 @@ public partial class AnalysisTreeListView : UserControl
     {
         RootNode.SetExpansionWithoutAnimationRecursively(false);
         RootNode.Expand();
+        DestroyChildrenFromSecondLevel();
         horizontalScrollBar.StartPosition = 0;
         verticalScrollBar.StartPosition = 0;
+    }
+
+    private void DestroyChildrenFromSecondLevel()
+    {
+        foreach (var child in RootNode.LazyChildren)
+        {
+            child.DestroyLoadedChildren();
+        }
     }
 
     public AnalysisTreeListNode? DiscoverParentNodeCoveringSelection(int start, int end)

@@ -10,7 +10,6 @@ using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -83,7 +82,7 @@ public partial class AnalysisTreeListNode : UserControl
             {
                 // if only delegates could be converted more seamlessly
                 _childRetriever = new(new Func<NodeBuilderChildren>(value));
-                innerStackPanel.Children.ClearSetValue(new LoadingTreeListNode());
+                SetLoadingNode();
             }
 
             NodeLine.HasChildren = value is not null;
@@ -342,6 +341,18 @@ public partial class AnalysisTreeListNode : UserControl
         var state = expand ? ExpansionState.Expanded : ExpansionState.Collapsed;
         NodeLine.IsExpanded = expand;
         expandableCanvas.SetExpansionStateWithoutAnimation(state);
+    }
+
+    public void DestroyLoadedChildren()
+    {
+        _loadedChildren = null;
+        _childRetriever?.ClearValue();
+        SetLoadingNode();
+    }
+
+    private void SetLoadingNode()
+    {
+        innerStackPanel.Children.ClearSetValue(new LoadingTreeListNode());
     }
 
     public void Expand()
