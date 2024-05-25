@@ -1,9 +1,5 @@
 ﻿using Avalonia.Media;
-using Avalonia.OpenGL;
-using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
-using RoseLynn.CSharp;
-using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Utilities;
@@ -705,6 +701,10 @@ partial class SymbolAnalysisNodeCreator
             var type = symbols.GetType();
             var inline = Creator.NestedTypeDisplayGroupedRun(type);
             inlines.Add(inline);
+            AppendCountValueDisplay(
+                inlines,
+                symbols.Count,
+                nameof(IReadOnlyList<ISymbol>.Count));
 
             return AnalysisTreeListNodeLine(
                 inlines,

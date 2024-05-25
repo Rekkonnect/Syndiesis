@@ -1,7 +1,5 @@
 ﻿using Avalonia.Media;
-using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
-using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using System;
@@ -18,6 +16,9 @@ using GroupedRunInline = GroupedRunInline.IBuilder;
 using SingleRunInline = SingleRunInline.Builder;
 using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
+
+// This also captures IOperation.OperationList
+using OperationList = IReadOnlyCollection<IOperation>;
 
 public sealed partial class OperationsAnalysisNodeCreator
     : BaseAnalysisNodeCreator
@@ -48,7 +49,7 @@ public sealed partial class OperationsAnalysisNodeCreator
             case IOperation operation:
                 return CreateRootOperation(operation, valueSource);
 
-            case IReadOnlyList<IOperation> operationList:
+            case OperationList operationList:
                 return CreateRootOperationList(operationList, valueSource);
 
             case OperationTree operationTree:
@@ -73,7 +74,7 @@ public sealed partial class OperationsAnalysisNodeCreator
     }
 
     public AnalysisTreeListNode CreateRootOperationList(
-        IReadOnlyList<IOperation> operations,
+        OperationList operations,
         DisplayValueSource valueSource)
     {
         return _operationListCreator.CreateNode(operations, valueSource);
@@ -167,16 +168,20 @@ partial class OperationsAnalysisNodeCreator
     }
 
     public sealed class OperationListRootViewNodeCreator(OperationsAnalysisNodeCreator creator)
-        : OperationRootViewNodeCreator<IReadOnlyList<IOperation>>(creator)
+        : OperationRootViewNodeCreator<OperationList>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            IReadOnlyList<IOperation> operations, DisplayValueSource valueSource)
+            OperationList operations, DisplayValueSource valueSource)
         {
             var inlines = new GroupedRunInlineCollection();
             Creator.AppendValueSource(valueSource, inlines);
             var type = operations.GetType();
             var inline = Creator.NestedTypeDisplayGroupedRun(type);
             inlines.Add(inline);
+            AppendCountValueDisplay(
+                inlines,
+                operations.Count,
+                nameof(OperationList.Count));
 
             return AnalysisTreeListNodeLine(
                 inlines,
@@ -184,7 +189,7 @@ partial class OperationsAnalysisNodeCreator
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(
-            IReadOnlyList<IOperation> operations)
+            OperationList operations)
         {
             if (operations.Count is 0)
                 return null;
@@ -193,7 +198,7 @@ partial class OperationsAnalysisNodeCreator
         }
 
         private IReadOnlyList<AnalysisTreeListNode> GetChildren(
-            IReadOnlyList<IOperation> operations)
+            OperationList operations)
         {
             return operations
                 .Select(operation => Creator.CreateRootOperation(operation, default))

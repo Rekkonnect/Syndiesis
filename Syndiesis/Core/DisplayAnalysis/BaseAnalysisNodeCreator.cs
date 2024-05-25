@@ -495,6 +495,9 @@ static string Code(string type)
 
         if (value is string stringValue)
         {
+            if (stringValue.Length is 0)
+                return new SingleRunInline(CreateEmptyValueRun());
+
             value = SimplifyWhitespace(stringValue);
         }
 
