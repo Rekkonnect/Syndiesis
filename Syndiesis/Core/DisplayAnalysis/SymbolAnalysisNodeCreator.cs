@@ -303,12 +303,18 @@ partial class SymbolAnalysisNodeCreator
             var typeDetailsInline = TypeDetailsInline(type);
             inlines.Add(typeDetailsInline);
             inlines.Add(NewValueKindSplitterRun());
-            var kindInline = CreateKindInline(symbol);
-            inlines.Add(kindInline);
+            inlines.Add(CreateNameInline(symbol));
+            inlines.Add(NewValueKindSplitterRun());
+            inlines.Add(CreateKindInline(symbol));
 
             return AnalysisTreeListNodeLine(
                 inlines,
                 Styles.SymbolDisplay);
+        }
+
+        protected virtual SingleRunInline CreateNameInline(TSymbol symbol)
+        {
+            return new(Run(symbol.Name, CommonStyles.IdentifierWildcardBrush));
         }
 
         protected virtual SingleRunInline CreateKindInline(TSymbol symbol)
@@ -338,12 +344,12 @@ partial class SymbolAnalysisNodeCreator
                     MethodSource(nameof(ISymbol.GetAttributes))),
 
                 Creator.CreateRootGeneral(
-                    symbol.DeclaredAccessibility,
-                    Property(nameof(ISymbol.DeclaredAccessibility)))!,
-
-                Creator.CreateRootGeneral(
                     symbol.DeclaringSyntaxReferences,
                     Property(nameof(ISymbol.DeclaringSyntaxReferences)))!,
+
+                Creator.CreateRootGeneral(
+                    symbol.DeclaredAccessibility,
+                    Property(nameof(ISymbol.DeclaredAccessibility)))!,
 
                 Creator.CreateRootGeneral(
                     symbol.IsImplicitlyDeclared,
@@ -373,6 +379,11 @@ partial class SymbolAnalysisNodeCreator
         SymbolAnalysisNodeCreator creator)
         : ISymbolRootViewNodeCreator<IAssemblySymbol>(creator)
     {
+        public override object? AssociatedSyntaxObject(IAssemblySymbol value)
+        {
+            return value.GlobalNamespace;
+        }
+
         protected override void CreateChildren(IAssemblySymbol symbol, List<AnalysisTreeListNode> list)
         {
             list.AddRange([
@@ -436,6 +447,16 @@ partial class SymbolAnalysisNodeCreator
             );
 
             base.CreateChildren(symbol, list);
+        }
+
+        protected override SingleRunInline CreateNameInline(INamespaceSymbol symbol)
+        {
+            if (symbol.IsGlobalNamespace)
+            {
+                return new(Run("<global-namespace>", CommonStyles.IdentifierWildcardFadedBrush));
+            }
+
+            return base.CreateNameInline(symbol);
         }
     }
 
@@ -637,6 +658,11 @@ partial class SymbolAnalysisNodeCreator
     public sealed class ILocalSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
         : ISymbolRootViewNodeCreator<ILocalSymbol>(creator)
     {
+        protected override SingleRunInline CreateNameInline(ILocalSymbol symbol)
+        {
+            return new(Run(symbol.Name, CommonStyles.LocalMainBrush));
+        }
+
         protected override void CreateChildren(
             ILocalSymbol symbol, List<AnalysisTreeListNode> list)
         {
@@ -838,7 +864,7 @@ partial class SymbolAnalysisNodeCreator
     {
         public Color SymbolColor = CommonStyles.InterfaceMainColor;
         public Color SymbolCollectionColor = CommonStyles.StructMainColor;
-        public Color AttributeDataColor = CommonStyles.ClassMainColor;
+        public Color AttributeDataColor = Color.FromUInt32(0xFFDE526E);
         public Color AttributeDataListColor = Color.FromUInt32(0xFFDE526E);
 
         public NodeTypeDisplay SymbolDisplay

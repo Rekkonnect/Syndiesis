@@ -32,6 +32,11 @@ public sealed class IOperationPropertyFilter : PropertyFilter
             case nameof(IOperation.SemanticModel):
                 return false;
 
+            // An alternative method to access the contained operations,
+            // which is redundant in our case
+            case nameof(IOperation.ChildOperations):
+                return false;
+
 #pragma warning disable CS0618 // Type or member is obsolete
 
             // Remove obsolete members

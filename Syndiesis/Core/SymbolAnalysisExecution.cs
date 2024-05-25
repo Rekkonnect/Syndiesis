@@ -13,13 +13,13 @@ public class SymbolAnalysisExecution(SingleTreeCompilationSource compilationSour
         var creator = container.SymbolCreator;
 
         if (token.IsCancellationRequested)
-            return Task.FromCanceled<AnalysisResult>(token);
+            return Cancelled();
 
         var compilation = CompilationSource.Compilation;
         var assemblySymbol = compilation.Assembly;
 
         if (token.IsCancellationRequested)
-            return Task.FromCanceled<AnalysisResult>(token);
+            return Cancelled();
 
         var rootNode = creator.CreateRootViewNode(assemblySymbol!, default);
         var result = new SymbolAnalysisResult(rootNode!);

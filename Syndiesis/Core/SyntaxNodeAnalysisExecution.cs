@@ -21,17 +21,17 @@ public class SyntaxNodeAnalysisExecution(SingleTreeCompilationSource compilation
         {
             root = creator.CreateRootTree(syntaxTree);
             if (token.IsCancellationRequested)
-                return Task.FromCanceled<AnalysisResult>(token);
+                return Cancelled();
         }
         else
         {
             var treeRoot = syntaxTree.GetRoot(token);
             if (token.IsCancellationRequested)
-                return Task.FromCanceled<AnalysisResult>(token);
+                return Cancelled();
 
             root = creator.CreateRootNode(treeRoot);
             if (token.IsCancellationRequested)
-                return Task.FromCanceled<AnalysisResult>(token);
+                return Cancelled();
         }
 
         var result = new SyntaxNodeAnalysisResult(root);

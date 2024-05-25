@@ -13,7 +13,6 @@ public class AnalysisPipelineHandler
     private readonly Delayer _delayer = new();
 
     private string? _pendingSource = null;
-    private volatile bool _finishedAnalysis = false;
 
     private volatile int _ignoredInputDelayTimes = 0;
 
@@ -33,6 +32,7 @@ public class AnalysisPipelineHandler
 
     public async Task ForceAnalysis()
     {
+        _analysisCancellationTokenFactory.Cancel();
         await PerformAnalysis()
             .ConfigureAwait(false);
     }
@@ -49,19 +49,14 @@ public class AnalysisPipelineHandler
             return;
         }
 
-        // only cancel the analysis token if we have to interrupt an analysis
-        // in the middle of its execution
-        if (!_finishedAnalysis)
-        {
-            _analysisCancellationTokenFactory.Cancel();
-        }
+        _analysisCancellationTokenFactory.Cancel();
+
         _ = PerformAnalysis()
             .ConfigureAwait(false);
     }
 
     private async Task PerformAnalysis()
     {
-        _finishedAnalysis = false;
         var token = _analysisCancellationTokenFactory.CurrentToken;
 
         AnalysisRequested?.Invoke();
@@ -80,6 +75,10 @@ public class AnalysisPipelineHandler
             using (profiling.BeginProcess())
             {
                 var result = await AnalysisExecution.Execute(_pendingSource, token);
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
                 if (!result.Failed)
                 {
                     AnalysisCompleted!.Invoke(result);
@@ -96,7 +95,6 @@ public class AnalysisPipelineHandler
             App.Current.ExceptionListener.HandleException(ex, "Analysis failed");
             AnalysisFailed?.Invoke(new(ex));
         }
-        _finishedAnalysis = true;
         _pendingSource = null;
     }
 

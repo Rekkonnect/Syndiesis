@@ -1239,6 +1239,9 @@ partial class BaseAnalysisNodeCreator
     [SolidColor("EnumMain", 0XFFB8D7A3)]
     [SolidColor("DelegateMain", 0xFF4BCBC8)]
     [SolidColor("ConstantMain", 0xFF7A68E5)]
+    [SolidColor("LocalMain", 0xFF88E9FF)]
+    [SolidColor("IdentifierWildcard", 0xFF548C99)]
+    [SolidColor("IdentifierWildcardFaded", 0xFF385E66)]
     public sealed partial class NodeCommonStyles
     {
         public NodeTypeDisplay PropertyAnalysisValueDisplay

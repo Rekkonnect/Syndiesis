@@ -13,14 +13,14 @@ public class OperationAnalysisExecution(SingleTreeCompilationSource compilationS
         var creator = container.OperationCreator;
 
         if (token.IsCancellationRequested)
-            return Task.FromCanceled<AnalysisResult>(token);
+            return Cancelled();
 
         var compilation = CompilationSource.Compilation;
         var tree = CompilationSource.Tree;
         var operationTree = OperationTree.FromTree(compilation, tree!, token);
 
         if (token.IsCancellationRequested)
-            return Task.FromCanceled<AnalysisResult>(token);
+            return Cancelled();
 
         var rootNode = creator.CreateRootOperationTree(operationTree!, default);
         var result = new OperationAnalysisResult(rootNode);

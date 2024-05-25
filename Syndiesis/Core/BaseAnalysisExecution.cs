@@ -1,4 +1,5 @@
 ﻿using Syndiesis.Core.DisplayAnalysis;
+using Syndiesis.Utilities;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,10 +31,15 @@ public abstract class BaseAnalysisExecution(SingleTreeCompilationSource compilat
 
         CompilationSource.SetSource(source, token);
         if (token.IsCancellationRequested)
-            return Task.FromCanceled<AnalysisResult>(token);
+            return Cancelled();
 
         return ExecuteCore(token);
     }
 
     protected abstract Task<AnalysisResult> ExecuteCore(CancellationToken token);
+
+    protected static Task<AnalysisResult> Cancelled()
+    {
+        return Task.FromResult<AnalysisResult>(Singleton<CancelledAnalysisResult>.Instance);
+    }
 }
