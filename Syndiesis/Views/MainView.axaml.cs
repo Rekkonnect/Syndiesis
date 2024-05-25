@@ -1,10 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Text;
-using Serilog;
 using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Tabs;
@@ -12,7 +9,6 @@ using Syndiesis.Core;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
 using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Views;
@@ -97,6 +93,11 @@ public partial class MainView : UserControl
         githubButton.Click += GitHubClick;
     }
 
+    private void InitializeAnalysisView()
+    {
+        analysisTreeViewTabs.SelectIndex(0);
+    }
+
     private void HandleSelectedAnalysisTab(TabEnvelope tab)
     {
         var analysisKind = (AnalysisNodeKind)tab.TagValue!;
@@ -104,15 +105,15 @@ public partial class MainView : UserControl
         var analysisExecution = analysisFactory.CreateAnalysisExecution(analysisKind);
         AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
         AnalysisPipelineHandler.IgnoreInputDelayOnce();
-        _ = ForceAnalysisResetView();
+        if (IsLoaded)
+        {
+            Task.Run(ForceAnalysisResetView);
+        }
     }
 
     private async Task ForceAnalysisResetView()
     {
         await Task.Run(AnalysisPipelineHandler.ForceAnalysis);
-
-        Dispatcher.UIThread.Invoke(
-            syntaxTreeView.listView.ResetToInitialRootView);
     }
 
     private void GitHubClick(object? sender, RoutedEventArgs e)
@@ -170,7 +171,7 @@ public partial class MainView : UserControl
     private void ShowCurrentCursorPosition(LinePosition position)
     {
         var index = ViewModel.Editor.MultilineEditor.GetIndex(position);
-        syntaxTreeView.listView.HighlightPosition(index);
+        Task.Run(() => syntaxTreeView.listView.EnsureHighlightedPositionRecurring(index));
     }
 
     private void HandleHoveredNode(AnalysisTreeListNode? obj)
@@ -211,11 +212,6 @@ public partial class MainView : UserControl
         }
 
         AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
-    }
-
-    private void InitializeAnalysisView()
-    {
-        analysisTreeViewTabs.SelectIndex(0);
     }
 
     public void Reset()

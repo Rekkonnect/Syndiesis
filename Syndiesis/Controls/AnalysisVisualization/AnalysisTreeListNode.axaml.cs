@@ -65,7 +65,10 @@ public partial class AnalysisTreeListNode : UserControl
     public bool HasChildren => NodeLine.HasChildren;
 
     private AdvancedLazy<NodeBuilderChildren>? _childRetriever;
+    private Task? _childRetrievalTask;
     private NodeChildren? _loadedChildren;
+
+    public Task? ChildRetrievalTask => _childRetrievalTask;
 
     public AnalysisNodeChildRetriever? ChildRetriever
     {
@@ -94,6 +97,8 @@ public partial class AnalysisTreeListNode : UserControl
             return _loadedChildren ?? [];
         }
     }
+
+    public bool HasLoadedChildren => _childRetriever?.IsValueCreated ?? true;
 
     internal AnalysisTreeListView? ListView { get; set; }
 
@@ -142,7 +147,10 @@ public partial class AnalysisTreeListNode : UserControl
         if (_childRetriever.IsValueCreated)
             return;
 
-        var result = await Task.Run(_childRetriever.GetValueAsync);
+        var retrievalTask = Task.Run(_childRetriever.GetValueAsync);
+        _childRetrievalTask = retrievalTask;
+        var result = await retrievalTask;
+        _childRetrievalTask = null;
         SetLoadedChildren(result);
     }
 
@@ -288,11 +296,6 @@ public partial class AnalysisTreeListNode : UserControl
     {
         int depth = AppSettings.Instance.RecursiveExpansionDepth;
         Task.Run(() => ExpandRecursivelyAsync(depth));
-    }
-
-    public async Task ExpandAllRecursivelyAsync()
-    {
-        await ExpandRecursivelyAsync(int.MaxValue);
     }
 
     public async Task ExpandRecursivelyAsync(int depth)

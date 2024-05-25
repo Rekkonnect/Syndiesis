@@ -805,7 +805,7 @@ public partial class CodeEditor : UserControl
             case Key.U:
                 if (hasControl)
                 {
-                    ExpandSelectNextNode();
+                    ExpandSelectNextParentNode();
                     e.Handled = true;
                 }
                 break;
@@ -929,7 +929,7 @@ public partial class CodeEditor : UserControl
         }
     }
 
-    private void ExpandSelectNextNode()
+    private void ExpandSelectNextParentNode()
     {
         var discovered = DiscoverParentNodeCoveringSelection();
         if (discovered is null)

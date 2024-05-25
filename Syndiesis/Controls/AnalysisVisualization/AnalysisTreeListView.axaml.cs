@@ -2,13 +2,15 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
@@ -62,6 +64,7 @@ public partial class AnalysisTreeListView : UserControl
         RootNode.Loaded -= NewRootNodeLoaded;
         UpdateScrollLimits();
         CorrectContainedNodeWidths(Bounds.Size);
+        ResetToInitialRootView();
     }
 
     public AnalysisTreeListView()
@@ -333,20 +336,52 @@ public partial class AnalysisTreeListView : UserControl
         HoveredNode?.Invoke(node);
     }
 
-    public void HighlightPosition(int position)
-    {
-        var node = GetTargetKindNodeAtPosition(position);
-        if (node is null)
-            return;
+    private volatile int _recurringPositionExpansion = -1;
 
-        OverrideHover(node);
-        BringToView(node);
-        return;
+    public async Task EnsureHighlightedPositionRecurring(int position)
+    {
+        _recurringPositionExpansion = position;
+
+        var previousNode = RootNode;
+        while (true)
+        {
+            var node = Dispatcher.UIThread.Invoke(() =>
+            {
+                var node = GetTargetKindNodeAtPosition(position, previousNode);
+                if (node is null)
+                    return node;
+
+                OverrideHover(node);
+                BringToView(node);
+                return node;
+            });
+
+            if (node is null)
+                return;
+
+            if (node == previousNode)
+                return;
+
+            previousNode = node;
+
+            if (!node.HasChildren)
+                return;
+
+            Dispatcher.UIThread.Invoke(node.Expand);
+            var retrievalTask = node.ChildRetrievalTask;
+            if (retrievalTask is not null)
+            {
+                await retrievalTask;
+            }
+
+            if (_recurringPositionExpansion != position)
+                return;
+        }
     }
 
-    private AnalysisTreeListNode? GetTargetKindNodeAtPosition(int position)
+    private AnalysisTreeListNode? GetTargetKindNodeAtPosition(int position, AnalysisTreeListNode root)
     {
-        var node = GetNodeAtPosition(position);
+        var node = GetNodeAtPosition(position, root);
         if (node is null)
             return null;
 
@@ -367,24 +402,34 @@ public partial class AnalysisTreeListView : UserControl
 
     private AnalysisTreeListNode? GetNodeAtPosition(int position)
     {
+        return GetNodeAtPosition(position, RootNode);
+    }
+
+    private AnalysisTreeListNode? GetNodeAtPosition(int position, AnalysisTreeListNode root)
+    {
         if (AnalyzedTree is null)
             return null;
 
         if (position >= AnalyzedTree.Length)
         {
-            var last = GetLastDemandedNode();
+            var last = GetLastLoadedNode();
             return last;
         }
 
-        var current = RootNode;
+        var current = root;
         while (true)
         {
-            _ = current.RequestInitializedChildren();
             if (!current.HasChildren)
             {
                 return current;
             }
-            var children = ExpandDemandChildren(current);
+
+            if (!current.HasLoadedChildren)
+            {
+                return current;
+            }
+
+            var children = ExpandLazyChildren(current);
             var relevant = children
                 .FirstOrDefault(s =>
                 {
@@ -403,14 +448,14 @@ public partial class AnalysisTreeListView : UserControl
         }
     }
 
-    private AnalysisTreeListNode GetLastDemandedNode()
+    private AnalysisTreeListNode GetLastLoadedNode()
     {
         var current = RootNode;
         Debug.Assert(current is not null);
         while (true)
         {
         start:
-            var children = ExpandDemandChildren(current);
+            var children = ExpandLazyChildren(current);
             if (children is [])
                 return current;
 
@@ -430,7 +475,7 @@ public partial class AnalysisTreeListView : UserControl
         }
     }
 
-    private IReadOnlyList<AnalysisTreeListNode> ExpandDemandChildren(AnalysisTreeListNode node)
+    private IReadOnlyList<AnalysisTreeListNode> ExpandLazyChildren(AnalysisTreeListNode node)
     {
         node.SetExpansionWithoutAnimation(true);
         return node.LazyChildren;
