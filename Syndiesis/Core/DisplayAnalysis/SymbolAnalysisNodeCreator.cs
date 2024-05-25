@@ -780,13 +780,17 @@ partial class SymbolAnalysisNodeCreator
         : SymbolRootViewNodeCreator<IReadOnlyList<AttributeData>>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            IReadOnlyList<AttributeData> attribute, DisplayValueSource valueSource)
+            IReadOnlyList<AttributeData> attributes, DisplayValueSource valueSource)
         {
             var inlines = new GroupedRunInlineCollection();
             Creator.AppendValueSource(valueSource, inlines);
-            var type = attribute.GetType();
+            var type = attributes.GetType();
             var inline = Creator.NestedTypeDisplayGroupedRun(type);
             inlines.Add(inline);
+            AppendCountValueDisplay(
+                inlines,
+                attributes.Count,
+                nameof(IReadOnlyList<AttributeData>.Count));
 
             return AnalysisTreeListNodeLine(
                 inlines,
@@ -835,7 +839,7 @@ partial class SymbolAnalysisNodeCreator
         public Color SymbolColor = CommonStyles.InterfaceMainColor;
         public Color SymbolCollectionColor = CommonStyles.StructMainColor;
         public Color AttributeDataColor = CommonStyles.ClassMainColor;
-        public Color AttributeDataListColor = Color.FromUInt32(0xFFDD1023);
+        public Color AttributeDataListColor = Color.FromUInt32(0xFFDE526E);
 
         public NodeTypeDisplay SymbolDisplay
             => new(Types.Symbol, SymbolColor);

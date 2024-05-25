@@ -98,7 +98,7 @@ public partial class CoverableAnalysisTreeListView : UserControl
         {
             var spinner = new LoadingSpinner();
             const string begunText = """
-                Parsing and analyzing the syntax tree,
+                Parsing and analyzing the given source,
                 we should be ready soon
                 """;
             coverable.UpdateCoverContent(spinner, begunText);

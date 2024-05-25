@@ -3,6 +3,7 @@ using Syndiesis.Core.DisplayAnalysis;
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Syndiesis;
 
@@ -15,6 +16,7 @@ public sealed class AppSettings
     public AnalysisNodeCreationOptions NodeLineOptions = new();
     public IndentationOptions IndentationOptions = new();
 
+    [JsonIgnore]
     public StylePreferences StylePreferences = new();
 
     public TimeSpan UserInputDelay = TimeSpan.FromMilliseconds(600);
