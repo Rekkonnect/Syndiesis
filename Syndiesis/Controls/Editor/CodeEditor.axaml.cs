@@ -304,11 +304,12 @@ public partial class CodeEditor : UserControl
 
         if (_hoveredListNode is not null)
         {
-            var current = DeepestWithSyntaxObject(_hoveredListNode);
+            var current = _hoveredListNode;
             if (current is not null)
             {
                 var currentLine = current.NodeLine;
-                var span = currentLine.DisplayLineSpan;
+                var tree = AssociatedTreeView!.AnalyzedTree!;
+                var span = currentLine.DisplayLineSpan(tree);
                 SetHoverSpan(span, HighlightKind.SyntaxNodeHover);
             }
         }
@@ -316,21 +317,23 @@ public partial class CodeEditor : UserControl
 
     public void PlaceCursorAtNodeStart(AnalysisTreeListNode node)
     {
-        var deepest = DeepestWithSyntaxObject(node);
+        var deepest = node;
         if (deepest is null)
             return;
 
-        var start = deepest.AssociatedSyntaxObject!.LineSpan.Start;
+        var tree = AssociatedTreeView!.AnalyzedTree;
+        var start = deepest.AssociatedSyntaxObject!.GetLineSpan(tree).Start;
         CursorPosition = start;
     }
 
     public void SelectTextOfNode(AnalysisTreeListNode node)
     {
-        var deepest = DeepestWithSyntaxObject(node);
+        var deepest = node;
         if (deepest is null)
             return;
 
-        var lineSpan = deepest.AssociatedSyntaxObject!.LineSpan;
+        var tree = AssociatedTreeView!.AnalyzedTree;
+        var lineSpan = deepest.AssociatedSyntaxObject!.GetLineSpan(tree);
         var start = lineSpan.Start;
         var end = lineSpan.End;
         _editor.SetSelectionMode(false);
@@ -935,7 +938,8 @@ public partial class CodeEditor : UserControl
         if (discovered is null)
             return;
 
-        var span = discovered.NodeLine.DisplayLineSpan;
+        var tree = AssociatedTreeView!.AnalyzedTree!;
+        var span = discovered.NodeLine.DisplayLineSpan(tree);
         _editor.SelectionLineSpan = span;
         _editor.InvertSelectionCursorPosition();
         AssociatedTreeView?.OverrideHover(discovered);

@@ -1,9 +1,9 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using RoseLynn.CSharp;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
@@ -12,9 +12,6 @@ public sealed record SyntaxObjectInfo(
     object SyntaxObject, TextSpan Span, TextSpan FullSpan)
 {
     public SyntaxTree? SyntaxTree => GetSyntaxTree(SyntaxObject);
-
-    public LinePositionSpan LineFullSpan => GetLineFullSpan(SyntaxTree);
-    public LinePositionSpan LineSpan => GetLineSpan(SyntaxTree);
 
     public LinePositionSpan GetLineFullSpan(SyntaxTree? tree)
     {
@@ -98,6 +95,12 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTokenList tokenList:
                 return tokenList.FirstOrDefault().SyntaxTree;
 
+            case SyntaxReference reference:
+                return reference.SyntaxTree;
+
+            case AttributeData attribute:
+                return attribute.GetAttributeApplicationSyntax()?.SyntaxTree;
+
             // Operation
             case IOperation operation:
                 return operation.Syntax.SyntaxTree;
@@ -111,7 +114,7 @@ public sealed record SyntaxObjectInfo(
 
             // Symbol
             case ISymbol symbol:
-                return symbol.DeclaringSyntaxReferences.FirstOrDefault()?.SyntaxTree;
+                return SymbolDeclaringSyntax(symbol)?.SyntaxTree;
 
             case null:
                 return null;
@@ -146,6 +149,13 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTokenList tokenList:
                 return ExtractSpanFromList(tokenList, GetSpan);
 
+            case SyntaxReference reference:
+                return reference.Span;
+
+            case AttributeData attribute:
+                return attribute.ApplicationSyntaxReference
+                    ?.Span ?? default;
+
             // Operation
             case IOperation operation:
                 return operation.Syntax.Span;
@@ -162,7 +172,7 @@ public sealed record SyntaxObjectInfo(
                 // NOTE: This will not work well for partial declarations.
                 // Partial declarations could have multiple such references, and thus
                 // result in inaccurate behavior when interacting with the code.
-                return symbol.DeclaringSyntaxReferences.FirstOrDefault()
+                return SymbolDeclaringSyntax(symbol)
                     ?.GetSyntax().Span ?? default;
         }
 
@@ -173,7 +183,7 @@ public sealed record SyntaxObjectInfo(
     {
         switch (x)
         {
-            // Operation
+            // Syntax
             case SyntaxTree tree:
                 return tree.GetRoot().FullSpan;
 
@@ -195,6 +205,13 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTokenList tokenList:
                 return ExtractSpanFromList(tokenList, GetFullSpan);
 
+            case SyntaxReference reference:
+                return reference.GetSyntax().FullSpan;
+
+            case AttributeData attribute:
+                return attribute.GetAttributeApplicationSyntax()
+                    ?.FullSpan ?? default;
+
             // Operation
             case IOperation operation:
                 return operation.Syntax.FullSpan;
@@ -211,7 +228,7 @@ public sealed record SyntaxObjectInfo(
                 // NOTE: This will not work well for partial declarations.
                 // Partial declarations could have multiple such references, and thus
                 // result in inaccurate behavior when interacting with the code.
-                return symbol.DeclaringSyntaxReferences.FirstOrDefault()
+                return SymbolDeclaringSyntax(symbol)
                     ?.GetSyntax().FullSpan ?? default;
         }
 
@@ -274,5 +291,16 @@ public sealed record SyntaxObjectInfo(
             var end = lastSpan.End;
             return TextSpan.FromBounds(start, end);
         }
+    }
+
+    private static SyntaxReference? SymbolDeclaringSyntax(ISymbol symbol)
+    {
+        if (symbol.IsImplicitlyDeclared)
+        {
+            if (symbol is not INamespaceSymbol { IsGlobalNamespace: true })
+                return null;
+        }
+
+        return symbol.DeclaringSyntaxReferences.FirstOrDefault();
     }
 }

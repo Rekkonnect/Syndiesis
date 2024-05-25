@@ -1,7 +1,5 @@
 ﻿using Avalonia.Media;
-using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
-using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using System.Collections.Generic;

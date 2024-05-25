@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Media;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;
@@ -121,24 +122,20 @@ public partial class AnalysisTreeListNodeLine : UserControl
         }
     }
 
-    public LinePositionSpan DisplayLineSpan
-    {
-        get
-        {
-            var displaySpan = DisplaySpan;
-            if (displaySpan == default)
-                return default;
-
-            var tree = AssociatedSyntaxObject!.SyntaxTree;
-            return tree!.GetLineSpan(displaySpan).Span;
-        }
-    }
-
     public AnalysisNodeKind AnalysisNodeKind { get; set; }
 
     public AnalysisTreeListNodeLine()
     {
         InitializeComponent();
+    }
+
+    public LinePositionSpan DisplayLineSpan(SyntaxTree tree)
+    {
+        var displaySpan = DisplaySpan;
+        if (displaySpan == default)
+            return default;
+
+        return tree!.GetLineSpan(displaySpan).Span;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
