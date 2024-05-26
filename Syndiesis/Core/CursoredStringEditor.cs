@@ -83,8 +83,7 @@ public sealed class CursoredStringEditor
     {
         _selectionSpan.SelectionStart = new(0, 0);
         _selectionSpan.SelectionEnd = LastCharacterPosition();
-        _isSelectingText = _selectionSpan.HasSelection;
-        TriggerCursorMoved();
+        ReEvaluateTriggerSelection();
     }
 
     public void SetSelectionMode(bool inRangeSelection)
@@ -99,6 +98,13 @@ public sealed class CursoredStringEditor
     public void SetSelectionBounds(LinePosition start, LinePosition end)
     {
         _selectionSpan.SetBounds(start, end);
+        ReEvaluateTriggerSelection();
+    }
+
+    private void ReEvaluateTriggerSelection()
+    {
+        _isSelectingText = _selectionSpan.HasSelection;
+        TriggerCursorMoved();
     }
     #endregion
 
