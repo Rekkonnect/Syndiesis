@@ -97,6 +97,56 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
             ?? ParentContainer.SemanticCreator.CreateRootViewNode(value, valueSource);
     }
 
+    public AnalysisTreeListNodeLine? CreateRootSymbolNodeLine(
+        ISymbol symbol,
+        DisplayValueSource valueSource)
+    {
+        switch (symbol)
+        {
+            case IAssemblySymbol assemblySymbol:
+                return _assemblySymbolCreator.CreateNodeLine(assemblySymbol, valueSource);
+
+            case IModuleSymbol moduleSymbol:
+                return _moduleSymbolCreator.CreateNodeLine(moduleSymbol, valueSource);
+
+            case INamespaceSymbol namespaceSymbol:
+                return _namespaceSymbolCreator.CreateNodeLine(namespaceSymbol, valueSource);
+
+            case IFieldSymbol fieldSymbol:
+                return _fieldSymbolCreator.CreateNodeLine(fieldSymbol, valueSource);
+
+            case IPropertySymbol propertySymbol:
+                return _propertySymbolCreator.CreateNodeLine(propertySymbol, valueSource);
+
+            case IEventSymbol eventSymbol:
+                return _eventSymbolCreator.CreateNodeLine(eventSymbol, valueSource);
+
+            case IMethodSymbol methodSymbol:
+                return _methodSymbolCreator.CreateNodeLine(methodSymbol, valueSource);
+
+            case ITypeParameterSymbol typeParameter:
+                return _typeParameterSymbolCreator.CreateNodeLine(typeParameter, valueSource);
+
+            case IParameterSymbol parameter:
+                return _parameterSymbolCreator.CreateNodeLine(parameter, valueSource);
+
+            case ILocalSymbol localSymbol:
+                return _localSymbolCreator.CreateNodeLine(localSymbol, valueSource);
+
+            case IPreprocessingSymbol preprocessingSymbol:
+                return _preprocessingSymbolCreator.CreateNodeLine(preprocessingSymbol, valueSource);
+
+            case IRangeVariableSymbol rangeVariableSymbol:
+                return _rangeVariableSymbolCreator.CreateNodeLine(rangeVariableSymbol, valueSource);
+
+            case ITypeSymbol typeSymbol:
+                return _typeSymbolCreator.CreateNodeLine(typeSymbol, valueSource);
+
+            default:
+                return null;
+        }
+    }
+
     public AnalysisTreeListNode CreateRootSymbol(
         ISymbol symbol,
         DisplayValueSource valueSource)

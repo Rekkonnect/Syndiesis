@@ -4,6 +4,7 @@ using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
@@ -29,6 +30,7 @@ public sealed partial class OperationsAnalysisNodeCreator
     private readonly OperationRootViewNodeCreator _operationCreator;
     private readonly OperationListRootViewNodeCreator _operationListCreator;
     private readonly OperationTreeRootViewNodeCreator _operationTreeCreator;
+    private readonly OperationTreeSymbolContainerRootViewNodeCreator _symbolContainerCreator;
 
     public OperationsAnalysisNodeCreator(
         AnalysisNodeCreationOptions options,
@@ -38,6 +40,7 @@ public sealed partial class OperationsAnalysisNodeCreator
         _operationCreator = new(this);
         _operationListCreator = new(this);
         _operationTreeCreator = new(this);
+        _symbolContainerCreator = new(this);
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode(
@@ -85,6 +88,13 @@ public sealed partial class OperationsAnalysisNodeCreator
         DisplayValueSource valueSource)
     {
         return _operationTreeCreator.CreateNode(operationTree, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootOperationTreeSymbolContainer(
+        OperationTree.SymbolContainer container,
+        DisplayValueSource valueSource)
+    {
+        return _symbolContainerCreator.CreateNode(container, valueSource);
     }
 
     public AnalysisTreeListNode CreateRootSyntaxNode(
@@ -223,7 +233,7 @@ partial class OperationsAnalysisNodeCreator
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(OperationTree operationTree)
         {
-            if (operationTree.Operations.Length is 0)
+            if (operationTree.Containers.Length is 0)
                 return null;
 
             return () => GetChildren(operationTree);
@@ -231,7 +241,44 @@ partial class OperationsAnalysisNodeCreator
 
         private IReadOnlyList<AnalysisTreeListNode> GetChildren(OperationTree operationTree)
         {
-            var operations = operationTree.Operations;
+            var containers = operationTree.Containers;
+
+            return containers
+                .Select(container => Creator.CreateRootOperationTreeSymbolContainer(
+                    container, default))
+                .ToList()
+                ;
+        }
+    }
+
+    public sealed class OperationTreeSymbolContainerRootViewNodeCreator(
+        OperationsAnalysisNodeCreator creator)
+        : OperationRootViewNodeCreator<OperationTree.SymbolContainer>(creator)
+    {
+        public override object? AssociatedSyntaxObject(OperationTree.SymbolContainer value)
+        {
+            return value.Symbol;
+        }
+
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            OperationTree.SymbolContainer container, DisplayValueSource valueSource)
+        {
+            return Creator.ParentContainer.SymbolCreator
+                .CreateRootSymbolNodeLine(
+                    container.Symbol, valueSource)!;
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(
+            OperationTree.SymbolContainer container)
+        {
+            Debug.Assert(container.Operations.Length > 0);
+            return () => GetChildren(container);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(
+            OperationTree.SymbolContainer container)
+        {
+            var operations = container.Operations;
 
             return operations
                 .Select(operation => Creator.CreateRootOperation(operation, default))

@@ -2,16 +2,18 @@
 using Microsoft.CodeAnalysis;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 
 namespace Syndiesis.Core;
 
 public sealed class OperationTree(
     SyntaxTree tree,
-    ImmutableArray<IOperation> operations)
+    ImmutableArray<OperationTree.SymbolContainer> operations)
 {
     public SyntaxTree SyntaxTree { get; } = tree;
-    public ImmutableArray<IOperation> Operations { get; } = operations;
+    public ImmutableArray<SymbolContainer> Containers { get; } = operations;
 
     public static OperationTree? FromTree(
         Compilation compilation, SyntaxTree tree, CancellationToken token)
@@ -23,7 +25,7 @@ public sealed class OperationTree(
         return new(tree, operations);
     }
 
-    private static ImmutableArray<IOperation> DiscoverRootOperations(
+    private static ImmutableArray<SymbolContainer> DiscoverRootOperations(
         Compilation compilation, SyntaxTree tree, CancellationToken cancellationToken)
     {
         var semanticModel = compilation.GetSemanticModel(tree, false);
@@ -31,7 +33,7 @@ public sealed class OperationTree(
         if (cancellationToken.IsCancellationRequested)
             return [];
 
-        var operations = ImmutableArray.CreateBuilder<IOperation>();
+        var operations = ImmutableArray.CreateBuilder<SymbolOperation>();
 
         var nodeQueue = new Queue<SyntaxNode>();
         nodeQueue.Enqueue(syntaxRoot);
@@ -46,7 +48,10 @@ public sealed class OperationTree(
 
             if (operation is not null)
             {
-                operations.Add(operation);
+                var symbol = semanticModel.GetEnclosingSymbol(node, cancellationToken);
+                // we must have a symbol here
+                Debug.Assert(symbol is not null);
+                operations.Add(new (symbol, operation));
                 continue;
             }
 
@@ -54,6 +59,16 @@ public sealed class OperationTree(
             nodeQueue.EnqueueRange(children);
         }
 
-        return operations.ToImmutable();
+        return operations
+            .GroupBy(s => s.Symbol, SymbolEqualityComparer.Default)
+            .Select(s => new SymbolContainer(s.Key, s.Select(o => o.Operation).ToImmutableArray()))
+            .ToImmutableArray()
+            ;
     }
+
+    public sealed record SymbolContainer(
+        ISymbol Symbol, ImmutableArray<IOperation> Operations);
+
+    private readonly record struct SymbolOperation(
+        ISymbol Symbol, IOperation Operation);
 }

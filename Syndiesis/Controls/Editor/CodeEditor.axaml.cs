@@ -42,6 +42,8 @@ public partial class CodeEditor : UserControl
 
     private AnalysisTreeListNode? _hoveredListNode;
 
+    private int _disabledNodeHoverTimes;
+
     public int LineOffset
     {
         get => _lineOffset;
@@ -300,6 +302,12 @@ public partial class CodeEditor : UserControl
 
     private void ShowCurrentHoveredSyntaxNode()
     {
+        if (_disabledNodeHoverTimes > 0)
+        {
+            _disabledNodeHoverTimes--;
+            return;
+        }
+
         HideAllHoveredSyntaxNodes();
 
         if (_hoveredListNode is not null)
@@ -317,29 +325,26 @@ public partial class CodeEditor : UserControl
 
     public void PlaceCursorAtNodeStart(AnalysisTreeListNode node)
     {
-        var deepest = node;
-        if (deepest is null)
+        if (node is not { AssociatedSyntaxObject: not null and var syntaxObject })
             return;
 
         var tree = AssociatedTreeView!.AnalyzedTree;
-        var start = deepest.AssociatedSyntaxObject!.GetLineSpan(tree).Start;
+        var start = syntaxObject.GetLineSpan(tree).Start;
+        _disabledNodeHoverTimes++;
         CursorPosition = start;
     }
 
     public void SelectTextOfNode(AnalysisTreeListNode node)
     {
-        var deepest = node;
-        if (deepest is null)
+        if (node is not { AssociatedSyntaxObject: not null and var syntaxObject })
             return;
 
         var tree = AssociatedTreeView!.AnalyzedTree;
-        var lineSpan = deepest.AssociatedSyntaxObject!.GetLineSpan(tree);
+        var lineSpan = syntaxObject.GetLineSpan(tree);
         var start = lineSpan.Start;
         var end = lineSpan.End;
-        _editor.SetSelectionMode(false);
-        CursorPosition = end;
-        _editor.SetSelectionMode(true);
-        CursorPosition = start;
+        _disabledNodeHoverTimes++;
+        _editor.SetSelectionBounds(end, start);
     }
 
     private AnalysisTreeListNode? DeepestWithSyntaxObject(AnalysisTreeListNode? node)

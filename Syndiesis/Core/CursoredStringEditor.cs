@@ -95,6 +95,11 @@ public sealed class CursoredStringEditor
             _selectionSpan.SetBoth(_cursorPosition);
         }
     }
+
+    public void SetSelectionBounds(LinePosition start, LinePosition end)
+    {
+        _selectionSpan.SetBounds(start, end);
+    }
     #endregion
 
     #region Manipulation
