@@ -21,7 +21,7 @@ public sealed class SingleTreeCompilationSource
     private void InitializeCompilation()
     {
         Compilation = CSharpCompilation.Create("Syndiesis.UserSource")
-            .WithReferences(CompilationReferences.CurrentNetVersion);
+            .WithReferences(CompilationReferences.Runnable);
     }
 
     [MemberNotNull(nameof(Tree))]
