@@ -51,8 +51,7 @@ public class AnalysisPipelineHandler
 
         _analysisCancellationTokenFactory.Cancel();
 
-        _ = PerformAnalysis()
-            .ConfigureAwait(false);
+        Task.Run(PerformAnalysis);
     }
 
     private async Task PerformAnalysis()

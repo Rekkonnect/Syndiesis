@@ -144,7 +144,7 @@ public partial class MainView : UserControl
 
     private async Task HandlePasteClick()
     {
-        var pasteText = await this.GetClipboardTextAsync();
+        var pasteText = await Task.Run(this.GetClipboardTextAsync);
         if (pasteText is null)
             return;
 
