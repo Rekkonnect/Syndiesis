@@ -73,11 +73,13 @@ public partial class SyndiesisTitleBarButtonPanel : UserControl
             case WindowState.Maximized:
                 SetMaximizeButton(App.Current.ResourceManager.RestoreDownIconGeometry);
                 window.Padding = window.SpeculatedOffScreenMargin();
+                window.ExtendClientAreaTitleBarHeightHint = Bounds.Height + 2 * window.Padding.Top;
                 break;
 
             default:
                 SetMaximizeButton(App.Current.ResourceManager.MaximizeIconGeometry);
                 window.Padding = new(0);
+                window.ExtendClientAreaTitleBarHeightHint = Bounds.Height;
                 break;
         }
     }
