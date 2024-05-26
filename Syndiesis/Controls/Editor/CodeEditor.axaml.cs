@@ -116,9 +116,9 @@ public partial class CodeEditor : UserControl
 
     private void UpdateCurrentContent()
     {
-        UpdateVisibleCursor();
         UpdateVisibleText();
         BringCursorIntoView();
+        UpdateVisibleCursor();
     }
 
     public event Action? CodeChanged
