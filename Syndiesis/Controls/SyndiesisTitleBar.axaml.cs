@@ -20,13 +20,6 @@ public partial class SyndiesisTitleBar : UserControl
     private Window? WindowRoot => VisualRoot as Window;
     private CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
 
-    private PixelPoint _windowStartPosition;
-    private PixelPoint _dragStartPosition;
-    private PixelPoint _previousDragPosition;
-
-    private readonly PointerDragHandler _dragHandler = new();
-    private DragHandling _dragHandling = DragHandling.Enabled;
-
     public SyndiesisTitleBar()
     {
         InitializeComponent();
@@ -36,86 +29,45 @@ public partial class SyndiesisTitleBar : UserControl
 
     private void InitializeEvents()
     {
-        _dragHandler.DragStarted += RegisterDragStart;
-        _dragHandler.Dragged += MoveWindowPosition;
-        AddPointerHandlers(lineRectangle);
+        AddPointerHandlers(linePulseRectangle);
         AddPointerHandlers(contentStackPanel);
+    }
+
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+
+        var windowRoot = WindowRoot!;
+        windowRoot.KeyDown += HandleKeyDown;
+        windowRoot.KeyUp += HandleKeyUp;
+    }
+
+    private void HandleKeyUp(object? sender, KeyEventArgs e)
+    {
+        if (!e.KeyModifiers.NormalizeByPlatform().HasFlag(KeyModifiers.Control))
+        {
+            SetHitTest(false);
+        }
+    }
+
+    private void HandleKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.KeyModifiers.NormalizeByPlatform().HasFlag(KeyModifiers.Control))
+        {
+            SetHitTest(true);
+        }
+    }
+
+    private void SetHitTest(bool value)
+    {
+        lineBackground.IsHitTestVisible = value;
+        linePulseRectangle.IsHitTestVisible = value;
+        headerText.IsHitTestVisible = value;
     }
 
     private void AddPointerHandlers(Control control)
     {
-        _dragHandler.Attach(control);
-        control.DoubleTapped += HandleTopDoubleTapped;
         control.PointerPressed += HandleLineTapped;
-    }
-
-    private void RegisterDragStart(Point point)
-    {
-        switch (_dragHandling)
-        {
-            case DragHandling.DisabledNext:
-                _dragHandling = DragHandling.Enabled;
-                break;
-
-            case DragHandling.Disabled:
-                return;
-        }
-
-        var window = WindowRoot;
-        if (window is null)
-            return;
-
-        if (window.WindowState is WindowState.Maximized)
-            return;
-
-        _dragStartPosition = window.PointToScreen(point);
-        _windowStartPosition = window.Position;
-    }
-
-    private void MoveWindowPosition(PointerDragHandler.PointerDragArgs obj)
-    {
-        switch (_dragHandling)
-        {
-            case not DragHandling.Enabled:
-                return;
-        }
-
-        if (obj.Delta is (0, 0))
-            return;
-
-        if (obj.SourcePointerEventArgs.KeyModifiers is not KeyModifiers.None)
-            return;
-
-        var window = WindowRoot;
-        if (window is null)
-            return;
-
-        var currentPoint = window.PointToScreen(obj.CurrentPoint);
-        if (_previousDragPosition == currentPoint)
-            return;
-
-        var offset = currentPoint - _dragStartPosition;
-        window.Position = _windowStartPosition + offset;
-        _previousDragPosition = currentPoint;
-
-        if (window.WindowState is WindowState.Maximized)
-        {
-            window.WindowState = WindowState.Normal;
-        }
-    }
-
-    private void HandleTopDoubleTapped(object? sender, TappedEventArgs e)
-    {
-        var window = WindowRoot;
-        if (window is null)
-            return;
-
-        if (e.KeyModifiers is not KeyModifiers.None)
-            return;
-
-        e.Handled = true;
-        window.InvertMaximizedWindowState();
-        _dragHandling = DragHandling.DisabledNext;
     }
 
     private void HandleLineTapped(object? sender, PointerEventArgs e)
@@ -155,10 +107,10 @@ public partial class SyndiesisTitleBar : UserControl
     private void PulseCopiedLine()
     {
         _pulseLineCancellationTokenFactory.Cancel();
-        var animation = Animations.CreateOpacityPulseAnimation(lineRectangle, 1, OpacityProperty);
+        var animation = Animations.CreateOpacityPulseAnimation(linePulseRectangle, 1, OpacityProperty);
         animation.Duration = TimeSpan.FromMilliseconds(750);
         animation.Easing = Singleton<CubicEaseOut>.Instance;
-        _ = animation.RunAsync(lineRectangle, _pulseLineCancellationTokenFactory.CurrentToken);
+        _ = animation.RunAsync(linePulseRectangle, _pulseLineCancellationTokenFactory.CurrentToken);
     }
 
     [MemberNotNull(nameof(_versionRun))]

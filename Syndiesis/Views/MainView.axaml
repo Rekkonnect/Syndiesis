@@ -2,13 +2,14 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             MinWidth="600"
-             MinHeight="300"
+             mc:Ignorable="d" d:DesignWidth="850" d:DesignHeight="400"
+             MinWidth="850"
+             MinHeight="400"
              Focusable="True"
              xmlns:controls="using:Syndiesis.Controls"
-             xmlns:syntax="using:Syndiesis.Controls.SyntaxVisualization"
+             xmlns:syntax="using:Syndiesis.Controls.AnalysisVisualization"
              xmlns:previews="using:Syndiesis.Views.DesignerPreviews"
+             xmlns:tabs="using:Syndiesis.Controls.Tabs"
              x:Class="Syndiesis.Views.MainView"
              >
   <Panel>
@@ -106,23 +107,6 @@
                 VerticalAlignment="Center"
                 />
             </Button>
-
-            <!--
-            Expand all lags a lot because of the allocations,
-            so it's best not shown by default; can be enabled in settings
-            -->
-            <Button
-              VerticalAlignment="Stretch"
-              Name="expandAllButton"
-              Background="#770922"
-              IsVisible="False"
-              >
-              <TextBlock
-                Text="Expand all"
-                TextAlignment="Center"
-                VerticalAlignment="Center"
-                />
-            </Button>
           </StackPanel>
         </Grid>
       </Grid>
@@ -131,9 +115,9 @@
         Grid.Row="2"
         >
         <Grid.ColumnDefinitions>
-          <ColumnDefinition Width="*" MinWidth="400" />
+          <ColumnDefinition Width="5*" MinWidth="400" />
           <ColumnDefinition Width="4" />
-          <ColumnDefinition Width="*" MinWidth="400" />
+          <ColumnDefinition Width="6*" MinWidth="400" />
         </Grid.ColumnDefinitions>
 
         <Border
@@ -153,15 +137,31 @@
 
         </GridSplitter>
 
-        <Border
-          BorderBrush="#38A0FF"
-          BorderThickness="2"
+        <Grid
           Grid.Column="2"
-        >
-          <syntax:CoverableSyntaxTreeListView
-            Name="syntaxTreeView"
-          />
-        </Border>
+          >
+
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+
+          <tabs:TabEnvelopeRow
+            Name="analysisTreeViewTabs"
+            HorizontalAlignment="Stretch"
+            Height="28"
+            />
+          
+          <Border
+            BorderBrush="#38A0FF"
+            BorderThickness="2"
+            Grid.Row="1"
+          >
+            <syntax:CoverableAnalysisTreeListView
+              Name="syntaxTreeView"
+            />
+          </Border>
+        </Grid>
       </Grid>
     </Grid>
   </Panel>

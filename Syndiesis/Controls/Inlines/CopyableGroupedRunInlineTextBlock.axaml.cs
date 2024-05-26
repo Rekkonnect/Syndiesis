@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Avalonia.Media;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
@@ -41,22 +40,29 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
         ClipToBounds = false;
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        var root = VisualRoot as InputElement;
-        root!.KeyDown += HandleRootKeyEvent;
-        root!.KeyUp += HandleRootKeyEvent;
-    }
-
     private void HandleRootKeyEvent(object? sender, KeyEventArgs e)
     {
         ReEvaluateKeyModifiers(e.KeyModifiers);
     }
 
+    protected override void OnPointerEntered(PointerEventArgs e)
+    {
+        var root = VisualRoot as InputElement;
+        if (root is null)
+            return;
+        root!.KeyDown += HandleRootKeyEvent;
+        root!.KeyUp += HandleRootKeyEvent;
+    }
+
     protected override void OnPointerExited(PointerEventArgs e)
     {
         ClearHoveredInline();
+
+        var root = VisualRoot as InputElement;
+        if (root is null)
+            return;
+        root.KeyDown -= HandleRootKeyEvent;
+        root.KeyUp -= HandleRootKeyEvent;
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)

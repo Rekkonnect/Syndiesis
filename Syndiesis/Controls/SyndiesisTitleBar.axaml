@@ -6,9 +6,12 @@
              Height="35"
              xmlns:controls="using:Syndiesis.Controls"
              xmlns:inlines="using:Syndiesis.Controls.Inlines"
-             x:Class="Syndiesis.Controls.SyndiesisTitleBar">
+             DockPanel.Dock="Top"
+             x:Class="Syndiesis.Controls.SyndiesisTitleBar"
+             >
 
   <Panel>
+
     <Border
       CornerRadius="0 0 0 20"
       ClipToBounds="True"
@@ -21,7 +24,9 @@
         </Grid.ColumnDefinitions>
 
         <Rectangle
+          Name="lineBackground"
           Fill="#004044"
+          IsHitTestVisible="False"
           />
         
         <Rectangle
@@ -29,7 +34,8 @@
           HorizontalAlignment="Stretch"
           Fill="#40BBBBBB"
           Opacity="0"
-          Name="lineRectangle"
+          Name="linePulseRectangle"
+          IsHitTestVisible="False"
           />
 
         <StackPanel
@@ -46,6 +52,7 @@
             Name="headerText"
             FontFamily="{StaticResource AptosDisplayFontFamily}"
             VerticalAlignment="Center"
+            IsHitTestVisible="False"
             >
         
           </inlines:CopyableGroupedRunInlineTextBlock>

@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Microsoft.CodeAnalysis.Text;
+using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
 using System;
@@ -39,7 +40,9 @@ public partial class CodeEditor : UserControl
 
     private int _lineOffset;
 
-    private SyntaxTreeListNode? _hoveredListNode;
+    private AnalysisTreeListNode? _hoveredListNode;
+
+    private int _disabledNodeHoverTimes;
 
     public int LineOffset
     {
@@ -93,7 +96,7 @@ public partial class CodeEditor : UserControl
         }
     }
 
-    public SyntaxTreeListView? AssociatedTreeView { get; set; }
+    public AnalysisTreeListView? AssociatedTreeView { get; set; }
 
     private void HandleCursorMoved(LinePosition position)
     {
@@ -228,7 +231,7 @@ public partial class CodeEditor : UserControl
 
     public static int VisibleLines(double height)
     {
-        return (int)(height / LineHeight);
+        return (int)(height / LineHeight) + 1;
     }
 
     private void ForceUpdateText()
@@ -291,7 +294,7 @@ public partial class CodeEditor : UserControl
         line.RestartCursorAnimation();
     }
 
-    public void ShowHoveredSyntaxNode(SyntaxTreeListNode? listNode)
+    public void ShowHoveredSyntaxNode(AnalysisTreeListNode? listNode)
     {
         _hoveredListNode = listNode;
         ShowCurrentHoveredSyntaxNode();
@@ -299,58 +302,74 @@ public partial class CodeEditor : UserControl
 
     private void ShowCurrentHoveredSyntaxNode()
     {
+        if (_disabledNodeHoverTimes > 0)
+        {
+            _disabledNodeHoverTimes--;
+            return;
+        }
+
         HideAllHoveredSyntaxNodes();
 
         if (_hoveredListNode is not null)
         {
-            var current = DeepestWithSyntaxObject(_hoveredListNode);
+            var current = _hoveredListNode;
             if (current is not null)
             {
                 var currentLine = current.NodeLine;
-                var span = currentLine.DisplayLineSpan;
+                var tree = AssociatedTreeView!.AnalyzedTree!;
+                var span = currentLine.DisplayLineSpan(tree);
                 SetHoverSpan(span, HighlightKind.SyntaxNodeHover);
             }
         }
     }
 
-    public void PlaceCursorAtNodeStart(SyntaxTreeListNode node)
+    public void PlaceCursorAtNodeStart(AnalysisTreeListNode node)
     {
-        var deepest = DeepestWithSyntaxObject(node);
-        if (deepest is null)
+        if (node is not { AssociatedSyntaxObject: not null and var syntaxObject })
             return;
 
-        var start = deepest.AssociatedSyntaxObject!.LineSpan.Start;
+        var tree = AssociatedTreeView!.AnalyzedTree;
+        var start = syntaxObject.GetLineSpan(tree).Start;
+        _disabledNodeHoverTimes++;
         CursorPosition = start;
     }
 
-    public void SelectTextOfNode(SyntaxTreeListNode node)
+    public void SelectTextOfNode(AnalysisTreeListNode node)
     {
-        var deepest = DeepestWithSyntaxObject(node);
-        if (deepest is null)
+        if (node is not { AssociatedSyntaxObject: not null and var syntaxObject })
             return;
 
-        var lineSpan = deepest.AssociatedSyntaxObject!.LineSpan;
+        var tree = AssociatedTreeView!.AnalyzedTree;
+        var lineSpan = syntaxObject.GetLineSpan(tree);
         var start = lineSpan.Start;
         var end = lineSpan.End;
-        _editor.SetSelectionMode(false);
-        CursorPosition = end;
-        _editor.SetSelectionMode(true);
-        CursorPosition = start;
+        _disabledNodeHoverTimes++;
+        _editor.SetSelectionBounds(end, start);
     }
 
-    private SyntaxTreeListNode? DeepestWithSyntaxObject(SyntaxTreeListNode? node)
+    private AnalysisTreeListNode? DeepestWithSyntaxObject(AnalysisTreeListNode? node)
     {
+        if (node is null)
+            return null;
+
+        var sourceKind = node.NodeLine.AnalysisNodeKind;
         var current = node;
+        var previous = node;
         while (current is not null)
         {
+            if (current.NodeLine.AnalysisNodeKind != sourceKind)
+            {
+                return previous;
+            }
+
             var currentLine = current.NodeLine;
             var syntaxObject = currentLine.AssociatedSyntaxObject;
-
             if (syntaxObject is not null)
             {
                 return current;
             }
 
+            previous = current;
             current = current.ParentNode;
         }
 
@@ -794,7 +813,7 @@ public partial class CodeEditor : UserControl
             case Key.U:
                 if (hasControl)
                 {
-                    ExpandSelectNextNode();
+                    ExpandSelectNextParentNode();
                     e.Handled = true;
                 }
                 break;
@@ -918,19 +937,20 @@ public partial class CodeEditor : UserControl
         }
     }
 
-    private void ExpandSelectNextNode()
+    private void ExpandSelectNextParentNode()
     {
         var discovered = DiscoverParentNodeCoveringSelection();
         if (discovered is null)
             return;
 
-        var span = discovered.NodeLine.DisplayLineSpan;
+        var tree = AssociatedTreeView!.AnalyzedTree!;
+        var span = discovered.NodeLine.DisplayLineSpan(tree);
         _editor.SelectionLineSpan = span;
         _editor.InvertSelectionCursorPosition();
         AssociatedTreeView?.OverrideHover(discovered);
     }
 
-    private SyntaxTreeListNode? DiscoverParentNodeCoveringSelection()
+    private AnalysisTreeListNode? DiscoverParentNodeCoveringSelection()
     {
         var span = _editor.SelectionLineSpan;
         var start = span.Start;

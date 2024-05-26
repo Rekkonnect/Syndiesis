@@ -10,13 +10,13 @@
     <Rectangle
       Name="selectionHighlight"
       HorizontalAlignment="Left"
-      Fill="#900050B0"
+      Fill="#400090FF"
       />
     
     <Rectangle
       Name="syntaxNodeHoverHighlight"
       HorizontalAlignment="Left"
-      Fill="#A0606060"
+      Fill="#60A0A0A0"
       />
     
     <Panel

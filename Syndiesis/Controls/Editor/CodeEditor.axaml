@@ -22,6 +22,22 @@
         <RowDefinition Height="20"/>
       </Grid.RowDefinitions>
 
+      <Panel
+        Grid.Column="1"
+        Name="codeCanvasContainer"
+        controls:CursorContainer.Cursor="Ibeam"
+        >
+        <Canvas
+          Name="codeCanvas"
+          >
+          <controls:CodeEditorContentPanel
+            Canvas.Left="0"
+            Canvas.Top="0"
+            Name="codeEditorContent"
+            />
+        </Canvas>
+      </Panel>
+      
       <Panel Width="70"
              VerticalAlignment="Stretch"
              HorizontalAlignment="Left"
@@ -35,21 +51,7 @@
           LastLineNumber="5"
           />
       </Panel>
-      <Panel
-        Grid.Column="1"
-        ZIndex="-10"
-        Name="codeCanvasContainer"
-        >
-        <Canvas
-          Name="codeCanvas"
-          >
-          <controls:CodeEditorContentPanel
-            Canvas.Left="0"
-            Canvas.Top="0"
-            Name="codeEditorContent"
-            />
-        </Canvas>
-      </Panel>
+      
       <Panel
         Background="#003034"
         Grid.Column="2">
@@ -79,7 +81,6 @@
              Grid.Column="2"
              Grid.Row="1">
       </Panel>
-      <!-- other color is 00777E -->
     </Grid>
   </Panel>
 </UserControl>

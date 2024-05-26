@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>12.0</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dentextist" Version="1.0.1" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
+    <PackageReference Include="Garyon" Version="0.3.3" GeneratePathProperty="true" />
+    <PackageReference Include="RoseLynn" Version="0.6.4.1" GeneratePathProperty="true" />
+    <PackageReference Include="RoseLynn.VS2019" Version="0.6.4.1" GeneratePathProperty="true" />
+    <PackageReference Include="RoseLynn.Generators" Version="0.6.4.1" GeneratePathProperty="true" />
+  </ItemGroup>
+
+
+  <PropertyGroup>
+    <GetTargetPathDependsOn>$(GetTargetPathDependsOn);GetDependencyTargetPaths</GetTargetPathDependsOn>
+  </PropertyGroup>
+
+  <Target Name="GetDependencyTargetPaths">
+    <ItemGroup>
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGDentextist)\lib\netstandard2.0\Dentextist.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGGaryon)\lib\netstandard2.0\Garyon.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGRoseLynn)\lib\netstandard2.0\RoseLynn.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGRoseLynn_VS2019)\lib\netstandard2.0\RoseLynn.VS2019.dll" IncludeRuntimeDependency="false" />
+      <TargetPathWithTargetPlatformMoniker Include="$(PKGRoseLynn_Generators)\lib\netstandard2.0\RoseLynn.Generators.dll" IncludeRuntimeDependency="false" />
+    </ItemGroup>
+  </Target>
+  
+</Project>

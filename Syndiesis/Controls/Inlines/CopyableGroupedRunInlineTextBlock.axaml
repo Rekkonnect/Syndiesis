@@ -8,6 +8,17 @@
 
   <Panel>
 
+    <!--
+      For hitbox purposes; without this the mouse can slide through empty space in the text
+      and miss highlighting the copyable content, more notably in cases like `Length:  0`.
+    -->
+    <Rectangle
+      Fill="Transparent"
+      IsHitTestVisible="True"
+      VerticalAlignment="Stretch"
+      HorizontalAlignment="Stretch"
+      />
+    
     <Canvas>
       <Rectangle
         Name="textPartHoverRectangle"

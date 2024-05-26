@@ -4,9 +4,10 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Syndiesis.Controls"
              xmlns:inlines="using:Syndiesis.Controls.Inlines"
+             xmlns:av="using:Syndiesis.Controls.AnalysisVisualization"
              mc:Ignorable="d" d:DesignWidth="300"
              Height="26"
-             x:Class="Syndiesis.Controls.SyntaxTreeListNodeLine">
+             x:Class="Syndiesis.Controls.AnalysisVisualization.AnalysisTreeListNodeLine">
 
   <Grid>
     <Grid.ColumnDefinitions>
@@ -16,7 +17,7 @@
       <ColumnDefinition Width="30" />
     </Grid.ColumnDefinitions>
 
-    <controls:VisualExpandToggle
+    <av:VisualExpandToggle
       Width="12"
       Height="12"
       Grid.Column="0"

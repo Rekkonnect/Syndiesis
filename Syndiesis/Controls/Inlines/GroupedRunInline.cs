@@ -1,4 +1,5 @@
 ﻿using Avalonia.Controls.Documents;
+using Syndiesis.Core.DisplayAnalysis;
 using System.Collections.Generic;
 using System.Text;
 
@@ -94,6 +95,21 @@ public abstract class GroupedRunInline
         else if (runOrGrouped.Grouped is not null and var grouped)
         {
             grouped.AppendToInlines(inlines);
+        }
+    }
+
+    public interface IBuilder
+    {
+        public GroupedRunInline Build();
+    }
+
+    public abstract record Builder<T>(string? OverrideText = null)
+        : UIBuilder<T>, IBuilder
+        where T : GroupedRunInline
+    {
+        GroupedRunInline IBuilder.Build()
+        {
+            return Build();
         }
     }
 }

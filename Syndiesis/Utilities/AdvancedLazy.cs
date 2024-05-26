@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Utilities;
 
@@ -35,6 +36,24 @@ public sealed class AdvancedLazy<T>
     public AdvancedLazy(Func<T> factory)
     {
         _factory = factory;
+    }
+
+    public async Task<T> GetValueAsync()
+    {
+        if (IsValueCreated)
+        {
+            return _value!;
+        }
+
+        return await CalculateValueAsync();
+    }
+
+    private Task<T> CalculateValueAsync()
+    {
+        IsValueCreated = true;
+        var value = _factory();
+        _value = value;
+        return Task.FromResult(value);
     }
 
     public void ClearValue()

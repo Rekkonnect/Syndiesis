@@ -30,8 +30,12 @@ public sealed class SyntaxNodePropertyFilter : PropertyFilter
         var name = propertyInfo.Name;
 
         // we don't like infinite recursion
-        if (name is nameof(SyntaxNode.Parent))
-            return false;
+        switch (name)
+        {
+            case nameof(SyntaxNode.Parent):
+            case nameof(StructuredTriviaSyntax.ParentTrivia):
+                return false;
+        }
 
         bool extraFilter = IsExtraProperty(propertyInfo, name);
         if (extraFilter)
@@ -50,10 +54,10 @@ public sealed class SyntaxNodePropertyFilter : PropertyFilter
         if (IsSyntaxNodeType(type))
             return true;
 
-        return type == typeof(SyntaxTokenList)
-            || type == typeof(SyntaxTriviaList)
-            || type == typeof(SyntaxToken)
+        return type == typeof(SyntaxToken)
+            || type == typeof(SyntaxTokenList)
             || type == typeof(SyntaxTrivia)
+            || type == typeof(SyntaxTriviaList)
             ;
     }
 

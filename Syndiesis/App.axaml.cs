@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Microsoft.CodeAnalysis;
 using Serilog;
 using Serilog.Events;
 using Syndiesis.Utilities;
@@ -46,11 +47,18 @@ public partial class App : Application
     private AppInfo CreateAppInfo()
     {
         var assembly = GetType().Assembly;
+        var roslynAssembly = typeof(SyntaxNode).Assembly;
         return new()
         {
-            InformationalVersion = InformationalVersion.Parse(
-                assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!)
+            InformationalVersion = InformationalVersionForAssembly(assembly),
+            RoslynVersion = InformationalVersionForAssembly(roslynAssembly),
         };
+    }
+
+    private static InformationalVersion InformationalVersionForAssembly(Assembly assembly)
+    {
+        return InformationalVersion.Parse(
+            assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!);
     }
 
     public override void OnFrameworkInitializationCompleted()

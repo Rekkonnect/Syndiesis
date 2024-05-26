@@ -3,13 +3,13 @@ using Avalonia.Threading;
 using Syndiesis.Core;
 using System;
 
-namespace Syndiesis.Controls.SyntaxVisualization;
+namespace Syndiesis.Controls.AnalysisVisualization;
 
-public partial class CoverableSyntaxTreeListView : UserControl
+public partial class CoverableAnalysisTreeListView : UserControl
 {
     public event Action? NewRootNodeLoaded;
 
-    public CoverableSyntaxTreeListView()
+    public CoverableAnalysisTreeListView()
     {
         InitializeComponent();
         InitializeCover();
@@ -18,7 +18,7 @@ public partial class CoverableSyntaxTreeListView : UserControl
     private void InitializeCover()
     {
         var spinner = new LoadingSpinner();
-        _ = coverable.ShowCover(spinner, "Initializing application", TimeSpan.Zero);
+        coverable.ShowCover(spinner, "Initializing application", TimeSpan.Zero);
     }
 
     public void RegisterAnalysisPipelineHandler(
@@ -54,13 +54,23 @@ public partial class CoverableSyntaxTreeListView : UserControl
             switch (analysisResult)
             {
                 case SyntaxNodeAnalysisResult syntaxNodeAnalysisResult:
-                    listView.RootNode = syntaxNodeAnalysisResult.NodeRoot!;
+                    listView.RootNode = syntaxNodeAnalysisResult.NodeRoot.Build()!;
+                    listView.TargetAnalysisNodeKind = AnalysisNodeKind.Syntax;
+                    break;
+
+                case OperationAnalysisResult operationAnalysisResult:
+                    listView.RootNode = operationAnalysisResult.NodeRoot.Build()!;
+                    listView.TargetAnalysisNodeKind = AnalysisNodeKind.Operation;
+                    break;
+
+                case SymbolAnalysisResult symbolAnalysisResult:
+                    listView.RootNode = symbolAnalysisResult.NodeRoot.Build()!;
+                    listView.TargetAnalysisNodeKind = AnalysisNodeKind.Symbol;
                     break;
             }
 
             var hideDuration = TimeSpan.FromMilliseconds(500);
-            _ = coverable.HideCover(hideDuration)
-                .ConfigureAwait(false);
+            coverable.HideCover(hideDuration);
             NewRootNodeLoaded?.Invoke();
         }
 
@@ -76,8 +86,7 @@ public partial class CoverableSyntaxTreeListView : UserControl
             const string requestedText = """
                 Awaiting for further user input in the code editor
                 """;
-            _ = coverable.ShowCover(image, requestedText, showDuration)
-                .ConfigureAwait(false);
+            coverable.ShowCover(image, requestedText, showDuration);
         }
 
         Dispatcher.UIThread.Invoke(UIUpdate);
@@ -89,7 +98,7 @@ public partial class CoverableSyntaxTreeListView : UserControl
         {
             var spinner = new LoadingSpinner();
             const string begunText = """
-                Parsing and analyzing the syntax tree,
+                Parsing and analyzing the given source,
                 we should be ready soon
                 """;
             coverable.UpdateCoverContent(spinner, begunText);

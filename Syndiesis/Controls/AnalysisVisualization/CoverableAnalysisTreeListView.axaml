@@ -3,18 +3,19 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:controls="using:Syndiesis.Controls"
+             xmlns:av="using:Syndiesis.Controls.AnalysisVisualization"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Syndiesis.Controls.SyntaxVisualization.CoverableSyntaxTreeListView">
+             x:Class="Syndiesis.Controls.AnalysisVisualization.CoverableAnalysisTreeListView">
 
   <controls:CoverableContent
     Name="coverable"
     >
     <controls:CoverableContent.ContainedContent>
-      <controls:SyntaxTreeListView
+      <av:AnalysisTreeListView
         Name="listView"
         >
         
-      </controls:SyntaxTreeListView>
+      </av:AnalysisTreeListView>
     </controls:CoverableContent.ContainedContent>
   </controls:CoverableContent>
   

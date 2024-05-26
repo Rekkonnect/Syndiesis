@@ -53,6 +53,22 @@ public class VerticallyExpandablePanel : Panel
         }
     }
 
+    public double ChildrenDesiredHeight
+    {
+        get
+        {
+            return Children.Sum(c => c.DesiredSize.Height);
+        }
+    }
+
+    public double ChildrenBoundsHeight
+    {
+        get
+        {
+            return Children.Sum(c => c.Bounds.Height);
+        }
+    }
+
     protected override Size MeasureOverride(Size availableSize)
     {
         var totalSize = Size.Infinity;
@@ -67,6 +83,7 @@ public class VerticallyExpandablePanel : Panel
         totalSize = totalSize
             .WithHeight(height)
             ;
+
         return totalSize;
     }
 
@@ -136,6 +153,41 @@ public class VerticallyExpandablePanel : Panel
                     {
                         new Setter(ChildrenHeightRatioProperty, to),
                         new Setter(OpacityProperty, targetOpacity),
+                    }
+                },
+            }
+        };
+
+        await new TransitionAnimation(animation)
+            .RunAsync(this, cancellationToken);
+    }
+
+    public async Task AnimateCurrentHeight(
+        CancellationToken cancellationToken)
+    {
+        double from = MaxHeight;
+        double to = ChildrenBoundsHeight;
+
+        var animation = new Animation
+        {
+            Duration = TimeSpan.FromMilliseconds(300),
+            Easing = Singleton<CubicEaseOut>.Instance,
+            Children =
+            {
+                new KeyFrame
+                {
+                    Cue = new Cue(0.00),
+                    Setters =
+                    {
+                        new Setter(MaxHeightProperty, from),
+                    }
+                },
+                new KeyFrame
+                {
+                    Cue = new Cue(1.00),
+                    Setters =
+                    {
+                        new Setter(MaxHeightProperty, to),
                     }
                 },
             }

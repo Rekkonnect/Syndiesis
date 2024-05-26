@@ -160,16 +160,6 @@
           />
         </CheckBox>
 
-        <CheckBox
-          Name="enableExpandAllButtonCheck"
-        >
-          <TextBlock
-            FontFamily="{StaticResource AptosDisplayFontFamily}"
-            FontSize="16"
-            Text="Enable expand all nodes button"
-          />
-        </CheckBox>
-
         <sc:LabelledSlider
           Name="typingDelaySlider"
           NameText="Typing delay wait"

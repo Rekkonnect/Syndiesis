@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Garyon.Reflection;
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Numerics;
 
 namespace Syndiesis.Utilities;
@@ -51,5 +53,23 @@ public static class ConvenienceExtensions
     public static int RoundInt32(this double value)
     {
         return (int)Math.Round(value);
+    }
+
+    public static bool IsEmpty<T>(this IReadOnlyList<T> source)
+    {
+        var genericDefinition = source.GetType().GetGenericTypeDefinitionOrSame();
+        if (genericDefinition == typeof(ImmutableArray<>))
+        {
+            return IsEmptyImmutable(source as dynamic);
+        }
+
+        return source.Count is 0;
+    }
+
+    // This is necessary to avoid retrieving the Count property, which throws an
+    // exception if the array is default. This design is highly inappropriate.
+    private static bool IsEmptyImmutable<T>(ImmutableArray<T> array)
+    {
+        return array.IsDefaultOrEmpty;
     }
 }

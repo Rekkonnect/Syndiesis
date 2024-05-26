@@ -3,7 +3,10 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
+             ZIndex="100"
              xmlns:toast="using:Syndiesis.Controls.Toast"
+             xmlns:controls="using:Syndiesis.Controls"
+             controls:CursorContainer.Cursor="Hand"
              x:Class="Syndiesis.Controls.Toast.ToastNotificationPopup">
 
   <Panel

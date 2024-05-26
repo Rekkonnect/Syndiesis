@@ -1,5 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using RoseLynn.CSharp;
+using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +12,6 @@ public sealed record SyntaxObjectInfo(
     object SyntaxObject, TextSpan Span, TextSpan FullSpan)
 {
     public SyntaxTree? SyntaxTree => GetSyntaxTree(SyntaxObject);
-
-    public LinePositionSpan LineFullSpan => GetLineFullSpan(SyntaxTree);
-    public LinePositionSpan LineSpan => GetLineSpan(SyntaxTree);
 
     public LinePositionSpan GetLineFullSpan(SyntaxTree? tree)
     {
@@ -63,6 +62,9 @@ public sealed record SyntaxObjectInfo(
         }
 
         var span = GetSpan(x);
+        if (span == default)
+            return null;
+
         var fullSpan = GetFullSpan(x);
         return new(x, span, fullSpan);
     }
@@ -71,6 +73,10 @@ public sealed record SyntaxObjectInfo(
     {
         switch (x)
         {
+            // Syntax
+            case SyntaxTree tree:
+                return tree;
+
             case SyntaxNode node:
                 return node.SyntaxTree;
 
@@ -80,23 +86,51 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTrivia trivia:
                 return trivia.SyntaxTree;
 
+            case SyntaxTriviaList triviaList:
+                return triviaList.FirstOrDefault().SyntaxTree;
+
             case IReadOnlyList<object?> nodeList:
                 return GetSyntaxTree(nodeList.FirstOrDefault());
 
             case SyntaxTokenList tokenList:
                 return tokenList.FirstOrDefault().SyntaxTree;
 
+            case SyntaxReference reference:
+                return reference.SyntaxTree;
+
+            case AttributeData attribute:
+                return attribute.GetAttributeApplicationSyntax()?.SyntaxTree;
+
+            // Operation
+            case IOperation operation:
+                return operation.Syntax.SyntaxTree;
+
+            case OperationTree operationTree:
+                return operationTree.SyntaxTree;
+
+            // Semantic model
+            case SemanticModel semanticModel:
+                return semanticModel.SyntaxTree;
+
+            // Symbol
+            case ISymbol symbol:
+                return SymbolDeclaringSyntax(symbol)?.SyntaxTree;
+
             case null:
                 return null;
         }
 
-        throw new ArgumentException("Unknown object to get FullSpan from");
+        throw new ArgumentException("Unknown object to get SyntaxTree from");
     }
 
     private static TextSpan GetSpan(object x)
     {
         switch (x)
         {
+            // Syntax
+            case SyntaxTree tree:
+                return tree.GetRoot().Span;
+
             case SyntaxNode node:
                 return node.Span;
 
@@ -106,20 +140,53 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTrivia trivia:
                 return trivia.Span;
 
+            case SyntaxTriviaList triviaList:
+                return triviaList.Span;
+
             case IReadOnlyList<object?> nodeList:
                 return ExtractSpanFromList(nodeList, GetSpan);
 
             case SyntaxTokenList tokenList:
                 return ExtractSpanFromList(tokenList, GetSpan);
+
+            case SyntaxReference reference:
+                return reference.Span;
+
+            case AttributeData attribute:
+                return attribute.ApplicationSyntaxReference
+                    ?.Span ?? default;
+
+            // Operation
+            case IOperation operation:
+                return operation.Syntax.Span;
+
+            case OperationTree operationTree:
+                return GetSpan(operationTree.SyntaxTree);
+
+            // Semantic model
+            case SemanticModel semanticModel:
+                return GetSpan(semanticModel.SyntaxTree);
+
+            // Symbol
+            case ISymbol symbol:
+                // NOTE: This will not work well for partial declarations.
+                // Partial declarations could have multiple such references, and thus
+                // result in inaccurate behavior when interacting with the code.
+                return SymbolDeclaringSyntax(symbol)
+                    ?.GetSyntax().Span ?? default;
         }
 
-        throw new ArgumentException("Unknown object to get Span from");
+        return default;
     }
 
     private static TextSpan GetFullSpan(object x)
     {
         switch (x)
         {
+            // Syntax
+            case SyntaxTree tree:
+                return tree.GetRoot().FullSpan;
+
             case SyntaxNode node:
                 return node.FullSpan;
 
@@ -129,32 +196,111 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTrivia trivia:
                 return trivia.FullSpan;
 
+            case SyntaxTriviaList triviaList:
+                return triviaList.FullSpan;
+
             case IReadOnlyList<object?> nodeList:
                 return ExtractSpanFromList(nodeList, GetFullSpan);
 
             case SyntaxTokenList tokenList:
                 return ExtractSpanFromList(tokenList, GetFullSpan);
+
+            case SyntaxReference reference:
+                return reference.GetSyntax().FullSpan;
+
+            case AttributeData attribute:
+                return attribute.GetAttributeApplicationSyntax()
+                    ?.FullSpan ?? default;
+
+            // Operation
+            case IOperation operation:
+                return operation.Syntax.FullSpan;
+
+            case OperationTree operationTree:
+                return GetFullSpan(operationTree.SyntaxTree);
+
+            // Semantic model
+            case SemanticModel semanticModel:
+                return GetFullSpan(semanticModel.SyntaxTree);
+
+            // Symbol
+            case ISymbol symbol:
+                // NOTE: This will not work well for partial declarations.
+                // Partial declarations could have multiple such references, and thus
+                // result in inaccurate behavior when interacting with the code.
+                return SymbolDeclaringSyntax(symbol)
+                    ?.GetSyntax().FullSpan ?? default;
         }
 
-        throw new ArgumentException("Unknown object to get FullSpan from");
+        return default;
     }
 
     private static TextSpan ExtractSpanFromList<T>(
         IReadOnlyList<T?> nodeList,
         Func<object, TextSpan> spanGetter)
     {
-        if (nodeList.Count is 0)
-            throw new ArgumentException("Invalid empty list provided");
+        if (nodeList.IsEmpty())
+            return default;
 
         var first = nodeList[0];
         var firstSpan = spanGetter(first!);
         if (nodeList.Count is 1)
             return firstSpan;
 
-        var start = firstSpan.Start;
-        var last = nodeList[^1];
-        var lastSpan = spanGetter(last!);
-        var end = lastSpan.End;
-        return TextSpan.FromBounds(start, end);
+        if (first is ISymbol symbol)
+        {
+            return Symbol();
+
+            TextSpan Symbol()
+            {
+                bool hasValid = !firstSpan.IsEmpty;
+                var start = firstSpan.Start;
+                var end = firstSpan.End;
+
+                int count = nodeList.Count;
+                for (int i = 1; i < count; i++)
+                {
+                    var node = nodeList[i]!;
+                    var span = spanGetter(node);
+                    if (span.IsEmpty)
+                        continue;
+
+                    if (!hasValid)
+                    {
+                        start = span.Start;
+                        end = span.End;
+                        hasValid = true;
+                        continue;
+                    }
+
+                    start = Math.Min(start, span.Start);
+                    end = Math.Max(end, span.End);
+                }
+
+                return TextSpan.FromBounds(start, end);
+            }
+        }
+
+        return General();
+
+        TextSpan General()
+        {
+            var start = firstSpan.Start;
+            var last = nodeList[^1];
+            var lastSpan = spanGetter(last!);
+            var end = lastSpan.End;
+            return TextSpan.FromBounds(start, end);
+        }
+    }
+
+    private static SyntaxReference? SymbolDeclaringSyntax(ISymbol symbol)
+    {
+        if (symbol.IsImplicitlyDeclared)
+        {
+            if (symbol is not INamespaceSymbol { IsGlobalNamespace: true })
+                return null;
+        }
+
+        return symbol.DeclaringSyntaxReferences.FirstOrDefault();
     }
 }

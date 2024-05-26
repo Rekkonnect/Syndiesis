@@ -43,4 +43,18 @@ public sealed class ComplexGroupedRunInline : GroupedRunInline
             AppendToInlines(inlines, value);
         }
     }
+
+    public sealed record Builder(
+        List<RunOrGrouped>? Children = null)
+        : Builder<ComplexGroupedRunInline>()
+    {
+        public override ComplexGroupedRunInline Build()
+        {
+            if (Children is null)
+                return new();
+
+            var built = Children.Select(s => s.Build());
+            return new(built);
+        }
+    }
 }

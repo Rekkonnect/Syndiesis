@@ -3,15 +3,22 @@ using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Threading;
+using Garyon.Extensions;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace Syndiesis.Controls;
+namespace Syndiesis.Controls.AnalysisVisualization;
 
-public partial class SyntaxTreeListNode : UserControl
+using NodeChildren = IReadOnlyList<AnalysisTreeListNode>;
+using NodeBuilderChildren = IReadOnlyList<UIBuilder.AnalysisTreeListNode>;
+
+public partial class AnalysisTreeListNode : UserControl
 {
     private static readonly CancellationTokenFactory _expansionAnimationCancellationTokenFactory = new();
 
@@ -31,76 +38,70 @@ public partial class SyntaxTreeListNode : UserControl
         set => NodeLine.AssociatedSyntaxObject = value;
     }
 
-    public static readonly StyledProperty<SyntaxTreeListNodeLine> NodeLineProperty =
-        AvaloniaProperty.Register<CodeEditorLine, SyntaxTreeListNodeLine>(
-            nameof(NodeLine),
-            defaultValue: new());
+    private AnalysisTreeListNodeLine _nodeLine = new();
 
-    public SyntaxTreeListNodeLine NodeLine
+    public AnalysisTreeListNodeLine NodeLine
     {
-        get => GetValue(NodeLineProperty);
+        get => _nodeLine;
         set
         {
-            SetValue(NodeLineProperty, value);
+            _nodeLine = value;
             topNodeContent.Content = value;
             value.HasChildren = _childRetriever is not null;
         }
     }
 
     // Only here for the designer preview
-    public AvaloniaList<SyntaxTreeListNode> ChildNodes
+    public AvaloniaList<AnalysisTreeListNode> ChildNodes
     {
         set
         {
-            innerStackPanel.Children.ClearSetValues(value);
+            SetChildNodes(value);
             NodeLine.HasChildren = value.Count > 0;
         }
     }
 
     public bool HasChildren => NodeLine.HasChildren;
 
-    private AdvancedLazy<IReadOnlyList<SyntaxTreeListNode>>? _childRetriever;
+    private AdvancedLazy<NodeBuilderChildren>? _childRetriever;
+    private Task? _childRetrievalTask;
+    private NodeChildren? _loadedChildren;
 
-    public Func<IReadOnlyList<SyntaxTreeListNode>>? ChildRetriever
+    public Task? ChildRetrievalTask => _childRetrievalTask;
+
+    public AnalysisNodeChildRetriever? ChildRetriever
     {
-        get => _childRetriever?.Factory;
         set
         {
             if (value is null)
             {
                 _childRetriever = null;
+                innerStackPanel.Children.Clear();
             }
             else
             {
-                _childRetriever = new(value);
+                // if only delegates could be converted more seamlessly
+                _childRetriever = new(new Func<NodeBuilderChildren>(value));
+                SetLoadingNode();
             }
 
             NodeLine.HasChildren = value is not null;
         }
     }
 
-    public IReadOnlyList<SyntaxTreeListNode> LazyChildren
+    public NodeChildren LazyChildren
     {
         get
         {
-            return _childRetriever?.ValueOrDefault ?? [];
+            return _loadedChildren ?? [];
         }
     }
 
-    public IReadOnlyList<SyntaxTreeListNode> DemandedChildren
-    {
-        get
-        {
-            EnsureInitializedChildren();
-            return _childRetriever?.Value ?? [];
-        }
-    }
+    public bool HasLoadedChildren => _childRetriever?.IsValueCreated ?? true;
 
-    internal SyntaxTreeListView? ListView { get; set; }
+    internal AnalysisTreeListView? ListView { get; set; }
 
-    public int Depth { get; private set; }
-
-    public SyntaxTreeListNode? ParentNode
+    public AnalysisTreeListNode? ParentNode
     {
         get
         {
@@ -108,7 +109,7 @@ public partial class SyntaxTreeListNode : UserControl
             while (current is not null)
             {
                 var parent = current.Parent;
-                if (parent is SyntaxTreeListNode node)
+                if (parent is AnalysisTreeListNode node)
                     return node;
 
                 current = parent;
@@ -118,10 +119,9 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
-    public SyntaxTreeListNode()
+    public AnalysisTreeListNode()
     {
         InitializeComponent();
-        expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Expanded);
     }
 
     private static readonly Color _topLineHoverColor = Color.FromArgb(64, 128, 128, 128);
@@ -130,15 +130,15 @@ public partial class SyntaxTreeListNode : UserControl
     private readonly SolidColorBrush _topLineBackgroundBrush = new(Colors.Transparent);
     private readonly SolidColorBrush _expandableCanvasBackgroundBrush = new(Colors.Transparent);
 
-    public void EnsureInitializedChildren(bool flag)
+    public async Task RequestInitializedChildren(bool flag)
     {
         if (flag)
         {
-            EnsureInitializedChildren();
+            await RequestInitializedChildren();
         }
     }
 
-    public void EnsureInitializedChildren()
+    public async Task RequestInitializedChildren()
     {
         if (_childRetriever is null)
             return;
@@ -146,16 +146,35 @@ public partial class SyntaxTreeListNode : UserControl
         if (_childRetriever.IsValueCreated)
             return;
 
-        var value = _childRetriever.Value;
-        innerStackPanel.Children.ClearSetValues(value);
-        // this is necessary to avoid overriding the height of the node
-        expandableCanvas.SetExpansionStateWithoutAnimation(ExpansionState.Collapsed);
-        var nextDepth = Depth + 1;
-        foreach (var child in value)
+        var retrievalTask = Task.Run(_childRetriever.GetValueAsync);
+        _childRetrievalTask = retrievalTask;
+        var result = await retrievalTask;
+        _childRetrievalTask = null;
+        SetLoadedChildren(result);
+    }
+
+    private void SetLoadedChildren(NodeBuilderChildren builders)
+    {
+        void UIUpdate()
         {
-            child.ListView = ListView;
-            child.Depth = nextDepth;
+            builders ??= [];
+            var children = builders.Select(s => s.Build()).ToList();
+            _loadedChildren = children;
+
+            SetChildNodes(children);
+            foreach (var child in children)
+            {
+                child.ListView = ListView;
+            }
         }
+
+        Dispatcher.UIThread.Invoke(UIUpdate);
+    }
+
+    private void SetChildNodes(NodeChildren value)
+    {
+        innerStackPanel.Children.ClearSetValues(value);
+        //_ = expandableCanvas.AnimateCurrentHeight(default);
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)
@@ -195,8 +214,7 @@ public partial class SyntaxTreeListNode : UserControl
         if (isHovered)
         {
             ListView?.OverrideHover(this);
-            // when the user clicks on this node, the animation must not be broken
-            EnsureInitializedChildren();
+            _ = RequestInitializedChildren();
         }
         else
         {
@@ -204,7 +222,7 @@ public partial class SyntaxTreeListNode : UserControl
         }
     }
 
-    internal void SetListViewRecursively(SyntaxTreeListView listView)
+    internal void SetListViewRecursively(AnalysisTreeListView listView)
     {
         ListView = listView;
 
@@ -227,7 +245,9 @@ public partial class SyntaxTreeListNode : UserControl
     internal void UpdateHovering(bool isHovered)
     {
         var topLineBackgroundColor = isHovered ? _topLineHoverColor : Colors.Transparent;
-        var expandableCanvasBackgroundColor = isHovered ? _expandableCanvasHoverColor : Colors.Transparent;
+        var expandableCanvasBackgroundColor = isHovered
+            ? _expandableCanvasHoverColor
+            : Colors.Transparent;
         _topLineBackgroundBrush.Color = topLineBackgroundColor;
         _expandableCanvasBackgroundBrush.Color = expandableCanvasBackgroundColor;
 
@@ -265,16 +285,31 @@ public partial class SyntaxTreeListNode : UserControl
                     break;
 
                 case KeyModifiers.Alt:
-                    EnsureInitializedChildren(true);
-                    foreach (var node in LazyChildren)
-                    {
-                        int depth = AppSettings.Instance.RecursiveExpansionDepth;
-                        node.SetExpansionWithoutAnimationRecursively(true, depth);
-                    }
-                    Expand();
+                    ExpandRecursively();
                     break;
             }
         }
+    }
+
+    private void ExpandRecursively()
+    {
+        int depth = AppSettings.Instance.RecursiveExpansionDepth;
+        Task.Run(() => ExpandRecursivelyAsync(depth));
+    }
+
+    public async Task ExpandRecursivelyAsync(int depth)
+    {
+        if (depth <= 0)
+            return;
+
+        Dispatcher.UIThread.Invoke(Expand);
+        await RequestInitializedChildren();
+        var taskList = new List<Task>();
+        foreach (var node in LazyChildren)
+        {
+            taskList.Add(node.ExpandRecursivelyAsync(depth - 1));
+        }
+        await taskList.WaitAll();
     }
 
     public void ToggleExpansion()
@@ -292,7 +327,7 @@ public partial class SyntaxTreeListNode : UserControl
         if (depth <= 0)
             return;
 
-        EnsureInitializedChildren(expand);
+        _ = RequestInitializedChildren(expand);
         foreach (var node in LazyChildren)
         {
             node.SetExpansionWithoutAnimationRecursively(expand, depth - 1);
@@ -302,10 +337,22 @@ public partial class SyntaxTreeListNode : UserControl
 
     public void SetExpansionWithoutAnimation(bool expand)
     {
-        EnsureInitializedChildren(expand);
+        _ = RequestInitializedChildren(expand);
         var state = expand ? ExpansionState.Expanded : ExpansionState.Collapsed;
         NodeLine.IsExpanded = expand;
         expandableCanvas.SetExpansionStateWithoutAnimation(state);
+    }
+
+    public void DestroyLoadedChildren()
+    {
+        _loadedChildren = null;
+        _childRetriever?.ClearValue();
+        SetLoadingNode();
+    }
+
+    private void SetLoadingNode()
+    {
+        innerStackPanel.Children.ClearSetValue(new LoadingTreeListNode());
     }
 
     public void Expand()
@@ -333,7 +380,7 @@ public partial class SyntaxTreeListNode : UserControl
         _expansionAnimationCancellationTokenFactory.Cancel();
 
         var animationToken = _expansionAnimationCancellationTokenFactory.CurrentToken;
-        EnsureInitializedChildren(expand);
+        _ = RequestInitializedChildren(expand);
         _ = expandableCanvas.SetExpansionState(expand, animationToken);
     }
 }

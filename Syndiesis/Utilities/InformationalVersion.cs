@@ -14,11 +14,12 @@ public sealed record InformationalVersion(string Version, string? CommitSha)
     public static InformationalVersion Parse(string versionString)
     {
         bool hasSplitter = versionString.AsSpan().SplitOnce('+', out var left, out var right);
+        left.SplitOnce('-', out var realVersion, out _);
         if (hasSplitter)
         {
-            return new(left.ToString(), right.ToString());
+            return new(realVersion.ToString(), right.ToString());
         }
 
-        return new(versionString, null);
+        return new(realVersion.ToString(), null);
     }
 }

@@ -1,33 +1,40 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
-using Syndiesis.Core.DisplayAnalysis;
+﻿using Syndiesis.Core.DisplayAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 
-public class SyntaxNodeAnalysisExecution : IAnalysisExecution
+public class SyntaxNodeAnalysisExecution(SingleTreeCompilationSource compilationSource)
+    : BaseAnalysisExecution(compilationSource)
 {
-    public NodeLineCreationOptions NodeLineOptions { get; set; } = new();
-
-    public Task<AnalysisResult> Execute(
-        string source,
+    protected override Task<AnalysisResult> ExecuteCore(
         CancellationToken token)
     {
-        var creator = new NodeLineCreator(NodeLineOptions);
+        var container = CreateCreatorContainer();
+        var creator = container.SyntaxCreator;
 
-        var syntaxTree = CSharpSyntaxTree.ParseText(source, cancellationToken: token);
-        if (token.IsCancellationRequested)
-            return Task.FromCanceled<AnalysisResult>(token);
+        var syntaxTree = CompilationSource.Tree!;
 
-        var compilationUnitRoot = syntaxTree.GetCompilationUnitRoot(token);
-        if (token.IsCancellationRequested)
-            return Task.FromCanceled<AnalysisResult>(token);
+        UIBuilder.AnalysisTreeListNode root;
 
-        var nodeRoot = creator.CreateRootNode(compilationUnitRoot);
-        if (token.IsCancellationRequested)
-            return Task.FromCanceled<AnalysisResult>(token);
+        if (CreationOptions.ShowSyntaxTreeRootNode)
+        {
+            root = creator.CreateRootTree(syntaxTree);
+            if (token.IsCancellationRequested)
+                return Cancelled();
+        }
+        else
+        {
+            var treeRoot = syntaxTree.GetRoot(token);
+            if (token.IsCancellationRequested)
+                return Cancelled();
 
-        var result = new SyntaxNodeAnalysisResult(nodeRoot);
+            root = creator.CreateRootNode(treeRoot);
+            if (token.IsCancellationRequested)
+                return Cancelled();
+        }
+
+        var result = new SyntaxNodeAnalysisResult(root);
         return Task.FromResult<AnalysisResult>(result);
     }
 }

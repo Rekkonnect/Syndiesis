@@ -2,34 +2,34 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace Syndiesis.Controls;
+namespace Syndiesis.Controls.AnalysisVisualization;
 
-public partial class SyntaxTreeListView : UserControl
+public partial class AnalysisTreeListView : UserControl
 {
     private const double extraScrollHeight = 50;
     private const double extraScrollWidth = 20;
 
     private bool _allowedHover;
-    private SyntaxTreeListNode? _hoveredNode;
+    private AnalysisTreeListNode? _hoveredNode;
 
-    public static readonly StyledProperty<SyntaxTreeListNode> RootNodeProperty =
-        AvaloniaProperty.Register<CodeEditorLine, SyntaxTreeListNode>(
-            nameof(RootNode),
-            defaultValue: new());
+    private AnalysisTreeListNode _rootNode = new();
 
-    public SyntaxTreeListNode RootNode
+    public AnalysisTreeListNode RootNode
     {
-        get => GetValue(RootNodeProperty);
+        get => _rootNode;
         set
         {
-            SetValue(RootNodeProperty, value);
+            _rootNode = value;
             topLevelNodeContent.Content = value;
 
             value.SetListViewRecursively(this);
@@ -41,11 +41,13 @@ public partial class SyntaxTreeListView : UserControl
 
     public SyntaxTree? AnalyzedTree { get; set; }
 
-    public SyntaxTreeListNode? CurrentHoveredNode => _hoveredNode;
+    public AnalysisNodeKind TargetAnalysisNodeKind { get; set; }
 
-    public event Action<SyntaxTreeListNode?>? HoveredNode;
-    public event Action<SyntaxTreeListNode>? RequestedPlaceCursorAtNode;
-    public event Action<SyntaxTreeListNode>? RequestedSelectTextAtNode;
+    public AnalysisTreeListNode? CurrentHoveredNode => _hoveredNode;
+
+    public event Action<AnalysisTreeListNode?>? HoveredNode;
+    public event Action<AnalysisTreeListNode>? RequestedPlaceCursorAtNode;
+    public event Action<AnalysisTreeListNode>? RequestedSelectTextAtNode;
 
     private void HandleRootNodeSizeAdjusted(object? sender, SizeChangedEventArgs e)
     {
@@ -62,9 +64,10 @@ public partial class SyntaxTreeListView : UserControl
         RootNode.Loaded -= NewRootNodeLoaded;
         UpdateScrollLimits();
         CorrectContainedNodeWidths(Bounds.Size);
+        ResetToInitialRootView();
     }
 
-    public SyntaxTreeListView()
+    public AnalysisTreeListView()
     {
         InitializeComponent();
         InitializeEvents();
@@ -123,14 +126,24 @@ public partial class SyntaxTreeListView : UserControl
         InvalidateArrange();
     }
 
-    public void CollapseAll()
+    public void ResetToInitialRootView()
     {
         RootNode.SetExpansionWithoutAnimationRecursively(false);
+        RootNode.Expand();
+        DestroyChildrenFromSecondLevel();
         horizontalScrollBar.StartPosition = 0;
         verticalScrollBar.StartPosition = 0;
     }
 
-    public SyntaxTreeListNode? DiscoverParentNodeCoveringSelection(int start, int end)
+    private void DestroyChildrenFromSecondLevel()
+    {
+        foreach (var child in RootNode.LazyChildren)
+        {
+            child.DestroyLoadedChildren();
+        }
+    }
+
+    public AnalysisTreeListNode? DiscoverParentNodeCoveringSelection(int start, int end)
     {
         Debug.Assert(end >= start);
 
@@ -139,11 +152,17 @@ public partial class SyntaxTreeListView : UserControl
             return null;
 
         var current = startNode;
+        var targetKind = TargetAnalysisNodeKind;
         while (true)
         {
             var parentNode = current.ParentNode;
             if (parentNode is null)
                 return current;
+
+            if (current.NodeLine.AnalysisNodeKind != targetKind)
+            {
+                goto next;
+            }
 
             var displaySpan = parentNode.NodeLine.DisplaySpan;
             bool contained = displaySpan.Contains(start)
@@ -154,6 +173,7 @@ public partial class SyntaxTreeListView : UserControl
                 return parentNode;
             }
 
+        next:
             current = parentNode;
         }
     }
@@ -279,7 +299,7 @@ public partial class SyntaxTreeListView : UserControl
     }
 
     #region Node hovers
-    public bool RequestHover(SyntaxTreeListNode node)
+    public bool RequestHover(AnalysisTreeListNode node)
     {
         if (!_allowedHover)
             return false;
@@ -291,7 +311,7 @@ public partial class SyntaxTreeListView : UserControl
         return parent.NodeLine.IsExpanded;
     }
 
-    public bool IsHovered(SyntaxTreeListNode node)
+    public bool IsHovered(AnalysisTreeListNode node)
     {
         return _hoveredNode == node;
     }
@@ -303,7 +323,7 @@ public partial class SyntaxTreeListView : UserControl
         HoveredNode?.Invoke(null);
     }
 
-    public void RemoveHover(SyntaxTreeListNode node)
+    public void RemoveHover(AnalysisTreeListNode node)
     {
         if (node != _hoveredNode)
             return;
@@ -313,7 +333,7 @@ public partial class SyntaxTreeListView : UserControl
         HoveredNode?.Invoke(null);
     }
 
-    public void OverrideHover(SyntaxTreeListNode node)
+    public void OverrideHover(AnalysisTreeListNode node)
     {
         if (_hoveredNode == node)
             return;
@@ -325,39 +345,107 @@ public partial class SyntaxTreeListView : UserControl
         HoveredNode?.Invoke(node);
     }
 
-    public void HighlightPosition(int position)
-    {
-        var node = GetNodeAtPosition(position);
-        if (node is null)
-            return;
+    private volatile int _recurringPositionExpansion = -1;
 
-        OverrideHover(node);
-        BringToView(node);
-        return;
+    public async Task EnsureHighlightedPositionRecurring(int position)
+    {
+        _recurringPositionExpansion = position;
+
+        var previousNode = RootNode;
+        while (true)
+        {
+            var node = Dispatcher.UIThread.Invoke(() =>
+            {
+                var node = GetTargetKindNodeAtPosition(position, previousNode);
+                if (node is null)
+                    return node;
+
+                OverrideHover(node);
+                BringToView(node);
+                return node;
+            });
+
+            if (node is null)
+                return;
+
+            if (node == previousNode)
+                return;
+
+            previousNode = node;
+
+            if (!node.HasChildren)
+                return;
+
+            Dispatcher.UIThread.Invoke(node.Expand);
+            var retrievalTask = node.ChildRetrievalTask;
+            if (retrievalTask is not null)
+            {
+                await retrievalTask;
+            }
+
+            if (_recurringPositionExpansion != position)
+                return;
+        }
     }
 
-    private SyntaxTreeListNode? GetNodeAtPosition(int position)
+    private AnalysisTreeListNode? GetTargetKindNodeAtPosition(int position, AnalysisTreeListNode root)
+    {
+        var node = GetNodeAtPosition(position, root);
+        if (node is null)
+            return null;
+
+        var current = node;
+        while (true)
+        {
+            if (current is null)
+                return null;
+
+            if (current.NodeLine.AnalysisNodeKind == TargetAnalysisNodeKind)
+            {
+                return current;
+            }
+
+            current = current.ParentNode;
+        }
+    }
+
+    private AnalysisTreeListNode? GetNodeAtPosition(int position)
+    {
+        return GetNodeAtPosition(position, RootNode);
+    }
+
+    private AnalysisTreeListNode? GetNodeAtPosition(int position, AnalysisTreeListNode root)
     {
         if (AnalyzedTree is null)
             return null;
 
         if (position >= AnalyzedTree.Length)
         {
-            var last = GetLastDemandedNode();
+            var last = GetLastLoadedNode();
             return last;
         }
 
-        var current = RootNode;
+        var current = root;
         while (true)
         {
-            current.EnsureInitializedChildren();
             if (!current.HasChildren)
             {
                 return current;
             }
-            var children = ExpandDemandChildren(current);
+
+            if (!current.HasLoadedChildren)
+            {
+                return current;
+            }
+
+            var children = ExpandLazyChildren(current);
             var relevant = children
-                .FirstOrDefault(s => s.NodeLine.DisplaySpan.Contains(position));
+                .FirstOrDefault(s =>
+                {
+                    var nodeLine = s.NodeLine;
+                    return nodeLine.AnalysisNodeKind == TargetAnalysisNodeKind
+                        && nodeLine.DisplaySpan.Contains(position);
+                });
 
             // if no position corresponds to our tree, the position is within the node
             // but is not displayed in our tree (for example because trivia is hidden)
@@ -369,29 +457,41 @@ public partial class SyntaxTreeListView : UserControl
         }
     }
 
-    private SyntaxTreeListNode GetLastDemandedNode()
+    private AnalysisTreeListNode GetLastLoadedNode()
     {
         var current = RootNode;
         Debug.Assert(current is not null);
         while (true)
         {
-            var children = ExpandDemandChildren(current);
+        start:
+            var children = ExpandLazyChildren(current);
             if (children is [])
                 return current;
 
-            var last = children.Last();
-            current = last;
+            for (int i = children.Count - 1; i >= 0; i--)
+            {
+                var child = children[i];
+                if (child.NodeLine.AnalysisNodeKind != TargetAnalysisNodeKind)
+                {
+                    continue;
+                }
+
+                current = child;
+                goto start;
+            }
+
+            return current;
         }
     }
 
-    private IReadOnlyList<SyntaxTreeListNode> ExpandDemandChildren(SyntaxTreeListNode node)
+    private IReadOnlyList<AnalysisTreeListNode> ExpandLazyChildren(AnalysisTreeListNode node)
     {
         node.SetExpansionWithoutAnimation(true);
         return node.LazyChildren;
     }
     #endregion
 
-    public void BringToView(SyntaxTreeListNode node)
+    public void BringToView(AnalysisTreeListNode node)
     {
         var basis = contentCanvasContainer;
         var translation = node.TranslatePoint(default, basis);

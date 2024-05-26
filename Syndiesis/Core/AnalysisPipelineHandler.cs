@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Serilog;
 using Syndiesis.Utilities;
 using System;
 using System.Threading.Tasks;
@@ -11,15 +12,13 @@ public class AnalysisPipelineHandler
 
     private readonly Delayer _delayer = new();
 
-    private string _pendingSource = string.Empty;
-    private volatile bool _finishedAnalysis = false;
+    private string? _pendingSource = null;
 
     private volatile int _ignoredInputDelayTimes = 0;
 
     public TimeSpan UserInputDelay { get; set; } = AppSettings.Instance.UserInputDelay;
 
-    public IAnalysisExecution AnalysisExecution { get; set; }
-        = new SyntaxNodeAnalysisExecution();
+    public BaseAnalysisExecution? AnalysisExecution { get; set; }
 
     public event Action? AnalysisRequested;
     public event Action? AnalysisBegun;
@@ -31,8 +30,18 @@ public class AnalysisPipelineHandler
         _ignoredInputDelayTimes++;
     }
 
+    public async Task ForceAnalysis()
+    {
+        _analysisCancellationTokenFactory.Cancel();
+        await PerformAnalysis()
+            .ConfigureAwait(false);
+    }
+
     public void InitiateAnalysis(string source)
     {
+        if (AnalysisExecution is null)
+            return;
+
         _pendingSource = source;
         if (_delayer.IsWaiting)
         {
@@ -40,19 +49,14 @@ public class AnalysisPipelineHandler
             return;
         }
 
-        // only cancel the analysis token if we have to interrupt an analysis
-        // in the middle of its execution
-        if (!_finishedAnalysis)
-        {
-            _analysisCancellationTokenFactory.Cancel();
-        }
+        _analysisCancellationTokenFactory.Cancel();
+
         _ = PerformAnalysis()
             .ConfigureAwait(false);
     }
 
     private async Task PerformAnalysis()
     {
-        _finishedAnalysis = false;
         var token = _analysisCancellationTokenFactory.CurrentToken;
 
         AnalysisRequested?.Invoke();
@@ -66,12 +70,19 @@ public class AnalysisPipelineHandler
 
         try
         {
-            Log.Information($"Began analysis using {AnalysisExecution.GetType()}");
+            Log.Information($"Began analysis using {AnalysisExecution!.GetType()}");
             var profiling = new SimpleProfiling();
             using (profiling.BeginProcess())
             {
                 var result = await AnalysisExecution.Execute(_pendingSource, token);
-                AnalysisCompleted!(result);
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+                if (!result.Failed)
+                {
+                    AnalysisCompleted!.Invoke(result);
+                }
             }
 
             var results = profiling.SnapshotResults!;
@@ -84,7 +95,7 @@ public class AnalysisPipelineHandler
             App.Current.ExceptionListener.HandleException(ex, "Analysis failed");
             AnalysisFailed?.Invoke(new(ex));
         }
-        _finishedAnalysis = true;
+        _pendingSource = null;
     }
 
     private void SetRequestedDelay()

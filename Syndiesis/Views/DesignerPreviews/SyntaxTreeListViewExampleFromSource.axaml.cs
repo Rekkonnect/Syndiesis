@@ -1,12 +1,12 @@
 using Microsoft.CodeAnalysis.CSharp;
-using Syndiesis.Controls;
+using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
 
 namespace Syndiesis.Views.DesignerPreviews;
 
-public partial class SyntaxTreeListViewExampleFromSource : SyntaxTreeListView
+public partial class AnalysisTreeListViewExampleFromSource : AnalysisTreeListView
 {
-    public SyntaxTreeListViewExampleFromSource()
+    public AnalysisTreeListViewExampleFromSource()
     {
         InitializeComponent();
         TriggerCodeExample();
@@ -26,13 +26,13 @@ public partial class SyntaxTreeListViewExampleFromSource : SyntaxTreeListView
             }
             """;
 
-        var options = new NodeLineCreationOptions();
-        var creator = new NodeLineCreator(options);
+        var options = new AnalysisNodeCreationOptions();
+        var container = new AnalysisNodeCreatorContainer(options);
+        var creator = container.SyntaxCreator;
 
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
-        var compilationUnitRoot = syntaxTree.GetCompilationUnitRoot();
 
-        var nodeRoot = creator.CreateRootNode(compilationUnitRoot);
-        RootNode = nodeRoot;
+        var nodeRoot = creator.CreateRootTree(syntaxTree);
+        RootNode = nodeRoot.Build();
     }
 }

@@ -4,55 +4,52 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Media;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
-using Syndiesis.Views;
 using System;
 
-namespace Syndiesis.Controls;
+namespace Syndiesis.Controls.AnalysisVisualization;
 
-public partial class SyntaxTreeListNodeLine : UserControl
+public partial class AnalysisTreeListNodeLine : UserControl
 {
     private readonly CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
 
-    public static readonly StyledProperty<bool> IsExpandedProperty =
-        AvaloniaProperty.Register<CodeEditorLine, bool>(nameof(IsExpanded), defaultValue: false);
+    private bool _isExpanded;
 
     public bool IsExpanded
     {
-        get => GetValue(IsExpandedProperty);
+        get => _isExpanded;
         set
         {
-            SetValue(IsExpandedProperty, value);
+            _isExpanded = value;
             visualExpandToggle.IsExpandingToggle = !value;
         }
     }
 
-    public static readonly StyledProperty<bool> HasChildrenProperty =
-        AvaloniaProperty.Register<CodeEditorLine, bool>(nameof(HasChildren), defaultValue: true);
+    private bool _hasChildren;
 
     public bool HasChildren
     {
-        get => GetValue(HasChildrenProperty);
+        get => _hasChildren;
         set
         {
-            SetValue(HasChildrenProperty, value);
+            _hasChildren = value;
             visualExpandToggle.IsVisible = value;
         }
     }
 
-    public static readonly StyledProperty<string> NodeTypeTextProperty =
-        AvaloniaProperty.Register<CodeEditorLine, string>(nameof(NodeTypeText), defaultValue: "N");
+    private string _nodeTypeText = string.Empty;
 
     public string NodeTypeText
     {
-        get => GetValue(NodeTypeTextProperty!);
+        get => _nodeTypeText;
         set
         {
-            SetValue(NodeTypeTextProperty!, value!);
+            _nodeTypeText = value;
             nodeTypeIconText.Text = value;
         }
     }
@@ -60,7 +57,7 @@ public partial class SyntaxTreeListNodeLine : UserControl
     public static readonly StyledProperty<Color> NodeTypeColorProperty =
         AvaloniaProperty.Register<CodeEditorLine, Color>(
             nameof(NodeTypeColor),
-            defaultValue: NodeLineCreator.Styles.ClassMainColor);
+            defaultValue: BaseAnalysisNodeCreator.CommonStyles.ClassMainColor);
 
     public Color NodeTypeColor
     {
@@ -117,7 +114,7 @@ public partial class SyntaxTreeListNodeLine : UserControl
             var nodeType = NodeTypeText;
             switch (nodeType)
             {
-                case NodeLineCreator.Types.DisplayValue:
+                case SyntaxAnalysisNodeCreator.Types.DisplayValue:
                     return syntaxObject.Span;
             }
 
@@ -125,22 +122,20 @@ public partial class SyntaxTreeListNodeLine : UserControl
         }
     }
 
-    public LinePositionSpan DisplayLineSpan
-    {
-        get
-        {
-            var displaySpan = DisplaySpan;
-            if (displaySpan == default)
-                return default;
+    public AnalysisNodeKind AnalysisNodeKind { get; set; }
 
-            var tree = AssociatedSyntaxObject!.SyntaxTree;
-            return tree!.GetLineSpan(displaySpan).Span;
-        }
-    }
-
-    public SyntaxTreeListNodeLine()
+    public AnalysisTreeListNodeLine()
     {
         InitializeComponent();
+    }
+
+    public LinePositionSpan DisplayLineSpan(SyntaxTree tree)
+    {
+        var displaySpan = DisplaySpan;
+        if (displaySpan == default)
+            return default;
+
+        return tree!.GetLineSpan(displaySpan).Span;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)

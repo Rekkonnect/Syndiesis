@@ -20,6 +20,7 @@ public sealed partial class AppSettingsSerializationContext : JsonSerializerCont
         {
             IncludeFields = true,
             WriteIndented = true,
+            AllowTrailingCommas = true,
         };
     }
 }

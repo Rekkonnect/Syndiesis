@@ -5,6 +5,7 @@
              mc:Ignorable="d"
              Width="150"
              d:DesignHeight="30"
+             xmlns:controls="using:Syndiesis.Controls"
              x:Class="Syndiesis.Controls.SyndiesisTitleBarButtonPanel">
 
   <UserControl.Styles>
@@ -12,9 +13,8 @@
       <Setter Property="RenderTransform" Value="none" />
     </Style>
 
-    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
-      <Setter Property="Background" Value="#99AAAAAA"/>
-      <Setter Property="Foreground" Value="#FF000000"/>
+    <Style Selector="Button:pointerover" >
+      <Setter Property="Foreground" Value="#20FFFFFF"/>
     </Style>
 
     <Style Selector=":is(Button)">
@@ -35,20 +35,20 @@
       <ColumnDefinition Width="*"/>
     </Grid.ColumnDefinitions>
 
-    <Button
+    <controls:SyndiesisTitleBarButton
       Name="minimizeButton"
-      Background="#80006060"
+      ButtonBrush="#80006060"
       />
 
-    <Button
+    <controls:SyndiesisTitleBarButton
       Name="maximizeButton"
-      Background="#80606010"
+      ButtonBrush="#80606010"
       Grid.Column="1"
       />
 
-    <Button
+    <controls:SyndiesisTitleBarButton
       Name="closeButton"
-      Background="#80B02010"
+      ButtonBrush="#80B02010"
       Grid.Column="2"
       />
   </Grid>

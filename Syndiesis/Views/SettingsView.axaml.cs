@@ -38,7 +38,6 @@ public partial class SettingsView : UserControl
     {
         var settings = AppSettings.Instance;
         showTriviaCheck.IsChecked = settings.NodeLineOptions.ShowTrivia;
-        enableExpandAllButtonCheck.IsChecked = settings.EnableExpandingAllNodes;
         typingDelaySlider.ValueSlider.Value = settings.UserInputDelay.TotalMilliseconds;
         indentationWidthSlider.ValueSlider.Value = settings.IndentationOptions.IndentationWidth;
         recursiveExpansionDepthSlider.ValueSlider.Value = settings.RecursiveExpansionDepth;
@@ -96,7 +95,6 @@ public partial class SettingsView : UserControl
         settings.UserInputDelay = TypingDelay;
         settings.RecursiveExpansionDepth = RecursiveExpansionDepth;
         settings.IndentationOptions.IndentationWidth = IndentationWidth;
-        settings.EnableExpandingAllNodes = enableExpandAllButtonCheck.IsChecked is true;
         settings.NodeLineOptions.ShowTrivia = showTriviaCheck.IsChecked is true;
     }
 
