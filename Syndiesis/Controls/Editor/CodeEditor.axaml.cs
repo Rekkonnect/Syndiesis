@@ -106,6 +106,11 @@ public partial class CodeEditor : UserControl
     private void HandleCodeChanged()
     {
         _hoveredListNode = null;
+        if (AssociatedTreeView is not null)
+        {
+            AssociatedTreeView.AnalyzedTree = null;
+        }
+
         UpdateCurrentContent();
     }
 
@@ -209,6 +214,12 @@ public partial class CodeEditor : UserControl
     }
 
     private bool _hasRequestedTextUpdate = false;
+
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
+    {
+        _hasRequestedTextUpdate = true;
+        base.OnSizeChanged(e);
+    }
 
     protected override Size ArrangeOverride(Size finalSize)
     {
@@ -316,7 +327,7 @@ public partial class CodeEditor : UserControl
             if (current is not null)
             {
                 var currentLine = current.NodeLine;
-                var tree = AssociatedTreeView!.AnalyzedTree!;
+                var tree = AssociatedTreeView!.AnalyzedTree;
                 var span = currentLine.DisplayLineSpan(tree);
                 SetHoverSpan(span, HighlightKind.SyntaxNodeHover);
             }
@@ -943,7 +954,7 @@ public partial class CodeEditor : UserControl
         if (discovered is null)
             return;
 
-        var tree = AssociatedTreeView!.AnalyzedTree!;
+        var tree = AssociatedTreeView!.AnalyzedTree;
         var span = discovered.NodeLine.DisplayLineSpan(tree);
         _editor.SelectionLineSpan = span;
         _editor.InvertSelectionCursorPosition();

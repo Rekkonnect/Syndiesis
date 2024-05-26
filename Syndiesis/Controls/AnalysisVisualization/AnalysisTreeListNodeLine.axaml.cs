@@ -129,8 +129,11 @@ public partial class AnalysisTreeListNodeLine : UserControl
         InitializeComponent();
     }
 
-    public LinePositionSpan DisplayLineSpan(SyntaxTree tree)
+    public LinePositionSpan DisplayLineSpan(SyntaxTree? tree)
     {
+        if (tree is null)
+            return default;
+
         var displaySpan = DisplaySpan;
         if (displaySpan == default)
             return default;
