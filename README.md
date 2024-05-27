@@ -19,11 +19,11 @@ Check the change log [here](/docs/changelog.md).
 
 View the [wiki](https://github.com/Rekkonnect/Syndiesis/wiki) for detailed documentation.
 
-### Preview
+### Demo
 
-> _The video was shot in version 1.0.0_
+> _The video was shot in version 1.1.0_
 
-https://github.com/Rekkonnect/Syndiesis/assets/8298332/4d754285-c9d9-4637-a885-88c78ce3484b
+https://github.com/Rekkonnect/Syndiesis/assets/8298332/268a2205-d2a4-446b-a145-5748f30f85c0
 
 ## Stack
 
