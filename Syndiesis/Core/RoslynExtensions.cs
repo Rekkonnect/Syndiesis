@@ -13,4 +13,12 @@ public static class RoslynExtensions
         var position = node.SpanStart;
         return model.GetEnclosingSymbol(position, cancellationToken);
     }
+
+    public static bool IsElastic(
+        this SyntaxAnnotation annotation)
+    {
+        return annotation.Kind is null
+            && annotation.Data is null
+            ;
+    }
 }

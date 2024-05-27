@@ -7,9 +7,6 @@ public readonly record struct DisplayValueSource(
         => Kind is SymbolKind.None
         || Name is null;
 
-    public bool IsAsync => Kind.HasFlag(SymbolKind.Async);
-    public SymbolKind RawKindWithoutFlags => Kind & SymbolKind.KindMask;
-
     public enum SymbolKind
     {
         None = 0,
@@ -22,5 +19,6 @@ public readonly record struct DisplayValueSource(
         FlagMask = ~KindMask,
 
         Async = 1 << 15,
+        Internal = 1 << 16,
     }
 }
