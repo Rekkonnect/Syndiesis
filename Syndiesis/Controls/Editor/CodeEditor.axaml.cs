@@ -102,14 +102,7 @@ public partial class CodeEditor : UserControl
             KnownLayer.Selection,
             LayerInsertionPosition.Above);
 
-        textEditor.Margin = new(30, 0, 0, 0);
-        var lineNumberMargin = textArea.LeftMargins
-            .OfType<LineNumberMargin>()
-            .FirstOrDefault();
-        if (lineNumberMargin is not null)
-        {
-            //lineNumberMargin.
-        }
+        textArea.LeftMargins[0] = new BackgroundLineNumberPanel(textArea.TextView);
     }
 
     private void InitializeEvents()
