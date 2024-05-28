@@ -240,9 +240,9 @@ public partial class AnalysisTreeListView : UserControl
         EvaluateHovering(e);
     }
 
-    private void EvaluateHovering(PointerEventArgs e)
+    public void EvaluateHovering(PointerEventArgs e)
     {
-        var pointerPosition = e.GetCurrentPoint(this).Position;
+        var pointerPosition = e.GetCurrentPoint(contentCanvasContainer).Position;
         if (!contentCanvasContainer.Bounds.Contains(pointerPosition))
         {
             _allowedHover = false;

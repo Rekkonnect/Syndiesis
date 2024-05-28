@@ -174,13 +174,11 @@ public partial class AnalysisTreeListNode : UserControl
     private void SetChildNodes(NodeChildren value)
     {
         innerStackPanel.Children.ClearSetValues(value);
-        //_ = expandableCanvas.AnimateCurrentHeight(default);
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
-        EvaluateHoveringRecursively(e);
     }
 
     protected override void OnPointerEntered(PointerEventArgs e)
@@ -192,11 +190,13 @@ public partial class AnalysisTreeListNode : UserControl
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
-        EvaluateHoveringRecursively(e);
+        EvaluateHovering(e);
+        ListView?.RootNode.EvaluateHoveringRecursivelyBinary(e);
     }
 
     private void EvaluateHovering(PointerEventArgs e)
     {
+        ListView?.EvaluateHovering(e);
         var allowedHover = ListView?.RequestHover(this) ?? true;
         if (!allowedHover)
         {
@@ -255,6 +255,7 @@ public partial class AnalysisTreeListNode : UserControl
         expandableCanvas.Background = _expandableCanvasBackgroundBrush;
     }
 
+    [Obsolete("Linear scaling = bad")]
     internal void EvaluateHoveringRecursively(PointerEventArgs e)
     {
         EvaluateHovering(e);
@@ -263,6 +264,44 @@ public partial class AnalysisTreeListNode : UserControl
         {
             child.EvaluateHoveringRecursively(e);
         }
+    }
+
+    internal void EvaluateHoveringRecursivelyBinary(PointerEventArgs e)
+    {
+        EvaluateHovering(e);
+        var position = e.GetPosition(this);
+
+        int index = BinarySearchControlByTop(position.Y);
+        if (index < 0)
+            return;
+
+        var children = LazyChildren;
+        var child = LazyChildren[index];
+        child.EvaluateHoveringRecursivelyBinary(e);
+    }
+
+    private int BinarySearchControlByTop(double height)
+    {
+        var children = LazyChildren;
+
+        int low = 0;
+        int high = children.Count - 1;
+
+        while (low <= high)
+        {
+            int mid = (low + high) / 2;
+            var child = LazyChildren[mid];
+            var childBounds = child.NodeLine.Bounds;
+            if (childBounds.Top <= height && height <= childBounds.Bottom)
+                return mid;
+
+            if (childBounds.Top < height)
+                low = mid + 1;
+            else
+                high = mid - 1;
+        }
+
+        return -1;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
