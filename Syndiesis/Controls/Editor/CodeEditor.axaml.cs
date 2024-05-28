@@ -5,10 +5,13 @@ using Avalonia.Media;
 using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
+using AvaloniaEdit.Rendering;
 using Syndiesis.Controls.AnalysisVisualization;
+using Syndiesis.Controls.Editor;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -30,6 +33,8 @@ public partial class CodeEditor : UserControl
     private bool _isUpdatingScrollLimits = false;
     private int _disabledNodeHoverTimes;
 
+    private NodeSpanHoverLayer _nodeSpanHoverLayer;
+
     public AnalysisTreeListView? AssociatedTreeView { get; set; }
 
     public TextViewPosition CaretPosition
@@ -37,6 +42,8 @@ public partial class CodeEditor : UserControl
         get => textEditor.TextArea.Caret.Position;
         set => textEditor.TextArea.Caret.Position = value;
     }
+
+    public SimpleSegment HoveredListNodeSegment { get; private set; }
 
     public event EventHandler? CodeChanged
     {
@@ -56,25 +63,38 @@ public partial class CodeEditor : UserControl
         InitializeTextEditor();
     }
 
+    [MemberNotNull(nameof(_nodeSpanHoverLayer))]
     private void InitializeTextEditor()
     {
-        textEditor.TextArea.SelectionBrush =
+        var textArea = textEditor.TextArea;
+        textArea.SelectionBrush =
             new LinearGradientBrush()
             {
                 StartPoint = new(0, 0, RelativeUnit.Relative),
                 EndPoint = new(0, 1, RelativeUnit.Relative),
                 GradientStops =
                 {
-                    new(Color.FromUInt32(0x60164099), 0),
+                    new(Color.FromUInt32(0x60165A99), 0),
                     new(Color.FromUInt32(0x600090FF), 1),
                 }
             };
 
-        var lineNumberMargin = textEditor.TextArea.LeftMargins.OfType<LineNumberMargin>()
+        _nodeSpanHoverLayer = new NodeSpanHoverLayer(this)
+        {
+            HoverForeground = new SolidColorBrush(0x60A0A0A0)
+        };
+
+        textArea.TextView.InsertLayer(
+            _nodeSpanHoverLayer,
+            KnownLayer.Selection,
+            LayerInsertionPosition.Above);
+
+        var lineNumberMargin = textArea.LeftMargins
+            .OfType<LineNumberMargin>()
             .FirstOrDefault();
         if (lineNumberMargin is not null)
         {
-            lineNumberMargin.Margin = new(20, 0, 0, 0);
+            lineNumberMargin.Margin = new(30, 0, 0, 0);
         }
     }
 
@@ -83,10 +103,23 @@ public partial class CodeEditor : UserControl
         verticalScrollBar.ScrollChanged += OnVerticalScroll;
         horizontalScrollBar.ScrollChanged += OnHorizontalScroll;
 
-        textEditor.TextArea.Caret.PositionChanged += HandleCaretPositionChanged;
+        textEditor.Document.TextChanged += HandleTextChanged;
+        TextViewWeakEventManager.ScrollOffsetChanged.AddHandler(
+            textEditor.TextArea.TextView,
+            HandleScrollOffsetChanged);
+    }
+
+    private void HandleTextChanged(object? sender, EventArgs e)
+    {
+        HandleCodeChanged();
     }
 
     private void HandleCaretPositionChanged(object? sender, EventArgs e)
+    {
+        UpdateEntireScroll();
+    }
+
+    private void HandleScrollOffsetChanged(object? sender, EventArgs e)
     {
         UpdateEntireScroll();
     }
@@ -99,6 +132,7 @@ public partial class CodeEditor : UserControl
             AssociatedTreeView.AnalyzedTree = null;
         }
 
+        ClearHoverSpan();
     }
 
     private void OnVerticalScroll()
@@ -114,7 +148,7 @@ public partial class CodeEditor : UserControl
         if (_isUpdatingScrollLimits)
             return;
 
-        var offset = horizontalScrollBar.StartPosition;
+        textEditor.ScrollToHorizontalOffset(horizontalScrollBar.StartPosition);
     }
 
     public void SetSource(string source)
@@ -122,23 +156,10 @@ public partial class CodeEditor : UserControl
         textEditor.Document.Text = source;
     }
 
-    private bool _hasRequestedTextUpdate = false;
-
-    protected override void OnSizeChanged(SizeChangedEventArgs e)
-    {
-        _hasRequestedTextUpdate = true;
-        base.OnSizeChanged(e);
-    }
-
-    private void ShowSelectedLine()
-    {
-
-    }
-
     public void ApplyIndentationOptions(IndentationOptions options)
     {
         var areaOptions = textEditor.TextArea.Options;
-        areaOptions.ConvertTabsToSpaces = options.WhitespaceKind is Core.WhitespaceKind.Space;
+        areaOptions.ConvertTabsToSpaces = options.WhitespaceKind is WhitespaceKind.Space;
         areaOptions.IndentationSize = options.IndentationWidth;
     }
 
@@ -156,7 +177,7 @@ public partial class CodeEditor : UserControl
             return;
         }
 
-        HideAllHoveredSyntaxNodes();
+        ClearHoverSpan();
 
         if (_hoveredListNode is not null)
         {
@@ -170,6 +191,8 @@ public partial class CodeEditor : UserControl
                 SetHoverSpan(segment);
             }
         }
+
+        _nodeSpanHoverLayer.InvalidateVisual();
     }
 
     public void PlaceCursorAtNodeStart(AnalysisTreeListNode node)
@@ -227,14 +250,9 @@ public partial class CodeEditor : UserControl
         return null;
     }
 
-    private void HideAllHoveredSyntaxNodes()
+    private void ClearHoverSpan()
     {
-        ClearAllHighlights();
-    }
-
-    private void ClearAllHighlights()
-    {
-        // TODO
+        HoveredListNodeSegment = default;
     }
 
     private void SetHoverSpan(SimpleSegment segment)
@@ -242,9 +260,7 @@ public partial class CodeEditor : UserControl
         var area = textEditor.TextArea;
         int length = area.TextView.Document.TextLength;
         segment = segment.ConfineToBounds(length);
-        var selection = Selection.Create(area, segment);
-        // TODO: Show syntax highlighting
-        //textEditor.SyntaxHighlighting
+        HoveredListNodeSegment = segment;
     }
 
     private void UpdateEntireScroll()
