@@ -406,13 +406,24 @@ static string Code(string type)
         AppendValueSourceKindModifiers(valueSource.Modifiers, group);
         inlines.Add(group);
 
+        bool hadPrevious = false;
+
         foreach (var child in valueSource.ChildrenValueSources())
         {
-            AppendValueSource(child, inlines);
+            if (hadPrevious)
+            {
+                inlines.Add(CreateQualifierSeparatorRun());
+            }
+
+            AppendValueSourceWithoutSplitter(child, inlines);
+            hadPrevious = true;
         }
+
+        var colonRun = CreateValueSplitterRun();
+        inlines.Add(colonRun);
     }
 
-    protected void AppendValueSource(
+    protected void AppendValueSourceWithoutSplitter(
         DisplayValueSource valueSource,
         GroupedRunInlineCollection inlines)
     {
@@ -428,7 +439,23 @@ static string Code(string type)
             case DisplayValueSource.SymbolKind.Method:
                 AppendMethodDetail(valueSource, inlines);
                 break;
+
+            default:
+                return;
         }
+    }
+
+    protected void AppendValueSource(
+        DisplayValueSource valueSource,
+        GroupedRunInlineCollection inlines)
+    {
+        if (valueSource.IsDefault)
+            return;
+
+        AppendValueSourceWithoutSplitter(valueSource, inlines);
+
+        var colonRun = CreateValueSplitterRun();
+        inlines.Add(colonRun);
     }
 
     protected void AppendMethodDetail(
@@ -443,11 +470,7 @@ static string Code(string type)
 
         AppendValueSourceKindModifiers(valueSource.Kind, frontGroup);
 
-        var colonRun = Run(":  ", CommonStyles.SplitterBrush);
-        inlines.AddRange([
-            frontGroup,
-            colonRun
-        ]);
+        inlines.Add(frontGroup);
     }
 
     private static void AppendValueSourceKindModifiers(
@@ -468,9 +491,12 @@ static string Code(string type)
     protected void AppendPropertyDetail(string propertyName, GroupedRunInlineCollection inlines)
     {
         var propertyNameRun = Run(propertyName, CommonStyles.PropertyBrush);
-        var colonRun = Run(":  ", CommonStyles.SplitterBrush);
         inlines.AddSingle(propertyNameRun);
-        inlines.Add(colonRun);
+    }
+
+    private static Run CreateValueSplitterRun()
+    {
+        return Run(":  ", CommonStyles.SplitterBrush);
     }
 
     protected AnalysisTreeListNode CreateNodeForSimplePropertyValue(

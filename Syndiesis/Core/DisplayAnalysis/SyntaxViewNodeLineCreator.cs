@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using Serilog;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
@@ -11,6 +12,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -278,7 +280,7 @@ partial class SyntaxAnalysisNodeCreator
                 new ComplexDisplayValueSource(
                     Property(greenPropertyName),
                     new ComplexDisplayValueSource(
-                        MethodSource(RoslynInternalsEx.GetAnnotationMethodName),
+                        MethodSource(RoslynInternalsEx.GetAnnotationsMethodName),
                         null
                     )
                 )
@@ -404,6 +406,7 @@ partial class SyntaxAnalysisNodeCreator
             if (annotations.Count is 0)
                 return null;
 
+            Log.Information($"We found syntax annotations: {annotations.Count}");
             return () => CreateNodeChildren(annotations);
         }
 
@@ -514,7 +517,10 @@ partial class SyntaxAnalysisNodeCreator
 
             children.Sort(AnalysisTreeViewNodeBuilderObjectSpanComparer.Instance);
 
-            children.Insert(0, CreateGreenNodeAnnotationsNode(node));
+            if (Options.ShowSyntaxAnnotations)
+            {
+                children.Insert(0, CreateGreenNodeAnnotationsNode(node));
+            }
 
             return children;
         }
@@ -677,6 +683,11 @@ partial class SyntaxAnalysisNodeCreator
 
             children.Sort(AnalysisTreeViewNodeBuilderObjectSpanComparer.Instance);
 
+            if (Options.ShowSyntaxAnnotations)
+            {
+                children.Insert(0, CreateGreenNodeAnnotationsNode(token));
+            }
+
             return children;
         }
 
@@ -810,6 +821,13 @@ partial class SyntaxAnalysisNodeCreator
         {
             const string missingTokenDisplayString = "[missing]";
             return Run(missingTokenDisplayString, Styles.MissingTokenIndicatorBrush);
+        }
+
+        private AnalysisTreeListNode CreateGreenNodeAnnotationsNode(SyntaxToken node)
+        {
+            var valueSource = CreateCommonSyntaxAnnotationsDisplayValue("Node");
+            var annotations = RoslynInternalsEx.GetSyntaxAnnotations(node);
+            return Creator.CreateRootSyntaxAnnotationList(annotations, valueSource);
         }
     }
 
@@ -1211,10 +1229,24 @@ partial class SyntaxAnalysisNodeCreator
 
         private IReadOnlyList<AnalysisTreeListNode> CreateTriviaListChildren(SyntaxTriviaList list)
         {
-            return list
+            var children = list
                 .Select(s => Creator.CreateRootTrivia(s))
                 .ToList()
                 ;
+
+            if (Options.ShowSyntaxAnnotations)
+            {
+                children.Insert(0, CreateGreenNodeAnnotationsNode(list));
+            }
+
+            return children;
+        }
+
+        private AnalysisTreeListNode CreateGreenNodeAnnotationsNode(SyntaxTriviaList triviaList)
+        {
+            var valueSource = CreateCommonSyntaxAnnotationsDisplayValue("Node");
+            var annotations = RoslynInternalsEx.GetSyntaxAnnotations(triviaList);
+            return Creator.CreateRootSyntaxAnnotationList(annotations, valueSource);
         }
     }
 

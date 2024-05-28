@@ -8,7 +8,7 @@ namespace Syndiesis.Core;
 
 public static class RoslynInternalsEx
 {
-    public const string GetAnnotationMethodName = "GetAnnotations";
+    public const string GetAnnotationsMethodName = "GetAnnotations";
 
     private static readonly Type _greenNodeType;
     private static readonly MethodInfo _getAnnotationsMethod;
@@ -25,7 +25,7 @@ public static class RoslynInternalsEx
         Debug.Assert(_greenNodeType is not null);
 
         const BindingFlags methodFlags = BindingFlags.Public | BindingFlags.Instance;
-        _getAnnotationsMethod = _greenNodeType.GetMethod(GetAnnotationMethodName, methodFlags, [])!;
+        _getAnnotationsMethod = _greenNodeType.GetMethod(GetAnnotationsMethodName, methodFlags, [])!;
         Debug.Assert(_getAnnotationsMethod is not null);
 
         GreenNodePropertyCache.DiscoverAssign(out _syntaxNodeGreen);

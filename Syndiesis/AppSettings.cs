@@ -13,6 +13,7 @@ public sealed class AppSettings
 
     public static AppSettings Instance = new();
 
+    #region Settings
     public AnalysisNodeCreationOptions NodeLineOptions = new();
     public IndentationOptions IndentationOptions = new();
 
@@ -22,6 +23,7 @@ public sealed class AppSettings
     public TimeSpan UserInputDelay = TimeSpan.FromMilliseconds(600);
 
     public int RecursiveExpansionDepth = 4;
+    #endregion
 
     #region Persistence
     public static bool TryLoad(string path = DefaultPath)
