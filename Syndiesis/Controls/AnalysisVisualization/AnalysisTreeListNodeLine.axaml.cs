@@ -55,7 +55,7 @@ public partial class AnalysisTreeListNodeLine : UserControl
     }
 
     public static readonly StyledProperty<Color> NodeTypeColorProperty =
-        AvaloniaProperty.Register<CodeEditorLine, Color>(
+        AvaloniaProperty.Register<AnalysisTreeListNode, Color>(
             nameof(NodeTypeColor),
             defaultValue: BaseAnalysisNodeCreator.CommonStyles.ClassMainColor);
 

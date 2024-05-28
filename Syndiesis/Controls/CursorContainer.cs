@@ -7,12 +7,10 @@ using System.Collections.Generic;
 
 namespace Syndiesis.Controls;
 
-using AvaCursor = Avalonia.Input.Cursor;
-
 public class CursorContainer : AvaloniaObject
 {
-    public static readonly AttachedProperty<AvaCursor> CursorProperty =
-        AvaloniaProperty.RegisterAttached<InputElement, AvaCursor>(
+    public static readonly AttachedProperty<Cursor> CursorProperty =
+        AvaloniaProperty.RegisterAttached<InputElement, Cursor>(
             "Cursor",
             typeof(CursorContainer),
             inherits: true);
@@ -47,7 +45,7 @@ public class CursorContainer : AvaloniaObject
             return;
 
         int appliedIndex = int.MinValue;
-        AvaCursor? appliedCursor = null;
+        Cursor? appliedCursor = null;
 
         foreach (var mapping in _mappings)
         {
@@ -79,7 +77,7 @@ public class CursorContainer : AvaloniaObject
         visual.DetachedFromLogicalTree += HandleDetached;
     }
 
-    public void Add(Visual visual, AvaCursor cursor)
+    public void Add(Visual visual, Cursor cursor)
     {
         Add(new(visual, cursor));
     }
@@ -95,7 +93,7 @@ public class CursorContainer : AvaloniaObject
         _mappings.RemoveAt(index);
     }
 
-    public static AvaCursor GetCursor(InputElement element)
+    public static Cursor GetCursor(InputElement element)
     {
         return element.GetValue(CursorProperty);
     }
@@ -110,7 +108,7 @@ public class CursorContainer : AvaloniaObject
         EvaluateCursor();
     }
 
-    public static void SetCursor(InputElement element, AvaCursor value)
+    public static void SetCursor(InputElement element, Cursor value)
     {
         element.SetValue(CursorProperty, value);
 
@@ -124,7 +122,7 @@ public class CursorContainer : AvaloniaObject
         _mappingDictionary.Add(root!, element!, GetCursor(element!));
     }
 
-    public sealed record ElementCursorMapping(Visual Visual, AvaCursor? Cursor);
+    public sealed record ElementCursorMapping(Visual Visual, Cursor? Cursor);
 
     private sealed class VisualRootMappingDictionary
     {
@@ -138,7 +136,7 @@ public class CursorContainer : AvaloniaObject
             return null;
         }
 
-        public void Add(InputElement root, Visual target, AvaCursor? cursor)
+        public void Add(InputElement root, Visual target, Cursor? cursor)
         {
             Add(root, new(target, cursor));
         }

@@ -189,24 +189,6 @@ public static partial class CommonAvaloniaExtensions
         await clipboard.SetTextAsync(value);
     }
 
-    public static async Task SetClipboardDataAsync(this Control control, IDataObject value)
-    {
-        var clipboard = control.Clipboard();
-        if (clipboard is null)
-            return;
-
-        await clipboard.SetDataObjectAsync(value);
-    }
-
-    public static async Task<bool> HasSingleLineClipboardText(this Control control)
-    {
-        var clipboard = control.Clipboard();
-        if (clipboard is null)
-            return false;
-
-        return await clipboard.HasFormatAsync(CodeEditorDataObject.Formats.CodeEditor);
-    }
-
     public static void AddIfNotContained(this ControlList controls, Control control)
     {
         if (!controls.Contains(control))
