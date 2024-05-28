@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+﻿using Avalonia.Threading;
+using AvaloniaEdit.Document;
 using Serilog;
 using Syndiesis.Utilities;
 using System;
@@ -12,7 +13,7 @@ public class AnalysisPipelineHandler
 
     private readonly Delayer _delayer = new();
 
-    private string? _pendingSource = null;
+    private ITextSource? _textSource = null;
 
     private volatile int _ignoredInputDelayTimes = 0;
 
@@ -37,12 +38,12 @@ public class AnalysisPipelineHandler
             .ConfigureAwait(false);
     }
 
-    public void InitiateAnalysis(string source)
+    public void InitiateAnalysis(ITextSource source)
     {
         if (AnalysisExecution is null)
             return;
 
-        _pendingSource = source;
+        _textSource = source;
         if (_delayer.IsWaiting)
         {
             SetRequestedDelay();
@@ -73,7 +74,9 @@ public class AnalysisPipelineHandler
             var profiling = new SimpleProfiling();
             using (profiling.BeginProcess())
             {
-                var result = await AnalysisExecution.Execute(_pendingSource, token);
+                // this performs a check on TextDocument so we dispatch the retrieval of the source
+                var source = Dispatcher.UIThread.Invoke(() => _textSource?.Text);
+                var result = await AnalysisExecution.Execute(source, token);
                 if (token.IsCancellationRequested)
                 {
                     return;
@@ -94,7 +97,6 @@ public class AnalysisPipelineHandler
             App.Current.ExceptionListener.HandleException(ex, "Analysis failed");
             AnalysisFailed?.Invoke(new(ex));
         }
-        _pendingSource = null;
     }
 
     private void SetRequestedDelay()

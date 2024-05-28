@@ -89,10 +89,11 @@
     <TextBlock
       Name="text"
       VerticalAlignment="Center"
-      HorizontalAlignment="Center"
+      HorizontalAlignment="Stretch"
+      TextAlignment="Center"
       FontFamily="{StaticResource AptosDisplayFontFamily}"
       FontSize="16"
-      Padding="5 0 5 0"
+      Padding="10 0 10 0"
       />
   </Panel>
 

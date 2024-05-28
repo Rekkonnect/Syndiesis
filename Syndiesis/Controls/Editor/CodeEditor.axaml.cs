@@ -1,11 +1,13 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Interactivity;
 using Avalonia.Media;
 using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Rendering;
+using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Editor;
 using Syndiesis.Core;
@@ -13,6 +15,7 @@ using Syndiesis.Utilities;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;
@@ -45,7 +48,7 @@ public partial class CodeEditor : UserControl
 
     public SimpleSegment HoveredListNodeSegment { get; private set; }
 
-    public event EventHandler? CodeChanged
+    public event EventHandler? TextChanged
     {
         add => textEditor.Document.TextChanged += value;
         remove => textEditor.Document.TextChanged -= value;
@@ -54,6 +57,16 @@ public partial class CodeEditor : UserControl
     {
         add => textEditor.TextArea.Caret.PositionChanged += value;
         remove => textEditor.TextArea.Caret.PositionChanged -= value;
+    }
+
+    public TextDocument Document
+    {
+        get => textEditor.Document;
+        set
+        {
+            textEditor.Document = value;
+            HandleNewDocument();
+        }
     }
 
     public CodeEditor()
@@ -89,12 +102,13 @@ public partial class CodeEditor : UserControl
             KnownLayer.Selection,
             LayerInsertionPosition.Above);
 
+        textEditor.Margin = new(30, 0, 0, 0);
         var lineNumberMargin = textArea.LeftMargins
             .OfType<LineNumberMargin>()
             .FirstOrDefault();
         if (lineNumberMargin is not null)
         {
-            lineNumberMargin.Margin = new(30, 0, 0, 0);
+            //lineNumberMargin.
         }
     }
 
@@ -103,10 +117,20 @@ public partial class CodeEditor : UserControl
         verticalScrollBar.ScrollChanged += OnVerticalScroll;
         horizontalScrollBar.ScrollChanged += OnHorizontalScroll;
 
-        textEditor.Document.TextChanged += HandleTextChanged;
-        TextViewWeakEventManager.ScrollOffsetChanged.AddHandler(
-            textEditor.TextArea.TextView,
-            HandleScrollOffsetChanged);
+        Document.TextChanged += HandleTextChanged;
+        textEditor.TextArea.Caret.PositionChanged += HandleCaretPositionChanged;
+        textEditor.Loaded += HandleTextEditorLoaded;
+    }
+
+    private void HandleTextEditorLoaded(object? sender, RoutedEventArgs e)
+    {
+        var scrollViewer = GetTextEditorScrollViewer();
+        scrollViewer!.ScrollChanged += HandleScrollOffsetChanged;
+    }
+    
+    private void HandleNewDocument()
+    {
+        Document.TextChanged += HandleTextChanged;
     }
 
     private void HandleTextChanged(object? sender, EventArgs e)
@@ -116,7 +140,28 @@ public partial class CodeEditor : UserControl
 
     private void HandleCaretPositionChanged(object? sender, EventArgs e)
     {
-        UpdateEntireScroll();
+        //EnsureHorizontalScrollFitsCaret();
+    }
+
+    // This is actually hopeless
+    private void EnsureHorizontalScrollFitsCaret()
+    {
+        var rectangle = textEditor.TextArea.Caret.CalculateCaretRectangle();
+        var right = rectangle.Right;
+        var scrollViewer = GetTextEditorScrollViewer();
+
+        if (scrollViewer is null)
+            return;
+
+        double previousOffset = scrollViewer.Offset.X;
+        double maxRight = previousOffset + scrollViewer.Viewport.Width;
+        const double rightOffset = 70;
+        var offset = maxRight - right;
+        if (offset < rightOffset)
+        {
+            var missing = rightOffset - offset;
+            scrollViewer.SetHorizontalOffset(previousOffset + missing);
+        }
     }
 
     private void HandleScrollOffsetChanged(object? sender, EventArgs e)
@@ -133,6 +178,7 @@ public partial class CodeEditor : UserControl
         }
 
         ClearHoverSpan();
+        _nodeSpanHoverLayer.InvalidateVisual();
     }
 
     private void OnVerticalScroll()
@@ -140,7 +186,8 @@ public partial class CodeEditor : UserControl
         if (_isUpdatingScrollLimits)
             return;
 
-        textEditor.ScrollToVerticalOffset(verticalScrollBar.StartPosition);
+        var scrollViewer = GetTextEditorScrollViewer();
+        scrollViewer?.SetVerticalOffset(verticalScrollBar.StartPosition);
     }
 
     private void OnHorizontalScroll()
@@ -148,12 +195,38 @@ public partial class CodeEditor : UserControl
         if (_isUpdatingScrollLimits)
             return;
 
-        textEditor.ScrollToHorizontalOffset(horizontalScrollBar.StartPosition);
+        var scrollViewer = GetTextEditorScrollViewer();
+        scrollViewer?.SetHorizontalOffset(horizontalScrollBar.StartPosition);
     }
+
+    private ScrollViewer? GetTextEditorScrollViewer()
+    {
+        return _scrollViewerProperty.GetValue(textEditor) as ScrollViewer;
+    }
+
+    private static readonly PropertyInfo _scrollViewerProperty
+        = typeof(TextEditor)
+            .GetProperty(
+                "ScrollViewer",
+                BindingFlags.NonPublic | BindingFlags.Instance)!
+            ;
 
     public void SetSource(string source)
     {
         textEditor.Document.Text = source;
+    }
+
+    public void ApplySettings(AppSettings settings)
+    {
+        ApplyIndentationOptions(settings.IndentationOptions);
+
+        var editorOptions = textEditor.Options;
+        editorOptions.ShowSpaces = settings.ShowWhitespaceGlyphs;
+        editorOptions.ShowTabs = settings.ShowWhitespaceGlyphs;
+        editorOptions.ShowEndOfLine = settings.ShowWhitespaceGlyphs;
+        editorOptions.ShowBoxForControlCharacters = settings.ShowWhitespaceGlyphs;
+        editorOptions.WordWrapIndentation = 120;
+        textEditor.WordWrap = settings.WordWrap;
     }
 
     public void ApplyIndentationOptions(IndentationOptions options)
@@ -203,7 +276,7 @@ public partial class CodeEditor : UserControl
         var tree = AssociatedTreeView!.AnalyzedTree;
         var start = syntaxObject.GetLineSpan(tree).Start;
         _disabledNodeHoverTimes++;
-        CaretPosition = start.TextViewPosition();
+        SetCaretPositionBringToView(start.TextViewPosition());
     }
 
     public void SelectTextOfNode(AnalysisTreeListNode node)
@@ -219,6 +292,18 @@ public partial class CodeEditor : UserControl
         var segment = document.GetSegment(lineSpan);
         var area = textEditor.TextArea;
         area.Selection = Selection.Create(area, segment);
+        SetCaretPositionBringToView(lineSpan.Start.TextViewPosition());
+    }
+
+    private void SetCaretPositionBringToView(LinePosition position)
+    {
+        SetCaretPositionBringToView(position.TextViewPosition());
+    }
+
+    private void SetCaretPositionBringToView(TextViewPosition position)
+    {
+        CaretPosition = position;
+        textEditor.TextArea.Caret.BringCaretToView();
     }
 
     private AnalysisTreeListNode? DeepestWithSyntaxObject(AnalysisTreeListNode? node)
@@ -317,7 +402,7 @@ public partial class CodeEditor : UserControl
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
-        const double scrollAmplificationMultiplier = 30;
+        const double scrollAmplificationMultiplier = 60;
 
         base.OnPointerWheelChanged(e);
 

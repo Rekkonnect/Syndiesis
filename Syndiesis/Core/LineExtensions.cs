@@ -96,7 +96,7 @@ public static class LineExtensions
 
     public static TextViewPosition TextViewPosition(this LinePosition position)
     {
-        return new(position.Line, position.Character);
+        return new(position.Line + 1, position.Character + 1);
     }
 
     public static TextLocation TextLocation(this LinePosition position)
@@ -116,7 +116,8 @@ public static class LineExtensions
         var end = span.End;
         var startOffset = document.GetOffset(start);
         var endOffset = document.GetOffset(end);
-        return new(startOffset, endOffset);
+        int length = endOffset - startOffset;
+        return new(startOffset, length);
     }
 
     public static SimpleSegment ConfineToBounds(this SimpleSegment segment, int length)

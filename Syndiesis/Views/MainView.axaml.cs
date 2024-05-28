@@ -45,7 +45,7 @@ public partial class MainView : UserControl
 
         ViewModel.CompilationSource.SetSource(initializingSource, default);
 
-        codeEditor.textEditor.Document = ViewModel.Document;
+        codeEditor.Document = ViewModel.Document;
         codeEditor.SetSource(initializingSource);
         codeEditor.CaretPosition = new(4, 48);
         codeEditor.AssociatedTreeView = syntaxTreeView.listView;
@@ -72,7 +72,7 @@ public partial class MainView : UserControl
 
     private void InitializeEvents()
     {
-        codeEditor.CodeChanged += HandleCodeChanged;
+        codeEditor.TextChanged += HandleCodeChanged;
         codeEditor.CaretMoved += HandleCursorPositionChanged;
         syntaxTreeView.listView.HoveredNode += HandleHoveredNode;
         syntaxTreeView.listView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
@@ -200,14 +200,13 @@ public partial class MainView : UserControl
 
     private void TriggerPipeline()
     {
-        var currentSource = ViewModel.Document.Text;
+        var currentSource = ViewModel.Document;
         AnalysisPipelineHandler.InitiateAnalysis(currentSource);
     }
 
     public void ApplyCurrentSettings()
     {
         ApplyCurrentSettingsWithoutAnalysis();
-        codeEditor.ApplyIndentationOptions(AppSettings.Instance.IndentationOptions);
         ForceRedoAnalysis();
     }
 
@@ -221,6 +220,8 @@ public partial class MainView : UserControl
         }
 
         AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
+
+        codeEditor.ApplySettings(settings);
     }
 
     public void Reset()

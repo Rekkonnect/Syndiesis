@@ -54,12 +54,16 @@ internal sealed class NodeSpanHoverLayer : Control
             CornerRadius = _textArea.SelectionCornerRadius,
         };
 
-        geoBuilder.AddSegment(_textView, _codeEditor.HoveredListNodeSegment);
-
-        var geometry = geoBuilder.CreateGeometry();
-        if (geometry != null)
+        var segment = _codeEditor.HoveredListNodeSegment;
+        if (segment.Length is not 0)
         {
-            drawingContext.DrawGeometry(HoverForeground, selectionBorder, geometry);
+            geoBuilder.AddSegment(_textView, segment);
+
+            var geometry = geoBuilder.CreateGeometry();
+            if (geometry is not null)
+            {
+                drawingContext.DrawGeometry(HoverForeground, selectionBorder, geometry);
+            }
         }
 
         _renderBackgroundMethod.Invoke(_textView, [drawingContext, KnownLayer.Selection]);
