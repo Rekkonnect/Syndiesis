@@ -13,8 +13,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks.Sources;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -396,7 +398,32 @@ static string Code(string type)
         return CreateRootBasic(inner, valueSource);
     }
 
-    protected void AppendValueSource(
+    protected void AppendComplexValueSource(
+        ComplexDisplayValueSource valueSource,
+        GroupedRunInlineCollection inlines)
+    {
+        var group = new SimpleGroupedRunInline(Children: []);
+        AppendValueSourceKindModifiers(valueSource.Modifiers, group);
+        inlines.Add(group);
+
+        bool hadPrevious = false;
+
+        foreach (var child in valueSource.ChildrenValueSources())
+        {
+            if (hadPrevious)
+            {
+                inlines.Add(CreateQualifierSeparatorRun());
+            }
+
+            AppendValueSourceWithoutSplitter(child, inlines);
+            hadPrevious = true;
+        }
+
+        var colonRun = CreateValueSplitterRun();
+        inlines.Add(colonRun);
+    }
+
+    protected void AppendValueSourceWithoutSplitter(
         DisplayValueSource valueSource,
         GroupedRunInlineCollection inlines)
     {
@@ -412,38 +439,64 @@ static string Code(string type)
             case DisplayValueSource.SymbolKind.Method:
                 AppendMethodDetail(valueSource, inlines);
                 break;
+
+            default:
+                return;
         }
+    }
+
+    protected void AppendValueSource(
+        DisplayValueSource valueSource,
+        GroupedRunInlineCollection inlines)
+    {
+        if (valueSource.IsDefault)
+            return;
+
+        AppendValueSourceWithoutSplitter(valueSource, inlines);
+
+        var colonRun = CreateValueSplitterRun();
+        inlines.Add(colonRun);
     }
 
     protected void AppendMethodDetail(
         DisplayValueSource valueSource, GroupedRunInlineCollection inlines)
     {
-        var propertyNameRun = Run(valueSource.Name!, CommonStyles.MethodBrush);
+        var methodNameRun = Run(valueSource.Name!, CommonStyles.MethodBrush);
         var parenthesesRun = Run("()", CommonStyles.RawValueBrush);
         var frontGroup = new SimpleGroupedRunInline([
-            propertyNameRun,
+            methodNameRun,
             parenthesesRun,
         ]);
 
-        if (valueSource.IsAsync)
+        AppendValueSourceKindModifiers(valueSource.Kind, frontGroup);
+
+        inlines.Add(frontGroup);
+    }
+
+    private static void AppendValueSourceKindModifiers(
+        DisplayValueSource.SymbolKind kind, SimpleGroupedRunInline frontGroup)
+    {
+        if (kind.IsInternal())
+        {
+            var internalRun = CreateInternalRun();
+            frontGroup.Children!.Insert(0, internalRun);
+        }
+        if (kind.IsAsync())
         {
             var awaitRun = CreateAwaitRun();
             frontGroup.Children!.Insert(0, awaitRun);
         }
-
-        var colonRun = Run(":  ", CommonStyles.SplitterBrush);
-        inlines.AddRange([
-            frontGroup,
-            colonRun
-        ]);
     }
 
     protected void AppendPropertyDetail(string propertyName, GroupedRunInlineCollection inlines)
     {
         var propertyNameRun = Run(propertyName, CommonStyles.PropertyBrush);
-        var colonRun = Run(":  ", CommonStyles.SplitterBrush);
         inlines.AddSingle(propertyNameRun);
-        inlines.Add(colonRun);
+    }
+
+    private static Run CreateValueSplitterRun()
+    {
+        return Run(":  ", CommonStyles.SplitterBrush);
     }
 
     protected AnalysisTreeListNode CreateNodeForSimplePropertyValue(
@@ -516,6 +569,11 @@ static string Code(string type)
         return Run("await ", CommonStyles.KeywordBrush);
     }
 
+    protected static Run CreateInternalRun()
+    {
+        return Run("internal ", CommonStyles.KeywordBrush);
+    }
+
     protected static Run Run(string text, IBrush brush)
     {
         return new(text, brush);
@@ -557,6 +615,35 @@ static string Code(string type)
     protected static DisplayValueSource MethodSource(string name)
     {
         return new(DisplayValueSource.SymbolKind.Method, name);
+    }
+
+    protected static GroupedRunInline? CountDisplayRunGroup(object value)
+    {
+        switch (value)
+        {
+            case Array array:
+                return CountValueDisplay(array.Length, nameof(array.Length));
+
+            case ICollection collection:
+                return CountValueDisplay(collection.Count, nameof(collection.Count));
+        }
+
+        return CountDisplayRunGroup(value, nameof(ICollection.Count))
+            ?? CountDisplayRunGroup(value, nameof(Array.Length));
+    }
+
+    protected static GroupedRunInline? CountDisplayRunGroup(object value, string propertyName)
+    {
+        var type = value.GetType();
+        var property = type.GetProperty(propertyName);
+        if (property is null)
+            return null;
+
+        if (property.PropertyType != typeof(int))
+            return null;
+
+        int count = (int)property.GetValue(value)!;
+        return CountValueDisplay(count, propertyName);
     }
 
     protected static GroupedRunInline CountValueDisplay(
@@ -1241,26 +1328,6 @@ partial class BaseAnalysisNodeCreator
             }
 
             return inlines;
-        }
-
-        protected static GroupedRunInline? CountDisplayRunGroup(object value)
-        {
-            return CountDisplayRunGroup(value, nameof(ICollection.Count))
-                ?? CountDisplayRunGroup(value, nameof(Array.Length));
-        }
-
-        private static GroupedRunInline? CountDisplayRunGroup(object value, string propertyName)
-        {
-            var type = value.GetType();
-            var property = type.GetProperty(propertyName);
-            if (property is null)
-                return null;
-
-            if (property.PropertyType != typeof(int))
-                return null;
-
-            int count = (int)property.GetValue(value)!;
-            return CountValueDisplay(count, propertyName);
         }
     }
 }

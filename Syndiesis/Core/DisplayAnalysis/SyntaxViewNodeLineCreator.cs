@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
+using Serilog;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
@@ -11,6 +12,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using System.Xml.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -41,6 +43,8 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly SyntaxTriviaListRootViewNodeCreator _syntaxTriviaListCreator;
     private readonly SyntaxReferenceRootViewNodeCreator _syntaxReferenceCreator;
     private readonly TextSpanRootViewNodeCreator _textSpanCreator;
+    private readonly SyntaxAnnotationRootViewNodeCreator _syntaxAnnotationCreator;
+    private readonly SyntaxAnnotationListRootViewNodeCreator _syntaxAnnotationListCreator;
 
     // public for other creators to use
     public readonly ChildlessSyntaxNodeRootViewNodeCreator ChildlessSyntaxCreator;
@@ -60,6 +64,8 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         _syntaxTriviaListCreator = new(this);
         _syntaxReferenceCreator = new(this);
         _textSpanCreator = new(this);
+        _syntaxAnnotationCreator = new(this);
+        _syntaxAnnotationListCreator = new(this);
 
         ChildlessSyntaxCreator = new(this);
     }
@@ -98,6 +104,9 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
 
             case TextSpan span:
                 return CreateRootTextSpan(span, valueSource);
+
+            case SyntaxAnnotation annotation:
+                return CreateRootSyntaxAnnotation(annotation, valueSource);
         }
 
         return null;
@@ -133,18 +142,6 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         return _syntaxNodeListCreator.CreateNode(node, valueSource);
     }
 
-    private void AppendTriviaList(SyntaxTriviaList triviaList, List<AnalysisTreeListNode> children)
-    {
-        if (Options.ShowTrivia)
-        {
-            foreach (var trivia in triviaList)
-            {
-                var triviaNode = CreateRootTrivia(trivia);
-                children.Add(triviaNode);
-            }
-        }
-    }
-
     private AnalysisTreeListNode CreateRootTokenList(
         SyntaxTokenList list, DisplayValueSource valueSource)
     {
@@ -164,53 +161,6 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         var nodeType = node.GetType();
         var properties = _propertyCache.FilterForType(nodeType).Properties;
         return properties;
-    }
-
-    private bool ShouldIncludeValue(object? value)
-    {
-        switch (value)
-        {
-            case null:
-                return false;
-
-            case ReadOnlySyntaxNodeList nodeList:
-                return nodeList.Count > 0;
-
-            case SyntaxNode:
-                return true;
-
-            case SyntaxTokenList tokenList:
-                if (tokenList == default)
-                    return false;
-
-                return tokenList.Count > 0;
-
-            case SyntaxTriviaList triviaList:
-                if (!Options.ShowTrivia)
-                    return false;
-
-                if (triviaList == default)
-                    return false;
-
-                return triviaList.Count > 0;
-
-            case SyntaxToken token:
-                if (token.IsMissing)
-                {
-                    return true;
-                }
-
-                return token != default;
-
-            case SyntaxTrivia trivia:
-                if (!Options.ShowTrivia)
-                    return false;
-
-                return trivia != default;
-
-            default:
-                return false;
-        }
     }
 
     private GroupedRunInlineCollection CreateSyntaxTypeInlines(
@@ -247,6 +197,19 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
         TextSpan span, DisplayValueSource valueSource)
     {
         return _textSpanCreator.CreateNode(span, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootSyntaxAnnotationList(
+        IReadOnlyList<SyntaxAnnotation> annotations,
+        ComplexDisplayValueSource valueSource)
+    {
+        return _syntaxAnnotationListCreator.CreateNode(annotations, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootSyntaxAnnotation(
+        SyntaxAnnotation annotation, DisplayValueSource valueSource)
+    {
+        return _syntaxAnnotationCreator.CreateNode(annotation, valueSource);
     }
 
     private void AppendSyntaxTypeDetails(Type type, GroupedRunInlineCollection inlines)
@@ -308,6 +271,22 @@ partial class SyntaxAnalysisNodeCreator
         public override AnalysisNodeKind GetNodeKind(TValue value)
         {
             return AnalysisNodeKind.Syntax;
+        }
+
+        protected static ComplexDisplayValueSource CreateCommonSyntaxAnnotationsDisplayValue(
+            string greenPropertyName)
+        {
+            return
+                new ComplexDisplayValueSource(
+                    Property(greenPropertyName),
+                    new ComplexDisplayValueSource(
+                        MethodSource(RoslynInternalsEx.GetAnnotationsMethodName),
+                        null
+                    )
+                )
+                {
+                    Modifiers = DisplayValueSource.SymbolKind.Internal,
+                };
         }
     }
 
@@ -378,6 +357,119 @@ partial class SyntaxAnalysisNodeCreator
         }
     }
 
+    public class SyntaxAnnotationListRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
+        : SyntaxRootViewNodeCreator<IReadOnlyList<SyntaxAnnotation>>(creator)
+    {
+        public AnalysisTreeListNode CreateNode(
+            IReadOnlyList<SyntaxAnnotation> value,
+            ComplexDisplayValueSource valueSource)
+        {
+            var rootLine = CreateNodeLine(value, valueSource);
+            var children = GetChildRetriever(value);
+            rootLine.AnalysisNodeKind = GetNodeKind(value);
+            return AnalysisTreeListNode(
+                rootLine,
+                children,
+                null
+            );
+        }
+
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            IReadOnlyList<SyntaxAnnotation> annotations,
+            DisplayValueSource valueSource)
+        {
+            throw new NotSupportedException(
+                $"Do not invoke this method; instead use the overload with {nameof(ComplexDisplayValueSource)}");
+        }
+
+        public AnalysisTreeListNodeLine CreateNodeLine(
+            IReadOnlyList<SyntaxAnnotation> annotations,
+            ComplexDisplayValueSource valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+
+            Creator.AppendComplexValueSource(valueSource, inlines);
+            var typeDisplay = Creator.TypeDisplayGroupedRun(annotations.GetType());
+            inlines.Add(typeDisplay);
+            inlines.Add(NewValueKindSplitterRun());
+            var countDisplayRun = CountDisplayRunGroup(annotations)!;
+            inlines.Add(countDisplayRun);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.SyntaxAnnotationListDisplay);
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(
+            IReadOnlyList<SyntaxAnnotation> annotations)
+        {
+            if (annotations.Count is 0)
+                return null;
+
+            Log.Information($"We found syntax annotations: {annotations.Count}");
+            return () => CreateNodeChildren(annotations);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> CreateNodeChildren(
+            IReadOnlyList<SyntaxAnnotation> annotations)
+        {
+            return annotations
+                .Select(s => Creator.CreateRootSyntaxAnnotation(s, default))
+                .ToList()
+                ;
+        }
+    }
+
+    public class SyntaxAnnotationRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
+        : SyntaxRootViewNodeCreator<SyntaxAnnotation>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            SyntaxAnnotation annotation, DisplayValueSource valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+
+            var run = Creator.TypeDisplayGroupedRun(typeof(SyntaxAnnotation));
+            inlines.Add(run);
+
+            if (annotation.IsElastic())
+            {
+                inlines.Add(NewValueKindSplitterRun());
+                inlines.Add(CreateElasticAnnotationRun());
+            }
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.SyntaxAnnotationDisplay);
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(SyntaxAnnotation annotation)
+        {
+            return () => CreateNodeChildren(annotation);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> CreateNodeChildren(SyntaxAnnotation annotation)
+        {
+            return
+            [
+                Creator.CreateRootBasic(
+                    annotation.Kind,
+                    Property(nameof(SyntaxAnnotation.Kind))),
+
+                Creator.CreateRootBasic(
+                    annotation.Data,
+                    Property(nameof(SyntaxAnnotation.Data))),
+            ];
+        }
+
+        private static SingleRunInline CreateElasticAnnotationRun()
+        {
+            return new(Run(
+                nameof(SyntaxAnnotation.ElasticAnnotation),
+                CommonStyles.PropertyBrush,
+                FontStyle.Italic));
+        }
+    }
+
     public class SyntaxNodeRootViewNodeCreator(SyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxNode>(creator)
     {
@@ -408,7 +500,7 @@ partial class SyntaxAnalysisNodeCreator
             foreach (var property in properties)
             {
                 var value = property.GetValue(node);
-                bool includeValue = Creator.ShouldIncludeValue(value);
+                bool includeValue = ShouldIncludeValue(value);
                 if (!includeValue)
                 {
                     continue;
@@ -425,7 +517,66 @@ partial class SyntaxAnalysisNodeCreator
 
             children.Sort(AnalysisTreeViewNodeBuilderObjectSpanComparer.Instance);
 
+            if (Options.ShowSyntaxAnnotations)
+            {
+                children.Insert(0, CreateGreenNodeAnnotationsNode(node));
+            }
+
             return children;
+        }
+
+        private bool ShouldIncludeValue(object? value)
+        {
+            switch (value)
+            {
+                case null:
+                    return false;
+
+                case ReadOnlySyntaxNodeList nodeList:
+                    return nodeList.Count > 0;
+
+                case SyntaxNode:
+                    return true;
+
+                case SyntaxTokenList tokenList:
+                    if (tokenList == default)
+                        return false;
+
+                    return tokenList.Count > 0;
+
+                case SyntaxTriviaList triviaList:
+                    if (!Options.ShowTrivia)
+                        return false;
+
+                    if (triviaList == default)
+                        return false;
+
+                    return triviaList.Count > 0;
+
+                case SyntaxToken token:
+                    if (token.IsMissing)
+                    {
+                        return true;
+                    }
+
+                    return token != default;
+
+                case SyntaxTrivia trivia:
+                    if (!Options.ShowTrivia)
+                        return false;
+
+                    return trivia != default;
+
+                default:
+                    return false;
+            }
+        }
+
+        private AnalysisTreeListNode CreateGreenNodeAnnotationsNode(SyntaxNode node)
+        {
+            var valueSource = CreateCommonSyntaxAnnotationsDisplayValue("Green");
+            var annotations = RoslynInternalsEx.GetSyntaxAnnotations(node);
+            return Creator.CreateRootSyntaxAnnotationList(annotations, valueSource);
         }
     }
 
@@ -531,6 +682,11 @@ partial class SyntaxAnalysisNodeCreator
             }
 
             children.Sort(AnalysisTreeViewNodeBuilderObjectSpanComparer.Instance);
+
+            if (Options.ShowSyntaxAnnotations)
+            {
+                children.Insert(0, CreateGreenNodeAnnotationsNode(token));
+            }
 
             return children;
         }
@@ -665,6 +821,13 @@ partial class SyntaxAnalysisNodeCreator
         {
             const string missingTokenDisplayString = "[missing]";
             return Run(missingTokenDisplayString, Styles.MissingTokenIndicatorBrush);
+        }
+
+        private AnalysisTreeListNode CreateGreenNodeAnnotationsNode(SyntaxToken node)
+        {
+            var valueSource = CreateCommonSyntaxAnnotationsDisplayValue("Node");
+            var annotations = RoslynInternalsEx.GetSyntaxAnnotations(node);
+            return Creator.CreateRootSyntaxAnnotationList(annotations, valueSource);
         }
     }
 
@@ -1066,10 +1229,24 @@ partial class SyntaxAnalysisNodeCreator
 
         private IReadOnlyList<AnalysisTreeListNode> CreateTriviaListChildren(SyntaxTriviaList list)
         {
-            return list
+            var children = list
                 .Select(s => Creator.CreateRootTrivia(s))
                 .ToList()
                 ;
+
+            if (Options.ShowSyntaxAnnotations)
+            {
+                children.Insert(0, CreateGreenNodeAnnotationsNode(list));
+            }
+
+            return children;
+        }
+
+        private AnalysisTreeListNode CreateGreenNodeAnnotationsNode(SyntaxTriviaList triviaList)
+        {
+            var valueSource = CreateCommonSyntaxAnnotationsDisplayValue("Node");
+            var annotations = RoslynInternalsEx.GetSyntaxAnnotations(triviaList);
+            return Creator.CreateRootSyntaxAnnotationList(annotations, valueSource);
         }
     }
 
@@ -1184,6 +1361,9 @@ partial class SyntaxAnalysisNodeCreator
         public const string DisplayValue = "D";
         public const string TriviaList = "VL";
 
+        public const string SyntaxAnnotation = "!";
+        public const string SyntaxAnnotationList = "!!";
+
         // using & to denote reference, there's too many types
         // beginning with S and we want to avoid the confusion
         public const string SyntaxReference = "&";
@@ -1216,6 +1396,7 @@ partial class SyntaxAnalysisNodeCreator
     [SolidColor("DisabledTextTriviaContent", 0xFF664747)]
     [SolidColor("DisabledTextTriviaTokenKind", 0xFF4D3636)]
     [SolidColor("MissingTokenIndicator", 0xFF8B4D4D)]
+    [SolidColor("AnnotationIndicator", 0xFFA86932)]
     public partial class SyntaxStyles
     {
         // Tree displays
@@ -1249,6 +1430,12 @@ partial class SyntaxAnalysisNodeCreator
 
         public NodeTypeDisplay TextSpanDisplay
             => new(Types.TextSpan, CommonStyles.StructMainColor);
+
+        public NodeTypeDisplay SyntaxAnnotationDisplay
+            => new(Types.SyntaxAnnotation, AnnotationIndicatorColor);
+
+        public NodeTypeDisplay SyntaxAnnotationListDisplay
+            => new(Types.SyntaxAnnotationList, AnnotationIndicatorColor);
 
         // Trivia displays
         public NodeTypeDisplay WhitespaceTriviaDisplay

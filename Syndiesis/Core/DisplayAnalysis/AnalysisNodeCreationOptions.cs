@@ -7,4 +7,6 @@ public sealed class AnalysisNodeCreationOptions
     public bool ShowSyntaxTreeRootNode = true;
 
     public int TruncationLimit = 50;
+
+    public bool ShowSyntaxAnnotations = false;
 }
