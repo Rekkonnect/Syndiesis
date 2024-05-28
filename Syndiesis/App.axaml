@@ -3,6 +3,7 @@
              xmlns:local="using:Syndiesis"
              x:Class="Syndiesis.App"
              RequestedThemeVariant="Dark"
+             Name="Syndiesis"
              >
 
   <Application.Styles>
