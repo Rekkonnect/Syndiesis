@@ -255,17 +255,6 @@ public partial class AnalysisTreeListNode : UserControl
         expandableCanvas.Background = _expandableCanvasBackgroundBrush;
     }
 
-    [Obsolete("Linear scaling = bad")]
-    internal void EvaluateHoveringRecursively(PointerEventArgs e)
-    {
-        EvaluateHovering(e);
-
-        foreach (var child in LazyChildren)
-        {
-            child.EvaluateHoveringRecursively(e);
-        }
-    }
-
     internal void EvaluateHoveringRecursivelyBinary(PointerEventArgs e)
     {
         EvaluateHovering(e);
@@ -291,7 +280,7 @@ public partial class AnalysisTreeListNode : UserControl
         {
             int mid = (low + high) / 2;
             var child = LazyChildren[mid];
-            var childBounds = child.NodeLine.Bounds;
+            var childBounds = child.Bounds;
             if (childBounds.Top <= height && height <= childBounds.Bottom)
                 return mid;
 

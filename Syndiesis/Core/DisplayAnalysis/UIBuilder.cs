@@ -33,11 +33,23 @@ public static class UIBuilder
     }
 
     public sealed record AnalysisTreeListNodeLine(
-        GroupedRunInlineCollection Inlines,
-        NodeTypeDisplay NodeTypeDisplay)
+        GroupedRunInlineCollection Inlines)
         : UIBuilder<SAnalysisTreeListNodeLine>
     {
         public AnalysisNodeKind AnalysisNodeKind { get; set; }
+
+        public NodeTypeDisplay NodeTypeDisplay { get; set; }
+
+        public TextSpanSource DisplaySpanSource { get; set; }
+            = TextSpanSource.FullSpan;
+
+        public AnalysisTreeListNodeLine(
+            GroupedRunInlineCollection inlines,
+            NodeTypeDisplay nodeTypeDisplay)
+            : this(inlines)
+        {
+            NodeTypeDisplay = nodeTypeDisplay;
+        }
 
         public override SAnalysisTreeListNodeLine Build()
         {
@@ -46,6 +58,7 @@ public static class UIBuilder
                 GroupedRunInlines = Inlines.Build(),
                 NodeTypeDisplay = NodeTypeDisplay,
                 AnalysisNodeKind = AnalysisNodeKind,
+                DisplaySpanSource = DisplaySpanSource,
             };
         }
     }

@@ -32,7 +32,7 @@
         ShowLineNumbers="True"
         HorizontalScrollBarVisibility="Hidden"
         VerticalScrollBarVisibility="Hidden"
-        FontFamily="Fira Code"
+        FontFamily="{StaticResource FiraCodeFontFamily}"
       >
       </aedit:TextEditor>
 

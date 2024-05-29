@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Media;
+using Garyon.Exceptions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.Inlines;
@@ -103,6 +104,8 @@ public partial class AnalysisTreeListNodeLine : UserControl
 
     public SyntaxObjectInfo? AssociatedSyntaxObject { get; set; }
 
+    public TextSpanSource DisplaySpanSource { get; set; } = TextSpanSource.FullSpan;
+
     public TextSpan DisplaySpan
     {
         get
@@ -111,14 +114,18 @@ public partial class AnalysisTreeListNodeLine : UserControl
             if (syntaxObject is null)
                 return default;
 
-            var nodeType = NodeTypeText;
-            switch (nodeType)
+            switch (DisplaySpanSource)
             {
-                case SyntaxAnalysisNodeCreator.Types.DisplayValue:
+                case TextSpanSource.Span:
                     return syntaxObject.Span;
-            }
+                case TextSpanSource.FullSpan:
+                    return syntaxObject.FullSpan;
 
-            return syntaxObject.FullSpan;
+                default:
+                    ThrowHelper<UnreachableException>.Throw();
+                    // unreachable
+                    return default;
+            }
         }
     }
 

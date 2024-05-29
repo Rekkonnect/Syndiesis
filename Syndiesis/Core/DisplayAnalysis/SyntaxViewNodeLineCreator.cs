@@ -674,6 +674,8 @@ partial class SyntaxAnalysisNodeCreator
                     if (token.Text.Length > 0)
                     {
                         var displayNode = CreateDisplayNode(token);
+                        displayNode.NodeLine.NodeTypeDisplay = Styles.DisplayValueDisplay;
+                        displayNode.NodeLine.DisplaySpanSource = TextSpanSource.Span;
                         children.Add(displayNode);
                     }
 
