@@ -74,7 +74,6 @@ public class VerticallyExpandablePanel : Panel
         var totalSize = Size.Infinity;
         foreach (var child in Children)
         {
-            child.InvalidateMeasure();
             child.Measure(totalSize);
             var childMeasurement = child.DesiredSize;
             totalSize = totalSize.Constrain(childMeasurement);

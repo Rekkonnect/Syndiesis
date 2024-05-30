@@ -159,7 +159,7 @@ public partial class AnalysisTreeListNode : UserControl
         if (builders is null)
             return;
 
-        var estimator = new DynamicIterationEstimator(TimeSpan.FromMilliseconds(8));
+        var estimator = new DynamicIterationEstimator(TimeSpan.FromMilliseconds(10));
         int start = 0;
         var loadedList = new List<AnalysisTreeListNode>();
         _loadedChildren = loadedList;
@@ -201,8 +201,7 @@ public partial class AnalysisTreeListNode : UserControl
                 }
             }
 
-            // Give a little bit of breathing room
-            await Task.Delay(15);
+            await Task.Delay(40);
             await Dispatcher.UIThread.InvokeAsync(UIUpdate);
         }
 
