@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Garyon.Extensions;
+using Serilog;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
@@ -15,8 +16,8 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
-using NodeChildren = IReadOnlyList<AnalysisTreeListNode>;
 using NodeBuilderChildren = IReadOnlyList<UIBuilder.AnalysisTreeListNode>;
+using NodeChildren = IReadOnlyList<AnalysisTreeListNode>;
 
 public partial class AnalysisTreeListNode : UserControl
 {
@@ -150,25 +151,62 @@ public partial class AnalysisTreeListNode : UserControl
         _childRetrievalTask = retrievalTask;
         var result = await retrievalTask;
         _childRetrievalTask = null;
-        SetLoadedChildren(result);
+        await SetLoadedChildren(result);
     }
 
-    private void SetLoadedChildren(NodeBuilderChildren builders)
+    private async Task SetLoadedChildren(NodeBuilderChildren? builders)
     {
-        void UIUpdate()
-        {
-            builders ??= [];
-            var children = builders.Select(s => s.Build()).ToList();
-            _loadedChildren = children;
+        if (builders is null)
+            return;
 
-            SetChildNodes(children);
-            foreach (var child in children)
+        var estimator = new DynamicIterationEstimator(TimeSpan.FromMilliseconds(8));
+        int start = 0;
+        var loadedList = new List<AnalysisTreeListNode>();
+        _loadedChildren = loadedList;
+
+        async Task UIUpdate()
+        {
+            if (start >= builders.Count)
             {
-                child.ListView = ListView;
+                // Remove the loading node which is always the first
+                innerStackPanel.Children.RemoveAt(0);
+                return;
             }
+
+            int chunk = estimator.RecommendedIterationCount;
+            if (chunk is 0)
+            {
+                // For the first chunk, a little bit of lag by overshooting the device's
+                // capabilities is okay
+                chunk = 20;
+            }
+
+            if (chunk <= 5)
+            {
+                Log.Information("Low-end device detected, are you sure this application is running smoothly?");
+            }
+
+            var taken = builders.Skip(start).Take(chunk);
+            start += chunk;
+
+            using (estimator.BeginProcess(chunk))
+            {
+                var children = taken.Select(s => s.Build()).ToList();
+                loadedList.AddRange(children);
+
+                innerStackPanel.Children.AddRange(children);
+                foreach (var child in children)
+                {
+                    child.ListView = ListView;
+                }
+            }
+
+            // Give a little bit of breathing room
+            await Task.Delay(15);
+            await Dispatcher.UIThread.InvokeAsync(UIUpdate);
         }
 
-        Dispatcher.UIThread.Invoke(UIUpdate);
+        await Dispatcher.UIThread.InvokeAsync(UIUpdate);
     }
 
     private void SetChildNodes(NodeChildren value)
