@@ -12,7 +12,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using System.Xml.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -674,6 +673,8 @@ partial class SyntaxAnalysisNodeCreator
                     if (token.Text.Length > 0)
                     {
                         var displayNode = CreateDisplayNode(token);
+                        displayNode.NodeLine.NodeTypeDisplay = Styles.DisplayValueDisplay;
+                        displayNode.NodeLine.DisplaySpanSource = TextSpanSource.Span;
                         children.Add(displayNode);
                     }
 

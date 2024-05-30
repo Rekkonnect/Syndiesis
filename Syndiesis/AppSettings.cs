@@ -20,6 +20,9 @@ public sealed class AppSettings
     [JsonIgnore]
     public StylePreferences StylePreferences = new();
 
+    public bool ShowWhitespaceGlyphs = true;
+    public bool WordWrap = true;
+
     public TimeSpan UserInputDelay = TimeSpan.FromMilliseconds(600);
 
     public int RecursiveExpansionDepth = 4;

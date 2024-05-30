@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Microsoft.CodeAnalysis.Text;
+using AvaloniaEdit;
 using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Tabs;
@@ -45,9 +45,9 @@ public partial class MainView : UserControl
 
         ViewModel.CompilationSource.SetSource(initializingSource, default);
 
-        codeEditor.Editor = ViewModel.Editor;
+        codeEditor.Document = ViewModel.Document;
         codeEditor.SetSource(initializingSource);
-        codeEditor.CursorPosition = new(4, 48);
+        codeEditor.CaretPosition = new(4, 48);
         codeEditor.AssociatedTreeView = syntaxTreeView.listView;
 
         analysisTreeViewTabs.Envelopes =
@@ -72,8 +72,8 @@ public partial class MainView : UserControl
 
     private void InitializeEvents()
     {
-        codeEditor.CodeChanged += TriggerPipeline;
-        codeEditor.CursorMoved += HandleCursorPositionChanged;
+        codeEditor.TextChanged += HandleCodeChanged;
+        codeEditor.CaretMoved += HandleCursorPositionChanged;
         syntaxTreeView.listView.HoveredNode += HandleHoveredNode;
         syntaxTreeView.listView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
         syntaxTreeView.listView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
@@ -158,19 +158,23 @@ public partial class MainView : UserControl
 
     private void HandleNewRootNodeLoaded()
     {
-        // trigger showing the current position of the cursor
-        var position = codeEditor.CursorPosition;
+        RefreshCaretPosition();
+    }
+
+    private void HandleCursorPositionChanged(object? sender, EventArgs e)
+    {
+        RefreshCaretPosition();
+    }
+
+    private void RefreshCaretPosition()
+    {
+        var position = codeEditor.CaretPosition;
         ShowCurrentCursorPosition(position);
     }
 
-    private void HandleCursorPositionChanged(LinePosition position)
+    private void ShowCurrentCursorPosition(TextViewPosition position)
     {
-        ShowCurrentCursorPosition(position);
-    }
-
-    private void ShowCurrentCursorPosition(LinePosition position)
-    {
-        var index = ViewModel.Editor.MultilineEditor.GetIndex(position);
+        int index = codeEditor.textEditor.TextArea.Document.GetOffset(position.Location);
         Task.Run(() => syntaxTreeView.listView.EnsureHighlightedPositionRecurring(index));
     }
 
@@ -189,16 +193,20 @@ public partial class MainView : UserControl
         codeEditor.PlaceCursorAtNodeStart(node);
     }
 
+    private void HandleCodeChanged(object? sender, EventArgs e)
+    {
+        TriggerPipeline();
+    }
+
     private void TriggerPipeline()
     {
-        var currentSource = ViewModel.Editor.MultilineEditor.FullString();
+        var currentSource = ViewModel.Document;
         AnalysisPipelineHandler.InitiateAnalysis(currentSource);
     }
 
     public void ApplyCurrentSettings()
     {
         ApplyCurrentSettingsWithoutAnalysis();
-        ViewModel.Editor.IndentationOptions = AppSettings.Instance.IndentationOptions;
         ForceRedoAnalysis();
     }
 
@@ -212,6 +220,8 @@ public partial class MainView : UserControl
         }
 
         AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
+
+        codeEditor.ApplySettings(settings);
     }
 
     public void Reset()

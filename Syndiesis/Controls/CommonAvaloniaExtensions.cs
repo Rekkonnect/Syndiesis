@@ -9,6 +9,7 @@ using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.AccessControl;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;
@@ -110,6 +111,23 @@ public static partial class CommonAvaloniaExtensions
 
         return default;
     }
+
+    public static void SetHorizontalOffset(this ScrollViewer scrollViewer, double value)
+    {
+        var offset = scrollViewer.Offset;
+        scrollViewer.Offset = new(value, offset.Y);
+    }
+
+    public static void SetVerticalOffset(this ScrollViewer scrollViewer, double value)
+    {
+        var offset = scrollViewer.Offset;
+        scrollViewer.Offset = new(offset.X, value);
+    }
+
+    public static Vector Add(this Vector vector, Size size)
+    {
+        return vector + new Vector(size.Width, size.Height);
+    }
 }
 
 // Control
@@ -187,24 +205,6 @@ public static partial class CommonAvaloniaExtensions
             return;
 
         await clipboard.SetTextAsync(value);
-    }
-
-    public static async Task SetClipboardDataAsync(this Control control, IDataObject value)
-    {
-        var clipboard = control.Clipboard();
-        if (clipboard is null)
-            return;
-
-        await clipboard.SetDataObjectAsync(value);
-    }
-
-    public static async Task<bool> HasSingleLineClipboardText(this Control control)
-    {
-        var clipboard = control.Clipboard();
-        if (clipboard is null)
-            return false;
-
-        return await clipboard.HasFormatAsync(CodeEditorDataObject.Formats.CodeEditor);
     }
 
     public static void AddIfNotContained(this ControlList controls, Control control)

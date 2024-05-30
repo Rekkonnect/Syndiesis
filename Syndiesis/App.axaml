@@ -3,10 +3,12 @@
              xmlns:local="using:Syndiesis"
              x:Class="Syndiesis.App"
              RequestedThemeVariant="Dark"
+             Name="Syndiesis"
              >
 
   <Application.Styles>
     <FluentTheme />
+    <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
   </Application.Styles>
   
   <Application.Resources>

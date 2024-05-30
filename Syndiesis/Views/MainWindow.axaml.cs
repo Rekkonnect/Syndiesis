@@ -17,7 +17,7 @@ public partial class MainWindow : Window
     private void InitializeHeader()
     {
         var infoVersion = App.Current.AppInfo.InformationalVersion;
-        Title = $"Syndiesis v{infoVersion.Version} [{infoVersion.CommitSha![7..]}]";
+        Title = $"Syndiesis v{infoVersion.Version} [{infoVersion.CommitSha![..7]}]";
     }
 
     private void InitializeEvents()

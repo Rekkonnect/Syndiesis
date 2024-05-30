@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="60" d:DesignHeight="250"
+             xmlns:aediting="using:AvaloniaEdit.Editing"
+             HorizontalAlignment="Stretch"
+             VerticalAlignment="Stretch"
+             x:Class="Syndiesis.Controls.Editor.BackgroundLineNumberPanel">
+  
+  <Panel
+    Name="panel"
+    >
+    <Rectangle
+      Fill="#8000333E"
+      />
+    <aediting:LineNumberMargin
+      Margin="30 0 0 0"
+      Name="lines"
+    />
+  </Panel>
+</UserControl>

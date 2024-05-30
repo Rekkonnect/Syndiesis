@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Garyon.Extensions;
+using Serilog;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
@@ -15,8 +16,8 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
-using NodeChildren = IReadOnlyList<AnalysisTreeListNode>;
 using NodeBuilderChildren = IReadOnlyList<UIBuilder.AnalysisTreeListNode>;
+using NodeChildren = IReadOnlyList<AnalysisTreeListNode>;
 
 public partial class AnalysisTreeListNode : UserControl
 {
@@ -146,41 +147,79 @@ public partial class AnalysisTreeListNode : UserControl
         if (_childRetriever.IsValueCreated)
             return;
 
-        var retrievalTask = Task.Run(_childRetriever.GetValueAsync);
-        _childRetrievalTask = retrievalTask;
-        var result = await retrievalTask;
+        _childRetrievalTask = ChildRetrievalTaskWorker();
+        await _childRetrievalTask;
         _childRetrievalTask = null;
-        SetLoadedChildren(result);
     }
 
-    private void SetLoadedChildren(NodeBuilderChildren builders)
+    private async Task ChildRetrievalTaskWorker()
     {
-        void UIUpdate()
-        {
-            builders ??= [];
-            var children = builders.Select(s => s.Build()).ToList();
-            _loadedChildren = children;
+        var result = await Task.Run(_childRetriever!.GetValueAsync);
+        await SetLoadedChildren(result);
+    }
 
-            SetChildNodes(children);
-            foreach (var child in children)
+    private async Task SetLoadedChildren(NodeBuilderChildren? builders)
+    {
+        if (builders is null)
+            return;
+
+        var estimator = new DynamicIterationEstimator(TimeSpan.FromMilliseconds(10));
+        int start = 0;
+        var loadedList = new List<AnalysisTreeListNode>();
+        _loadedChildren = loadedList;
+
+        async Task UIUpdate()
+        {
+            if (start >= builders.Count)
             {
-                child.ListView = ListView;
+                // Remove the loading node which is always the first
+                innerStackPanel.Children.RemoveAt(0);
+                return;
             }
+
+            int chunk = estimator.RecommendedIterationCount;
+            if (chunk is 0)
+            {
+                // For the first chunk, a little bit of lag by overshooting the device's
+                // capabilities is okay
+                chunk = 20;
+            }
+
+            if (chunk <= 5)
+            {
+                Log.Information("Low-end device detected, are you sure this application is running smoothly?");
+            }
+
+            var taken = builders.Skip(start).Take(chunk);
+            start += chunk;
+
+            using (estimator.BeginProcess(chunk))
+            {
+                var children = taken.Select(s => s.Build()).ToList();
+                loadedList.AddRange(children);
+
+                innerStackPanel.Children.AddRange(children);
+                foreach (var child in children)
+                {
+                    child.ListView = ListView;
+                }
+            }
+
+            await Task.Delay(40);
+            await Dispatcher.UIThread.InvokeAsync(UIUpdate);
         }
 
-        Dispatcher.UIThread.Invoke(UIUpdate);
+        await Dispatcher.UIThread.InvokeAsync(UIUpdate);
     }
 
     private void SetChildNodes(NodeChildren value)
     {
         innerStackPanel.Children.ClearSetValues(value);
-        //_ = expandableCanvas.AnimateCurrentHeight(default);
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
-        EvaluateHoveringRecursively(e);
     }
 
     protected override void OnPointerEntered(PointerEventArgs e)
@@ -192,11 +231,13 @@ public partial class AnalysisTreeListNode : UserControl
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
-        EvaluateHoveringRecursively(e);
+        EvaluateHovering(e);
+        ListView?.RootNode.EvaluateHoveringRecursivelyBinary(e);
     }
 
     private void EvaluateHovering(PointerEventArgs e)
     {
+        ListView?.EvaluateHovering(e);
         var allowedHover = ListView?.RequestHover(this) ?? true;
         if (!allowedHover)
         {
@@ -255,14 +296,42 @@ public partial class AnalysisTreeListNode : UserControl
         expandableCanvas.Background = _expandableCanvasBackgroundBrush;
     }
 
-    internal void EvaluateHoveringRecursively(PointerEventArgs e)
+    internal void EvaluateHoveringRecursivelyBinary(PointerEventArgs e)
     {
         EvaluateHovering(e);
+        var position = e.GetPosition(this);
 
-        foreach (var child in LazyChildren)
+        int index = BinarySearchControlByTop(position.Y);
+        if (index < 0)
+            return;
+
+        var children = LazyChildren;
+        var child = LazyChildren[index];
+        child.EvaluateHoveringRecursivelyBinary(e);
+    }
+
+    private int BinarySearchControlByTop(double height)
+    {
+        var children = LazyChildren;
+
+        int low = 0;
+        int high = children.Count - 1;
+
+        while (low <= high)
         {
-            child.EvaluateHoveringRecursively(e);
+            int mid = (low + high) / 2;
+            var child = LazyChildren[mid];
+            var childBounds = child.Bounds;
+            if (childBounds.Top <= height && height <= childBounds.Bottom)
+                return mid;
+
+            if (childBounds.Top < height)
+                low = mid + 1;
+            else
+                high = mid - 1;
         }
+
+        return -1;
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)

@@ -1,4 +1,7 @@
-﻿using Microsoft.CodeAnalysis.Text;
+﻿using AvaloniaEdit;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Editing;
+using Microsoft.CodeAnalysis.Text;
 
 namespace Syndiesis.Core;
 
@@ -89,5 +92,41 @@ public static class LineExtensions
         {
             return new(b, a);
         }
+    }
+
+    public static TextViewPosition TextViewPosition(this LinePosition position)
+    {
+        return new(position.Line + 1, position.Character + 1);
+    }
+
+    public static TextLocation TextLocation(this LinePosition position)
+    {
+        return new(position.Line + 1, position.Character + 1);
+    }
+
+    public static int GetOffset(this TextDocument document, LinePosition position)
+    {
+        var textLocation = position.TextLocation();
+        return document.GetOffset(textLocation);
+    }
+
+    public static SimpleSegment GetSegment(this TextDocument document, LinePositionSpan span)
+    {
+        var start = span.Start;
+        var end = span.End;
+        var startOffset = document.GetOffset(start);
+        var endOffset = document.GetOffset(end);
+        int length = endOffset - startOffset;
+        return new(startOffset, length);
+    }
+
+    public static SimpleSegment ConfineToBounds(this SimpleSegment segment, int length)
+    {
+        int outOfBounds = segment.EndOffset - length;
+        if (outOfBounds > 0)
+        {
+            return new(segment.Offset, segment.Length - outOfBounds);
+        }
+        return segment;
     }
 }

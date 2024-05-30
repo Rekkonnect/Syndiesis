@@ -5,15 +5,19 @@
              Focusable="True"
              mc:Ignorable="d"
              xmlns:controls="using:Syndiesis.Controls"
+             xmlns:aedit="using:AvaloniaEdit"
              d:DesignWidth="800" d:DesignHeight="450"
              x:Class="Syndiesis.Controls.CodeEditor"
   >
 
-  <Panel Name="backgroundPanel"
-         Background="#001116">
-    <Grid>
+  <Panel
+    Name="backgroundPanel"
+    Background="#001116"
+    >
+
+    <Grid
+      >
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="70"/>
         <ColumnDefinition Width="*"/>
         <ColumnDefinition Width="20"/>
       </Grid.ColumnDefinitions>
@@ -22,36 +26,16 @@
         <RowDefinition Height="20"/>
       </Grid.RowDefinitions>
 
-      <Panel
-        Grid.Column="1"
-        Name="codeCanvasContainer"
-        controls:CursorContainer.Cursor="Ibeam"
-        >
-        <Canvas
-          Name="codeCanvas"
-          >
-          <controls:CodeEditorContentPanel
-            Canvas.Left="0"
-            Canvas.Top="0"
-            Name="codeEditorContent"
-            />
-        </Canvas>
-      </Panel>
-      
-      <Panel Width="70"
-             VerticalAlignment="Stretch"
-             HorizontalAlignment="Left"
-             Background="#00232E"
-             Grid.Column="0">
+      <aedit:TextEditor
+        Name="textEditor"
+        Text="Hello AvaloniaEdit from Syndiesis!"
+        ShowLineNumbers="True"
+        HorizontalScrollBarVisibility="Hidden"
+        VerticalScrollBarVisibility="Hidden"
+        FontFamily="{StaticResource FiraCodeFontFamily}"
+      >
+      </aedit:TextEditor>
 
-        <controls:CodeEditorLineDisplayPanel
-          Name="lineDisplayPanel"
-          SelectedLineNumber="5"
-          LineNumberStart="1"
-          LastLineNumber="5"
-          />
-      </Panel>
-      
       <Panel
         Background="#003034"
         Grid.Column="2">
@@ -60,13 +44,11 @@
           MinValue="0"
           MaxValue="5"
           HasAvailableScroll="False"
-          MinVisibleStep="1"
           />
       </Panel>
       <Panel
         Background="#003034"
         Grid.Column="0"
-        Grid.ColumnSpan="2"
         Grid.Row="1">
         <controls:HorizontalScrollBar
           Name="horizontalScrollBar"
@@ -78,7 +60,7 @@
       </Panel>
       <Panel Name="scrollBarIntersectionPanel"
              Background="#00545A"
-             Grid.Column="2"
+             Grid.Column="1"
              Grid.Row="1">
       </Panel>
     </Grid>

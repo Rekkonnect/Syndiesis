@@ -28,11 +28,3 @@ public partial class LoadingSpinner : UserControl
         Content = image.CopyOfSource();
     }
 }
-
-public static class ImageControlExtensions
-{
-    public static Image CopyOfSource(this Image image)
-    {
-        return new() { Source = image.Source };
-    }
-}
