@@ -158,7 +158,7 @@ public partial class CodeEditor : UserControl
 
     private void HandleScrollOffsetChanged(object? sender, EventArgs e)
     {
-        UpdateEntireScroll();
+        UpdateScrolls();
     }
 
     private void HandleCodeChanged()
@@ -340,56 +340,31 @@ public partial class CodeEditor : UserControl
         HoveredListNodeSegment = segment;
     }
 
-    private void UpdateEntireScroll()
-    {
-        // TODO: Unify the updating methods below
-        // + ensure the scroll info is properly retrieved
-        // right now it's always late by one trigger
-        UpdateScrollBounds();
-        UpdateHorizontalScrollPosition();
-    }
-
-    private void UpdateScrollBounds()
+    private void UpdateScrolls()
     {
         _isUpdatingScrollLimits = true;
 
         using (horizontalScrollBar.BeginUpdateBlock())
         {
             var maxWidth = textEditor.ExtentWidth;
+            var start = textEditor.HorizontalOffset;
             horizontalScrollBar.MinValue = 0;
             horizontalScrollBar.MaxValue = maxWidth;
+            horizontalScrollBar.StartPosition = start;
+            horizontalScrollBar.EndPosition = start + textEditor.ViewportWidth;
             horizontalScrollBar.SetAvailableScrollOnScrollableWindow();
         }
 
         using (verticalScrollBar.BeginUpdateBlock())
         {
-            UpdateVerticalScroll();
+            verticalScrollBar.MinValue = 0;
+            verticalScrollBar.MaxValue = textEditor.ExtentHeight;
+            verticalScrollBar.StartPosition = textEditor.VerticalOffset;
+            verticalScrollBar.EndPosition = textEditor.VerticalOffset + textEditor.ViewportHeight;
+            verticalScrollBar.SetAvailableScrollOnScrollableWindow();
         }
 
         _isUpdatingScrollLimits = false;
-    }
-
-    private void UpdateVerticalScroll()
-    {
-        verticalScrollBar.MinValue = 0;
-        verticalScrollBar.MaxValue = textEditor.ExtentHeight;
-        verticalScrollBar.StartPosition = textEditor.VerticalOffset;
-        verticalScrollBar.EndPosition = textEditor.VerticalOffset + textEditor.ViewportHeight;
-        verticalScrollBar.SetAvailableScrollOnScrollableWindow();
-    }
-
-    private void UpdateHorizontalScrollPosition()
-    {
-        using (horizontalScrollBar.BeginUpdateBlock())
-        {
-            _isUpdatingScrollLimits = true;
-
-            var start = textEditor.HorizontalOffset;
-            horizontalScrollBar.StartPosition = start;
-            horizontalScrollBar.EndPosition = start + textEditor.ViewportWidth;
-
-            _isUpdatingScrollLimits = false;
-        }
     }
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
@@ -507,11 +482,10 @@ public partial class CodeEditor : UserControl
         return selection.SurroundingSegment;
     }
 
-    protected override Size ArrangeOverride(Size finalSize)
+    protected override void OnSizeChanged(SizeChangedEventArgs e)
     {
-        var result = base.ArrangeOverride(finalSize);
-        UpdateEntireScroll();
-        return result;
+        UpdateScrolls();
+        base.OnSizeChanged(e);
     }
 
     private readonly RateLimiter _pasteRateLimiter = new(TimeSpan.FromMilliseconds(400));
