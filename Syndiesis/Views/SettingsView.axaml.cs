@@ -38,6 +38,8 @@ public partial class SettingsView : UserControl
     {
         var settings = AppSettings.Instance;
         showTriviaCheck.IsChecked = settings.NodeLineOptions.ShowTrivia;
+        showWhitespaceGlyphsCheck.IsChecked = settings.ShowWhitespaceGlyphs;
+        wordWrapCheck.IsChecked = settings.WordWrap;
         typingDelaySlider.ValueSlider.Value = settings.UserInputDelay.TotalMilliseconds;
         indentationWidthSlider.ValueSlider.Value = settings.IndentationOptions.IndentationWidth;
         recursiveExpansionDepthSlider.ValueSlider.Value = settings.RecursiveExpansionDepth;
@@ -96,6 +98,8 @@ public partial class SettingsView : UserControl
         settings.RecursiveExpansionDepth = RecursiveExpansionDepth;
         settings.IndentationOptions.IndentationWidth = IndentationWidth;
         settings.NodeLineOptions.ShowTrivia = showTriviaCheck.IsChecked is true;
+        settings.ShowWhitespaceGlyphs = showWhitespaceGlyphsCheck.IsChecked is true;
+        settings.WordWrap = wordWrapCheck.IsChecked is true;
     }
 
     private void OnIndentationSliderValueChanged(object? sender, RangeBaseValueChangedEventArgs e)

@@ -21,7 +21,7 @@ public sealed class AppSettings
     public StylePreferences StylePreferences = new();
 
     public bool ShowWhitespaceGlyphs = true;
-    public bool WordWrap = false;
+    public bool WordWrap = true;
 
     public TimeSpan UserInputDelay = TimeSpan.FromMilliseconds(600);
 

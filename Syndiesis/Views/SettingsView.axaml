@@ -98,7 +98,7 @@
         <Rectangle
           Grid.Column="0"
           Grid.Row="1"
-      >
+        >
           <Rectangle.Fill>
             <LinearGradientBrush>
               <LinearGradientBrush.GradientStops>
@@ -125,7 +125,7 @@
         <Rectangle
           Grid.Column="2"
           Grid.Row="1"
-      >
+        >
           <Rectangle.Fill>
             <LinearGradientBrush>
               <LinearGradientBrush.GradientStops>
@@ -149,6 +149,26 @@
         Margin="30 20 30 0"
         Spacing="15"
       >
+
+        <CheckBox
+          Name="showWhitespaceGlyphsCheck"
+        >
+          <TextBlock
+            FontFamily="{StaticResource AptosDisplayFontFamily}"
+            FontSize="16"
+            Text="Show whitespace glyphs"
+          />
+        </CheckBox>
+
+        <CheckBox
+          Name="wordWrapCheck"
+        >
+          <TextBlock
+            FontFamily="{StaticResource AptosDisplayFontFamily}"
+            FontSize="16"
+            Text="Word wrap"
+          />
+        </CheckBox>
 
         <CheckBox
           Name="showTriviaCheck"
