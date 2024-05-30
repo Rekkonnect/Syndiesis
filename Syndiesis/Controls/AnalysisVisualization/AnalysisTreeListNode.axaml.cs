@@ -147,10 +147,14 @@ public partial class AnalysisTreeListNode : UserControl
         if (_childRetriever.IsValueCreated)
             return;
 
-        var retrievalTask = Task.Run(_childRetriever.GetValueAsync);
-        _childRetrievalTask = retrievalTask;
-        var result = await retrievalTask;
+        _childRetrievalTask = ChildRetrievalTaskWorker();
+        await _childRetrievalTask;
         _childRetrievalTask = null;
+    }
+
+    private async Task ChildRetrievalTaskWorker()
+    {
+        var result = await Task.Run(_childRetriever!.GetValueAsync);
         await SetLoadedChildren(result);
     }
 
