@@ -895,6 +895,19 @@ partial class BaseAnalysisNodeCreator
             );
         }
 
+        public AnalysisTreeListNode CreateChildlessNode(
+            TValue value, DisplayValueSource valueSource = default)
+        {
+            var rootLine = CreateNodeLine(value, valueSource);
+            var syntaxObject = AssociatedSyntaxObject(value);
+            rootLine.AnalysisNodeKind = GetNodeKind(value);
+            return AnalysisTreeListNode(
+                rootLine,
+                null,
+                syntaxObject
+            );
+        }
+
         public abstract AnalysisNodeChildRetriever? GetChildRetriever(TValue value);
 
         public abstract AnalysisTreeListNodeLine CreateNodeLine(
