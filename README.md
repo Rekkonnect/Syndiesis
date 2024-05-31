@@ -33,29 +33,30 @@ https://github.com/Rekkonnect/Syndiesis/assets/8298332/268a2205-d2a4-446b-a145-5
 - .NET 8.0
 - C# 12.0
 - [Avalonia 11.0](https://github.com/AvaloniaUI/Avalonia)
+
+### Dependencies
+
 - [Roslyn 4.9.2](https://github.com/dotnet/roslyn)
+- [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit), for the code editor
 
 ## Features
 
 Below is a short list of features:
 
 - Code editor
-  - Text editing
-  - Text selection
-  - Scrolling
-  - Copy/paste text
-  - Navigation with keybinds
-  - Smart indentation
+  - AvaloniaEdit's features
+  - Custom nagivation to outer syntax nodes based on the current selection
 - Syntax and semantic analysis visualizer
-  - Current cursor syntax node highlighting
+  - Current caret syntax node highlighting
   - Tree view of nodes
   - Display of property names of syntax objects
   - Colorful display of different analysis list view nodes
   - Navigation to code snippet span of selected node
   - Syntax, symbol and operation analysis
   - Indication of throwing properties per node
+  - Loading nodes respects responsiveness of the app
 
-The entirety of the app is built using basic components in Avalonia. Everything is built from scratch without external library dependencies for UI.
+A large portion of the app is built using basic components in Avalonia. The code editor is from [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit).
 Some icons were taken from the free version of [FontAwesome](https://fontawesome.com/).
 
 ### Desired features
