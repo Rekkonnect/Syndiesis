@@ -766,7 +766,7 @@ partial class CSharpRoslynColorizer
             = new(0xFFC0B9FF);
 
         public static readonly SolidColorBrush EnumFieldForeground
-            = new(0xFFECB9FF);
+            = new(0xFFE9A0FA);
 
         // Give a premium feeling
         public static readonly LinearGradientBrush RangeVariableForeground
