@@ -5,6 +5,7 @@ using AvaloniaEdit.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
@@ -50,6 +51,8 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
         {
             InitiateSemanticColorization(line, model, cancellationToken);
         }
+
+        _lineCancellations.Remove(line);
     }
 
     private void InitiateSyntaxColorization(
@@ -180,7 +183,21 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
                 continue;
             }
 
-            // TODO: Evaluate for nameof
+            bool isNameOf = IsNameOf(identifier, symbolInfo, model);
+            if (isNameOf)
+            {
+                var nameofColorizer = GetTokenColorizer(SyntaxKind.NameOfKeyword);
+                ColorizeSpan(line, identifier.Span, nameofColorizer);
+                continue;
+            }
+
+            bool isAttribute = IsAttribute(identifier, symbolInfo, model);
+            if (isAttribute)
+            {
+                var attributeColorizer = GetColorizer(TypeKind.Class);
+                ColorizeSpan(line, identifier.Span, attributeColorizer);
+                continue;
+            }
 
             var isPreprocessing = IsPreprocessingIdentifierNode(identifierParent, model);
             if (isPreprocessing)
@@ -195,6 +212,16 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
         }
     }
 
+    private bool IsAttribute(SyntaxToken identifier, SymbolInfo symbolInfo, SemanticModel model)
+    {
+        var identifierParent = identifier.Parent!;
+        if (identifierParent.Parent is not AttributeSyntax attribute)
+            return false;
+
+        var typeInfo = model.GetTypeInfo(identifierParent);
+        return typeInfo.Type is not null;
+    }
+
     private static bool IsPreprocessingIdentifierNode(SyntaxNode node, SemanticModel model)
     {
         bool isDefinition = node.Kind()
@@ -206,6 +233,26 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
             return true;
 
         return model.GetPreprocessingSymbolInfo(node).Symbol is not null;
+    }
+
+    private bool IsNameOf(
+        SyntaxToken token,
+        SymbolInfo symbolInfo,
+        SemanticModel semanticModel)
+    {
+        bool basic = token.Kind() is SyntaxKind.IdentifierToken
+            && token.Text is "nameof"
+            && symbolInfo.Symbol is not IMethodSymbol { Name: "nameof" };
+
+        if (!basic)
+            return false;
+
+        var doubleParent = token.Parent!.Parent;
+        if (doubleParent is null)
+            return false;
+
+        var operation = semanticModel.GetOperation(doubleParent);
+        return operation is INameOfOperation;
     }
 
     private bool IsVar(SyntaxToken token, SymbolInfo symbolInfo)
@@ -300,6 +347,8 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
             SyntaxKind.InterpolatedVerbatimStringStartToken or
             SyntaxKind.InterpolatedStringTextToken or
             SyntaxKind.InterpolatedStringText or
+            SyntaxKind.MultiLineRawStringLiteralToken or
+            SyntaxKind.SingleLineRawStringLiteralToken or
             SyntaxKind.Utf8StringLiteralToken or
             SyntaxKind.Utf8SingleLineRawStringLiteralToken or
             SyntaxKind.Utf8MultiLineRawStringLiteralToken or
@@ -330,8 +379,6 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
 
     private static IBrush? BrushForNodeSyntaxKind(SyntaxKind kind)
     {
-        // TODO: Perhaps check preprocessor colors here
-
         return kind switch
         {
             _ => null,
@@ -393,12 +440,7 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
                 return TypeKind.Enum;
             case RecordDeclarationSyntax recordDeclaration
             when recordDeclaration.Identifier.Span == token.Span:
-                return recordDeclaration.ClassOrStructKeyword.Kind() switch
-                {
-                    SyntaxKind.ClassKeyword => TypeKind.Class,
-                    SyntaxKind.StructKeyword => TypeKind.Struct,
-                    _ => throw new UnreachableException(),
-                };
+                return RecordDeclarationTypeKind(recordDeclaration);
 
             case TypeParameterSyntax typeParameter
             when typeParameter.Identifier.Span == token.Span:
@@ -415,16 +457,26 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
                 var container = declaration!.Parent;
                 return container switch
                 {
-                    LocalDeclarationStatementSyntax => SymbolKind.Local,
                     FieldDeclarationSyntax => SymbolKind.Field,
                     EventFieldDeclarationSyntax => SymbolKind.Event,
-                    _ => throw new UnreachableException("what else could be contained here?"),
+                    _ => SymbolKind.Local,
                 };
             }
 
             case SingleVariableDesignationSyntax variableDesignation
             when variableDesignation.Identifier.Span == token.Span:
                 return SymbolKind.Local;
+
+            case ForEachStatementSyntax forEachStatement
+            when forEachStatement.Identifier.Span == token.Span:
+                return SymbolKind.Local;
+
+            case ConstructorDeclarationSyntax constructorDeclaration
+            when constructorDeclaration.Identifier.Span == token.Span:
+            {
+                var constructorParent = constructorDeclaration.Parent as MemberDeclarationSyntax;
+                return DeclarationTypeSymbolKind(constructorParent!);
+            }
 
             case PropertyDeclarationSyntax propertyDeclaration
             when propertyDeclaration.Identifier.Span == token.Span:
@@ -440,6 +492,39 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
         }
 
         return default;
+    }
+
+    private static SymbolTypeKind DeclarationTypeSymbolKind(MemberDeclarationSyntax declarationSyntax)
+    {
+        switch (declarationSyntax)
+        {
+            case ClassDeclarationSyntax:
+                return TypeKind.Class;
+            case StructDeclarationSyntax:
+                return TypeKind.Struct;
+            case InterfaceDeclarationSyntax:
+                return TypeKind.Interface;
+            case EnumDeclarationSyntax:
+                return TypeKind.Enum;
+            case DelegateDeclarationSyntax:
+                return TypeKind.Delegate;
+            case RecordDeclarationSyntax recordDeclaration:
+                return RecordDeclarationTypeKind(recordDeclaration);
+
+            default:
+                throw new UnreachableException();
+        }
+    }
+
+    private static TypeKind RecordDeclarationTypeKind(RecordDeclarationSyntax recordDeclaration)
+    {
+        return recordDeclaration.ClassOrStructKeyword.Kind() switch
+        {
+            SyntaxKind.None or
+            SyntaxKind.ClassConstraint => TypeKind.Class,
+            SyntaxKind.StructKeyword => TypeKind.Struct,
+            _ => throw new UnreachableException(),
+        };
     }
 
     private void FormatWith(VisualLineElement element, IBrush brush)
@@ -522,6 +607,11 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
         {
             return _dictionary.GetOrAdd(line.LineNumber, _ => factory());
         }
+
+        public void Remove(DocumentLine line)
+        {
+            _dictionary.TryRemove(line.LineNumber, out _);
+        }
     }
 
     public readonly record struct SymbolTypeKind(SymbolKind SymbolKind, TypeKind TypeKind)
@@ -584,11 +674,11 @@ partial class CSharpRoslynColorizer
         public static readonly SolidColorBrush LabelForeground
             = new(0xFFDCDCDC);
 
-        // TODO USE
+#warning TODO USE
         public static readonly SolidColorBrush ConstantForeground
             = new(0xFFC0B9FF);
 
-        // TODO USE
+#warning TODO USE
         public static readonly SolidColorBrush EnumFieldForeground
             = new(0xFFECB9FF);
 
