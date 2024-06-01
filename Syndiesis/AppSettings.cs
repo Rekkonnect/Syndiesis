@@ -23,6 +23,9 @@ public sealed class AppSettings
     public bool ShowWhitespaceGlyphs = true;
     public bool WordWrap = true;
 
+    public bool EnableColorization = true;
+    public bool EnableSemanticColorization = true;
+
     public TimeSpan UserInputDelay = TimeSpan.FromMilliseconds(600);
 
     public int RecursiveExpansionDepth = 4;

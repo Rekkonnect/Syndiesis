@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Avalonia.Threading;
 using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
@@ -36,8 +37,21 @@ public partial class CodeEditor : UserControl
     private int _disabledNodeHoverTimes;
 
     private NodeSpanHoverLayer _nodeSpanHoverLayer;
+    private CSharpRoslynColorizer? _roslynColorizer;
 
     public AnalysisTreeListView? AssociatedTreeView { get; set; }
+
+    public SingleTreeCompilationSource? CompilationSource
+    {
+        set
+        {
+            if (value is not null and var source)
+            {
+                _roslynColorizer = new CSharpRoslynColorizer(source);
+                textEditor.TextArea.TextView.LineTransformers.Add(_roslynColorizer);
+            }
+        }
+    }
 
     public TextViewPosition CaretPosition
     {
@@ -168,9 +182,28 @@ public partial class CodeEditor : UserControl
         {
             AssociatedTreeView.AnalyzedTree = null;
         }
+        if (_roslynColorizer is not null)
+        {
+            _roslynColorizer.Enabled = false;
+        }
 
         ClearHoverSpan();
         _nodeSpanHoverLayer.InvalidateVisual();
+    }
+
+    public void RegisterAnalysisPipelineHandler(
+        AnalysisPipelineHandler analysisPipelineHandler)
+    {
+        analysisPipelineHandler.AnalysisCompleted += HandleAnalysisCompleted;
+    }
+
+    private void HandleAnalysisCompleted(AnalysisResult result)
+    {
+        if (_roslynColorizer is not null)
+        {
+            _roslynColorizer.Enabled = true;
+        }
+        Dispatcher.UIThread.Invoke(textEditor.TextArea.TextView.Redraw);
     }
 
     private void OnVerticalScroll()

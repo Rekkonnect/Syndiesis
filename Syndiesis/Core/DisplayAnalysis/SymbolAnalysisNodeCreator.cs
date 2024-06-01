@@ -147,6 +147,55 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         }
     }
 
+    public AnalysisTreeListNode? CreateRootChildlessSymbol(
+        ISymbol symbol,
+        DisplayValueSource valueSource)
+    {
+        switch (symbol)
+        {
+            case IAssemblySymbol assemblySymbol:
+                return _assemblySymbolCreator.CreateChildlessNode(assemblySymbol, valueSource);
+
+            case IModuleSymbol moduleSymbol:
+                return _moduleSymbolCreator.CreateChildlessNode(moduleSymbol, valueSource);
+
+            case INamespaceSymbol namespaceSymbol:
+                return _namespaceSymbolCreator.CreateChildlessNode(namespaceSymbol, valueSource);
+
+            case IFieldSymbol fieldSymbol:
+                return _fieldSymbolCreator.CreateChildlessNode(fieldSymbol, valueSource);
+
+            case IPropertySymbol propertySymbol:
+                return _propertySymbolCreator.CreateChildlessNode(propertySymbol, valueSource);
+
+            case IEventSymbol eventSymbol:
+                return _eventSymbolCreator.CreateChildlessNode(eventSymbol, valueSource);
+
+            case IMethodSymbol methodSymbol:
+                return _methodSymbolCreator.CreateChildlessNode(methodSymbol, valueSource);
+
+            case ITypeParameterSymbol typeParameter:
+                return _typeParameterSymbolCreator.CreateChildlessNode(typeParameter, valueSource);
+
+            case IParameterSymbol parameter:
+                return _parameterSymbolCreator.CreateChildlessNode(parameter, valueSource);
+
+            case ILocalSymbol localSymbol:
+                return _localSymbolCreator.CreateChildlessNode(localSymbol, valueSource);
+
+            case IPreprocessingSymbol preprocessingSymbol:
+                return _preprocessingSymbolCreator.CreateChildlessNode(preprocessingSymbol, valueSource);
+
+            case IRangeVariableSymbol rangeVariableSymbol:
+                return _rangeVariableSymbolCreator.CreateChildlessNode(rangeVariableSymbol, valueSource);
+
+            case ITypeSymbol typeSymbol:
+                return _typeSymbolCreator.CreateChildlessNode(typeSymbol, valueSource);
+        }
+
+        return null;
+    }
+
     public AnalysisTreeListNode CreateRootSymbol(
         ISymbol symbol,
         DisplayValueSource valueSource)
@@ -566,9 +615,9 @@ partial class SymbolAnalysisNodeCreator
                     symbol.RefKind,
                     Property(nameof(IFieldSymbol.RefKind)))!,
 
-                Creator.CreateRootSymbol(
+                Creator.CreateRootChildlessSymbol(
                     symbol.Type,
-                    Property(nameof(IFieldSymbol.Type))),
+                    Property(nameof(IFieldSymbol.Type)))!,
 
                 // ConstantValue could be an `Optional<object?>`,
                 // but is kept as originally designed
@@ -597,9 +646,9 @@ partial class SymbolAnalysisNodeCreator
                     symbol.RefKind,
                     Property(nameof(IPropertySymbol.RefKind)))!,
 
-                Creator.CreateRootSymbol(
+                Creator.CreateRootChildlessSymbol(
                     symbol.Type,
-                    Property(nameof(IPropertySymbol.Type))),
+                    Property(nameof(IPropertySymbol.Type)))!,
 
                 Creator.CreateRootSymbolList(
                     symbol.Parameters,
@@ -617,9 +666,9 @@ partial class SymbolAnalysisNodeCreator
             IEventSymbol symbol, List<AnalysisTreeListNode> list)
         {
             list.Add(
-                Creator.CreateRootSymbol(
+                Creator.CreateRootChildlessSymbol(
                     symbol.Type,
-                    Property(nameof(IEventSymbol.Type)))
+                    Property(nameof(IEventSymbol.Type)))!
             );
 
             base.CreateChildren(symbol, list);
@@ -641,9 +690,9 @@ partial class SymbolAnalysisNodeCreator
                     symbol.RefKind,
                     Property(nameof(IMethodSymbol.RefKind)))!,
 
-                Creator.CreateRootSymbol(
+                Creator.CreateRootChildlessSymbol(
                     symbol.ReturnType,
-                    Property(nameof(IMethodSymbol.ReturnType))),
+                    Property(nameof(IMethodSymbol.ReturnType)))!,
 
                 Creator.CreateRootSymbolList(
                     symbol.TypeParameters,
@@ -689,9 +738,9 @@ partial class SymbolAnalysisNodeCreator
                     symbol.ScopedKind,
                     Property(nameof(IParameterSymbol.ScopedKind)))!,
 
-                Creator.CreateRootSymbol(
+                Creator.CreateRootChildlessSymbol(
                     symbol.Type,
-                    Property(nameof(IParameterSymbol.Type))),
+                    Property(nameof(IParameterSymbol.Type)))!,
 
                 // ExplicitDefaultValue could be an `Optional<object?>`,
                 // but is kept as originally designed
@@ -730,9 +779,9 @@ partial class SymbolAnalysisNodeCreator
                     symbol.ScopedKind,
                     Property(nameof(ILocalSymbol.ScopedKind)))!,
 
-                Creator.CreateRootSymbol(
+                Creator.CreateRootChildlessSymbol(
                     symbol.Type,
-                    Property(nameof(ILocalSymbol.Type))),
+                    Property(nameof(ILocalSymbol.Type)))!,
 
                 // ConstantValue could be an `Optional<object?>`,
                 // but is kept as originally designed
@@ -838,9 +887,9 @@ partial class SymbolAnalysisNodeCreator
         {
             return
             [
-                Creator.CreateRootSymbol(
+                Creator.CreateRootChildlessSymbol(
                     attribute.AttributeClass!,
-                    Property(nameof(AttributeData.AttributeClass))),
+                    Property(nameof(AttributeData.AttributeClass)))!,
 
                 Creator.CreateRootGeneral(
                     attribute.ConstructorArguments,

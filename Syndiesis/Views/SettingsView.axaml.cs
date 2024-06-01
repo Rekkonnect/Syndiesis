@@ -40,6 +40,8 @@ public partial class SettingsView : UserControl
         showTriviaCheck.IsChecked = settings.NodeLineOptions.ShowTrivia;
         showWhitespaceGlyphsCheck.IsChecked = settings.ShowWhitespaceGlyphs;
         wordWrapCheck.IsChecked = settings.WordWrap;
+        enableColorizationCheck.IsChecked = settings.EnableColorization;
+        enableSemanticColorizationCheck.IsChecked = settings.EnableSemanticColorization;
         typingDelaySlider.ValueSlider.Value = settings.UserInputDelay.TotalMilliseconds;
         indentationWidthSlider.ValueSlider.Value = settings.IndentationOptions.IndentationWidth;
         recursiveExpansionDepthSlider.ValueSlider.Value = settings.RecursiveExpansionDepth;
@@ -99,6 +101,8 @@ public partial class SettingsView : UserControl
         settings.IndentationOptions.IndentationWidth = IndentationWidth;
         settings.NodeLineOptions.ShowTrivia = showTriviaCheck.IsChecked is true;
         settings.ShowWhitespaceGlyphs = showWhitespaceGlyphsCheck.IsChecked is true;
+        settings.EnableColorization = enableColorizationCheck.IsChecked is true;
+        settings.EnableSemanticColorization = enableSemanticColorizationCheck.IsChecked is true;
         settings.WordWrap = wordWrapCheck.IsChecked is true;
     }
 

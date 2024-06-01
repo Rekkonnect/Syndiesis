@@ -50,6 +50,8 @@ public partial class MainView : UserControl
         codeEditor.CaretPosition = new(4, 48);
         codeEditor.AssociatedTreeView = syntaxTreeView.listView;
 
+        codeEditor.CompilationSource = ViewModel.CompilationSource;
+
         analysisTreeViewTabs.Envelopes =
         [
             Envelope("Syntax", AnalysisNodeKind.Syntax),
@@ -79,6 +81,7 @@ public partial class MainView : UserControl
         syntaxTreeView.listView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
         syntaxTreeView.NewRootNodeLoaded += HandleNewRootNodeLoaded;
 
+        codeEditor.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
         syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
 
         InitializeButtonEvents();

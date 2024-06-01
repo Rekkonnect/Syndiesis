@@ -147,28 +147,66 @@
       <StackPanel
         Name="settingsContainer"
         Margin="30 20 30 0"
-        Spacing="15"
+        Spacing="10"
       >
 
-        <CheckBox
-          Name="showWhitespaceGlyphsCheck"
-        >
-          <TextBlock
-            FontFamily="{StaticResource AptosDisplayFontFamily}"
-            FontSize="16"
-            Text="Show whitespace glyphs"
-          />
-        </CheckBox>
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
 
-        <CheckBox
-          Name="wordWrapCheck"
-        >
-          <TextBlock
-            FontFamily="{StaticResource AptosDisplayFontFamily}"
-            FontSize="16"
-            Text="Word wrap"
+          <CheckBox
+            Name="showWhitespaceGlyphsCheck"
+          >
+            <TextBlock
+              FontFamily="{StaticResource AptosDisplayFontFamily}"
+              FontSize="16"
+              Text="Show whitespace glyphs"
           />
-        </CheckBox>
+          </CheckBox>
+
+          <CheckBox
+            Name="wordWrapCheck"
+            Grid.Column="1"
+          >
+            <TextBlock
+              FontFamily="{StaticResource AptosDisplayFontFamily}"
+              FontSize="16"
+              Text="Word wrap"
+          />
+          </CheckBox>
+
+        </Grid>
+
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+
+          <CheckBox
+            Name="enableColorizationCheck"
+          >
+            <TextBlock
+              FontFamily="{StaticResource AptosDisplayFontFamily}"
+              FontSize="16"
+              Text="Enable colorization"
+          />
+          </CheckBox>
+
+          <CheckBox
+            Name="enableSemanticColorizationCheck"
+            Grid.Column="1"
+          >
+            <TextBlock
+              FontFamily="{StaticResource AptosDisplayFontFamily}"
+              FontSize="16"
+              Text="Enable semantic colorization"
+          />
+          </CheckBox>
+
+        </Grid>
 
         <CheckBox
           Name="showTriviaCheck"

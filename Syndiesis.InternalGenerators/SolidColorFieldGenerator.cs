@@ -21,11 +21,13 @@ public class SolidColorFieldGenerator : IIncrementalGenerator
     }
 
     private void GenerateSource(
-        SourceProductionContext context, ImmutableArray<SolidColorAttributeData> data)
+        SourceProductionContext context,
+        ImmutableArray<SolidColorAttributeData> data)
     {
         var groups = data
             .GroupBy<SolidColorAttributeData, INamedTypeSymbol>(
-            d => d.TargetType, SymbolEqualityComparer.Default);
+                d => d.TargetType,
+                SymbolEqualityComparer.Default);
 
         foreach (var group in groups)
         {

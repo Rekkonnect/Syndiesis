@@ -12,6 +12,17 @@ public sealed class SingleTreeCompilationSource
 
     public SyntaxTree? Tree { get; private set; }
 
+    public SemanticModel? SemanticModel
+    {
+        get
+        {
+            if (Tree is null)
+                return null;
+
+            return Compilation.GetSemanticModel(Tree);
+        }
+    }
+
     public SingleTreeCompilationSource()
     {
         InitializeCompilation();

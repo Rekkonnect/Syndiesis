@@ -895,6 +895,19 @@ partial class BaseAnalysisNodeCreator
             );
         }
 
+        public AnalysisTreeListNode CreateChildlessNode(
+            TValue value, DisplayValueSource valueSource = default)
+        {
+            var rootLine = CreateNodeLine(value, valueSource);
+            var syntaxObject = AssociatedSyntaxObject(value);
+            rootLine.AnalysisNodeKind = GetNodeKind(value);
+            return AnalysisTreeListNode(
+                rootLine,
+                null,
+                syntaxObject
+            );
+        }
+
         public abstract AnalysisNodeChildRetriever? GetChildRetriever(TValue value);
 
         public abstract AnalysisTreeListNodeLine CreateNodeLine(
@@ -1167,9 +1180,10 @@ partial class BaseAnalysisNodeCreator
             return null;
         }
 
-        private static Run EnumValueRun(object value)
+        public static Run EnumValueRun<T>(T value)
+            where T : notnull
         {
-            return Run(value.ToString()!, CommonStyles.ConstantMainBrush);
+            return Run(value.ToString()!, CommonStyles.EnumFieldMainBrush);
         }
     }
 
@@ -1356,9 +1370,10 @@ partial class BaseAnalysisNodeCreator
     [SolidColor("StructMain", 0xFF4DCA85)]
     [SolidColor("InterfaceMain", 0xFFA2D080)]
     [SolidColor("InterfaceSecondary", 0xFF6D8C57)]
-    [SolidColor("EnumMain", 0XFFB8D7A3)]
+    [SolidColor("EnumMain", 0xFFB8D7A3)]
     [SolidColor("DelegateMain", 0xFF4BCBC8)]
     [SolidColor("ConstantMain", 0xFF7A68E5)]
+    [SolidColor("EnumFieldMain", 0xFFE9A0FA)]
     [SolidColor("LocalMain", 0xFF88E9FF)]
     [SolidColor("IdentifierWildcard", 0xFF548C99)]
     [SolidColor("IdentifierWildcardFaded", 0xFF385E66)]
