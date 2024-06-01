@@ -85,17 +85,7 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
             if (cancellationToken.IsCancellationRequested)
                 return;
 
-            if (token.Kind() is SyntaxKind.IdentifierToken)
-            {
-                var symbolKind = GetDeclaringSymbolKind(token);
-                var colorizer = GetColorizer(symbolKind);
-                ColorizeSpan(line, token.Span, colorizer);
-            }
-            else
-            {
-                var colorizer = GetTokenColorizer(token.Kind());
-                ColorizeSpan(line, token.Span, colorizer);
-            }
+            ColorizeTokenInLine(line, token);
         }
 
         var descendantTrivia = parent.DescendantTrivia(descendIntoTrivia: true);
@@ -118,6 +108,39 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
 
             var colorizer = GetNodeColorizer(node.Kind());
             ColorizeSpan(line, node.Span, colorizer);
+        }
+    }
+
+    private void ColorizeTokenInLine(DocumentLine line, SyntaxToken token)
+    {
+        if (token.Kind() is SyntaxKind.IdentifierToken)
+        {
+            var symbolKind = GetDeclaringSymbolKind(token);
+            if (symbolKind.IsEnumField)
+            {
+                var enumFieldColorizer = ColorizerForBrush(Styles.EnumFieldForeground);
+                ColorizeSpan(line, token.Span, enumFieldColorizer);
+                return;
+            }
+
+            if (symbolKind.SymbolKind is SymbolKind.Field or SymbolKind.Local)
+            {
+                bool isConst = IsConstDeclaration(token);
+                if (isConst)
+                {
+                    var constColorizer = ColorizerForBrush(Styles.ConstantForeground);
+                    ColorizeSpan(line, token.Span, constColorizer);
+                    return;
+                }
+            }
+
+            var colorizer = GetColorizer(symbolKind);
+            ColorizeSpan(line, token.Span, colorizer);
+        }
+        else
+        {
+            var colorizer = GetTokenColorizer(token.Kind());
+            ColorizeSpan(line, token.Span, colorizer);
         }
     }
 
@@ -273,6 +296,35 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
         {
             case SymbolKind.NamedType:
                 return GetColorizer(((INamedTypeSymbol)symbol).TypeKind);
+
+            case SymbolKind.Field:
+            {
+                var field = (IFieldSymbol)symbol;
+                if (field.IsConst)
+                {
+                    return ColorizerForBrush(Styles.ConstantForeground);
+                }
+
+                bool withinEnum = symbol.ContainingSymbol
+                    is INamedTypeSymbol { TypeKind: TypeKind.Enum };
+                if (withinEnum)
+                {
+                    return ColorizerForBrush(Styles.EnumFieldForeground);
+                }
+
+                break;
+            }
+
+            case SymbolKind.Local:
+            {
+                var local = (ILocalSymbol)symbol;
+                if (local.IsConst)
+                {
+                    return ColorizerForBrush(Styles.ConstantForeground);
+                }
+
+                break;
+            }
         }
 
         return GetColorizer(kind);
@@ -417,6 +469,30 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
         };
     }
 
+    private static bool IsConstDeclaration(SyntaxToken token)
+    {
+        var parent = token.Parent!;
+        switch (parent)
+        {
+            case VariableDeclaratorSyntax variableDeclarator:
+            {
+                var declaration = variableDeclarator.Parent as VariableDeclarationSyntax;
+                var container = declaration!.Parent;
+                return container switch
+                {
+                    FieldDeclarationSyntax fieldDeclaration =>
+                        fieldDeclaration.Modifiers.Any(SyntaxKind.ConstKeyword),
+                    LocalDeclarationStatementSyntax localDeclaration =>
+                        localDeclaration.Modifiers.Any(SyntaxKind.ConstKeyword),
+                    _ => false,
+                };
+            }
+
+            default:
+                return false;
+        }
+    }
+
     private static SymbolTypeKind GetDeclaringSymbolKind(SyntaxToken token)
     {
         Debug.Assert(token.Kind() is SyntaxKind.IdentifierToken);
@@ -449,6 +525,10 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
             case ParameterSyntax parameterSyntax
             when parameterSyntax.Identifier.Span == token.Span:
                 return SymbolKind.Parameter;
+
+            case EnumMemberDeclarationSyntax enumMemberDeclaration
+            when enumMemberDeclaration.Identifier.Span == token.Span:
+                return SymbolTypeKind.EnumField;
 
             case VariableDeclaratorSyntax variableDeclarator
             when variableDeclarator.Identifier.Span == token.Span:
@@ -619,6 +699,14 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
         public static readonly SymbolTypeKind TypeParameter
             = new(SymbolKind.TypeParameter, TypeKind.TypeParameter);
 
+        public static readonly SymbolTypeKind EnumField
+            = new SymbolTypeKind() with
+            {
+                IsEnumField = true
+            };
+
+        public bool IsEnumField { get; init; }
+
         public static implicit operator SymbolTypeKind(SymbolKind kind)
             => new(kind, default);
         public static implicit operator SymbolTypeKind(TypeKind kind)
@@ -674,11 +762,9 @@ partial class CSharpRoslynColorizer
         public static readonly SolidColorBrush LabelForeground
             = new(0xFFDCDCDC);
 
-#warning TODO USE
         public static readonly SolidColorBrush ConstantForeground
             = new(0xFFC0B9FF);
 
-#warning TODO USE
         public static readonly SolidColorBrush EnumFieldForeground
             = new(0xFFECB9FF);
 
