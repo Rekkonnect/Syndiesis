@@ -248,6 +248,7 @@ public partial class CodeEditor : UserControl
         var editorOptions = textEditor.Options;
         editorOptions.ShowSpaces = settings.ShowWhitespaceGlyphs;
         editorOptions.ShowTabs = settings.ShowWhitespaceGlyphs;
+        editorOptions.ShowEndOfLine = settings.ShowWhitespaceGlyphs;
         editorOptions.ShowBoxForControlCharacters = settings.ShowWhitespaceGlyphs;
         editorOptions.WordWrapIndentation = 120;
         textEditor.WordWrap = settings.WordWrap;

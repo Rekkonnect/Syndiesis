@@ -28,6 +28,9 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
         if (!Enabled)
             return;
 
+        if (!AppSettings.Instance.EnableColorization)
+            return;
+
         var cancellationTokenFactory = _lineCancellations.GetOrAdd(
             line,
             static () => new CancellationTokenFactory());
@@ -163,6 +166,9 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
     private void InitiateSemanticColorization(
         DocumentLine line, SemanticModel model, CancellationToken cancellationToken)
     {
+        if (!AppSettings.Instance.EnableSemanticColorization)
+            return;
+
         var tree = model.SyntaxTree;
         int offset = line.Offset;
         int endOffset = line.EndOffset;
