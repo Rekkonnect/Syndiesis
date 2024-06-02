@@ -220,7 +220,7 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
                 continue;
             }
 
-            bool isAttribute = IsAttribute(identifier, symbolInfo, model);
+            bool isAttribute = IsAttribute(identifier, symbolInfo);
             if (isAttribute)
             {
                 var attributeColorizer = GetColorizer(TypeKind.Class);
@@ -241,14 +241,59 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
         }
     }
 
-    private bool IsAttribute(SyntaxToken identifier, SymbolInfo symbolInfo, SemanticModel model)
+    private bool IsAttribute(SyntaxToken identifier, SymbolInfo symbolInfo)
     {
-        var identifierParent = identifier.Parent!;
-        if (identifierParent.Parent is not AttributeSyntax attribute)
+        if (symbolInfo.Symbol is null)
             return false;
 
-        var typeInfo = model.GetTypeInfo(identifierParent);
-        return typeInfo.Type is not null;
+        var identifierParent = identifier.Parent as SimpleNameSyntax;
+        if (identifierParent is null)
+            return false;
+
+        var secondIdentifierParent = identifierParent.Parent;
+        if (secondIdentifierParent is null)
+            return false;
+
+        if (secondIdentifierParent is AttributeSyntax)
+            return true;
+
+        if (secondIdentifierParent is QualifiedNameSyntax qualified)
+        {
+            return MatchesAttributeSyntaxTraversal(
+                qualified, qualified.Right, identifierParent);
+        }
+
+        if (secondIdentifierParent is AliasQualifiedNameSyntax aliasQualified)
+        {
+            return MatchesAttributeSyntaxTraversal(
+                aliasQualified, aliasQualified.Name, identifierParent);
+        }
+
+        if (secondIdentifierParent.Parent is AttributeSyntax)
+            return true;
+
+        return false;
+    }
+
+    private bool MatchesAttributeSyntaxTraversal(
+        NameSyntax name,
+        NameSyntax right,
+        SimpleNameSyntax targetIdentifier)
+    {
+        // we ensure that the identifier is the rightmost in the qualified name
+        var matchesSpan = right.Span == targetIdentifier.Span;
+        if (!matchesSpan)
+            return false;
+
+        var parent = name.Parent;
+        // this is not the rightmost qualified name
+        if (parent is QualifiedNameSyntax or AliasQualifiedNameSyntax)
+            return false;
+
+        if (parent is AttributeSyntax)
+            return true;
+
+        return false;
     }
 
     private static bool IsPreprocessingIdentifierNode(SyntaxNode node, SemanticModel model)
