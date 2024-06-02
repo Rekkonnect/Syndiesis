@@ -457,7 +457,7 @@ public partial class AnalysisTreeListView : UserControl
 
             // resolve the most suitable child by the shortest span that it contains
             // ties are not resolved
-            var child = relevantChildren.MinBy(s => s.NodeLine.DisplaySpan.Length);
+            var child = relevantChildren.MinBy(s => s.NodeLine.DisplaySpan.Length)!;
             current = child;
         }
     }

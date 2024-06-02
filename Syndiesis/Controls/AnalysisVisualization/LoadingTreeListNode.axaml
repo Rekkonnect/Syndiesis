@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="250"
+             mc:Ignorable="d" d:DesignWidth="350"
              Height="26"
              xmlns:controls="using:Syndiesis.Controls"
              x:Class="Syndiesis.Controls.AnalysisVisualization.LoadingTreeListNode">
@@ -28,7 +28,10 @@
       VerticalAlignment="Center"
       Grid.Column="2"
       >
-      Loading...
+      <TextBlock.Inlines>
+        <Run Text="Loading...   " />
+        <Run Name="progressRun" Foreground="#007077" />
+      </TextBlock.Inlines>
     </TextBlock>
   </Grid>
 

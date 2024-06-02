@@ -40,6 +40,7 @@ public partial class AnalysisTreeListNode : UserControl
     }
 
     private AnalysisTreeListNodeLine _nodeLine = new();
+    private LoadingTreeListNode? _loadingNode;
 
     public AnalysisTreeListNodeLine NodeLine
     {
@@ -204,6 +205,8 @@ public partial class AnalysisTreeListNode : UserControl
                     child.ListView = ListView;
                 }
             }
+
+            _loadingNode?.SetProgress(new(start, builders.Count));
 
             await Task.Delay(40);
             await Dispatcher.UIThread.InvokeAsync(UIUpdate);
@@ -421,7 +424,8 @@ public partial class AnalysisTreeListNode : UserControl
 
     private void SetLoadingNode()
     {
-        innerStackPanel.Children.ClearSetValue(new LoadingTreeListNode());
+        _loadingNode = new LoadingTreeListNode();
+        innerStackPanel.Children.ClearSetValue(_loadingNode);
     }
 
     public void Expand()
