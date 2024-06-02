@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Utilities;
 using System;
 using System.Buffers;
@@ -145,9 +146,9 @@ public partial class AnalysisTreeListView : UserControl
 
     public AnalysisTreeListNode? DiscoverParentNodeCoveringSelection(int start, int end)
     {
-        Debug.Assert(end >= start);
+        var span = TextSpan.FromBounds(start, end);
+        var startNode = GetNodeAtPosition(span)?.ParentNode;
 
-        var startNode = GetNodeAtPosition(start);
         if (startNode is null)
             return null;
 
@@ -345,18 +346,19 @@ public partial class AnalysisTreeListView : UserControl
         HoveredNode?.Invoke(node);
     }
 
-    private volatile int _recurringPositionExpansion = -1;
+    // Initialize to an impossible value to trigger
+    private TextSpan _recurringSpanExpansion = new(0, int.MaxValue);
 
-    public async Task EnsureHighlightedPositionRecurring(int position)
+    public async Task EnsureHighlightedPositionRecurring(TextSpan span)
     {
-        _recurringPositionExpansion = position;
+        _recurringSpanExpansion = span;
 
         var previousNode = RootNode;
         while (true)
         {
             var node = Dispatcher.UIThread.Invoke(() =>
             {
-                var node = GetTargetKindNodeAtPosition(position, previousNode);
+                var node = GetTargetKindNodeAtPosition(span, previousNode);
                 if (node is null)
                     return node;
 
@@ -383,14 +385,14 @@ public partial class AnalysisTreeListView : UserControl
                 await retrievalTask;
             }
 
-            if (_recurringPositionExpansion != position)
+            if (_recurringSpanExpansion != span)
                 return;
         }
     }
 
-    private AnalysisTreeListNode? GetTargetKindNodeAtPosition(int position, AnalysisTreeListNode root)
+    private AnalysisTreeListNode? GetTargetKindNodeAtPosition(TextSpan span, AnalysisTreeListNode root)
     {
-        var node = GetNodeAtPosition(position, root);
+        var node = GetNodeAtPosition(span, root);
         if (node is null)
             return null;
 
@@ -409,20 +411,25 @@ public partial class AnalysisTreeListView : UserControl
         }
     }
 
-    private AnalysisTreeListNode? GetNodeAtPosition(int position)
+    private AnalysisTreeListNode? GetNodeAtPosition(TextSpan span)
     {
-        return GetNodeAtPosition(position, RootNode);
+        return GetNodeAtPosition(span, RootNode);
     }
 
-    private AnalysisTreeListNode? GetNodeAtPosition(int position, AnalysisTreeListNode root)
+    private AnalysisTreeListNode? GetNodeAtPosition(TextSpan span, AnalysisTreeListNode root)
     {
         if (AnalyzedTree is null)
             return null;
 
-        if (position >= AnalyzedTree.Length)
+        if (span.Start >= AnalyzedTree.Length)
         {
             var last = GetLastLoadedNode();
             return last;
+        }
+
+        if (span.End >= AnalyzedTree.Length)
+        {
+            span = TextSpan.FromBounds(span.Start, AnalyzedTree.Length);
         }
 
         var current = root;
@@ -444,7 +451,7 @@ public partial class AnalysisTreeListView : UserControl
                 {
                     var nodeLine = s.NodeLine;
                     return nodeLine.AnalysisNodeKind == TargetAnalysisNodeKind
-                        && nodeLine.DisplaySpan.Contains(position);
+                        && nodeLine.DisplaySpan.Contains(span);
                 })
                 .ToArray();
 
@@ -461,6 +468,8 @@ public partial class AnalysisTreeListView : UserControl
             current = child;
         }
     }
+
+    private volatile int _recurringPositionExpansion = -1;
 
     private AnalysisTreeListNode GetLastLoadedNode()
     {

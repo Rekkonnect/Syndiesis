@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using AvaloniaEdit;
+using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Tabs;
@@ -75,7 +76,8 @@ public partial class MainView : UserControl
     private void InitializeEvents()
     {
         codeEditor.TextChanged += HandleCodeChanged;
-        codeEditor.CaretMoved += HandleCursorPositionChanged;
+        codeEditor.CaretMoved += HandleCaretPositionChanged;
+        codeEditor.SelectionChanged += HandleSelectionChanged;
         syntaxTreeView.listView.HoveredNode += HandleHoveredNode;
         syntaxTreeView.listView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
         syntaxTreeView.listView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
@@ -164,21 +166,32 @@ public partial class MainView : UserControl
         RefreshCaretPosition();
     }
 
-    private void HandleCursorPositionChanged(object? sender, EventArgs e)
+    private void HandleSelectionChanged(object? sender, EventArgs e)
+    {
+        RefreshCaretPosition();
+    }
+
+    private void HandleCaretPositionChanged(object? sender, EventArgs e)
     {
         RefreshCaretPosition();
     }
 
     private void RefreshCaretPosition()
     {
-        var position = codeEditor.CaretPosition;
-        ShowCurrentCursorPosition(position);
+        var span = SelectionSpan(codeEditor.textEditor);
+        ShowCurrentCursorPosition(span);
     }
 
-    private void ShowCurrentCursorPosition(TextViewPosition position)
+    private static TextSpan SelectionSpan(TextEditor editor)
     {
-        int index = codeEditor.textEditor.TextArea.Document.GetOffset(position.Location);
-        Task.Run(() => syntaxTreeView.listView.EnsureHighlightedPositionRecurring(index));
+        var start = editor.SelectionStart;
+        var length = editor.SelectionLength;
+        return new(start, length);
+    }
+
+    private void ShowCurrentCursorPosition(TextSpan span)
+    {
+        Task.Run(() => syntaxTreeView.listView.EnsureHighlightedPositionRecurring(span));
     }
 
     private void HandleHoveredNode(AnalysisTreeListNode? obj)

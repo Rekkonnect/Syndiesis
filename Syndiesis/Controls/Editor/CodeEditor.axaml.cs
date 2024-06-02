@@ -71,6 +71,11 @@ public partial class CodeEditor : UserControl
         add => textEditor.TextArea.Caret.PositionChanged += value;
         remove => textEditor.TextArea.Caret.PositionChanged -= value;
     }
+    public event EventHandler? SelectionChanged
+    {
+        add => textEditor.TextArea.SelectionChanged += value;
+        remove => textEditor.TextArea.SelectionChanged -= value;
+    }
 
     public TextDocument Document
     {
@@ -133,7 +138,7 @@ public partial class CodeEditor : UserControl
         var scrollViewer = GetTextEditorScrollViewer();
         scrollViewer!.ScrollChanged += HandleScrollOffsetChanged;
     }
-    
+
     private void HandleNewDocument()
     {
         Document.TextChanged += HandleTextChanged;
