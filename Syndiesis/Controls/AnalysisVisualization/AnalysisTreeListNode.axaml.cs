@@ -50,6 +50,7 @@ public partial class AnalysisTreeListNode : UserControl
             _nodeLine = value;
             topNodeContent.Content = value;
             value.HasChildren = _childRetriever is not null;
+            value.PointerEntered += OnPointerEnteredLine;
         }
     }
 
@@ -220,14 +221,14 @@ public partial class AnalysisTreeListNode : UserControl
         innerStackPanel.Children.ClearSetValues(value);
     }
 
-    protected override void OnPointerMoved(PointerEventArgs e)
-    {
-        base.OnPointerMoved(e);
-    }
-
     protected override void OnPointerEntered(PointerEventArgs e)
     {
         base.OnPointerEntered(e);
+        EvaluateHovering(e);
+    }
+
+    private void OnPointerEnteredLine(object? sender, PointerEventArgs e)
+    {
         EvaluateHovering(e);
     }
 
