@@ -6,9 +6,9 @@ using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Utilities;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -439,21 +439,26 @@ public partial class AnalysisTreeListView : UserControl
             }
 
             var children = ExpandLazyChildren(current);
-            var relevant = children
-                .FirstOrDefault(s =>
+            var relevantChildren = children
+                .Where(s =>
                 {
                     var nodeLine = s.NodeLine;
                     return nodeLine.AnalysisNodeKind == TargetAnalysisNodeKind
                         && nodeLine.DisplaySpan.Contains(position);
-                });
+                })
+                .ToArray();
 
             // if no position corresponds to our tree, the position is within the node
             // but is not displayed in our tree (for example because trivia is hidden)
-            if (relevant is null)
+            if (relevantChildren is [])
             {
                 return current;
             }
-            current = relevant;
+
+            // resolve the most suitable child by the shortest span that it contains
+            // ties are not resolved
+            var child = relevantChildren.MinBy(s => s.NodeLine.DisplaySpan.Length);
+            current = child;
         }
     }
 

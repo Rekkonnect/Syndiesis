@@ -331,35 +331,6 @@ public partial class CodeEditor : UserControl
         textEditor.TextArea.Caret.BringCaretToView();
     }
 
-    private AnalysisTreeListNode? DeepestWithSyntaxObject(AnalysisTreeListNode? node)
-    {
-        if (node is null)
-            return null;
-
-        var sourceKind = node.NodeLine.AnalysisNodeKind;
-        var current = node;
-        var previous = node;
-        while (current is not null)
-        {
-            if (current.NodeLine.AnalysisNodeKind != sourceKind)
-            {
-                return previous;
-            }
-
-            var currentLine = current.NodeLine;
-            var syntaxObject = currentLine.AssociatedSyntaxObject;
-            if (syntaxObject is not null)
-            {
-                return current;
-            }
-
-            previous = current;
-            current = current.ParentNode;
-        }
-
-        return null;
-    }
-
     private void ClearHoverSpan()
     {
         HoveredListNodeSegment = default;
