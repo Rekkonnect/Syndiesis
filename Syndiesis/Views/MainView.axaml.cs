@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using AvaloniaEdit;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;
@@ -191,7 +192,8 @@ public partial class MainView : UserControl
 
     private void ShowCurrentCursorPosition(TextSpan span)
     {
-        Task.Run(() => syntaxTreeView.listView.EnsureHighlightedPositionRecurring(span));
+        Dispatcher.UIThread.InvokeAsync(()
+            => syntaxTreeView.listView.EnsureHighlightedPositionRecurring(span));
     }
 
     private void HandleHoveredNode(AnalysisTreeListNode? obj)

@@ -360,19 +360,13 @@ public partial class AnalysisTreeListView : UserControl
 
         while (true)
         {
-            var node = Dispatcher.UIThread.Invoke(() =>
-            {
-                var node = GetTargetKindNodeAtPosition(span, previousNode);
-                if (node is null)
-                    return node;
-
-                OverrideHover(node);
-                BringToView(node);
-                return node;
-            });
+            var node = GetTargetKindNodeAtPosition(span, previousNode);
 
             if (node is null)
                 return;
+
+            OverrideHover(node);
+            BringToView(node);
 
             if (node == previousNode)
                 return;
@@ -391,7 +385,7 @@ public partial class AnalysisTreeListView : UserControl
 
     private async Task AwaitExpansion(AnalysisTreeListNode node)
     {
-        Dispatcher.UIThread.Invoke(node.Expand);
+        node.Expand();
         var retrievalTask = node.ChildRetrievalTask;
         if (retrievalTask is not null)
         {
