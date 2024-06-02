@@ -216,12 +216,6 @@ public partial class MainView : UserControl
     private void ApplyCurrentSettingsWithoutAnalysis()
     {
         var settings = AppSettings.Instance;
-        var analysisExecution = AnalysisPipelineHandler.AnalysisExecution;
-        if (analysisExecution is not null)
-        {
-            analysisExecution.CreationOptions = settings.NodeLineOptions;
-        }
-
         AnalysisPipelineHandler.UserInputDelay = settings.UserInputDelay;
 
         codeEditor.ApplySettings(settings);

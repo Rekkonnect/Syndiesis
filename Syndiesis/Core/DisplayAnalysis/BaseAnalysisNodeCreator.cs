@@ -44,15 +44,14 @@ public abstract partial class BaseAnalysisNodeCreator
     private readonly EnumerableRootAnalysisNodeCreator _enumerableCreator;
     private readonly DictionaryRootAnalysisNodeCreator _dictionaryCreator;
 
-    protected readonly AnalysisNodeCreationOptions Options;
+    protected AnalysisNodeCreationOptions Options
+        => AppSettings.Instance.NodeLineOptions;
 
     public readonly AnalysisNodeCreatorContainer ParentContainer;
 
     public BaseAnalysisNodeCreator(
-        AnalysisNodeCreationOptions options,
         AnalysisNodeCreatorContainer parentContainer)
     {
-        Options = options;
         ParentContainer = parentContainer;
 
         _generalCreator = new(this);

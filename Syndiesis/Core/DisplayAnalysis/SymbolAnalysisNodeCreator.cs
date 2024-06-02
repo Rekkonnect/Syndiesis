@@ -42,9 +42,8 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly TypedConstantRootViewNodeCreator _typedConstantCreator;
 
     public SymbolAnalysisNodeCreator(
-        AnalysisNodeCreationOptions options,
         AnalysisNodeCreatorContainer parentContainer)
-        : base(options, parentContainer)
+        : base(parentContainer)
     {
         _symbolCreator = new(this);
         _assemblySymbolCreator = new(this);

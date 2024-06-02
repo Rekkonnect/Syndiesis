@@ -33,9 +33,8 @@ public sealed partial class OperationsAnalysisNodeCreator
     private readonly OperationTreeSymbolContainerRootViewNodeCreator _symbolContainerCreator;
 
     public OperationsAnalysisNodeCreator(
-        AnalysisNodeCreationOptions options,
         AnalysisNodeCreatorContainer parentContainer)
-        : base(options, parentContainer)
+        : base(parentContainer)
     {
         _operationCreator = new(this);
         _operationListCreator = new(this);

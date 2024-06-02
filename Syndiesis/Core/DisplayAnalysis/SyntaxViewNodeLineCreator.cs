@@ -49,9 +49,8 @@ public sealed partial class SyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
     public readonly ChildlessSyntaxNodeRootViewNodeCreator ChildlessSyntaxCreator;
 
     public SyntaxAnalysisNodeCreator(
-        AnalysisNodeCreationOptions options,
         AnalysisNodeCreatorContainer parentContainer)
-        : base(options, parentContainer)
+        : base(parentContainer)
     {
         _treeCreator = new(this);
         _nodeOrTokenCreator = new(this);

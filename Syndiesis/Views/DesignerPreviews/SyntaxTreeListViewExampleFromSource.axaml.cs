@@ -27,7 +27,7 @@ public partial class AnalysisTreeListViewExampleFromSource : AnalysisTreeListVie
             """;
 
         var options = new AnalysisNodeCreationOptions();
-        var container = new AnalysisNodeCreatorContainer(options);
+        var container = new AnalysisNodeCreatorContainer();
         var creator = container.SyntaxCreator;
 
         var syntaxTree = CSharpSyntaxTree.ParseText(source);
