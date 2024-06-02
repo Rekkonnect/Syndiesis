@@ -76,8 +76,8 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
         if (cancellationToken.IsCancellationRequested)
             return;
 
-        var startNode = DeepestNodeContainingPosition(root, offset)!;
-        var endNode = DeepestNodeContainingPosition(root, endOffset)!;
+        var startNode = root.DeepestNodeContainingPosition(offset)!;
+        var endNode = root.DeepestNodeContainingPosition(endOffset)!;
 
         var parent = CommonParent(startNode, endNode);
 
@@ -185,8 +185,8 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
         if (cancellationToken.IsCancellationRequested)
             return;
 
-        var startNode = DeepestNodeContainingPosition(root, offset)!;
-        var endNode = DeepestNodeContainingPosition(root, endOffset)!;
+        var startNode = root.DeepestNodeContainingPosition(offset)!;
+        var endNode = root.DeepestNodeContainingPosition(endOffset)!;
 
         var parent = CommonParent(startNode, endNode);
 
@@ -688,44 +688,6 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
                 node before we reach the parent.
                 """);
             current = parent;
-        }
-    }
-
-    private SyntaxToken DeepestTokenContainingPosition(SyntaxNode parent, int position)
-    {
-        var current = parent;
-
-        while (true)
-        {
-            var child = current.ChildThatContainsPosition(position);
-            if (child == default)
-                return default;
-
-            if (child.IsToken)
-                return child.AsToken();
-
-            var node = child.AsNode();
-            Debug.Assert(node is not null);
-            current = node;
-        }
-    }
-
-    private SyntaxNode? DeepestNodeContainingPosition(SyntaxNode parent, int position)
-    {
-        var current = parent;
-
-        while (true)
-        {
-            var child = current.ChildThatContainsPosition(position);
-            if (child == default)
-                return current;
-
-            if (child.IsToken)
-                return current;
-
-            var node = child.AsNode();
-            Debug.Assert(node is not null);
-            current = node;
         }
     }
 

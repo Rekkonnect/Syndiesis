@@ -8,6 +8,8 @@ using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Rendering;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Editor;
@@ -15,6 +17,7 @@ using Syndiesis.Core;
 using Syndiesis.Utilities;
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -39,12 +42,16 @@ public partial class CodeEditor : UserControl
     private NodeSpanHoverLayer _nodeSpanHoverLayer;
     private CSharpRoslynColorizer? _roslynColorizer;
 
+    private SingleTreeCompilationSource? _compilationSource;
+
     public AnalysisTreeListView? AssociatedTreeView { get; set; }
 
     public SingleTreeCompilationSource? CompilationSource
     {
+        get => _compilationSource;
         set
         {
+            _compilationSource = value;
             if (value is not null and var source)
             {
                 _roslynColorizer = new CSharpRoslynColorizer(source);
@@ -416,9 +423,90 @@ public partial class CodeEditor : UserControl
                     e.Handled = true;
                 }
                 break;
+
+            case Key.F12:
+                if (modifiers is KeyModifiers.None)
+                {
+                    GoToDefinition();
+                    e.Handled = true;
+                }
+                break;
         }
 
+        if (e.Handled)
+            return;
+
         base.OnKeyDown(e);
+    }
+
+    private void GoToDefinition()
+    {
+        var went = TryGoToDefinition();
+        if (!went)
+        {
+            // Flash the background red to indicate inability to go
+        }
+    }
+
+    private bool TryGoToDefinition()
+    {
+        var symbol = DiscoverSymbolAtCaret();
+        if (symbol is null)
+            return false;
+
+        var syntax = symbol.DeclaringSyntaxReferences.FirstOrDefault();
+        if (syntax is null)
+            return false;
+
+        var syntaxNode = syntax.GetSyntax();
+        var tokens = syntaxNode.DescendantTokens();
+        var token = tokens.FirstOrDefault(s => s.Text == symbol.Name);
+        if (token == default)
+            return false;
+
+        var span = token.Span;
+        textEditor.Select(span.Start, span.Length);
+        textEditor.TextArea.Caret.BringCaretToView();
+        return true;
+    }
+
+    private ISymbol? DiscoverSymbolAtCaret()
+    {
+        var source = CompilationSource;
+        if (source is null)
+            return null;
+
+        var tree = source.Tree;
+        if (tree is null)
+            return null;
+
+        var model = source.SemanticModel!;
+        int position = textEditor.TextArea.Caret.Offset;
+        var node = SyntaxNodeAtPosition(tree, position);
+        var info = GetSymbolInfo(node);
+        if (info.Symbol is null)
+        {
+            // Attempt at the left side of the caret
+            var otherNode = SyntaxNodeAtPosition(tree, position - 1);
+            var otherInfo = GetSymbolInfo(otherNode);
+            return info.Symbol;
+        }
+
+        return info.Symbol;
+
+        SymbolInfo GetSymbolInfo(SyntaxNode? node)
+        {
+            if (node is null)
+                return default;
+
+            return model.GetSymbolInfo(node);
+        }
+    }
+
+    private SyntaxNode? SyntaxNodeAtPosition(SyntaxTree tree, int position)
+    {
+        var root = tree.GetRoot();
+        return root.DeepestNodeContainingPosition(position);
     }
 
     private void SelectCurrentWord()
