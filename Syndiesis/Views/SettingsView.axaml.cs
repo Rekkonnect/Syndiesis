@@ -18,6 +18,8 @@ public partial class SettingsView : UserControl
     private TimeSpan TypingDelay => TimeSpan.FromMilliseconds(TypingDelayMilliseconds);
 
     public event Action? SettingsSaved;
+    public event Action? SettingsReset;
+    public event Action? SettingsCancelled;
 
     public SettingsView()
     {
@@ -32,6 +34,8 @@ public partial class SettingsView : UserControl
         indentationWidthSlider.ValueSlider.ValueChanged += OnIndentationSliderValueChanged;
         recursiveExpansionDepthSlider.ValueSlider.ValueChanged += OnRecursiveExpansionDepthValueChanged;
         saveButton.Click += OnSaveClicked;
+        cancelButton.Click += OnCancelClicked;
+        resetButton.Click += OnResetClicked;
     }
 
     public void LoadFromSettings()
@@ -56,6 +60,28 @@ public partial class SettingsView : UserControl
     private void OnSaveClicked(object? sender, RoutedEventArgs e)
     {
         SaveSettings();
+    }
+
+    private void OnResetClicked(object? sender, RoutedEventArgs e)
+    {
+        ResetSettings();
+    }
+
+    private void OnCancelClicked(object? sender, RoutedEventArgs e)
+    {
+        CancelSettings();
+    }
+
+    private void CancelSettings()
+    {
+        SettingsCancelled?.Invoke();
+    }
+
+    private void ResetSettings()
+    {
+        AppSettings.TryLoad();
+        LoadFromSettings();
+        SettingsReset?.Invoke();
     }
 
     private void SaveSettings()

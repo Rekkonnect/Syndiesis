@@ -2,7 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="Syndiesis.Views.SettingsView"
              xmlns:sc="using:Syndiesis.Controls.Settings"
              >
@@ -238,17 +238,47 @@
 
       </StackPanel>
 
-      <Button
-        HorizontalAlignment="Center"
+      <Grid
         Margin="0 50 0 0"
-        Name="saveButton"
-      >
-        <TextBlock
         >
-          Save
-        </TextBlock>
 
-      </Button>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        
+        <StackPanel
+          Margin="50 0 0 0"
+          Orientation="Horizontal"
+          Spacing="10"
+          >
+
+          <Button
+            Name="cancelButton"
+            Background="#993333"
+          >
+            <TextBlock>Cancel</TextBlock>
+          </Button>
+
+          <Button
+            Name="resetButton"
+            Background="#737326"
+          >
+            <TextBlock>Reset</TextBlock>
+          </Button>
+
+        </StackPanel>
+
+        <Button
+          HorizontalAlignment="Right"
+          Name="saveButton"
+          Margin="0 0 50 0"
+          Grid.Column="1"
+          >
+          <TextBlock>Save</TextBlock>
+        </Button>
+
+      </Grid>
 
     </StackPanel>
   </Grid>

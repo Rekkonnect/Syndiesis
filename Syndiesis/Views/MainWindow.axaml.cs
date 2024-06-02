@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
+using System;
 
 namespace Syndiesis.Views;
 
@@ -23,6 +24,8 @@ public partial class MainWindow : Window
     private void InitializeEvents()
     {
         _settingsView.SettingsSaved += OnSettingsSaved;
+        _settingsView.SettingsReset += OnSettingsReset;
+        _settingsView.SettingsCancelled += OnSettingsCancelled;
         mainView.SettingsRequested += OnSettingsRequested;
     }
 
@@ -34,6 +37,16 @@ public partial class MainWindow : Window
     private void OnSettingsSaved()
     {
         ShowMainView();
+    }
+
+    private void OnSettingsCancelled()
+    {
+        TransitionIntoMainView();
+    }
+
+    private void OnSettingsReset()
+    {
+        ApplySettings();
     }
 
     protected override void OnLoaded(RoutedEventArgs e)
@@ -52,7 +65,17 @@ public partial class MainWindow : Window
 
     public void ShowMainView()
     {
+        ApplySettings();
+        TransitionIntoMainView();
+    }
+
+    private void ApplySettings()
+    {
         mainView.ApplyCurrentSettings();
+    }
+
+    private void TransitionIntoMainView()
+    {
         pageTransition.IsTransitionReversed = true;
         pageTransition.Content = mainView;
         mainView.Focus();
