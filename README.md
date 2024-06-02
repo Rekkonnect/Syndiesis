@@ -13,13 +13,17 @@ Despite not applying for the internship, I wanted to finish the project and rele
 
 ## Usage
 
-Download from the [Releases](https://github.com/Rekkonnect/Syndiesis/releases) page.
+For Windows, download from the [Releases](https://github.com/Rekkonnect/Syndiesis/releases) page. For macOS and Linux, you have to manually compile the program (refer to the section below).
 
 The program is designed to be cross-platform for desktop (including Windows, Linux and macOS). It's heavily tested to run on Windows 10, and it's moderately tested on Windows 11 and macOS. Please file an issue if platform-specific problems occur.
 
 Check the change log [here](/docs/changelog/README.md).
 
 View the [wiki](https://github.com/Rekkonnect/Syndiesis/wiki) for detailed documentation.
+
+### Compiling
+
+To compile this program you will need an IDE like Visual Studio 2022, or JetBrains Rider 2024.1. Load the solution file (`Syndiesis.sln`) from the IDE of your choice and build the project (recommended to switch to *Release mode*).
 
 ### Demo
 
@@ -45,6 +49,8 @@ Below is a short list of features:
 
 - Code editor
   - AvaloniaEdit's features
+  - Syntax and semantic colorization
+  - Go to definition using F12
   - Custom nagivation to outer syntax nodes based on the current selection
 - Syntax and semantic analysis visualizer
   - Current caret syntax node highlighting
@@ -59,9 +65,11 @@ Below is a short list of features:
 A large portion of the app is built using basic components in Avalonia. The code editor is from [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit).
 Some icons were taken from the free version of [FontAwesome](https://fontawesome.com/).
 
+Any issues regarding the code editor are most likely to be reported in [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit). This includes behavior not specific to Syndiesis. Issues will be closed if they are specific to AvaloniaEdit, and must be reported there.
+
 ### Desired features
 
-Desired features are listed in the [issues](https://github.com/Rekkonnect/Syndiesis/issues).
+Desired features among other issues are listed in the [issues](https://github.com/Rekkonnect/Syndiesis/issues).
 
 ### Ruled-out features
 
