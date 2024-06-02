@@ -1,5 +1,6 @@
 ﻿using Garyon.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Operations;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -46,7 +47,7 @@ public sealed class OperationTree(
             if (cancellationToken.IsCancellationRequested)
                 return [];
 
-            if (operation is not null)
+            if (operation is not null and not IAttributeOperation)
             {
                 var symbol = semanticModel.GetEnclosingSymbol(node, cancellationToken);
                 // we must have a symbol here
