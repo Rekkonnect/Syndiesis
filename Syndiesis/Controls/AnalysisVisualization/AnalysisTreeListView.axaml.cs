@@ -49,6 +49,7 @@ public partial class AnalysisTreeListView : UserControl
     public event Action<AnalysisTreeListNode?>? HoveredNode;
     public event Action<AnalysisTreeListNode>? RequestedPlaceCursorAtNode;
     public event Action<AnalysisTreeListNode>? RequestedSelectTextAtNode;
+    public event Action? NewRootLoaded;
 
     private void HandleRootNodeSizeAdjusted(object? sender, SizeChangedEventArgs e)
     {
@@ -65,7 +66,7 @@ public partial class AnalysisTreeListView : UserControl
         RootNode.Loaded -= NewRootNodeLoaded;
         UpdateScrollLimits();
         CorrectContainedNodeWidths(Bounds.Size);
-        ResetToInitialRootView();
+        NewRootLoaded?.Invoke();
     }
 
     public AnalysisTreeListView()
@@ -354,6 +355,9 @@ public partial class AnalysisTreeListView : UserControl
         _recurringSpanExpansion = span;
 
         var previousNode = RootNode;
+
+        await AwaitExpansion(previousNode);
+
         while (true)
         {
             var node = Dispatcher.UIThread.Invoke(() =>
@@ -378,15 +382,20 @@ public partial class AnalysisTreeListView : UserControl
             if (!node.HasChildren)
                 return;
 
-            Dispatcher.UIThread.Invoke(node.Expand);
-            var retrievalTask = node.ChildRetrievalTask;
-            if (retrievalTask is not null)
-            {
-                await retrievalTask;
-            }
+            await AwaitExpansion(node);
 
             if (_recurringSpanExpansion != span)
                 return;
+        }
+    }
+
+    private async Task AwaitExpansion(AnalysisTreeListNode node)
+    {
+        Dispatcher.UIThread.Invoke(node.Expand);
+        var retrievalTask = node.ChildRetrievalTask;
+        if (retrievalTask is not null)
+        {
+            await retrievalTask;
         }
     }
 

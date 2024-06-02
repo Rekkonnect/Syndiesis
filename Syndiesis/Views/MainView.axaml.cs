@@ -81,7 +81,7 @@ public partial class MainView : UserControl
         syntaxTreeView.listView.HoveredNode += HandleHoveredNode;
         syntaxTreeView.listView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
         syntaxTreeView.listView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
-        syntaxTreeView.NewRootNodeLoaded += HandleNewRootNodeLoaded;
+        syntaxTreeView.listView.NewRootLoaded += HandleNewRootNodeLoaded;
 
         codeEditor.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
         syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
