@@ -620,6 +620,10 @@ public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource co
             case MethodDeclarationSyntax methodDeclaration
             when methodDeclaration.Identifier.Span == token.Span:
                 return SymbolKind.Method;
+
+            case LocalFunctionStatementSyntax localFunctionDeclaration
+            when localFunctionDeclaration.Identifier.Span == token.Span:
+                return SymbolKind.Method;
         }
 
         return default;
