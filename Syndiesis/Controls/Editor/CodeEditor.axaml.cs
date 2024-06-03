@@ -42,11 +42,11 @@ public partial class CodeEditor : UserControl
     private NodeSpanHoverLayer _nodeSpanHoverLayer;
     private CSharpRoslynColorizer? _roslynColorizer;
 
-    private SingleTreeCompilationSource? _compilationSource;
+    private CSharpSingleTreeCompilationSource? _compilationSource;
 
     public AnalysisTreeListView? AssociatedTreeView { get; set; }
 
-    public SingleTreeCompilationSource? CompilationSource
+    public CSharpSingleTreeCompilationSource? CompilationSource
     {
         get => _compilationSource;
         set

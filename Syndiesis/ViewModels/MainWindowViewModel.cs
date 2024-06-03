@@ -7,5 +7,5 @@ public class MainWindowViewModel : ViewModelBase
 {
     public readonly TextDocument Document = new();
 
-    public readonly SingleTreeCompilationSource CompilationSource = new();
+    public readonly CSharpSingleTreeCompilationSource CompilationSource = new();
 }

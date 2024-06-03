@@ -1,5 +1,7 @@
 ﻿using Garyon.Extensions;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.VisualBasic;
 using RoseLynn;
 using System;
 using System.Collections.Generic;
@@ -24,6 +26,8 @@ public static class CompilationReferences
         runnableAssemblies.AddReferences(CurrentNetVersion);
         runnableAssemblies.AddReference(MetadataReferenceFactory.CreateFromType(typeof(Console)));
         runnableAssemblies.AddTransitively(typeof(GeneratorAttribute).Assembly);
+        runnableAssemblies.AddTransitively(typeof(CSharpSyntaxTree).Assembly);
+        runnableAssemblies.AddTransitively(typeof(VisualBasicSyntaxTree).Assembly);
         var references = runnableAssemblies.CreateReferences();
         Runnable = references.ToArray();
     }

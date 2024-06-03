@@ -4,9 +4,9 @@ using System;
 namespace Syndiesis.Core;
 
 public sealed class AnalysisExecutionFactory(
-    SingleTreeCompilationSource compilationSource)
+    CSharpSingleTreeCompilationSource compilationSource)
 {
-    private readonly SingleTreeCompilationSource _compilationSource = compilationSource;
+    private readonly CSharpSingleTreeCompilationSource _compilationSource = compilationSource;
 
     public BaseAnalysisExecution CreateAnalysisExecution(AnalysisNodeKind kind)
     {

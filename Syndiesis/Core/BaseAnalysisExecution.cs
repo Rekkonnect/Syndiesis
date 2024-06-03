@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 
-public abstract class BaseAnalysisExecution(SingleTreeCompilationSource compilationSource)
+public abstract class BaseAnalysisExecution(CSharpSingleTreeCompilationSource compilationSource)
 {
     public AnalysisNodeCreationOptions CreationOptions => AppSettings.Instance.NodeLineOptions;
-    public SingleTreeCompilationSource CompilationSource { get; } = compilationSource;
+    public CSharpSingleTreeCompilationSource CompilationSource { get; } = compilationSource;
 
     protected AnalysisNodeCreatorContainer CreateCreatorContainer()
     {

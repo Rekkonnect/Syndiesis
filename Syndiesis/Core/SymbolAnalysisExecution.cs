@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 
-public class SymbolAnalysisExecution(SingleTreeCompilationSource compilationSource)
+public class SymbolAnalysisExecution(CSharpSingleTreeCompilationSource compilationSource)
     : BaseAnalysisExecution(compilationSource)
 {
     protected override Task<AnalysisResult> ExecuteCore(

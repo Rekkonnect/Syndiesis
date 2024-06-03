@@ -16,7 +16,7 @@ using System.Threading;
 
 namespace Syndiesis.Controls.Editor;
 
-public sealed partial class CSharpRoslynColorizer(SingleTreeCompilationSource compilationSource)
+public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSource compilationSource)
     : RoslynColorizer(compilationSource)
 {
     private readonly DocumentLineDictionary<CancellationTokenFactory> _lineCancellations = new();

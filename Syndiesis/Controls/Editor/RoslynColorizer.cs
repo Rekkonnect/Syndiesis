@@ -3,9 +3,9 @@ using Syndiesis.Core;
 
 namespace Syndiesis.Controls.Editor;
 
-public abstract class RoslynColorizer(SingleTreeCompilationSource compilationSource)
+public abstract class RoslynColorizer(CSharpSingleTreeCompilationSource compilationSource)
     : DocumentColorizingTransformer
 {
-    public SingleTreeCompilationSource CompilationSource { get; } = compilationSource;
+    public CSharpSingleTreeCompilationSource CompilationSource { get; } = compilationSource;
 
 }

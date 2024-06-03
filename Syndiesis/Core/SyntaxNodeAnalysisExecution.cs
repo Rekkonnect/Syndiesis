@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 
-public class SyntaxNodeAnalysisExecution(SingleTreeCompilationSource compilationSource)
+public class SyntaxNodeAnalysisExecution(CSharpSingleTreeCompilationSource compilationSource)
     : BaseAnalysisExecution(compilationSource)
 {
     protected override Task<AnalysisResult> ExecuteCore(
