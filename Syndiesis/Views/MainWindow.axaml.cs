@@ -1,4 +1,7 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Diagnostics;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 
 namespace Syndiesis.Views;
@@ -9,9 +12,21 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
-        InitializeComponent();
+        InitializeComponent(attachDevTools: false);
+        AttachDevTools();
         InitializeEvents();
         InitializeHeader();
+    }
+
+    private void AttachDevTools()
+    {
+#if DEBUG
+        var options = new DevToolsOptions
+        {
+            Gesture = new(Key.F10),
+        };
+        this.AttachDevTools(options);
+#endif
     }
 
     private void InitializeHeader()

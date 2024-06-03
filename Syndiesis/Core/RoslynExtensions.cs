@@ -25,6 +25,9 @@ public static class RoslynExtensions
 
     public static SyntaxToken DeepestTokenContainingPosition(this SyntaxNode parent, int position)
     {
+        if (!parent.FullSpan.Contains(position))
+            return default;
+
         var current = parent;
 
         while (true)
@@ -44,6 +47,9 @@ public static class RoslynExtensions
 
     public static SyntaxNode? DeepestNodeContainingPosition(this SyntaxNode parent, int position)
     {
+        if (!parent.FullSpan.Contains(position))
+            return null;
+
         var current = parent;
 
         while (true)

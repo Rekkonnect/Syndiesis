@@ -4,7 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Styling;
 
-namespace Syndiesis.Controls.Inlines;
+namespace Syndiesis.Controls;
 
 public static class Animations
 {

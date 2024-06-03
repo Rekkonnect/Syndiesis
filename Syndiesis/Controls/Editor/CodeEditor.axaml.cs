@@ -439,12 +439,21 @@ public partial class CodeEditor : UserControl
         base.OnKeyDown(e);
     }
 
+    private readonly CancellationTokenFactory _pulseFactoryCancellationToken = new();
+
     private void GoToDefinition()
     {
         var went = TryGoToDefinition();
         if (!went)
         {
-            // Flash the background red to indicate inability to go
+            _pulseFactoryCancellationToken.Cancel();
+            var pulseAnimation = Animations.CreateColorPulseAnimation(
+                backgroundPanel,
+                Color.FromUInt32(0xFF440011),
+                Panel.BackgroundProperty);
+            pulseAnimation.Duration = TimeSpan.FromMilliseconds(250);
+
+            _ = pulseAnimation.RunAsync(backgroundPanel, _pulseFactoryCancellationToken.CurrentToken);
         }
     }
 

@@ -14,7 +14,7 @@ namespace Syndiesis.Controls;
 public class DrillTransition : IPageTransition
 {
     public TimeSpan Duration { get; set; }
-    public Easing Easing { get; set; } = Singleton<CubicEaseOut>.Instance;
+    public Easing Easing { get; set; } = Singleton<ExponentialEaseOut>.Instance;
     public double ScaleRatio { get; set; } = 1.4;
 
     public async Task Start(
