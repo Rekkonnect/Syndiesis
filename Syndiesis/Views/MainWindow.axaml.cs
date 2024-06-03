@@ -12,7 +12,12 @@ public partial class MainWindow : Window
 
     public MainWindow()
     {
+        // Truly a shame
+#if DEBUG
         InitializeComponent(attachDevTools: false);
+#else
+        InitializeComponent();
+#endif
         AttachDevTools();
         InitializeEvents();
         InitializeHeader();
