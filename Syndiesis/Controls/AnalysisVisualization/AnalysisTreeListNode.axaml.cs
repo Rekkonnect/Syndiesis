@@ -236,7 +236,6 @@ public partial class AnalysisTreeListNode : UserControl
     {
         base.OnPointerExited(e);
         EvaluateHovering(e);
-        ListView?.RootNode.EvaluateHoveringRecursivelyBinary(e);
     }
 
     private void EvaluateHovering(PointerEventArgs e)
@@ -251,10 +250,8 @@ public partial class AnalysisTreeListNode : UserControl
 
         var nodeLine = NodeLine;
         var bounds = nodeLine.Bounds;
-        var restrictedBounds = bounds
-            .WithHeight(bounds.Height - 1);
         var position = e.GetCurrentPoint(nodeLine).Position;
-        var isHovered = restrictedBounds.Contains(position);
+        var isHovered = bounds.Contains(position);
 
         if (isHovered)
         {

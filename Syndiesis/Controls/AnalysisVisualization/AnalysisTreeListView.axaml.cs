@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Utilities;
@@ -471,8 +470,6 @@ public partial class AnalysisTreeListView : UserControl
             current = child;
         }
     }
-
-    private volatile int _recurringPositionExpansion = -1;
 
     private AnalysisTreeListNode GetLastLoadedNode()
     {
