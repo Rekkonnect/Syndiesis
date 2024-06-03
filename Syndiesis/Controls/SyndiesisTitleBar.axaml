@@ -27,7 +27,16 @@
           Name="lineBackground"
           Fill="#004044"
           IsHitTestVisible="False"
-          />
+          >
+          <Rectangle.Transitions>
+            <Transitions>
+              <BrushTransition
+                Duration="0:0:0.400"
+                Property="Fill"
+                />
+            </Transitions>
+          </Rectangle.Transitions>
+        </Rectangle>
         
         <Rectangle
           VerticalAlignment="Stretch"
@@ -45,8 +54,10 @@
           Name="contentStackPanel"
           >
           <Image
+            Name="logoImage"
             Height="35"
-            Source="/Assets/Icons/logo.png" />
+            Source="/Assets/Icons/logo.png"
+            />
       
           <inlines:CopyableGroupedRunInlineTextBlock
             Name="headerText"
