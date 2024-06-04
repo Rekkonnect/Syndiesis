@@ -272,6 +272,8 @@ public partial class MainView : UserControl
             Public Class Program
 
                 Public Sub Main()
+
+                    ' using conditional compilation symbols is fun
         #If SYMVBIOSIS
                     Const greetings As String = "Hello SymVBiosis!"
         #Else
@@ -301,11 +303,12 @@ public partial class MainView : UserControl
         SetSource(defaultCode);
     }
 
-    public void ToggleLanguage()
+    public string ToggleLanguage()
     {
         var current = ViewModel.HybridCompilationSource.CurrentLanguageName;
         var toggled = ToggleLanguageName(current);
         ResetToLanguage(toggled);
+        return toggled;
     }
 
     private static string ToggleLanguageName(string languageName)

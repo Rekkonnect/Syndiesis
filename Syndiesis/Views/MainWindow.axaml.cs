@@ -72,7 +72,8 @@ public partial class MainWindow : Window
         var properties = point.Properties;
         if (properties.IsLeftButtonPressed && e.KeyModifiers is KeyModifiers.None)
         {
-            mainView.ToggleLanguage();
+            var toggled = mainView.ToggleLanguage();
+            TitleBar.SetThemeForLanguage(toggled);
         }
     }
 

@@ -21,7 +21,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
 {
     private readonly DocumentLineDictionary<CancellationTokenFactory> _lineCancellations = new();
 
-    protected override void ColorizeLine(DocumentLine line)
+    protected override void ColorizeLineEnabled(DocumentLine line)
     {
         var cancellationTokenFactory = _lineCancellations.GetOrAdd(
             line,

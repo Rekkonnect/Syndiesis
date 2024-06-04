@@ -791,7 +791,8 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
 
                     return Styles.WhitespaceTriviaDisplay;
                 }
-                case SyntaxKind.DocumentationCommentExteriorTrivia:
+                case SyntaxKind.CommentTrivia:
+                case SyntaxKind.DocumentationCommentTrivia:
                 case SyntaxKind.SkippedTokensTrivia:
                 case SyntaxKind.ConflictMarkerTrivia:
                 {

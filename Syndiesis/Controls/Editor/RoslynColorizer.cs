@@ -1,4 +1,6 @@
-﻿using AvaloniaEdit.Rendering;
+﻿using Avalonia.Media;
+using AvaloniaEdit.Document;
+using AvaloniaEdit.Rendering;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Core;
 
@@ -16,6 +18,25 @@ public abstract class RoslynColorizer(ISingleTreeCompilationSource compilationSo
         return Enabled
             && AppSettings.Instance.EnableColorization;
     }
+
+    protected override void ColorizeLine(DocumentLine line)
+    {
+        if (ShouldColorize())
+        {
+            ColorizeLineEnabled(line);
+        }
+        else
+        {
+            ChangeLinePart(line.Offset, line.EndOffset, ResetLine);
+        }
+    }
+
+    protected void ResetLine(VisualLineElement element)
+    {
+        element.TextRunProperties.SetForegroundBrush(new SolidColorBrush(Colors.White));
+    }
+
+    protected abstract void ColorizeLineEnabled(DocumentLine line);
 
     public readonly record struct SymbolTypeKind(SymbolKind SymbolKind, TypeKind TypeKind)
     {
