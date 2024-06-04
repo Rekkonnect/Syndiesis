@@ -4,6 +4,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;
@@ -21,6 +22,11 @@ public partial class SyndiesisTitleBar : UserControl
     private Window? WindowRoot => VisualRoot as Window;
     private CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
     private Run _titleRun;
+
+    public Bitmap LogoImage
+    {
+        get => (Bitmap)logoImage.Source!;
+    }
 
     public event EventHandler<PointerPressedEventArgs> LogoClicked
     {

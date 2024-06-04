@@ -4,7 +4,8 @@ using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
-using System;
+using Microsoft.CodeAnalysis;
+using Syndiesis.Core;
 
 namespace Syndiesis.Views;
 
@@ -22,7 +23,7 @@ public partial class MainWindow : Window
 #endif
         AttachDevTools();
         InitializeEvents();
-        InitializeHeader();
+        SetCurrentTitle();
     }
 
     private void AttachDevTools()
@@ -36,10 +37,33 @@ public partial class MainWindow : Window
 #endif
     }
 
-    private void InitializeHeader()
+    private void SetCurrentTitle()
+    {
+        var currentLanguage = GetCurrentLanguageName();
+        SetTitleForLanguage(currentLanguage);
+    }
+
+    private static string ProgramTitleForLanguage(string languageName)
+    {
+        return languageName switch
+        {
+            LanguageNames.CSharp => "Syndiesis",
+            LanguageNames.VisualBasic => "SymVBiosis",
+            _ => throw RoslynExceptions
+                .ThrowInvalidLanguageArgument(languageName, nameof(languageName)),
+        };
+    }
+
+    private void SetTitleForLanguage(string languageName)
+    {
+        var title = ProgramTitleForLanguage(languageName);
+        SetTitle(title);
+    }
+
+    private void SetTitle(string programTitle)
     {
         var infoVersion = App.Current.AppInfo.InformationalVersion;
-        Title = $"Syndiesis v{infoVersion.Version} [{infoVersion.CommitSha![..7]}]";
+        Title = $"{programTitle} v{infoVersion.Version} [{infoVersion.CommitSha![..7]}]";
     }
 
     private void InitializeEvents()
@@ -59,11 +83,16 @@ public partial class MainWindow : Window
 
     private void UpdateTitleBar()
     {
-        var languageName = mainView.ViewModel.HybridCompilationSource.CurrentLanguageName;
+        var languageName = GetCurrentLanguageName();
         if (languageName is not null)
         {
-            TitleBar.SetThemeForLanguage(languageName);
+            SetThemeAndLogo(languageName);
         }
+    }
+
+    private string GetCurrentLanguageName()
+    {
+        return mainView.ViewModel.HybridCompilationSource.CurrentLanguageName;
     }
 
     private void OnImageClicked(object? sender, PointerPressedEventArgs e)
@@ -73,8 +102,16 @@ public partial class MainWindow : Window
         if (properties.IsLeftButtonPressed && e.KeyModifiers is KeyModifiers.None)
         {
             var toggled = mainView.ToggleLanguage();
-            TitleBar.SetThemeForLanguage(toggled);
+            SetThemeAndLogo(toggled);
         }
+    }
+
+    private void SetThemeAndLogo(string languageName)
+    {
+        TitleBar.SetThemeForLanguage(languageName);
+        var image = TitleBar.LogoImage;
+        Icon = new WindowIcon(image);
+        SetCurrentTitle();
     }
 
     private void OnSettingsRequested()
