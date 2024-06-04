@@ -22,13 +22,17 @@ public partial class SyndiesisTitleBar : UserControl
     private CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
     private Run _titleRun;
 
+    public event EventHandler<PointerPressedEventArgs> ImageClicked
+    {
+        add => logoImage.PointerPressed += value;
+        remove => logoImage.PointerPressed -= value;
+    }
+
     public SyndiesisTitleBar()
     {
         InitializeComponent();
         InitializeRuns();
         InitializeEvents();
-
-        SetThemeForLanguage(LanguageNames.VisualBasic);
     }
 
     private void InitializeEvents()

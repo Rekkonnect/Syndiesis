@@ -22,16 +22,8 @@ public sealed partial class VisualBasicRoslynColorizer(
 {
     private readonly DocumentLineDictionary<CancellationTokenFactory> _lineCancellations = new();
 
-    public bool Enabled = true;
-
     protected override void ColorizeLine(DocumentLine line)
     {
-        if (!Enabled)
-            return;
-
-        if (!AppSettings.Instance.EnableColorization)
-            return;
-
         var cancellationTokenFactory = _lineCancellations.GetOrAdd(
             line,
             static () => new CancellationTokenFactory());
@@ -559,6 +551,19 @@ public sealed partial class VisualBasicRoslynColorizer(
             when enumMemberDeclaration.Identifier.Span == token.Span:
                 return SymbolTypeKind.EnumField;
 
+            case MethodStatementSyntax methodDeclaration
+            when methodDeclaration.Identifier.Span == token.Span:
+                return SymbolKind.Method;
+
+            case PropertyStatementSyntax propertyDeclaration
+            when propertyDeclaration.Identifier.Span == token.Span:
+                return SymbolKind.Property;
+
+            case EventStatementSyntax eventDeclaration
+            when eventDeclaration.Identifier.Span == token.Span:
+                return SymbolKind.Event;
+
+            // TODO: fields and locals
         }
 
         return default;

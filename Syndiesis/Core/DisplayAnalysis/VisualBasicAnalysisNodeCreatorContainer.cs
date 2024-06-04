@@ -4,6 +4,6 @@ public sealed class VisualBasicAnalysisNodeCreatorContainer : BaseAnalysisNodeCr
 {
     public VisualBasicAnalysisNodeCreatorContainer()
     {
-        //SyntaxCreator = new VisualBasicSyntaxAnalysisNodeCreator(this);
+        SyntaxCreator = new VisualBasicSyntaxAnalysisNodeCreator(this);
     }
 }

@@ -1,6 +1,5 @@
 ﻿using AvaloniaEdit.Document;
 using Syndiesis.Core;
-using System;
 
 namespace Syndiesis.ViewModels;
 

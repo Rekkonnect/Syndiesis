@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using System;
 
 namespace Syndiesis.Views;
 
@@ -46,6 +47,12 @@ public partial class MainWindow : Window
         _settingsView.SettingsReset += OnSettingsReset;
         _settingsView.SettingsCancelled += OnSettingsCancelled;
         mainView.SettingsRequested += OnSettingsRequested;
+        TitleBar.ImageClicked += OnImageClicked;
+    }
+
+    private void OnImageClicked(object? sender, PointerPressedEventArgs e)
+    {
+        mainView.ToggleLanguage();
     }
 
     private void OnSettingsRequested()

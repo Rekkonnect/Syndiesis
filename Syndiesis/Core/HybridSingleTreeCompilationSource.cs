@@ -15,7 +15,12 @@ public sealed class HybridSingleTreeCompilationSource
     private readonly CSharpSingleTreeCompilationSource _csSource = new();
     private readonly VisualBasicSingleTreeCompilationSource _vbSource = new();
 
+    public string CurrentLanguageName => CurrentSource.LanguageName;
+
     public ISingleTreeCompilationSource CurrentSource { get; private set; }
+
+    public CSharpSingleTreeCompilationSource CSharpSource => _csSource;
+    public VisualBasicSingleTreeCompilationSource VisualBasicSource => _vbSource;
 
     public HybridSingleTreeCompilationSource()
     {

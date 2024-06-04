@@ -31,8 +31,9 @@
           <Rectangle.Transitions>
             <Transitions>
               <BrushTransition
-                Duration="0:0:0.400"
+                Duration="0:0:0.250"
                 Property="Fill"
+                Easing="ExponentialEaseOut"
                 />
             </Transitions>
           </Rectangle.Transitions>

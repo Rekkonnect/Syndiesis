@@ -53,7 +53,7 @@ public partial class MainView : UserControl
         codeEditor.CaretPosition = new(4, 48);
         codeEditor.AssociatedTreeView = syntaxTreeView.listView;
 
-        codeEditor.CompilationSource = ViewModel.CompilationSource;
+        codeEditor.CompilationSource = ViewModel.HybridCompilationSource;
 
         analysisTreeViewTabs.Envelopes =
         [
@@ -290,7 +290,32 @@ public partial class MainView : UserControl
     public void Reset()
     {
         LoggerExtensionsEx.LogMethodInvocation(nameof(Reset));
-        SetSource(defaultCodeCS);
+        var name = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        ResetToLanguage(name);
+    }
+
+    public void ResetToLanguage(string languageName)
+    {
+        LoggerExtensionsEx.LogMethodInvocation($"{nameof(ResetToLanguage)}({languageName})");
+        var defaultCode = DefaultCode(languageName);
+        SetSource(defaultCode);
+    }
+
+    public void ToggleLanguage()
+    {
+        var current = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        var toggled = ToggleLanguageName(current);
+        ResetToLanguage(toggled);
+    }
+
+    private static string ToggleLanguageName(string languageName)
+    {
+        return languageName switch
+        {
+            LanguageNames.CSharp => LanguageNames.VisualBasic,
+            LanguageNames.VisualBasic => LanguageNames.CSharp,
+            _ => throw RoslynExceptions.ThrowInvalidLanguageArgument(languageName, nameof(languageName)),
+        };
     }
 
     private static string DefaultCode(string languageName)

@@ -6,6 +6,7 @@ using Syndiesis.InternalGenerators.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 
@@ -135,6 +136,18 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
         inlines.Add(typeNameRun);
     }
 
+    public GroupedRunInlineCollection CreateSyntaxTypeInlines(
+        object value, DisplayValueSource valueSource)
+    {
+        var inlines = new GroupedRunInlineCollection();
+        var type = value.GetType();
+
+        AppendValueSource(valueSource, inlines);
+        AppendSyntaxTypeDetails(type, inlines);
+
+        return inlines;
+    }
+
     protected GroupedRunInline SyntaxTypeDetailsGroupedRun(Type type)
     {
         if (type.IsGenericType)
@@ -177,6 +190,78 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
         const string syntaxSuffix = "Syntax";
         return TypeDisplayWithFadeSuffix(
             typeName, syntaxSuffix, CommonStyles.ClassMainBrush, CommonStyles.ClassSecondaryBrush);
+    }
+}
+
+partial class BaseSyntaxAnalysisNodeCreator
+{
+    public abstract class GeneralSyntaxRootViewNodeCreator<TValue, TCreator>(
+        TCreator creator)
+        : RootViewNodeCreator<TValue, TCreator>(creator)
+        where TCreator : BaseSyntaxAnalysisNodeCreator
+    {
+        public override AnalysisNodeKind GetNodeKind(TValue value)
+        {
+            return AnalysisNodeKind.Syntax;
+        }
+
+        protected static ComplexDisplayValueSource CreateCommonSyntaxAnnotationsDisplayValue(
+            string greenPropertyName)
+        {
+            return
+                new ComplexDisplayValueSource(
+                    Property(greenPropertyName),
+                    new ComplexDisplayValueSource(
+                        MethodSource(RoslynInternalsEx.GetAnnotationsMethodName),
+                        null
+                    )
+                )
+                {
+                    Modifiers = DisplayValueSource.SymbolKind.Internal,
+                };
+        }
+    }
+
+    public sealed class SyntaxTreeRootViewNodeCreator(BaseSyntaxAnalysisNodeCreator creator)
+        : GeneralSyntaxRootViewNodeCreator<SyntaxTree, BaseSyntaxAnalysisNodeCreator>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            SyntaxTree tree, DisplayValueSource valueSource)
+        {
+            var inlines = Creator.CreateSyntaxTypeInlines(tree, valueSource);
+
+            var language = tree.GetLanguage();
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                DisplayForLanguage(language));
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(SyntaxTree tree)
+        {
+            return () => GetChildren(tree);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(SyntaxTree tree)
+        {
+            var root = tree.GetRoot();
+            return [
+                Creator.CreateRootNode(root, MethodSource(nameof(SyntaxTree.GetRoot))),
+                Creator.CreateRootGeneral(tree.Options, Property(nameof(SyntaxTree.Options))),
+            ];
+        }
+
+        private static NodeTypeDisplay DisplayForLanguage(
+            [NotNull]
+            string? language)
+        {
+            return language switch
+            {
+                LanguageNames.CSharp => Styles.CSharpTreeDisplay,
+                LanguageNames.VisualBasic => Styles.VisualBasicTreeDisplay,
+                _ => throw RoslynExceptions.ThrowInvalidLanguageArgument(language, nameof(language)),
+            };
+        }
     }
 }
 

@@ -34,7 +34,9 @@
 
   <DockPanel>
 
-    <controls:SyndiesisTitleBar />
+    <controls:SyndiesisTitleBar
+      Name="TitleBar"
+      />
 
     <Panel
       >

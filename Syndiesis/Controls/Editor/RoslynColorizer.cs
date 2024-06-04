@@ -9,6 +9,14 @@ public abstract class RoslynColorizer(ISingleTreeCompilationSource compilationSo
 {
     public ISingleTreeCompilationSource CompilationSource { get; } = compilationSource;
 
+    public bool Enabled = false;
+
+    protected bool ShouldColorize()
+    {
+        return Enabled
+            && AppSettings.Instance.EnableColorization;
+    }
+
     public readonly record struct SymbolTypeKind(SymbolKind SymbolKind, TypeKind TypeKind)
     {
         public static readonly SymbolTypeKind TypeParameter

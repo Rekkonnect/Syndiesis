@@ -1,6 +1,6 @@
 ﻿using Avalonia.Media;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.Text;
 using Serilog;
 using Syndiesis.Controls.AnalysisVisualization;
@@ -23,7 +23,7 @@ using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
 
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
 
-public sealed partial class CSharpSyntaxAnalysisNodeCreator : BaseSyntaxAnalysisNodeCreator
+public sealed partial class VisualBasicSyntaxAnalysisNodeCreator : BaseSyntaxAnalysisNodeCreator
 {
     // node creators
     private readonly SyntaxTreeRootViewNodeCreator _treeCreator;
@@ -39,8 +39,8 @@ public sealed partial class CSharpSyntaxAnalysisNodeCreator : BaseSyntaxAnalysis
     private readonly SyntaxAnnotationRootViewNodeCreator _syntaxAnnotationCreator;
     private readonly SyntaxAnnotationListRootViewNodeCreator _syntaxAnnotationListCreator;
 
-    public CSharpSyntaxAnalysisNodeCreator(
-        CSharpAnalysisNodeCreatorContainer parentContainer)
+    public VisualBasicSyntaxAnalysisNodeCreator(
+        VisualBasicAnalysisNodeCreatorContainer parentContainer)
         : base(parentContainer)
     {
         _treeCreator = new(this);
@@ -137,14 +137,14 @@ public sealed partial class CSharpSyntaxAnalysisNodeCreator : BaseSyntaxAnalysis
     }
 }
 
-partial class CSharpSyntaxAnalysisNodeCreator
+partial class VisualBasicSyntaxAnalysisNodeCreator
 {
-    public abstract class SyntaxRootViewNodeCreator<TValue>(CSharpSyntaxAnalysisNodeCreator creator)
-        : GeneralSyntaxRootViewNodeCreator<TValue, CSharpSyntaxAnalysisNodeCreator>(creator)
+    public abstract class SyntaxRootViewNodeCreator<TValue>(VisualBasicSyntaxAnalysisNodeCreator creator)
+        : GeneralSyntaxRootViewNodeCreator<TValue, VisualBasicSyntaxAnalysisNodeCreator>(creator)
     {
     }
 
-    public sealed class NodeOrTokenRootViewNodeCreator(CSharpSyntaxAnalysisNodeCreator creator)
+    public sealed class NodeOrTokenRootViewNodeCreator(VisualBasicSyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxNodeOrToken>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
@@ -169,7 +169,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         }
     }
 
-    public class SyntaxAnnotationListRootViewNodeCreator(CSharpSyntaxAnalysisNodeCreator creator)
+    public class SyntaxAnnotationListRootViewNodeCreator(VisualBasicSyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<IReadOnlyList<SyntaxAnnotation>>(creator)
     {
         public AnalysisTreeListNode CreateNode(
@@ -232,7 +232,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         }
     }
 
-    public class SyntaxAnnotationRootViewNodeCreator(CSharpSyntaxAnalysisNodeCreator creator)
+    public class SyntaxAnnotationRootViewNodeCreator(VisualBasicSyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxAnnotation>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
@@ -282,7 +282,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         }
     }
 
-    public class SyntaxNodeRootViewNodeCreator(CSharpSyntaxAnalysisNodeCreator creator)
+    public class SyntaxNodeRootViewNodeCreator(VisualBasicSyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxNode>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
@@ -392,7 +392,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         }
     }
 
-    public sealed class SyntaxTokenRootViewNodeCreator(CSharpSyntaxAnalysisNodeCreator creator)
+    public sealed class SyntaxTokenRootViewNodeCreator(VisualBasicSyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxToken>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
@@ -412,7 +412,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         {
             switch (token.Kind())
             {
-                case SyntaxKind.XmlTextLiteralNewLineToken:
+                case SyntaxKind.DocumentationCommentLineBreakToken:
                     return null;
             }
 
@@ -548,7 +548,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
                 return new(CreateEofRun());
             }
 
-            if (kind is SyntaxKind.XmlTextLiteralNewLineToken)
+            if (kind is SyntaxKind.DocumentationCommentLineBreakToken)
             {
                 var eolText = CreateDisplayStringForEndOfLineText(token.ToFullString());
                 return new(Run(eolText, CommonStyles.RawValueBrush));
@@ -586,11 +586,6 @@ partial class CSharpSyntaxAnalysisNodeCreator
                 is SyntaxKind.StringLiteralToken
                 or SyntaxKind.StringLiteralExpression
                 or SyntaxKind.InterpolatedStringTextToken
-                or SyntaxKind.MultiLineRawStringLiteralToken
-                or SyntaxKind.SingleLineRawStringLiteralToken
-                or SyntaxKind.Utf8StringLiteralToken
-                or SyntaxKind.Utf8MultiLineRawStringLiteralToken
-                or SyntaxKind.Utf8SingleLineRawStringLiteralToken
 
                 // also handle XML texts
                 or SyntaxKind.XmlText
@@ -636,7 +631,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         }
     }
 
-    public sealed class SyntaxNodeListRootViewNodeCreator(CSharpSyntaxAnalysisNodeCreator creator)
+    public sealed class SyntaxNodeListRootViewNodeCreator(VisualBasicSyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<ReadOnlySyntaxNodeList>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
@@ -704,7 +699,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         }
     }
 
-    public sealed class SyntaxTokenListRootViewNodeCreator(CSharpSyntaxAnalysisNodeCreator creator)
+    public sealed class SyntaxTokenListRootViewNodeCreator(VisualBasicSyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxTokenList>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
@@ -738,7 +733,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         }
     }
 
-    public sealed class SyntaxTriviaRootViewNodeCreator(CSharpSyntaxAnalysisNodeCreator creator)
+    public sealed class SyntaxTriviaRootViewNodeCreator(VisualBasicSyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxTrivia>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
@@ -796,10 +791,6 @@ partial class CSharpSyntaxAnalysisNodeCreator
 
                     return Styles.WhitespaceTriviaDisplay;
                 }
-                case SyntaxKind.SingleLineCommentTrivia:
-                case SyntaxKind.MultiLineCommentTrivia:
-                case SyntaxKind.SingleLineDocumentationCommentTrivia:
-                case SyntaxKind.MultiLineDocumentationCommentTrivia:
                 case SyntaxKind.DocumentationCommentExteriorTrivia:
                 case SyntaxKind.SkippedTokensTrivia:
                 case SyntaxKind.ConflictMarkerTrivia:
@@ -816,7 +807,6 @@ partial class CSharpSyntaxAnalysisNodeCreator
 
                     return Styles.CommentTriviaDisplay;
                 }
-                case SyntaxKind.PreprocessingMessageTrivia:
                 case SyntaxKind.BadDirectiveTrivia:
                 {
                     var displayText = CommentTriviaText(trivia, out var fullString);
@@ -884,8 +874,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
 
             switch (kind)
             {
-                case SyntaxKind.SingleLineDocumentationCommentTrivia:
-                case SyntaxKind.MultiLineDocumentationCommentTrivia:
+                case SyntaxKind.DocumentationCommentTrivia:
                 {
                     var displayText = trivia.Kind().ToString();
                     var displayTextRun = Run(displayText, Styles.CommentTriviaContentBrush);
@@ -1011,7 +1000,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         }
     }
 
-    public sealed class SyntaxTriviaListRootViewNodeCreator(CSharpSyntaxAnalysisNodeCreator creator)
+    public sealed class SyntaxTriviaListRootViewNodeCreator(VisualBasicSyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxTriviaList>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
@@ -1055,7 +1044,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         }
     }
 
-    public sealed class SyntaxReferenceRootViewNodeCreator(CSharpSyntaxAnalysisNodeCreator creator)
+    public sealed class SyntaxReferenceRootViewNodeCreator(VisualBasicSyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<SyntaxReference>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
@@ -1092,7 +1081,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         }
     }
 
-    public sealed class TextSpanRootViewNodeCreator(CSharpSyntaxAnalysisNodeCreator creator)
+    public sealed class TextSpanRootViewNodeCreator(VisualBasicSyntaxAnalysisNodeCreator creator)
         : SyntaxRootViewNodeCreator<TextSpan>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
