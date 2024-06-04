@@ -793,6 +793,7 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
                 }
                 case SyntaxKind.CommentTrivia:
                 case SyntaxKind.DocumentationCommentTrivia:
+                case SyntaxKind.DocumentationCommentExteriorTrivia:
                 case SyntaxKind.SkippedTokensTrivia:
                 case SyntaxKind.ConflictMarkerTrivia:
                 {

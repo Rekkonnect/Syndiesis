@@ -197,14 +197,6 @@ public sealed partial class VisualBasicRoslynColorizer(
             var identifierParent = identifier.Parent!;
             var symbolInfo = model.GetSymbolInfo(identifierParent, cancellationToken);
 
-            bool isVar = IsVar(identifier, symbolInfo);
-            if (isVar)
-            {
-                var varColorizer = GetTokenColorizer(SyntaxKind.DimKeyword);
-                ColorizeSpan(line, identifier.Span, varColorizer);
-                continue;
-            }
-
             bool isNameOf = IsNameOf(identifier, symbolInfo, model);
             if (isNameOf)
             {
@@ -448,7 +440,8 @@ public sealed partial class VisualBasicRoslynColorizer(
         {
             SyntaxKind.DisabledTextTrivia => Styles.DisabledTextForeground,
             SyntaxKind.CommentTrivia => Styles.CommentForeground,
-            SyntaxKind.DocumentationCommentTrivia => Styles.DocumentationForeground,
+            SyntaxKind.DocumentationCommentTrivia or
+            SyntaxKind.DocumentationCommentExteriorTrivia => Styles.DocumentationForeground,
             _ => null,
         };
     }
@@ -483,6 +476,7 @@ public sealed partial class VisualBasicRoslynColorizer(
     {
         return kind switch
         {
+            TypeKind.Module => Styles.ClassForeground,
             TypeKind.Class => Styles.ClassForeground,
             TypeKind.Struct => Styles.StructForeground,
             TypeKind.Interface => Styles.InterfaceForeground,
@@ -498,10 +492,10 @@ public sealed partial class VisualBasicRoslynColorizer(
         var parent = token.Parent!;
         switch (parent)
         {
-            case VariableDeclaratorSyntax variableDeclarator:
+            case ModifiedIdentifierSyntax modifiedIdentifier:
             {
-                var declaration = variableDeclarator.Parent as DeclarationStatementSyntax;
-                var container = declaration!.Parent;
+                var declarator = modifiedIdentifier.Parent as VariableDeclaratorSyntax;
+                var container = declarator!.Parent;
                 return container switch
                 {
                     FieldDeclarationSyntax fieldDeclaration =>
@@ -523,6 +517,9 @@ public sealed partial class VisualBasicRoslynColorizer(
         var parent = token.Parent!;
         switch (parent)
         {
+            case ModuleStatementSyntax moduleDeclaration
+            when moduleDeclaration.Identifier.Span == token.Span:
+                return TypeKind.Module;
             case ClassStatementSyntax classDeclaration
             when classDeclaration.Identifier.Span == token.Span:
                 return TypeKind.Class;
@@ -563,7 +560,30 @@ public sealed partial class VisualBasicRoslynColorizer(
             when eventDeclaration.Identifier.Span == token.Span:
                 return SymbolKind.Event;
 
-            // TODO: fields and locals
+            case ModifiedIdentifierSyntax modifiedIdentifier
+            when modifiedIdentifier.Identifier.Span == token.Span:
+                var identifierParent = modifiedIdentifier.Parent;
+                switch (identifierParent)
+                {
+                    case ParameterSyntax:
+                        return SymbolKind.Parameter;
+                    case VariableDeclaratorSyntax variableDeclarator:
+                    {
+                        var container = variableDeclarator.Parent;
+                        switch (container)
+                        {
+                            case LocalDeclarationStatementSyntax:
+                                return SymbolKind.Local;
+                            case FieldDeclarationSyntax:
+                                return SymbolKind.Field;
+                            default:
+                                return SymbolKind.Alias;
+                        }
+                    }
+
+                    default:
+                        return SymbolKind.Alias;
+                }
         }
 
         return default;

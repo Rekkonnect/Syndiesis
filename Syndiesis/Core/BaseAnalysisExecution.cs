@@ -37,7 +37,17 @@ public abstract class BaseAnalysisExecution(HybridSingleTreeCompilationSource co
             return ExecuteForCurrentCompilation(token);
         }
 
-        CompilationSource.SetSource(source, token);
+        try
+        {
+            CompilationSource.SetSource(source, token);
+        }
+        catch (OperationCanceledException cancellationException)
+        {
+            App.Current.ExceptionListener.HandleException(
+                cancellationException,
+                "Cancelled analysis execution during parsing of the source");
+            return Cancelled();
+        }
         if (token.IsCancellationRequested)
             return Cancelled();
 

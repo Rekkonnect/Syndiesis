@@ -1,5 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Garyon.Reflection;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,6 +11,9 @@ namespace Syndiesis.Core.DisplayAnalysis;
 
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
 
+using CSharpSyntax = Microsoft.CodeAnalysis.CSharp.Syntax;
+using VisualBasicSyntax = Microsoft.CodeAnalysis.VisualBasic.Syntax;
+
 public sealed class SyntaxNodePropertyFilter : PropertyFilter
 {
     public static readonly SyntaxNodePropertyFilter Instance = new();
@@ -16,7 +21,9 @@ public sealed class SyntaxNodePropertyFilter : PropertyFilter
     public override PropertyFilterResult FilterProperties(Type type)
     {
         var properties = type.GetProperties();
-        var interestingTypeProperties = properties.Where(FilterNodeProperty)
+        var interestingTypeProperties = properties
+            .Where(FilterNodeProperty)
+            .DistinctBy(s => s.Name)
             .ToArray();
 
         return new()
@@ -34,9 +41,13 @@ public sealed class SyntaxNodePropertyFilter : PropertyFilter
         {
             case nameof(SyntaxNode.Parent):
             // Equivalent in both C# and VB
-            case nameof(StructuredTriviaSyntax.ParentTrivia):
+            case nameof(CSharpSyntax.StructuredTriviaSyntax.ParentTrivia):
                 return false;
         }
+
+        bool obsolete = propertyInfo.HasCustomAttribute<ObsoleteAttribute>();
+        if (obsolete)
+            return false;
 
         bool extraFilter = IsExtraProperty(propertyInfo, name);
         if (extraFilter)
@@ -70,13 +81,26 @@ public sealed class SyntaxNodePropertyFilter : PropertyFilter
                 return true;
         }
 
-        if (name is nameof(DirectiveTriviaSyntax.DirectiveNameToken))
+        if (name is nameof(CSharpSyntax.DirectiveTriviaSyntax.DirectiveNameToken))
         {
-            if (propertyInfo.DeclaringType == typeof(DirectiveTriviaSyntax))
+            if (propertyInfo.DeclaringType == typeof(CSharpSyntax.DirectiveTriviaSyntax))
                 return true;
         }
 
-        // TODO: VB syntax filters
+        if (name is nameof(TypeBlockSyntax.BlockStatement))
+        {
+            return true;
+        }
+
+        if (name is nameof(TypeBlockSyntax.EndBlockStatement))
+        {
+            return true;
+        }
+
+        if (name is nameof(TypeStatementSyntax.DeclarationKeyword))
+        {
+            return true;
+        }
 
         return false;
     }
