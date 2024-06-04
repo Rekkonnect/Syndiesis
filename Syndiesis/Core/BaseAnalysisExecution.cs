@@ -1,18 +1,26 @@
-﻿using Syndiesis.Core.DisplayAnalysis;
+﻿using Microsoft.CodeAnalysis;
+using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 
-public abstract class BaseAnalysisExecution(CSharpSingleTreeCompilationSource compilationSource)
+public abstract class BaseAnalysisExecution(HybridSingleTreeCompilationSource compilationSource)
 {
     public AnalysisNodeCreationOptions CreationOptions => AppSettings.Instance.NodeLineOptions;
-    public CSharpSingleTreeCompilationSource CompilationSource { get; } = compilationSource;
+    public HybridSingleTreeCompilationSource CompilationSource { get; } = compilationSource;
 
-    protected AnalysisNodeCreatorContainer CreateCreatorContainer()
+    protected BaseAnalysisNodeCreatorContainer CreateCreatorContainer()
     {
-        return new();
+        var source = CompilationSource.CurrentSource;
+        return source.LanguageName switch
+        {
+            LanguageNames.CSharp => new CSharpAnalysisNodeCreatorContainer(),
+            LanguageNames.VisualBasic => new VisualBasicAnalysisNodeCreatorContainer(),
+            _ => throw new NotSupportedException("Unsupported language"),
+        };
     }
 
     public Task<AnalysisResult> ExecuteForCurrentCompilation(CancellationToken token)

@@ -3,8 +3,8 @@ using Avalonia.Media;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.VisualBasic;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
@@ -16,7 +16,8 @@ using System.Threading;
 
 namespace Syndiesis.Controls.Editor;
 
-public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSource compilationSource)
+public sealed partial class VisualBasicRoslynColorizer(
+    VisualBasicSingleTreeCompilationSource compilationSource)
     : RoslynColorizer(compilationSource)
 {
     private readonly DocumentLineDictionary<CancellationTokenFactory> _lineCancellations = new();
@@ -44,7 +45,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         DocumentLine line, CancellationToken cancellationToken)
     {
         var source = CompilationSource;
-        var tree = source.Tree as CSharpSyntaxTree;
+        var tree = source.Tree as VisualBasicSyntaxTree;
         var model = source.SemanticModel;
         if (tree is not null)
         {
@@ -59,7 +60,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
     }
 
     private void InitiateSyntaxColorization(
-        DocumentLine line, CSharpSyntaxTree tree, CancellationToken cancellationToken)
+        DocumentLine line, VisualBasicSyntaxTree tree, CancellationToken cancellationToken)
     {
         int offset = line.Offset;
         int endOffset = line.EndOffset;
@@ -207,7 +208,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             bool isVar = IsVar(identifier, symbolInfo);
             if (isVar)
             {
-                var varColorizer = GetTokenColorizer(SyntaxKind.VarKeyword);
+                var varColorizer = GetTokenColorizer(SyntaxKind.DimKeyword);
                 ColorizeSpan(line, identifier.Span, varColorizer);
                 continue;
             }
@@ -263,12 +264,6 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
                 qualified, qualified.Right, identifierParent);
         }
 
-        if (secondIdentifierParent is AliasQualifiedNameSyntax aliasQualified)
-        {
-            return MatchesAttributeSyntaxTraversal(
-                aliasQualified, aliasQualified.Name, identifierParent);
-        }
-
         if (secondIdentifierParent.Parent is AttributeSyntax)
             return true;
 
@@ -287,7 +282,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
 
         var parent = name.Parent;
         // this is not the rightmost qualified name
-        if (parent is QualifiedNameSyntax or AliasQualifiedNameSyntax)
+        if (parent is QualifiedNameSyntax)
             return false;
 
         if (parent is AttributeSyntax)
@@ -299,8 +294,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
     private static bool IsPreprocessingIdentifierNode(SyntaxNode node, SemanticModel model)
     {
         bool isDefinition = node.Kind()
-            is SyntaxKind.DefineDirectiveTrivia
-            or SyntaxKind.UndefDirectiveTrivia
+            is SyntaxKind.ConstDirectiveTrivia
             ;
 
         if (isDefinition)
@@ -439,22 +433,14 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
 
         return kind switch
         {
-            SyntaxKind.NumericLiteralToken => Styles.NumericLiteralForeground,
+            SyntaxKind.IntegerLiteralToken or
+            SyntaxKind.DecimalLiteralToken or
+            SyntaxKind.FloatingLiteralToken => Styles.NumericLiteralForeground,
 
+            SyntaxKind.DateLiteralToken or
             SyntaxKind.StringLiteralToken or
-            SyntaxKind.InterpolatedSingleLineRawStringStartToken or
-            SyntaxKind.InterpolatedMultiLineRawStringStartToken or
-            SyntaxKind.InterpolatedRawStringEndToken or
-            SyntaxKind.InterpolatedStringStartToken or
-            SyntaxKind.InterpolatedStringEndToken or
-            SyntaxKind.InterpolatedVerbatimStringStartToken or
             SyntaxKind.InterpolatedStringTextToken or
             SyntaxKind.InterpolatedStringText or
-            SyntaxKind.MultiLineRawStringLiteralToken or
-            SyntaxKind.SingleLineRawStringLiteralToken or
-            SyntaxKind.Utf8StringLiteralToken or
-            SyntaxKind.Utf8SingleLineRawStringLiteralToken or
-            SyntaxKind.Utf8MultiLineRawStringLiteralToken or
             SyntaxKind.CharacterLiteralToken => Styles.StringLiteralForeground,
 
             _ => null,
@@ -469,13 +455,8 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         return kind switch
         {
             SyntaxKind.DisabledTextTrivia => Styles.DisabledTextForeground,
-
-            SyntaxKind.SingleLineCommentTrivia or
-            SyntaxKind.MultiLineCommentTrivia => Styles.CommentForeground,
-
-            SyntaxKind.SingleLineDocumentationCommentTrivia or
-            SyntaxKind.MultiLineDocumentationCommentTrivia => Styles.DocumentationForeground,
-
+            SyntaxKind.CommentTrivia => Styles.CommentForeground,
+            SyntaxKind.DocumentationCommentTrivia => Styles.DocumentationForeground,
             _ => null,
         };
     }
@@ -527,7 +508,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         {
             case VariableDeclaratorSyntax variableDeclarator:
             {
-                var declaration = variableDeclarator.Parent as VariableDeclarationSyntax;
+                var declaration = variableDeclarator.Parent as DeclarationStatementSyntax;
                 var container = declaration!.Parent;
                 return container switch
                 {
@@ -550,24 +531,21 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         var parent = token.Parent!;
         switch (parent)
         {
-            case ClassDeclarationSyntax classDeclaration
+            case ClassStatementSyntax classDeclaration
             when classDeclaration.Identifier.Span == token.Span:
                 return TypeKind.Class;
-            case StructDeclarationSyntax structDeclaration
+            case StructureStatementSyntax structDeclaration
             when structDeclaration.Identifier.Span == token.Span:
                 return TypeKind.Struct;
-            case InterfaceDeclarationSyntax interfaceDeclaration
+            case InterfaceStatementSyntax interfaceDeclaration
             when interfaceDeclaration.Identifier.Span == token.Span:
                 return TypeKind.Interface;
-            case DelegateDeclarationSyntax delegateDeclaration
+            case DelegateStatementSyntax delegateDeclaration
             when delegateDeclaration.Identifier.Span == token.Span:
                 return TypeKind.Delegate;
-            case EnumDeclarationSyntax enumDeclaration
+            case EnumStatementSyntax enumDeclaration
             when enumDeclaration.Identifier.Span == token.Span:
                 return TypeKind.Enum;
-            case RecordDeclarationSyntax recordDeclaration
-            when recordDeclaration.Identifier.Span == token.Span:
-                return RecordDeclarationTypeKind(recordDeclaration);
 
             case TypeParameterSyntax typeParameter
             when typeParameter.Identifier.Span == token.Span:
@@ -581,85 +559,29 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             when enumMemberDeclaration.Identifier.Span == token.Span:
                 return SymbolTypeKind.EnumField;
 
-            case VariableDeclaratorSyntax variableDeclarator
-            when variableDeclarator.Identifier.Span == token.Span:
-            {
-                var declaration = variableDeclarator.Parent as VariableDeclarationSyntax;
-                var container = declaration!.Parent;
-                return container switch
-                {
-                    FieldDeclarationSyntax => SymbolKind.Field,
-                    EventFieldDeclarationSyntax => SymbolKind.Event,
-                    _ => SymbolKind.Local,
-                };
-            }
-
-            case SingleVariableDesignationSyntax variableDesignation
-            when variableDesignation.Identifier.Span == token.Span:
-                return SymbolKind.Local;
-
-            case ForEachStatementSyntax forEachStatement
-            when forEachStatement.Identifier.Span == token.Span:
-                return SymbolKind.Local;
-
-            case ConstructorDeclarationSyntax constructorDeclaration
-            when constructorDeclaration.Identifier.Span == token.Span:
-            {
-                var constructorParent = constructorDeclaration.Parent as MemberDeclarationSyntax;
-                return DeclarationTypeSymbolKind(constructorParent!);
-            }
-
-            case PropertyDeclarationSyntax propertyDeclaration
-            when propertyDeclaration.Identifier.Span == token.Span:
-                return SymbolKind.Property;
-
-            case EventDeclarationSyntax eventDeclaration
-            when eventDeclaration.Identifier.Span == token.Span:
-                return SymbolKind.Event;
-
-            case MethodDeclarationSyntax methodDeclaration
-            when methodDeclaration.Identifier.Span == token.Span:
-                return SymbolKind.Method;
-
-            case LocalFunctionStatementSyntax localFunctionDeclaration
-            when localFunctionDeclaration.Identifier.Span == token.Span:
-                return SymbolKind.Method;
         }
 
         return default;
     }
 
-    private static SymbolTypeKind DeclarationTypeSymbolKind(MemberDeclarationSyntax declarationSyntax)
+    private static SymbolTypeKind DeclarationTypeSymbolKind(DeclarationStatementSyntax StatementSyntax)
     {
-        switch (declarationSyntax)
+        switch (StatementSyntax)
         {
-            case ClassDeclarationSyntax:
+            case ClassStatementSyntax:
                 return TypeKind.Class;
-            case StructDeclarationSyntax:
+            case StructureStatementSyntax:
                 return TypeKind.Struct;
-            case InterfaceDeclarationSyntax:
+            case InterfaceStatementSyntax:
                 return TypeKind.Interface;
-            case EnumDeclarationSyntax:
+            case EnumStatementSyntax:
                 return TypeKind.Enum;
-            case DelegateDeclarationSyntax:
+            case DelegateStatementSyntax:
                 return TypeKind.Delegate;
-            case RecordDeclarationSyntax recordDeclaration:
-                return RecordDeclarationTypeKind(recordDeclaration);
 
             default:
                 throw new UnreachableException();
         }
-    }
-
-    private static TypeKind RecordDeclarationTypeKind(RecordDeclarationSyntax recordDeclaration)
-    {
-        return recordDeclaration.ClassOrStructKeyword.Kind() switch
-        {
-            SyntaxKind.None or
-            SyntaxKind.ClassConstraint => TypeKind.Class,
-            SyntaxKind.StructKeyword => TypeKind.Struct,
-            _ => throw new UnreachableException(),
-        };
     }
 
     private void FormatWith(VisualLineElement element, IBrush brush)
@@ -712,7 +634,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
     }
 }
 
-partial class CSharpRoslynColorizer
+partial class VisualBasicRoslynColorizer
 {
     public static class Styles
     {

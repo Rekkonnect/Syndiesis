@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 
-public class OperationAnalysisExecution(CSharpSingleTreeCompilationSource compilationSource)
+public class OperationAnalysisExecution(HybridSingleTreeCompilationSource compilationSource)
     : BaseAnalysisExecution(compilationSource)
 {
     protected override Task<AnalysisResult> ExecuteCore(
@@ -15,8 +15,9 @@ public class OperationAnalysisExecution(CSharpSingleTreeCompilationSource compil
         if (token.IsCancellationRequested)
             return Cancelled();
 
-        var compilation = CompilationSource.Compilation;
-        var tree = CompilationSource.Tree;
+        var currentSource = CompilationSource.CurrentSource;
+        var compilation = currentSource.Compilation;
+        var tree = currentSource.Tree;
         var operationTree = OperationTree.FromTree(compilation, tree!, token);
 
         if (token.IsCancellationRequested)

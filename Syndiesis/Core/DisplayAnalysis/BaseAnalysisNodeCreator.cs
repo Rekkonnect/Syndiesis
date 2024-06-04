@@ -47,10 +47,10 @@ public abstract partial class BaseAnalysisNodeCreator
     protected AnalysisNodeCreationOptions Options
         => AppSettings.Instance.NodeLineOptions;
 
-    public readonly AnalysisNodeCreatorContainer ParentContainer;
+    public readonly BaseAnalysisNodeCreatorContainer ParentContainer;
 
     public BaseAnalysisNodeCreator(
-        AnalysisNodeCreatorContainer parentContainer)
+        BaseAnalysisNodeCreatorContainer parentContainer)
     {
         ParentContainer = parentContainer;
 

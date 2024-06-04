@@ -25,7 +25,7 @@ public sealed partial class SemanticModelAnalysisNodeCreator : BaseAnalysisNodeC
     private readonly SemanticModelRootViewNodeCreator _semanticModelCreator;
 
     public SemanticModelAnalysisNodeCreator(
-        AnalysisNodeCreatorContainer parentContainer)
+        BaseAnalysisNodeCreatorContainer parentContainer)
         : base(parentContainer)
     {
         _semanticModelCreator = new(this);

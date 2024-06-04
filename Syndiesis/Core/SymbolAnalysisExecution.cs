@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 
-public class SymbolAnalysisExecution(CSharpSingleTreeCompilationSource compilationSource)
+public class SymbolAnalysisExecution(HybridSingleTreeCompilationSource compilationSource)
     : BaseAnalysisExecution(compilationSource)
 {
     protected override Task<AnalysisResult> ExecuteCore(
@@ -15,7 +15,7 @@ public class SymbolAnalysisExecution(CSharpSingleTreeCompilationSource compilati
         if (token.IsCancellationRequested)
             return Cancelled();
 
-        var compilation = CompilationSource.Compilation;
+        var compilation = CompilationSource.CurrentSource.Compilation;
         var assemblySymbol = compilation.Assembly;
 
         if (token.IsCancellationRequested)

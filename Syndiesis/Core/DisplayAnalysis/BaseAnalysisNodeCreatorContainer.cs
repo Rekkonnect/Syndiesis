@@ -1,15 +1,14 @@
 ﻿namespace Syndiesis.Core.DisplayAnalysis;
 
-public sealed class AnalysisNodeCreatorContainer
+public abstract class BaseAnalysisNodeCreatorContainer
 {
-    public readonly SyntaxAnalysisNodeCreator SyntaxCreator;
+    public BaseSyntaxAnalysisNodeCreator SyntaxCreator { get; protected init; }
     public readonly SymbolAnalysisNodeCreator SymbolCreator;
     public readonly OperationsAnalysisNodeCreator OperationCreator;
     public readonly SemanticModelAnalysisNodeCreator SemanticCreator;
 
-    public AnalysisNodeCreatorContainer()
+    public BaseAnalysisNodeCreatorContainer()
     {
-        SyntaxCreator = new(this);
         SymbolCreator = new(this);
         OperationCreator = new(this);
         SemanticCreator = new(this);

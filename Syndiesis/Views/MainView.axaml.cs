@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using AvaloniaEdit;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
@@ -107,7 +108,7 @@ public partial class MainView : UserControl
     private void HandleSelectedAnalysisTab(TabEnvelope tab)
     {
         var analysisKind = (AnalysisNodeKind)tab.TagValue!;
-        var analysisFactory = new AnalysisExecutionFactory(ViewModel.CompilationSource);
+        var analysisFactory = new AnalysisExecutionFactory(ViewModel.HybridCompilationSource);
         var analysisExecution = analysisFactory.CreateAnalysisExecution(analysisKind);
         AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
         AnalysisPipelineHandler.IgnoreInputDelayOnce();
@@ -236,36 +237,70 @@ public partial class MainView : UserControl
         codeEditor.ApplySettings(settings);
     }
 
+    private const string defaultCodeCS = """
+        #define SYNDIESIS
+
+        using System;
+
+        namespace Example;
+
+        public class Program
+        {
+            public static void Main(string[] args)
+            {
+                // using conditional compilation symbols is fun
+                const string greetings =
+        #if SYNDIESIS
+                    "Hello Syndiesis!"
+        #else
+                    "Hello World!"
+        #endif
+                    ;
+                Console.WriteLine(greetings);
+            }
+        }
+
+        """;
+
+    private const string defaultCodeVB = """
+        #Const SYMVBIOSIS = True
+
+        Imports System
+
+        Namespace Example
+
+            Public Class Program
+
+                Public Sub Main()
+        #If SYMVBIOSIS
+                    Const greetings As String = "Hello SymVBiosis!"
+        #Else
+                    Const greetings As String = "Hello World!"
+        #End If
+
+                    Console.WriteLine(greetings)
+                End Sub
+
+            End Class
+
+        End Namespace
+
+        """;
+
     public void Reset()
     {
-        const string defaultCode = """
-            #define SYNDIESIS
-
-            using System;
-
-            namespace Example;
-
-            public class Program
-            {
-                public static void Main(string[] args)
-                {
-                    // using conditional compilation symbols is fun
-                    const string greetings =
-            #if SYNDIESIS
-                        "Hello Syndiesis!"
-            #else
-                        "Hello World!"
-            #endif
-                        ;
-                    Console.WriteLine(greetings);
-                }
-            }
-
-            """;
-
         LoggerExtensionsEx.LogMethodInvocation(nameof(Reset));
+        SetSource(defaultCodeCS);
+    }
 
-        SetSource(defaultCode);
+    private static string DefaultCode(string languageName)
+    {
+        return languageName switch
+        {
+            LanguageNames.CSharp => defaultCodeCS,
+            LanguageNames.VisualBasic => defaultCodeVB,
+            _ => throw RoslynExceptions.ThrowInvalidLanguageArgument(languageName, nameof(languageName)),
+        };
     }
 
     private void SetSource(string source)

@@ -27,8 +27,8 @@ namespace Syndiesis.Controls;
 /// A code editor using <see cref="TextEditor"/>.
 /// </summary>
 /// <remarks>
-/// It does not yet provide support for IDe features like autocompletion, code fixes,
-/// or others. They may be added in the future
+/// It does not yet provide support for IDE features like autocompletion, code fixes,
+/// or others. They may be added in the future.
 /// </remarks>
 public partial class CodeEditor : UserControl
 {
@@ -42,11 +42,11 @@ public partial class CodeEditor : UserControl
     private NodeSpanHoverLayer _nodeSpanHoverLayer;
     private CSharpRoslynColorizer? _roslynColorizer;
 
-    private CSharpSingleTreeCompilationSource? _compilationSource;
+    private ISingleTreeCompilationSource? _compilationSource;
 
     public AnalysisTreeListView? AssociatedTreeView { get; set; }
 
-    public CSharpSingleTreeCompilationSource? CompilationSource
+    public ISingleTreeCompilationSource? CompilationSource
     {
         get => _compilationSource;
         set
@@ -54,7 +54,7 @@ public partial class CodeEditor : UserControl
             _compilationSource = value;
             if (value is not null and var source)
             {
-                _roslynColorizer = new CSharpRoslynColorizer(source);
+                _roslynColorizer = new CSharpRoslynColorizer(source as CSharpSingleTreeCompilationSource);
                 textEditor.TextArea.TextView.LineTransformers.Add(_roslynColorizer);
             }
         }

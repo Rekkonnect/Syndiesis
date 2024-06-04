@@ -4,9 +4,9 @@ using System;
 namespace Syndiesis.Core;
 
 public sealed class AnalysisExecutionFactory(
-    CSharpSingleTreeCompilationSource compilationSource)
+    HybridSingleTreeCompilationSource compilationSource)
 {
-    private readonly CSharpSingleTreeCompilationSource _compilationSource = compilationSource;
+    private readonly HybridSingleTreeCompilationSource _compilationSource = compilationSource;
 
     public BaseAnalysisExecution CreateAnalysisExecution(AnalysisNodeKind kind)
     {
@@ -19,7 +19,12 @@ public sealed class AnalysisExecutionFactory(
             case AnalysisNodeKind.Symbol:
                 return new SymbolAnalysisExecution(_compilationSource);
             default:
-                throw new NotSupportedException("The given analysis kind is unsupported.");
+                throw ThrowUnsupportedAnalysisKind();
         }
+    }
+
+    private static Exception ThrowUnsupportedAnalysisKind()
+    {
+        throw new NotSupportedException("The given analysis kind is unsupported.");
     }
 }

@@ -6,7 +6,7 @@ namespace Syndiesis.Core.DisplayAnalysis;
 public sealed class StylePreferences
 {
     public BaseAnalysisNodeCreator.NodeCommonStyles? CommonStyles;
-    public SyntaxAnalysisNodeCreator.SyntaxStyles? SyntaxStyles;
+    public CSharpSyntaxAnalysisNodeCreator.SyntaxStyles? SyntaxStyles;
     public SymbolAnalysisNodeCreator.SymbolStyles? SymbolStyles;
     public OperationsAnalysisNodeCreator.OperationStyles? OperationStyles;
     public SemanticModelAnalysisNodeCreator.SemanticModelStyles? SemanticModelStyles;

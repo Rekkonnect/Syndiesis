@@ -29,10 +29,11 @@ public sealed class SyntaxNodePropertyFilter : PropertyFilter
     {
         var name = propertyInfo.Name;
 
-        // we don't like infinite recursion
+        // We don't like infinite recursion
         switch (name)
         {
             case nameof(SyntaxNode.Parent):
+            // Equivalent in both C# and VB
             case nameof(StructuredTriviaSyntax.ParentTrivia):
                 return false;
         }
@@ -74,6 +75,8 @@ public sealed class SyntaxNodePropertyFilter : PropertyFilter
             if (propertyInfo.DeclaringType == typeof(DirectiveTriviaSyntax))
                 return true;
         }
+
+        // TODO: VB syntax filters
 
         return false;
     }
