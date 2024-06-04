@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using System;
 
 namespace Syndiesis.Views;
@@ -47,12 +48,32 @@ public partial class MainWindow : Window
         _settingsView.SettingsReset += OnSettingsReset;
         _settingsView.SettingsCancelled += OnSettingsCancelled;
         mainView.SettingsRequested += OnSettingsRequested;
-        TitleBar.ImageClicked += OnImageClicked;
+        mainView.codeEditor.AnalysisCompleted += OnAnalysisCompleted;
+        TitleBar.LogoClicked += OnImageClicked;
+    }
+
+    private void OnAnalysisCompleted()
+    {
+        Dispatcher.UIThread.InvokeAsync(UpdateTitleBar);
+    }
+
+    private void UpdateTitleBar()
+    {
+        var languageName = mainView.ViewModel.HybridCompilationSource.CurrentLanguageName;
+        if (languageName is not null)
+        {
+            TitleBar.SetThemeForLanguage(languageName);
+        }
     }
 
     private void OnImageClicked(object? sender, PointerPressedEventArgs e)
     {
-        mainView.ToggleLanguage();
+        var point = e.GetCurrentPoint(this);
+        var properties = point.Properties;
+        if (properties.IsLeftButtonPressed && e.KeyModifiers is KeyModifiers.None)
+        {
+            mainView.ToggleLanguage();
+        }
     }
 
     private void OnSettingsRequested()

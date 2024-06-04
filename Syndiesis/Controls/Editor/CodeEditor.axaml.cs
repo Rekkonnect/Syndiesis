@@ -115,6 +115,8 @@ public partial class CodeEditor : UserControl
         remove => textEditor.TextArea.SelectionChanged -= value;
     }
 
+    public event Action? AnalysisCompleted;
+
     public CodeEditor()
     {
         InitializeComponent();
@@ -243,23 +245,13 @@ public partial class CodeEditor : UserControl
     {
         void UIUpdate()
         {
-            UpdateTopBar();
             UpdateCurrentColorizer();
             ColorizerEnabled = true;
             textEditor.TextArea.TextView.Redraw();
         }
 
+        AnalysisCompleted?.Invoke();
         Dispatcher.UIThread.InvokeAsync(UIUpdate);
-    }
-
-    private void UpdateTopBar()
-    {
-        var top = TopLevel.GetTopLevel(this) as MainWindow;
-        var languageName = CompilationSource?.CurrentLanguageName;
-        if (languageName is not null)
-        {
-            top!.TitleBar.SetThemeForLanguage(languageName);
-        }
     }
 
     private void OnVerticalScroll()

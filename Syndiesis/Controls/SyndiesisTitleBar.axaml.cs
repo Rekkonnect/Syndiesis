@@ -22,7 +22,7 @@ public partial class SyndiesisTitleBar : UserControl
     private CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
     private Run _titleRun;
 
-    public event EventHandler<PointerPressedEventArgs> ImageClicked
+    public event EventHandler<PointerPressedEventArgs> LogoClicked
     {
         add => logoImage.PointerPressed += value;
         remove => logoImage.PointerPressed -= value;
@@ -216,5 +216,7 @@ public partial class SyndiesisTitleBar : UserControl
                 logoImage.Source = App.CurrentResourceManager.LogoVBImage!.Source;
                 break;
         }
+
+        headerText.Redraw();
     }
 }
