@@ -13,10 +13,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.WebSockets;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks.Sources;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -47,10 +45,10 @@ public abstract partial class BaseAnalysisNodeCreator
     protected AnalysisNodeCreationOptions Options
         => AppSettings.Instance.NodeLineOptions;
 
-    public readonly AnalysisNodeCreatorContainer ParentContainer;
+    public readonly BaseAnalysisNodeCreatorContainer ParentContainer;
 
     public BaseAnalysisNodeCreator(
-        AnalysisNodeCreatorContainer parentContainer)
+        BaseAnalysisNodeCreatorContainer parentContainer)
     {
         ParentContainer = parentContainer;
 

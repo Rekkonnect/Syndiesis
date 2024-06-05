@@ -3,11 +3,15 @@ using Avalonia.Controls;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
+using Microsoft.CodeAnalysis;
+using Syndiesis.Core;
 
 namespace Syndiesis.Views;
 
 public partial class MainWindow : Window
 {
+    private readonly MainView _mainView = new();
     private readonly SettingsView _settingsView = new();
 
     public MainWindow()
@@ -20,7 +24,10 @@ public partial class MainWindow : Window
 #endif
         AttachDevTools();
         InitializeEvents();
-        InitializeHeader();
+        SetCurrentTitle();
+
+        pageTransition.SetMainContent(_mainView);
+        pageTransition.SetSecondaryContent(_settingsView);
     }
 
     private void AttachDevTools()
@@ -34,10 +41,33 @@ public partial class MainWindow : Window
 #endif
     }
 
-    private void InitializeHeader()
+    private void SetCurrentTitle()
+    {
+        var currentLanguage = GetCurrentLanguageName();
+        SetTitleForLanguage(currentLanguage);
+    }
+
+    private static string ProgramTitleForLanguage(string languageName)
+    {
+        return languageName switch
+        {
+            LanguageNames.CSharp => "Syndiesis",
+            LanguageNames.VisualBasic => "SymVBiosis",
+            _ => throw RoslynExceptions
+                .ThrowInvalidLanguageArgument(languageName, nameof(languageName)),
+        };
+    }
+
+    private void SetTitleForLanguage(string languageName)
+    {
+        var title = ProgramTitleForLanguage(languageName);
+        SetTitle(title);
+    }
+
+    private void SetTitle(string programTitle)
     {
         var infoVersion = App.Current.AppInfo.InformationalVersion;
-        Title = $"Syndiesis v{infoVersion.Version} [{infoVersion.CommitSha![..7]}]";
+        Title = $"{programTitle} v{infoVersion.Version} [{infoVersion.CommitSha![..7]}]";
     }
 
     private void InitializeEvents()
@@ -45,7 +75,47 @@ public partial class MainWindow : Window
         _settingsView.SettingsSaved += OnSettingsSaved;
         _settingsView.SettingsReset += OnSettingsReset;
         _settingsView.SettingsCancelled += OnSettingsCancelled;
-        mainView.SettingsRequested += OnSettingsRequested;
+        _mainView.SettingsRequested += OnSettingsRequested;
+        _mainView.codeEditor.AnalysisCompleted += OnAnalysisCompleted;
+        TitleBar.LogoClicked += OnImageClicked;
+    }
+
+    private void OnAnalysisCompleted()
+    {
+        Dispatcher.UIThread.InvokeAsync(UpdateTitleBar);
+    }
+
+    private void UpdateTitleBar()
+    {
+        var languageName = GetCurrentLanguageName();
+        if (languageName is not null)
+        {
+            SetThemeAndLogo(languageName);
+        }
+    }
+
+    private string GetCurrentLanguageName()
+    {
+        return _mainView.ViewModel.HybridCompilationSource.CurrentLanguageName;
+    }
+
+    private void OnImageClicked(object? sender, PointerPressedEventArgs e)
+    {
+        var point = e.GetCurrentPoint(this);
+        var properties = point.Properties;
+        if (properties.IsLeftButtonPressed && e.KeyModifiers is KeyModifiers.None)
+        {
+            var toggled = _mainView.ToggleLanguage();
+            SetThemeAndLogo(toggled);
+        }
+    }
+
+    private void SetThemeAndLogo(string languageName)
+    {
+        TitleBar.SetThemeForLanguage(languageName);
+        var image = TitleBar.LogoImage;
+        Icon = new WindowIcon(image);
+        SetCurrentTitle();
     }
 
     private void OnSettingsRequested()
@@ -71,15 +141,16 @@ public partial class MainWindow : Window
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        mainView.Reset();
-        mainView.Focus();
+        _mainView.Reset();
+        _mainView.Focus();
     }
 
     public void ShowSettings()
     {
         _settingsView.LoadFromSettings();
-        pageTransition.IsTransitionReversed = false;
-        pageTransition.Content = _settingsView;
+        pageTransition.TransitionToSecondary();
+        //pageTransition.IsTransitionReversed = false;
+        //pageTransition.Content = _settingsView;
     }
 
     public void ShowMainView()
@@ -90,13 +161,14 @@ public partial class MainWindow : Window
 
     private void ApplySettings()
     {
-        mainView.ApplyCurrentSettings();
+        _mainView.ApplyCurrentSettings();
     }
 
     private void TransitionIntoMainView()
     {
-        pageTransition.IsTransitionReversed = true;
-        pageTransition.Content = mainView;
-        mainView.Focus();
+        //pageTransition.IsTransitionReversed = true;
+        //pageTransition.Content = mainView;
+        pageTransition.TransitionToMain();
+        _mainView.Focus();
     }
 }

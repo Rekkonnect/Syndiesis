@@ -16,6 +16,9 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
 
     private GroupedRunInline? _hoveredRunInline;
 
+    private volatile bool _redrawn;
+    private PointerEventArgs? _lastPointerEventArgs;
+
     public InlineCollection? Inlines
     {
         get => containedText.Inlines;
@@ -38,6 +41,22 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
     {
         InitializeComponent();
         ClipToBounds = false;
+        containedText.LayoutUpdated += OnContainedTextLayoutUpdated;
+    }
+
+    private void OnContainedTextLayoutUpdated(object? sender, EventArgs e)
+    {
+        if (_redrawn)
+        {
+            DiscoverHoveredInlineEvaluate();
+            _redrawn = false;
+        }
+    }
+
+    public void Redraw()
+    {
+        containedText.InvalidateText();
+        _redrawn = true;
     }
 
     private void HandleRootKeyEvent(object? sender, KeyEventArgs e)
@@ -47,6 +66,7 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
 
     protected override void OnPointerEntered(PointerEventArgs e)
     {
+        _lastPointerEventArgs = e;
         var root = VisualRoot as InputElement;
         if (root is null)
             return;
@@ -56,6 +76,7 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
 
     protected override void OnPointerExited(PointerEventArgs e)
     {
+        _lastPointerEventArgs = e;
         ClearHoveredInline();
 
         var root = VisualRoot as InputElement;
@@ -67,11 +88,13 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
+        _lastPointerEventArgs = e;
         DiscoverHoveredInlineEvaluate(e);
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
+        _lastPointerEventArgs = e;
         DiscoverHoveredInlineEvaluate(e);
 
         var pointerPoint = e.GetCurrentPoint(this);
@@ -87,6 +110,14 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
                     break;
                 }
             }
+        }
+    }
+
+    private void DiscoverHoveredInlineEvaluate()
+    {
+        if (_lastPointerEventArgs is not null)
+        {
+            DiscoverHoveredInlineEvaluate(_lastPointerEventArgs);
         }
     }
 
@@ -122,7 +153,7 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
 
     private void UpdateHoveredInline(GroupedRunInline? hoveredInline)
     {
-        if (_hoveredRunInline == hoveredInline)
+        if (_hoveredRunInline == hoveredInline && !_redrawn)
             return;
 
         _hoveredRunInline = hoveredInline;

@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 
-public class SyntaxNodeAnalysisExecution(SingleTreeCompilationSource compilationSource)
+public class SyntaxNodeAnalysisExecution(HybridSingleTreeCompilationSource compilationSource)
     : BaseAnalysisExecution(compilationSource)
 {
     protected override Task<AnalysisResult> ExecuteCore(
@@ -13,7 +13,7 @@ public class SyntaxNodeAnalysisExecution(SingleTreeCompilationSource compilation
         var container = CreateCreatorContainer();
         var creator = container.SyntaxCreator;
 
-        var syntaxTree = CompilationSource.Tree!;
+        var syntaxTree = CompilationSource.CurrentSource.Tree!;
 
         UIBuilder.AnalysisTreeListNode root;
 

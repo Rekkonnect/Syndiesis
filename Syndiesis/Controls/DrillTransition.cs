@@ -15,7 +15,7 @@ public class DrillTransition : IPageTransition
 {
     public TimeSpan Duration { get; set; }
     public Easing Easing { get; set; } = Singleton<ExponentialEaseOut>.Instance;
-    public double ScaleRatio { get; set; } = 1.4;
+    public double ScaleRatio { get; set; } = 1.3;
 
     public async Task Start(
         Visual? from, Visual? to,
@@ -24,12 +24,6 @@ public class DrillTransition : IPageTransition
         if (cancellationToken.IsCancellationRequested)
         {
             return;
-        }
-
-        var commonParent = GetCommonVisualParent(from, to);
-        if (commonParent is null)
-        {
-            throw new InvalidOperationException("Could not determine the common parent");
         }
 
         var scaleXProperty = ScaleTransform.ScaleXProperty;

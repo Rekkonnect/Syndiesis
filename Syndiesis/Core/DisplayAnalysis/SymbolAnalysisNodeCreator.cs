@@ -42,7 +42,7 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly TypedConstantRootViewNodeCreator _typedConstantCreator;
 
     public SymbolAnalysisNodeCreator(
-        AnalysisNodeCreatorContainer parentContainer)
+        BaseAnalysisNodeCreatorContainer parentContainer)
         : base(parentContainer)
     {
         _symbolCreator = new(this);

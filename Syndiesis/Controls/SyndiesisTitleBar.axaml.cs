@@ -4,6 +4,8 @@ using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Media;
+using Avalonia.Media.Imaging;
+using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
@@ -19,6 +21,18 @@ public partial class SyndiesisTitleBar : UserControl
 
     private Window? WindowRoot => VisualRoot as Window;
     private CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
+    private Run _titleRun;
+
+    public Bitmap LogoImage
+    {
+        get => (Bitmap)logoImage.Source!;
+    }
+
+    public event EventHandler<PointerPressedEventArgs> LogoClicked
+    {
+        add => logoImage.PointerPressed += value;
+        remove => logoImage.PointerPressed -= value;
+    }
 
     public SyndiesisTitleBar()
     {
@@ -113,6 +127,7 @@ public partial class SyndiesisTitleBar : UserControl
         _ = animation.RunAsync(linePulseRectangle, _pulseLineCancellationTokenFactory.CurrentToken);
     }
 
+    [MemberNotNull(nameof(_titleRun))]
     [MemberNotNull(nameof(_versionRun))]
     [MemberNotNull(nameof(_commitRun))]
     private void InitializeRuns()
@@ -124,7 +139,7 @@ public partial class SyndiesisTitleBar : UserControl
         var groups = new RunOrGrouped[]
         {
             new SingleRunInline(
-                new Run("Syndiesis")
+                _titleRun = new Run("Syndiesis")
                 {
                     FontSize = 20,
                 }
@@ -186,5 +201,28 @@ public partial class SyndiesisTitleBar : UserControl
         }
 
         headerText.GroupedRunInlines = new(groups);
+    }
+
+    private static readonly Color _csBackground = Color.FromUInt32(0xFF004044);
+    private static readonly Color _vbBackground = Color.FromUInt32(0xFF104565);
+
+    public void SetThemeForLanguage(string languageName)
+    {
+        switch (languageName)
+        {
+            case LanguageNames.CSharp:
+                lineBackground.Fill = new SolidColorBrush(_csBackground);
+                _titleRun.Text = "Syndiesis";
+                logoImage.Source = App.CurrentResourceManager.LogoCSImage!.Source;
+                break;
+
+            case LanguageNames.VisualBasic:
+                lineBackground.Fill = new SolidColorBrush(_vbBackground);
+                _titleRun.Text = "SymVBiosis";
+                logoImage.Source = App.CurrentResourceManager.LogoVBImage!.Source;
+                break;
+        }
+
+        headerText.Redraw();
     }
 }

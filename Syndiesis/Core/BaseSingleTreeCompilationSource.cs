@@ -1,14 +1,18 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
 namespace Syndiesis.Core;
 
-public sealed class SingleTreeCompilationSource
+public abstract class BaseSingleTreeCompilationSource<TCompilation>
+    : ISingleTreeCompilationSource
+    where TCompilation : Compilation
 {
-    public Compilation Compilation { get; private set; }
+    public abstract string LanguageName { get; }
+
+    public TCompilation Compilation { get; private set; }
+    Compilation ISingleTreeCompilationSource.Compilation => Compilation;
 
     public SyntaxTree? Tree { get; private set; }
 
@@ -23,7 +27,7 @@ public sealed class SingleTreeCompilationSource
         }
     }
 
-    public SingleTreeCompilationSource()
+    protected BaseSingleTreeCompilationSource()
     {
         InitializeCompilation();
     }
@@ -31,9 +35,13 @@ public sealed class SingleTreeCompilationSource
     [MemberNotNull(nameof(Compilation))]
     private void InitializeCompilation()
     {
-        Compilation = CSharpCompilation.Create("Syndiesis.UserSource")
-            .WithReferences(CompilationReferences.Runnable);
+        Compilation = (TCompilation)CreateCompilation()
+            .WithReferences(CompilationReferences.Runnable)
+            ;
     }
+
+    protected abstract TCompilation CreateCompilation();
+    protected abstract SyntaxTree ParseTree(string source, CancellationToken cancellationToken);
 
     [MemberNotNull(nameof(Tree))]
     public void SetSource(string source, CancellationToken cancellationToken)
@@ -43,16 +51,16 @@ public sealed class SingleTreeCompilationSource
         Compilation = AddOrReplaceSyntaxTree(Compilation, previousTree, Tree);
     }
 
-    private static Compilation AddOrReplaceSyntaxTree(
-        Compilation compilation, SyntaxTree? previousTree, SyntaxTree newTree)
+    private static TCompilation AddOrReplaceSyntaxTree(
+        TCompilation compilation, SyntaxTree? previousTree, SyntaxTree newTree)
     {
         if (previousTree is null)
         {
-            return compilation.AddSyntaxTrees(newTree);
+            return (TCompilation)compilation.AddSyntaxTrees(newTree);
         }
         else
         {
-            return compilation.ReplaceSyntaxTree(previousTree, newTree);
+            return (TCompilation)compilation.ReplaceSyntaxTree(previousTree, newTree);
         }
     }
 
@@ -61,7 +69,7 @@ public sealed class SingleTreeCompilationSource
     {
         if (Tree is null)
         {
-            Tree = CSharpSyntaxTree.ParseText(source, cancellationToken: cancellationToken);
+            Tree = ParseTree(source, cancellationToken: cancellationToken);
         }
         else
         {

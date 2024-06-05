@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using AvaloniaEdit;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
@@ -52,7 +53,7 @@ public partial class MainView : UserControl
         codeEditor.CaretPosition = new(4, 48);
         codeEditor.AssociatedTreeView = syntaxTreeView.listView;
 
-        codeEditor.CompilationSource = ViewModel.CompilationSource;
+        codeEditor.CompilationSource = ViewModel.HybridCompilationSource;
 
         analysisTreeViewTabs.Envelopes =
         [
@@ -107,7 +108,7 @@ public partial class MainView : UserControl
     private void HandleSelectedAnalysisTab(TabEnvelope tab)
     {
         var analysisKind = (AnalysisNodeKind)tab.TagValue!;
-        var analysisFactory = new AnalysisExecutionFactory(ViewModel.CompilationSource);
+        var analysisFactory = new AnalysisExecutionFactory(ViewModel.HybridCompilationSource);
         var analysisExecution = analysisFactory.CreateAnalysisExecution(analysisKind);
         AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
         AnalysisPipelineHandler.IgnoreInputDelayOnce();
@@ -236,36 +237,97 @@ public partial class MainView : UserControl
         codeEditor.ApplySettings(settings);
     }
 
+    private const string defaultCodeCS = """
+        #define SYNDIESIS
+
+        using System;
+
+        namespace Example;
+
+        public class Program
+        {
+            public static void Main(string[] args)
+            {
+                // using conditional compilation symbols is fun
+                const string greetings =
+        #if SYNDIESIS
+                    "Hello Syndiesis!"
+        #else
+                    "Hello World!"
+        #endif
+                    ;
+                Console.WriteLine(greetings);
+            }
+        }
+
+        """;
+
+    private const string defaultCodeVB = """
+        #Const SYMVBIOSIS = True
+
+        Imports System
+
+        Namespace Example
+
+            Public Class Program
+
+                Public Sub Main()
+                    ' using conditional compilation symbols is fun
+        #If SYMVBIOSIS
+                    Const greetings As String = "Hello SymVBiosis!"
+        #Else
+                    Const greetings As String = "Hello World!"
+        #End If
+
+                    Console.WriteLine(greetings)
+                End Sub
+
+            End Class
+
+        End Namespace
+
+        """;
+
     public void Reset()
     {
-        const string defaultCode = """
-            #define SYNDIESIS
-
-            using System;
-
-            namespace Example;
-
-            public class Program
-            {
-                public static void Main(string[] args)
-                {
-                    // using conditional compilation symbols is fun
-                    const string greetings =
-            #if SYNDIESIS
-                        "Hello Syndiesis!"
-            #else
-                        "Hello World!"
-            #endif
-                        ;
-                    Console.WriteLine(greetings);
-                }
-            }
-
-            """;
-
         LoggerExtensionsEx.LogMethodInvocation(nameof(Reset));
+        var name = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        ResetToLanguage(name);
+    }
 
+    public void ResetToLanguage(string languageName)
+    {
+        LoggerExtensionsEx.LogMethodInvocation($"{nameof(ResetToLanguage)}({languageName})");
+        var defaultCode = DefaultCode(languageName);
         SetSource(defaultCode);
+    }
+
+    public string ToggleLanguage()
+    {
+        var current = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        var toggled = ToggleLanguageName(current);
+        ResetToLanguage(toggled);
+        return toggled;
+    }
+
+    private static string ToggleLanguageName(string languageName)
+    {
+        return languageName switch
+        {
+            LanguageNames.CSharp => LanguageNames.VisualBasic,
+            LanguageNames.VisualBasic => LanguageNames.CSharp,
+            _ => throw RoslynExceptions.ThrowInvalidLanguageArgument(languageName, nameof(languageName)),
+        };
+    }
+
+    private static string DefaultCode(string languageName)
+    {
+        return languageName switch
+        {
+            LanguageNames.CSharp => defaultCodeCS,
+            LanguageNames.VisualBasic => defaultCodeVB,
+            _ => throw RoslynExceptions.ThrowInvalidLanguageArgument(languageName, nameof(languageName)),
+        };
     }
 
     private void SetSource(string source)

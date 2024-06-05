@@ -33,7 +33,7 @@ public sealed partial class OperationsAnalysisNodeCreator
     private readonly OperationTreeSymbolContainerRootViewNodeCreator _symbolContainerCreator;
 
     public OperationsAnalysisNodeCreator(
-        AnalysisNodeCreatorContainer parentContainer)
+        BaseAnalysisNodeCreatorContainer parentContainer)
         : base(parentContainer)
     {
         _operationCreator = new(this);
@@ -100,8 +100,7 @@ public sealed partial class OperationsAnalysisNodeCreator
         SyntaxNode node,
         DisplayValueSource valueSource)
     {
-        return ParentContainer.SyntaxCreator.ChildlessSyntaxCreator
-            .CreateNode(node, valueSource);
+        return ParentContainer.SyntaxCreator.CreateChildlessRootNode(node, valueSource);
     }
 }
 

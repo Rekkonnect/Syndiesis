@@ -19,6 +19,11 @@ public class GroupedRunInlineTextBlock : TextBlock
         }
     }
 
+    public void InvalidateText()
+    {
+        InvalidateTextLayout();
+    }
+
     public GroupedRunInline? HitTestGroupedRun(Point point)
     {
         if (_groupedInlines is null)

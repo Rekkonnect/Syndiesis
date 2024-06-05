@@ -27,8 +27,8 @@ namespace Syndiesis.Controls;
 /// A code editor using <see cref="TextEditor"/>.
 /// </summary>
 /// <remarks>
-/// It does not yet provide support for IDe features like autocompletion, code fixes,
-/// or others. They may be added in the future
+/// It does not yet provide support for IDE features like autocompletion, code fixes,
+/// or others. They may be added in the future.
 /// </remarks>
 public partial class CodeEditor : UserControl
 {
@@ -40,22 +40,30 @@ public partial class CodeEditor : UserControl
     private int _disabledNodeHoverTimes;
 
     private NodeSpanHoverLayer _nodeSpanHoverLayer;
-    private CSharpRoslynColorizer? _roslynColorizer;
+    private RoslynColorizerContainer? _roslynColorizer;
 
-    private SingleTreeCompilationSource? _compilationSource;
+    private HybridSingleTreeCompilationSource? _compilationSource;
+    private RoslynColorizer? _effectiveColorizer;
 
     public AnalysisTreeListView? AssociatedTreeView { get; set; }
 
-    public SingleTreeCompilationSource? CompilationSource
+    public HybridSingleTreeCompilationSource? CompilationSource
     {
         get => _compilationSource;
         set
         {
             _compilationSource = value;
-            if (value is not null and var source)
+            if (value is not null)
             {
-                _roslynColorizer = new CSharpRoslynColorizer(source);
-                textEditor.TextArea.TextView.LineTransformers.Add(_roslynColorizer);
+                _roslynColorizer = new RoslynColorizerContainer(value);
+                _effectiveColorizer = _roslynColorizer.EffectiveColorizer;
+                textEditor.TextArea.TextView.LineTransformers.Add(_effectiveColorizer);
+            }
+            else
+            {
+                _roslynColorizer = null;
+                _effectiveColorizer = null;
+                textEditor.TextArea.TextView.LineTransformers.Remove(_effectiveColorizer);
             }
         }
     }
@@ -67,6 +75,28 @@ public partial class CodeEditor : UserControl
     }
 
     public SimpleSegment HoveredListNodeSegment { get; private set; }
+
+    public TextDocument Document
+    {
+        get => textEditor.Document;
+        set
+        {
+            textEditor.Document = value;
+            HandleNewDocument();
+        }
+    }
+
+    public bool ColorizerEnabled
+    {
+        get => _roslynColorizer?.Enabled ?? false;
+        set
+        {
+            if (_roslynColorizer is null)
+                return;
+
+            _roslynColorizer.Enabled = value;
+        }
+    }
 
     public event EventHandler? TextChanged
     {
@@ -84,15 +114,7 @@ public partial class CodeEditor : UserControl
         remove => textEditor.TextArea.SelectionChanged -= value;
     }
 
-    public TextDocument Document
-    {
-        get => textEditor.Document;
-        set
-        {
-            textEditor.Document = value;
-            HandleNewDocument();
-        }
-    }
+    public event Action? AnalysisCompleted;
 
     public CodeEditor()
     {
@@ -194,13 +216,22 @@ public partial class CodeEditor : UserControl
         {
             AssociatedTreeView.AnalyzedTree = null;
         }
-        if (_roslynColorizer is not null)
-        {
-            _roslynColorizer.Enabled = false;
-        }
+        ColorizerEnabled = false;
 
         ClearHoverSpan();
         _nodeSpanHoverLayer.InvalidateVisual();
+    }
+
+    private void UpdateCurrentColorizer()
+    {
+        var nextEffective = _roslynColorizer?.EffectiveColorizer;
+        if (_effectiveColorizer == nextEffective)
+            return;
+
+        textEditor.TextArea.TextView.LineTransformers.Remove(_effectiveColorizer);
+        textEditor.TextArea.TextView.LineTransformers.Add(nextEffective);
+
+        _effectiveColorizer = nextEffective;
     }
 
     public void RegisterAnalysisPipelineHandler(
@@ -211,11 +242,15 @@ public partial class CodeEditor : UserControl
 
     private void HandleAnalysisCompleted(AnalysisResult result)
     {
-        if (_roslynColorizer is not null)
+        void UIUpdate()
         {
-            _roslynColorizer.Enabled = true;
+            UpdateCurrentColorizer();
+            ColorizerEnabled = true;
+            textEditor.TextArea.TextView.Redraw();
         }
-        Dispatcher.UIThread.Invoke(textEditor.TextArea.TextView.Redraw);
+
+        AnalysisCompleted?.Invoke();
+        Dispatcher.UIThread.InvokeAsync(UIUpdate);
     }
 
     private void OnVerticalScroll()
@@ -250,6 +285,7 @@ public partial class CodeEditor : UserControl
 
     public void SetSource(string source)
     {
+        ColorizerEnabled = false;
         textEditor.Document.Text = source;
     }
 
@@ -481,7 +517,7 @@ public partial class CodeEditor : UserControl
 
     private ISymbol? DiscoverSymbolAtCaret()
     {
-        var source = CompilationSource;
+        var source = CompilationSource?.CurrentSource;
         if (source is null)
             return null;
 

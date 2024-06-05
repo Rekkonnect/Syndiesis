@@ -34,21 +34,19 @@
 
   <DockPanel>
 
-    <controls:SyndiesisTitleBar />
+    <controls:SyndiesisTitleBar
+      Name="TitleBar"
+      />
 
     <Panel
       >
-      <TransitioningContentControl
+      <controls:TransitioningMainPage
         Name="pageTransition"
         >
-        <TransitioningContentControl.PageTransition>
+        <controls:TransitioningMainPage.PageTransition>
           <controls:DrillTransition Duration="00:00:00.400" />
-        </TransitioningContentControl.PageTransition>
-
-        <views:MainView
-          Name="mainView"
-          />
-      </TransitioningContentControl>
+        </controls:TransitioningMainPage.PageTransition>
+      </controls:TransitioningMainPage>
 
       <toast:ToastNotificationContainer
         Name="ToastNotificationContainer"
