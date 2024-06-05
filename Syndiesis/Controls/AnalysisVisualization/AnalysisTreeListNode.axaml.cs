@@ -221,26 +221,19 @@ public partial class AnalysisTreeListNode : UserControl
         innerStackPanel.Children.ClearSetValues(value);
     }
 
-    protected override void OnPointerEntered(PointerEventArgs e)
-    {
-        base.OnPointerEntered(e);
-        EvaluateHovering(e);
-    }
-
     private void OnPointerEnteredLine(object? sender, PointerEventArgs e)
     {
-        EvaluateHovering(e);
+        SetAsHovered();
     }
 
     protected override void OnPointerExited(PointerEventArgs e)
     {
+        ListView?.RemoveHover(this);
         base.OnPointerExited(e);
-        EvaluateHovering(e);
     }
 
     private void EvaluateHovering(PointerEventArgs e)
     {
-        ListView?.EvaluateHovering(e);
         var allowedHover = ListView?.RequestHover(this) ?? true;
         if (!allowedHover)
         {
@@ -262,6 +255,19 @@ public partial class AnalysisTreeListNode : UserControl
         {
             ListView?.RemoveHover(this);
         }
+    }
+
+    private void SetAsHovered()
+    {
+        var allowedHover = ListView?.RequestHover(this) ?? true;
+        if (!allowedHover)
+        {
+            UpdateHovering(false);
+            return;
+        }
+
+        ListView?.OverrideHover(this);
+        _ = RequestInitializedChildren();
     }
 
     internal void SetListViewRecursively(AnalysisTreeListView listView)
