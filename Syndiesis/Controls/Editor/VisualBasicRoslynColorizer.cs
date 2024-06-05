@@ -293,17 +293,17 @@ public sealed partial class VisualBasicRoslynColorizer(
 
             case SymbolKind.Field:
             {
-                var field = (IFieldSymbol)symbol;
-                if (field.IsConst)
-                {
-                    return ColorizerForBrush(Styles.ConstantForeground);
-                }
-
                 bool withinEnum = symbol.ContainingSymbol
                     is INamedTypeSymbol { TypeKind: TypeKind.Enum };
                 if (withinEnum)
                 {
                     return ColorizerForBrush(Styles.EnumFieldForeground);
+                }
+
+                var field = (IFieldSymbol)symbol;
+                if (field.IsConst)
+                {
+                    return ColorizerForBrush(Styles.ConstantForeground);
                 }
 
                 break;
