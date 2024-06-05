@@ -5,7 +5,6 @@ using AvaloniaEdit.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
-using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
@@ -135,9 +134,64 @@ public sealed partial class VisualBasicRoslynColorizer(
         }
         else
         {
-            var colorizer = GetTokenColorizer(token.Kind());
-            ColorizeSpan(line, token.Span, colorizer);
+            var xmlColorizer = GetXmlTokenColorizer(token);
+            if (xmlColorizer is not null)
+            {
+                ColorizeSpan(line, token.Span, xmlColorizer);
+            }
+            else
+            {
+                var colorizer = GetTokenColorizer(token.Kind());
+                ColorizeSpan(line, token.Span, colorizer);
+            }
         }
+    }
+
+    private Action<VisualLineElement>? GetXmlTokenColorizer(SyntaxToken token)
+    {
+        var tokenKind = token.Kind();
+
+        switch (tokenKind)
+        {
+            case SyntaxKind.XmlEntityLiteralToken:
+                return ColorizerForBrush(Styles.XmlEntityLiteralForeground);
+
+            case SyntaxKind.BeginCDataToken:
+            case SyntaxKind.EndCDataToken:
+                return ColorizerForBrush(Styles.XmlCDataForeground);
+        }
+
+        var tokenParent = token.Parent!;
+
+        if (tokenKind is SyntaxKind.XmlTextLiteralToken)
+        {
+            var tokenParentKind = tokenParent.Kind();
+            switch (tokenParentKind)
+            {
+                case SyntaxKind.XmlString:
+                    return ColorizerForBrush(Styles.XmlTextForeground);
+
+                case SyntaxKind.XmlCDataSection:
+                    return ColorizerForBrush(Styles.XmlCDataForeground);
+            }
+        }
+
+        if (tokenKind is SyntaxKind.XmlNameToken)
+        {
+            var nameParent = tokenParent.Parent;
+            var nameParentKind = nameParent.Kind();
+            switch (nameParentKind)
+            {
+                case SyntaxKind.XmlAttribute:
+                    return ColorizerForBrush(Styles.XmlAttributeForeground);
+
+                case SyntaxKind.XmlElementStartTag:
+                case SyntaxKind.XmlElementEndTag:
+                    return ColorizerForBrush(Styles.XmlTagForeground);
+            }
+        }
+
+        return null;
     }
 
     private void ColorizeSpan(
@@ -736,5 +790,21 @@ partial class VisualBasicRoslynColorizer
 
         public static readonly SolidColorBrush DelegateForeground
             = new(0xFF4BCBC8);
+
+        // XML literal kinds
+        public static readonly SolidColorBrush XmlTextForeground
+            = new(0xFFC2A186);
+
+        public static readonly SolidColorBrush XmlAttributeForeground
+            = new(0xFF88EAFF);
+
+        public static readonly SolidColorBrush XmlTagForeground
+            = new(0xFFA6BFFF);
+
+        public static readonly SolidColorBrush XmlEntityLiteralForeground
+            = new(0xFF88EAFF);
+
+        public static readonly SolidColorBrush XmlCDataForeground
+            = new(0xFFFFF4B9);
     }
 }
