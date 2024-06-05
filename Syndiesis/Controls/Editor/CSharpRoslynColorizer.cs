@@ -73,16 +73,6 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
 
         var parent = CommonParent(startNode, endNode);
 
-        var descendantTokens = parent.DescendantTokens(descendIntoTrivia: true);
-
-        foreach (var token in descendantTokens)
-        {
-            if (cancellationToken.IsCancellationRequested)
-                return;
-
-            ColorizeTokenInLine(line, token);
-        }
-
         var descendantTrivia = parent.DescendantTrivia(descendIntoTrivia: true);
 
         foreach (var trivia in descendantTrivia)
@@ -92,6 +82,16 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
 
             var colorizer = GetTriviaColorizer(trivia.Kind());
             ColorizeSpan(line, trivia.Span, colorizer);
+        }
+
+        var descendantTokens = parent.DescendantTokens(descendIntoTrivia: true);
+
+        foreach (var token in descendantTokens)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            ColorizeTokenInLine(line, token);
         }
 
         var descendantNodes = parent.DescendantNodes();
@@ -110,6 +110,12 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
     {
         if (token.Kind() is SyntaxKind.IdentifierToken)
         {
+            var xmlColorizer = GetXmlTokenColorizer(token);
+            if (xmlColorizer is not null)
+            {
+                ColorizeSpan(line, token.Span, xmlColorizer);
+            }
+
             var symbolKind = GetDeclaringSymbolKind(token);
             if (symbolKind.IsEnumField)
             {
@@ -134,9 +140,57 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         }
         else
         {
-            var colorizer = GetTokenColorizer(token.Kind());
+            var colorizer = GetTokenColorizer(token);
             ColorizeSpan(line, token.Span, colorizer);
         }
+    }
+
+    private Action<VisualLineElement>? GetXmlTokenColorizer(SyntaxToken token)
+    {
+        var tokenKind = token.Kind();
+
+        switch (tokenKind)
+        {
+            case SyntaxKind.XmlEntityLiteralToken:
+                return ColorizerForBrush(Styles.XmlEntityLiteralForeground);
+
+            case SyntaxKind.XmlCDataStartToken:
+            case SyntaxKind.XmlCDataEndToken:
+                return ColorizerForBrush(Styles.XmlCDataForeground);
+        }
+
+        var tokenParent = token.Parent!;
+        var tokenParentKind = tokenParent.Kind();
+
+        if (tokenKind is SyntaxKind.XmlTextLiteralToken)
+        {
+            switch (tokenParentKind)
+            {
+                case SyntaxKind.XmlCDataSection:
+                    return ColorizerForBrush(Styles.XmlCDataForeground);
+            }
+        }
+
+        if (tokenParentKind is SyntaxKind.XmlName)
+        {
+            var nameParent = tokenParent.Parent!;
+            var nameParentKind = nameParent.Kind();
+            switch (nameParentKind)
+            {
+                case SyntaxKind.XmlNameAttribute:
+                case SyntaxKind.XmlCrefAttribute:
+                case SyntaxKind.XmlTextAttribute:
+                    return ColorizerForBrush(Styles.XmlAttributeForeground);
+
+                case SyntaxKind.XmlElementStartTag:
+                case SyntaxKind.XmlElementEndTag:
+                case SyntaxKind.XmlEmptyElement:
+                case SyntaxKind.XmlElement:
+                    return ColorizerForBrush(Styles.XmlTagForeground);
+            }
+        }
+
+        return null;
     }
 
     private void ColorizeSpan(
@@ -298,6 +352,8 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         if (isDefinition)
             return true;
 
+        // This returns true for `#pragma warning` directives, and is a Roslyn bug
+        // https://github.com/dotnet/roslyn/issues/72907
         return model.GetPreprocessingSymbolInfo(node).Symbol is not null;
     }
 
@@ -371,6 +427,19 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         }
 
         return GetColorizer(kind);
+    }
+
+    private Action<VisualLineElement>? GetTokenColorizer(SyntaxToken token)
+    {
+        if (token.IsKeyword())
+        {
+            var parent = token.Parent;
+            if (parent is DirectiveTriviaSyntax)
+                return null;
+        }
+
+        var manualColorizer = GetTokenColorizer(token.Kind());
+        return manualColorizer;
     }
 
     private Action<VisualLineElement>? GetTokenColorizer(SyntaxKind kind)
@@ -465,6 +534,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             SyntaxKind.SingleLineCommentTrivia or
             SyntaxKind.MultiLineCommentTrivia => Styles.CommentForeground,
 
+            SyntaxKind.DocumentationCommentExteriorTrivia or
             SyntaxKind.SingleLineDocumentationCommentTrivia or
             SyntaxKind.MultiLineDocumentationCommentTrivia => Styles.DocumentationForeground,
 
@@ -816,5 +886,21 @@ partial class CSharpRoslynColorizer
 
         public static readonly SolidColorBrush DelegateForeground
             = new(0xFF4BCBC8);
+
+        // XML literal kinds
+        public static readonly SolidColorBrush XmlTextForeground
+            = new(0xFFC2A186);
+
+        public static readonly SolidColorBrush XmlAttributeForeground
+            = new(0xFF88EAFF);
+
+        public static readonly SolidColorBrush XmlTagForeground
+            = new(0xFF74A3FF);
+
+        public static readonly SolidColorBrush XmlEntityLiteralForeground
+            = new(0xFF88EAFF);
+
+        public static readonly SolidColorBrush XmlCDataForeground
+            = new(0xFFFFF4B9);
     }
 }

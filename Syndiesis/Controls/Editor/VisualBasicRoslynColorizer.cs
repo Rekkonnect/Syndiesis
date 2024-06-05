@@ -73,16 +73,6 @@ public sealed partial class VisualBasicRoslynColorizer(
 
         var parent = CommonParent(startNode, endNode);
 
-        var descendantTokens = parent.DescendantTokens(descendIntoTrivia: true);
-
-        foreach (var token in descendantTokens)
-        {
-            if (cancellationToken.IsCancellationRequested)
-                return;
-
-            ColorizeTokenInLine(line, token);
-        }
-
         var descendantTrivia = parent.DescendantTrivia(descendIntoTrivia: true);
 
         foreach (var trivia in descendantTrivia)
@@ -92,6 +82,16 @@ public sealed partial class VisualBasicRoslynColorizer(
 
             var colorizer = GetTriviaColorizer(trivia.Kind());
             ColorizeSpan(line, trivia.Span, colorizer);
+        }
+
+        var descendantTokens = parent.DescendantTokens(descendIntoTrivia: true);
+
+        foreach (var token in descendantTokens)
+        {
+            if (cancellationToken.IsCancellationRequested)
+                return;
+
+            ColorizeTokenInLine(line, token);
         }
 
         var descendantNodes = parent.DescendantNodes();
@@ -178,7 +178,7 @@ public sealed partial class VisualBasicRoslynColorizer(
 
         if (tokenKind is SyntaxKind.XmlNameToken)
         {
-            var nameParent = tokenParent.Parent;
+            var nameParent = tokenParent.Parent!;
             var nameParentKind = nameParent.Kind();
             switch (nameParentKind)
             {
