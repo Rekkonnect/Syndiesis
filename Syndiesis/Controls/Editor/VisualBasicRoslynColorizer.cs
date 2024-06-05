@@ -197,14 +197,6 @@ public sealed partial class VisualBasicRoslynColorizer(
             var identifierParent = identifier.Parent!;
             var symbolInfo = model.GetSymbolInfo(identifierParent, cancellationToken);
 
-            bool isNameOf = IsNameOf(identifier, symbolInfo, model);
-            if (isNameOf)
-            {
-                var nameofColorizer = GetTokenColorizer(SyntaxKind.NameOfKeyword);
-                ColorizeSpan(line, identifier.Span, nameofColorizer);
-                continue;
-            }
-
             bool isAttribute = IsAttribute(identifier, symbolInfo);
             if (isAttribute)
             {
@@ -285,33 +277,6 @@ public sealed partial class VisualBasicRoslynColorizer(
             return true;
 
         return model.GetPreprocessingSymbolInfo(node).Symbol is not null;
-    }
-
-    private bool IsNameOf(
-        SyntaxToken token,
-        SymbolInfo symbolInfo,
-        SemanticModel semanticModel)
-    {
-        bool basic = token.Kind() is SyntaxKind.IdentifierToken
-            && token.Text is "nameof"
-            && symbolInfo.Symbol is not IMethodSymbol { Name: "nameof" };
-
-        if (!basic)
-            return false;
-
-        var doubleParent = token.Parent!.Parent;
-        if (doubleParent is null)
-            return false;
-
-        var operation = semanticModel.GetOperation(doubleParent);
-        return operation is INameOfOperation;
-    }
-
-    private bool IsVar(SyntaxToken token, SymbolInfo symbolInfo)
-    {
-        return token.Kind() is SyntaxKind.IdentifierToken
-            && token.Text is "var"
-            && symbolInfo.Symbol is not INamedTypeSymbol { Name: "var" };
     }
 
     private Action<VisualLineElement>? GetColorizer(SymbolInfo symbolInfo)
