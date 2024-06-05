@@ -1,5 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Syndiesis.Controls.Toast;
@@ -55,6 +56,16 @@ public partial class SettingsView : UserControl
     {
         LoadFromSettings();
         base.OnLoaded(e);
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case Key.Escape:
+                CancelSettings();
+                break;
+        }
     }
 
     private void OnSaveClicked(object? sender, RoutedEventArgs e)

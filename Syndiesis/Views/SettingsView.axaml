@@ -6,6 +6,7 @@
              x:Class="Syndiesis.Views.SettingsView"
              xmlns:sc="using:Syndiesis.Controls.Settings"
              Background="Black"
+             Focusable="True"
              >
 
   <Grid

@@ -149,8 +149,6 @@ public partial class MainWindow : Window
     {
         _settingsView.LoadFromSettings();
         pageTransition.TransitionToSecondary();
-        //pageTransition.IsTransitionReversed = false;
-        //pageTransition.Content = _settingsView;
     }
 
     public void ShowMainView()
@@ -166,9 +164,6 @@ public partial class MainWindow : Window
 
     private void TransitionIntoMainView()
     {
-        //pageTransition.IsTransitionReversed = true;
-        //pageTransition.Content = mainView;
         pageTransition.TransitionToMain();
-        _mainView.Focus();
     }
 }

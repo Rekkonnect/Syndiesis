@@ -33,9 +33,12 @@ public partial class TransitioningMainPage : UserControl
         set => SetValue(PageTransitionProperty, value);
     }
 
+    private ContentIndex _contentIndex;
+
     private readonly CancellationTokenFactory _transitionCancellationTokenFactory = new();
 
     public bool IsTransitioningForward { get; set; } = true;
+    public bool AutoFocusOnTransition { get; set; } = true;
 
     public TransitioningMainPage()
     {
@@ -64,16 +67,33 @@ public partial class TransitioningMainPage : UserControl
 
     public void TransitionToMain()
     {
-        PerformTransition(SecondaryContent, MainContent, true);
+        PerformTransition(
+            SecondaryContent,
+            MainContent,
+            ContentIndex.Main,
+            true);
     }
 
     public void TransitionToSecondary()
     {
-        PerformTransition(MainContent, SecondaryContent, false);
+        PerformTransition(
+            MainContent,
+            SecondaryContent,
+            ContentIndex.Secondary,
+            false);
     }
 
-    private void PerformTransition(Panel from, Panel to, bool forward)
+    private void PerformTransition(
+        Panel from,
+        Panel to,
+        ContentIndex targetIndex,
+        bool forward)
     {
+        if (_contentIndex == targetIndex)
+            return;
+
+        _contentIndex = targetIndex;
+
         _transitionCancellationTokenFactory.Cancel();
         Dispatcher.UIThread.InvokeAsync(() =>
             PageTransition.Start(
@@ -83,5 +103,16 @@ public partial class TransitioningMainPage : UserControl
                 _transitionCancellationTokenFactory.CurrentToken));
         from.IsHitTestVisible = false;
         to.IsHitTestVisible = true;
+
+        if (AutoFocusOnTransition)
+        {
+            to.Children.First().Focus();
+        }
+    }
+
+    private enum ContentIndex
+    {
+        Main,
+        Secondary,
     }
 }
