@@ -15,7 +15,6 @@ using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Editor;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
-using Syndiesis.Views;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;

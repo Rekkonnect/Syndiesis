@@ -11,6 +11,7 @@ namespace Syndiesis.Views;
 
 public partial class MainWindow : Window
 {
+    private readonly MainView _mainView = new();
     private readonly SettingsView _settingsView = new();
 
     public MainWindow()
@@ -24,6 +25,9 @@ public partial class MainWindow : Window
         AttachDevTools();
         InitializeEvents();
         SetCurrentTitle();
+
+        pageTransition.SetMainContent(_mainView);
+        pageTransition.SetSecondaryContent(_settingsView);
     }
 
     private void AttachDevTools()
@@ -71,8 +75,8 @@ public partial class MainWindow : Window
         _settingsView.SettingsSaved += OnSettingsSaved;
         _settingsView.SettingsReset += OnSettingsReset;
         _settingsView.SettingsCancelled += OnSettingsCancelled;
-        mainView.SettingsRequested += OnSettingsRequested;
-        mainView.codeEditor.AnalysisCompleted += OnAnalysisCompleted;
+        _mainView.SettingsRequested += OnSettingsRequested;
+        _mainView.codeEditor.AnalysisCompleted += OnAnalysisCompleted;
         TitleBar.LogoClicked += OnImageClicked;
     }
 
@@ -92,7 +96,7 @@ public partial class MainWindow : Window
 
     private string GetCurrentLanguageName()
     {
-        return mainView.ViewModel.HybridCompilationSource.CurrentLanguageName;
+        return _mainView.ViewModel.HybridCompilationSource.CurrentLanguageName;
     }
 
     private void OnImageClicked(object? sender, PointerPressedEventArgs e)
@@ -101,7 +105,7 @@ public partial class MainWindow : Window
         var properties = point.Properties;
         if (properties.IsLeftButtonPressed && e.KeyModifiers is KeyModifiers.None)
         {
-            var toggled = mainView.ToggleLanguage();
+            var toggled = _mainView.ToggleLanguage();
             SetThemeAndLogo(toggled);
         }
     }
@@ -137,15 +141,16 @@ public partial class MainWindow : Window
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
-        mainView.Reset();
-        mainView.Focus();
+        _mainView.Reset();
+        _mainView.Focus();
     }
 
     public void ShowSettings()
     {
         _settingsView.LoadFromSettings();
-        pageTransition.IsTransitionReversed = false;
-        pageTransition.Content = _settingsView;
+        pageTransition.TransitionToSecondary();
+        //pageTransition.IsTransitionReversed = false;
+        //pageTransition.Content = _settingsView;
     }
 
     public void ShowMainView()
@@ -156,13 +161,14 @@ public partial class MainWindow : Window
 
     private void ApplySettings()
     {
-        mainView.ApplyCurrentSettings();
+        _mainView.ApplyCurrentSettings();
     }
 
     private void TransitionIntoMainView()
     {
-        pageTransition.IsTransitionReversed = true;
-        pageTransition.Content = mainView;
-        mainView.Focus();
+        //pageTransition.IsTransitionReversed = true;
+        //pageTransition.Content = mainView;
+        pageTransition.TransitionToMain();
+        _mainView.Focus();
     }
 }
