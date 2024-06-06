@@ -120,22 +120,41 @@
           <ColumnDefinition Width="6*" MinWidth="400" />
         </Grid.ColumnDefinitions>
 
-        <Border
-          BorderBrush="#38A0FF"
-          BorderThickness="2"
+        <Grid
           Grid.Column="0"
-        >
-          <controls:CodeEditor
-            Name="codeEditor"
+          >
+
+          <Grid.RowDefinitions>
+            <RowDefinition Height="28"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+
+          <controls:LanguageVersionDropDownEnvelope
+            Name="languageVersionDropDown"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Center"
+            Width="300"
+            >
+            
+          </controls:LanguageVersionDropDownEnvelope>
+          
+          <Border
+            BorderBrush="#38A0FF"
+            BorderThickness="2"
+            Grid.Row="1"
+          >
+            <controls:CodeEditor
+              Name="codeEditor"
           />
-        </Border>
+          </Border>
+
+          
+        </Grid>
 
         <GridSplitter
           ResizeDirection="Columns"
           Grid.Column="1"
-        >
-
-        </GridSplitter>
+        />
 
         <Grid
           Grid.Column="2"

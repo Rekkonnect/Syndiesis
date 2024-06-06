@@ -11,5 +11,6 @@ public interface ISingleTreeCompilationSource
     public SyntaxTree? Tree { get; }
     public SemanticModel? SemanticModel { get; }
 
+    public void AdjustLanguageVersion(RoslynLanguageVersion version)
     public void SetSource(string source, CancellationToken cancellationToken);
 }

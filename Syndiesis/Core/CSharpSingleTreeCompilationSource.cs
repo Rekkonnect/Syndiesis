@@ -5,9 +5,20 @@ using System.Threading;
 namespace Syndiesis.Core;
 
 public sealed class CSharpSingleTreeCompilationSource
-    : BaseSingleTreeCompilationSource<CSharpCompilation>
+    : BaseSingleTreeCompilationSource<CSharpCompilation, CSharpParseOptions>
 {
     public override string LanguageName => LanguageNames.CSharp;
+
+    protected override CSharpParseOptions CreateDefaultParseOptions()
+    {
+        return CSharpParseOptions.Default;
+    }
+
+    public override void AdjustLanguageVersion(RoslynLanguageVersion version)
+    {
+        var csVersion = (LanguageVersion)version.RawVersionValue;
+        ParseOptions = ParseOptions.WithLanguageVersion(csVersion);
+    }
 
     protected override CSharpCompilation CreateCompilation()
     {
@@ -16,6 +27,9 @@ public sealed class CSharpSingleTreeCompilationSource
 
     protected override SyntaxTree ParseTree(string source, CancellationToken cancellationToken)
     {
-        return CSharpSyntaxTree.ParseText(source, cancellationToken: cancellationToken);
+        return CSharpSyntaxTree.ParseText(
+            source,
+            options: ParseOptions,
+            cancellationToken: cancellationToken);
     }
 }

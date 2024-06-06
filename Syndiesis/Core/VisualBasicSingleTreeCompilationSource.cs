@@ -5,9 +5,20 @@ using System.Threading;
 namespace Syndiesis.Core;
 
 public sealed class VisualBasicSingleTreeCompilationSource
-    : BaseSingleTreeCompilationSource<VisualBasicCompilation>
+    : BaseSingleTreeCompilationSource<VisualBasicCompilation, VisualBasicParseOptions>
 {
     public override string LanguageName => LanguageNames.VisualBasic;
+
+    protected override VisualBasicParseOptions CreateDefaultParseOptions()
+    {
+        return VisualBasicParseOptions.Default;
+    }
+
+    public override void AdjustLanguageVersion(RoslynLanguageVersion version)
+    {
+        var vbVersion = (LanguageVersion)version.RawVersionValue;
+        ParseOptions = ParseOptions.WithLanguageVersion(vbVersion);
+    }
 
     protected override VisualBasicCompilation CreateCompilation()
     {
@@ -16,6 +27,9 @@ public sealed class VisualBasicSingleTreeCompilationSource
 
     protected override SyntaxTree ParseTree(string source, CancellationToken cancellationToken)
     {
-        return VisualBasicSyntaxTree.ParseText(source, cancellationToken: cancellationToken);
+        return VisualBasicSyntaxTree.ParseText(
+            source,
+            options: ParseOptions,
+            cancellationToken: cancellationToken);
     }
 }

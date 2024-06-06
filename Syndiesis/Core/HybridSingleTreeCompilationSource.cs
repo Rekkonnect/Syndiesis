@@ -37,6 +37,12 @@ public sealed class HybridSingleTreeCompilationSource
         };
     }
 
+    public void SetLanguageVersion(RoslynLanguageVersion version)
+    {
+        var source = SourceForLanguage(version.LanguageName);
+        source.AdjustLanguageVersion(version);
+    }
+
     public void SetSource(string source, CancellationToken cancellationToken)
     {
         var language = GetLanguage(source, cancellationToken);
