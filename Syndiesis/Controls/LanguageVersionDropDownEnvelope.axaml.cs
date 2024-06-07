@@ -9,12 +9,13 @@ public partial class LanguageVersionDropDownEnvelope : UserControl
     public LanguageVersionDropDownEnvelope()
     {
         InitializeComponent();
+        DisplayVersion(new(Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp12));
     }
 
     public void DisplayVersion(RoslynLanguageVersion version)
     {
-        languageNameRun.Text = version.LanguageName;
-        versionRun.Text = DisplayVersionNumber(version);
+        var versionNumber = DisplayVersionNumber(version);
+        languageText.Text = $"{version.LanguageName}  {versionNumber}";
     }
 
     private static string DisplayVersionNumber(RoslynLanguageVersion version)

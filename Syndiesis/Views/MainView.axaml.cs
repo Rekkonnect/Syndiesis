@@ -85,6 +85,8 @@ public partial class MainView : UserControl
         syntaxTreeView.listView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
         syntaxTreeView.listView.NewRootLoaded += HandleNewRootNodeLoaded;
 
+        languageVersionDropDown.LanguageVersionChanged += SetLanguageVersion;
+
         codeEditor.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
         syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
 

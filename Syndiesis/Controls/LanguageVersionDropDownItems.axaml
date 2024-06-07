@@ -12,8 +12,8 @@
     Height="350"
     >
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="6*"/>
-      <ColumnDefinition Width="6*"/>
+      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="*"/>
     </Grid.ColumnDefinitions>
 
     <Grid.RowDefinitions>
@@ -67,7 +67,7 @@
         Grid.Row="1"
         Name="csVersionsLeftPanel"
         Margin="0 15 0 0"
-        Spacing="2"
+        Spacing="1"
         />
 
       <StackPanel
@@ -75,7 +75,7 @@
         Grid.Row="1"
         Name="csVersionsRightPanel"
         Margin="0 15 0 0"
-        Spacing="2"
+        Spacing="1"
         />
 
     </Grid>
@@ -113,7 +113,7 @@
         Grid.Row="1"
         Name="vbVersionsLeftPanel"
         Margin="0 15 0 0"
-        Spacing="2"
+        Spacing="1"
         />
 
       <StackPanel
@@ -121,7 +121,7 @@
         Grid.Row="1"
         Name="vbVersionsRightPanel"
         Margin="0 15 0 0"
-        Spacing="2"
+        Spacing="1"
         />
 
     </Grid>

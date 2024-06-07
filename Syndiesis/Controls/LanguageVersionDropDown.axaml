@@ -2,26 +2,38 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="300" d:DesignHeight="400"
+             mc:Ignorable="d" d:DesignWidth="300"
              xmlns:controls="using:Syndiesis.Controls"
              x:Class="Syndiesis.Controls.LanguageVersionDropDown"
              >
 
-  <Canvas
-    ClipToBounds="False"
-    >
-    <controls:LanguageVersionDropDownEnvelope
-      Name="envelope"
-      VerticalAlignment="Top"
-      Height="30"
-    />
+  <UserControl.Styles>
+    <Style Selector="FlyoutPresenter">
+      <Setter Property="Background" Value="Transparent" />
+      <Setter Property="BorderBrush" Value="Transparent" />
+      <Setter Property="Padding" Value="0" />
+      <Setter Property="ClipToBounds" Value="True" />
+      <Setter Property="Effect">
+        <Setter.Value>
+        </Setter.Value>
+      </Setter>
+    </Style>
+  </UserControl.Styles>
+  
+  <FlyoutBase.AttachedFlyout>
+    <Flyout
+      >
+      <controls:LanguageVersionDropDownItems
+        Name="items"
+        VerticalAlignment="Top"
+      />
+    </Flyout>
+  </FlyoutBase.AttachedFlyout>
 
-    <controls:LanguageVersionDropDownItems
-      Name="items"
-      Opacity="1"
-      VerticalAlignment="Top"
-      Canvas.Top="30"
+  <controls:LanguageVersionDropDownEnvelope
+    Name="envelope"
+    VerticalAlignment="Top"
+    Height="30"
     />
-  </Canvas>
-
+  
 </UserControl>
