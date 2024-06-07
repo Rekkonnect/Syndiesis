@@ -122,6 +122,7 @@
 
         <Grid
           Grid.Column="0"
+          ClipToBounds="False"
           >
 
           <Grid.RowDefinitions>
@@ -129,15 +130,6 @@
             <RowDefinition Height="*"/>
           </Grid.RowDefinitions>
 
-          <controls:LanguageVersionDropDownEnvelope
-            Name="languageVersionDropDown"
-            VerticalAlignment="Stretch"
-            HorizontalAlignment="Center"
-            Width="300"
-            >
-            
-          </controls:LanguageVersionDropDownEnvelope>
-          
           <Border
             BorderBrush="#38A0FF"
             BorderThickness="2"
@@ -148,7 +140,14 @@
           />
           </Border>
 
-          
+          <controls:LanguageVersionDropDown
+            Name="languageVersionDropDown"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Center"
+            Width="300"
+            ZIndex="99"
+            />
+
         </Grid>
 
         <GridSplitter

@@ -16,7 +16,7 @@ public sealed class CSharpSingleTreeCompilationSource
 
     public override void AdjustLanguageVersion(RoslynLanguageVersion version)
     {
-        var csVersion = (LanguageVersion)version.RawVersionValue;
+        var csVersion = version.CSharpVersion;
         ParseOptions = ParseOptions.WithLanguageVersion(csVersion);
     }
 

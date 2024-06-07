@@ -310,6 +310,18 @@ public partial class MainView : UserControl
         return toggled;
     }
 
+    public void SetLanguageVersion(RoslynLanguageVersion version)
+    {
+        ViewModel.HybridCompilationSource.SetLanguageVersion(version);
+
+        var newLanguageName = version.LanguageName;
+        var currentLanguageName = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        if (newLanguageName != currentLanguageName)
+        {
+            ResetToLanguage(newLanguageName);
+        }
+    }
+
     private static string ToggleLanguageName(string languageName)
     {
         return languageName switch

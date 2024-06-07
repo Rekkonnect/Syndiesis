@@ -29,8 +29,9 @@
         Name="languageText"
         FontFamily="{StaticResource AptosDisplayFontFamily}"
         FontSize="18"
+        TextAlignment="Center"
         VerticalAlignment="Center"
-        HorizontalAlignment="Center"
+        HorizontalAlignment="Stretch"
         >
         <TextBlock.Inlines>
           <Run Name="languageNameRun" Text="C#" />

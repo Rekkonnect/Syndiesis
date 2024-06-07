@@ -14,17 +14,28 @@ public sealed class HybridSingleTreeCompilationSource
 {
     private readonly CSharpSingleTreeCompilationSource _csSource = new();
     private readonly VisualBasicSingleTreeCompilationSource _vbSource = new();
+    private ISingleTreeCompilationSource _currentSource;
 
     public string CurrentLanguageName => CurrentSource.LanguageName;
 
-    public ISingleTreeCompilationSource CurrentSource { get; private set; }
+    public ISingleTreeCompilationSource CurrentSource
+    {
+        get => _currentSource;
+        private set
+        {
+            _currentSource = value;
+            CompilationSourceChanged?.Invoke();
+        }
+    }
 
     public CSharpSingleTreeCompilationSource CSharpSource => _csSource;
     public VisualBasicSingleTreeCompilationSource VisualBasicSource => _vbSource;
 
+    public event Action? CompilationSourceChanged;
+
     public HybridSingleTreeCompilationSource()
     {
-        CurrentSource = _csSource;
+        _currentSource = _csSource;
     }
 
     public ISingleTreeCompilationSource SourceForLanguage(string languageName)
