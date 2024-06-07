@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
@@ -17,7 +18,6 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
     private GroupedRunInline? _hoveredRunInline;
 
     private volatile bool _redrawn;
-    private PointerEventArgs? _lastPointerEventArgs;
 
     public InlineCollection? Inlines
     {
@@ -61,40 +61,75 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
 
     private void HandleRootKeyEvent(object? sender, KeyEventArgs e)
     {
+        var lastPointer = EventArgsHistoryContainer.Instance.Pointer;
+        if (lastPointer is not null)
+        {
+            DiscoverHoveredInline(lastPointer);
+        }
         ReEvaluateKeyModifiers(e.KeyModifiers);
     }
 
-    protected override void OnPointerEntered(PointerEventArgs e)
+    private bool _hasRegisteredEvents = false;
+
+    private void RegisterKeyEvents()
     {
-        _lastPointerEventArgs = e;
+        if (_hasRegisteredEvents)
+            return;
+
         var root = VisualRoot as InputElement;
         if (root is null)
             return;
         root!.KeyDown += HandleRootKeyEvent;
         root!.KeyUp += HandleRootKeyEvent;
+        _hasRegisteredEvents = true;
     }
 
-    protected override void OnPointerExited(PointerEventArgs e)
+    private void UnregisterKeyEvents()
     {
-        _lastPointerEventArgs = e;
-        ClearHoveredInline();
+        if (!_hasRegisteredEvents)
+            return;
 
         var root = VisualRoot as InputElement;
         if (root is null)
             return;
-        root.KeyDown -= HandleRootKeyEvent;
-        root.KeyUp -= HandleRootKeyEvent;
+        root!.KeyDown += HandleRootKeyEvent;
+        root!.KeyUp += HandleRootKeyEvent;
+        _hasRegisteredEvents = false;
+    }
+
+    protected override void OnPointerEntered(PointerEventArgs e)
+    {
+        RegisterKeyEvents();
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        ClearHoveredInline();
+        UnregisterKeyEvents();
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+
+        switch (change.Property.Name)
+        {
+            case nameof(IsHitTestVisible):
+                if ((bool)change.NewValue! && !(bool)change.OldValue!)
+                {
+                    RegisterKeyEvents();
+                }
+                break;
+        }
     }
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {
-        _lastPointerEventArgs = e;
         DiscoverHoveredInlineEvaluate(e);
     }
 
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        _lastPointerEventArgs = e;
         DiscoverHoveredInlineEvaluate(e);
 
         var pointerPoint = e.GetCurrentPoint(this);
@@ -115,9 +150,10 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
 
     private void DiscoverHoveredInlineEvaluate()
     {
-        if (_lastPointerEventArgs is not null)
+        var lastPointer = EventArgsHistoryContainer.Instance.Pointer;
+        if (lastPointer is not null)
         {
-            DiscoverHoveredInlineEvaluate(_lastPointerEventArgs);
+            DiscoverHoveredInlineEvaluate(lastPointer);
         }
     }
 

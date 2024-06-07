@@ -71,7 +71,7 @@ public partial class TransitioningMainPage : UserControl
             SecondaryContent,
             MainContent,
             ContentIndex.Main,
-            true);
+            false);
     }
 
     public void TransitionToSecondary()
@@ -80,7 +80,7 @@ public partial class TransitioningMainPage : UserControl
             MainContent,
             SecondaryContent,
             ContentIndex.Secondary,
-            false);
+            true);
     }
 
     private void PerformTransition(

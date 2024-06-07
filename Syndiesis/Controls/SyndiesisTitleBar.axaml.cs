@@ -39,6 +39,7 @@ public partial class SyndiesisTitleBar : UserControl
         InitializeComponent();
         InitializeRuns();
         InitializeEvents();
+        EventArgsHistoryContainer.Instance.Register(this);
     }
 
     private void InitializeEvents()

@@ -5,6 +5,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
+using Syndiesis.Controls;
 using Syndiesis.Core;
 
 namespace Syndiesis.Views;
@@ -26,6 +27,12 @@ public partial class MainWindow : Window
         InitializeEvents();
         SetCurrentTitle();
 
+        InitializeTransitions();
+        EventArgsHistoryContainer.Instance.Register(this);
+    }
+
+    private void InitializeTransitions()
+    {
         pageTransition.SetMainContent(_mainView);
         pageTransition.SetSecondaryContent(_settingsView);
     }
