@@ -26,6 +26,11 @@ public partial class MainWindow : Window
         InitializeEvents();
         SetCurrentTitle();
 
+        InitializeTransitions();
+    }
+
+    private void InitializeTransitions()
+    {
         pageTransition.SetMainContent(_mainView);
         pageTransition.SetSecondaryContent(_settingsView);
     }
