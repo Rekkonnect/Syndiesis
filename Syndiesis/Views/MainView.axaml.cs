@@ -85,10 +85,25 @@ public partial class MainView : UserControl
         syntaxTreeView.listView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
         syntaxTreeView.listView.NewRootLoaded += HandleNewRootNodeLoaded;
 
+        languageVersionDropDown.LanguageVersionChanged += SetLanguageVersion;
+
+        AnalysisPipelineHandler.AnalysisCompleted += OnAnalysisCompleted;
+
         codeEditor.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
         syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
 
         InitializeButtonEvents();
+    }
+
+    private void OnAnalysisCompleted(AnalysisResult result)
+    {
+        void UpdateUI()
+        {
+            var version = ViewModel.HybridCompilationSource.CurrentSource.LanguageVersion;
+            languageVersionDropDown.DisplayVersion(version);
+        }
+
+        Dispatcher.UIThread.InvokeAsync(UpdateUI);
     }
 
     private void InitializeButtonEvents()
@@ -308,6 +323,22 @@ public partial class MainView : UserControl
         var toggled = ToggleLanguageName(current);
         ResetToLanguage(toggled);
         return toggled;
+    }
+
+    public void SetLanguageVersion(RoslynLanguageVersion version)
+    {
+        ViewModel.HybridCompilationSource.SetLanguageVersion(version);
+
+        var newLanguageName = version.LanguageName;
+        var currentLanguageName = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        if (newLanguageName != currentLanguageName)
+        {
+            ResetToLanguage(newLanguageName);
+        }
+        else
+        {
+            ForceRedoAnalysis();
+        }
     }
 
     private static string ToggleLanguageName(string languageName)

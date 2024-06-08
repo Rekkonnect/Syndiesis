@@ -76,11 +76,11 @@ public partial class MainWindow : Window
         _settingsView.SettingsReset += OnSettingsReset;
         _settingsView.SettingsCancelled += OnSettingsCancelled;
         _mainView.SettingsRequested += OnSettingsRequested;
-        _mainView.codeEditor.AnalysisCompleted += OnAnalysisCompleted;
+        _mainView.AnalysisPipelineHandler.AnalysisCompleted += OnAnalysisCompleted;
         TitleBar.LogoClicked += OnImageClicked;
     }
 
-    private void OnAnalysisCompleted()
+    private void OnAnalysisCompleted(AnalysisResult analysisResult)
     {
         Dispatcher.UIThread.InvokeAsync(UpdateTitleBar);
     }

@@ -54,4 +54,10 @@
     <ProjectReference Include="..\Syndiesis.InternalGenerators\Syndiesis.InternalGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Controls\LanguageVersionDropDownEnvelope.axaml.cs">
+      <DependentUpon>LanguageVersionDropDownEnvelope.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

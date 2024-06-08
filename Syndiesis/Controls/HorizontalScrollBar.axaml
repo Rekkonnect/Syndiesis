@@ -46,7 +46,7 @@
         VerticalAlignment="Stretch"
         Height="10"
         Width="21"
-          Fill="AliceBlue"
+        Fill="AliceBlue"
       >
       </Rectangle>
     </Canvas>

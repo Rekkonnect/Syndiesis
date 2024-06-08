@@ -210,15 +210,34 @@
 
         </Grid>
 
-        <CheckBox
-          Name="showTriviaCheck"
-        >
-          <TextBlock
-            FontFamily="{StaticResource AptosDisplayFontFamily}"
-            FontSize="16"
-            Text="Show trivia"
+        <Grid>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+
+          <CheckBox
+            Name="showTriviaCheck"
+          >
+            <TextBlock
+              FontFamily="{StaticResource AptosDisplayFontFamily}"
+              FontSize="16"
+              Text="Show trivia"
           />
-        </CheckBox>
+          </CheckBox>
+
+          <CheckBox
+            Name="automaticallyDetectLanguageCheck"
+            Grid.Column="1"
+          >
+            <TextBlock
+              FontFamily="{StaticResource AptosDisplayFontFamily}"
+              FontSize="16"
+              Text="Automatically detect language"
+          />
+          </CheckBox>
+
+        </Grid>
 
         <sc:LabelledSlider
           Name="typingDelaySlider"

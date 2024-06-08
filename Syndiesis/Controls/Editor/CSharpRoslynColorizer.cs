@@ -668,7 +668,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             when constructorDeclaration.Identifier.Span == token.Span:
             {
                 var constructorParent = constructorDeclaration.Parent as MemberDeclarationSyntax;
-                return DeclarationTypeSymbolKind(constructorParent!);
+                return DeclarationTypeSymbolKind(constructorParent);
             }
 
             case PropertyDeclarationSyntax propertyDeclaration
@@ -691,7 +691,8 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         return default;
     }
 
-    private static SymbolTypeKind DeclarationTypeSymbolKind(MemberDeclarationSyntax declarationSyntax)
+    private static SymbolTypeKind DeclarationTypeSymbolKind(
+        MemberDeclarationSyntax? declarationSyntax)
     {
         switch (declarationSyntax)
         {
@@ -707,6 +708,9 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
                 return TypeKind.Delegate;
             case RecordDeclarationSyntax recordDeclaration:
                 return RecordDeclarationTypeKind(recordDeclaration);
+
+            case null:
+                return default;
 
             default:
                 throw new UnreachableException();
