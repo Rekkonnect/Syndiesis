@@ -47,6 +47,7 @@ public partial class SettingsView : UserControl
         wordWrapCheck.IsChecked = settings.WordWrap;
         enableColorizationCheck.IsChecked = settings.EnableColorization;
         enableSemanticColorizationCheck.IsChecked = settings.EnableSemanticColorization;
+        automaticallyDetectLanguageCheck.IsChecked = settings.AutomaticallyDetectLanguage;
         typingDelaySlider.ValueSlider.Value = settings.UserInputDelay.TotalMilliseconds;
         indentationWidthSlider.ValueSlider.Value = settings.IndentationOptions.IndentationWidth;
         recursiveExpansionDepthSlider.ValueSlider.Value = settings.RecursiveExpansionDepth;
@@ -141,6 +142,7 @@ public partial class SettingsView : UserControl
         settings.EnableColorization = enableColorizationCheck.IsChecked is true;
         settings.EnableSemanticColorization = enableSemanticColorizationCheck.IsChecked is true;
         settings.WordWrap = wordWrapCheck.IsChecked is true;
+        settings.AutomaticallyDetectLanguage = automaticallyDetectLanguageCheck.IsChecked is true;
     }
 
     private void OnIndentationSliderValueChanged(object? sender, RangeBaseValueChangedEventArgs e)

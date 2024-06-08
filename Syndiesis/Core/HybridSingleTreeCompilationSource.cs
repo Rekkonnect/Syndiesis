@@ -58,6 +58,28 @@ public sealed class HybridSingleTreeCompilationSource
 
     public void SetSource(string source, CancellationToken cancellationToken)
     {
+        if (AppSettings.Instance.AutomaticallyDetectLanguage)
+        {
+            SetSourceAutomaticDetection(source, cancellationToken);
+        }
+        else
+        {
+            SetSourceSimple(source, cancellationToken);
+        }
+    }
+
+    private void SetSourceSimple(string source, CancellationToken cancellationToken)
+    {
+        var profiling = new SimpleProfiling();
+        using (profiling.BeginProcess())
+        {
+            CurrentSource.SetSource(source, cancellationToken);
+        }
+        Log.Information($"Set the source within {profiling.SnapshotResults!.Time.TotalMilliseconds}ms");
+    }
+
+    private void SetSourceAutomaticDetection(string source, CancellationToken cancellationToken)
+    {
         var profiling = new SimpleProfiling();
         string language;
         using (profiling.BeginProcess())

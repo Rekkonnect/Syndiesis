@@ -25,6 +25,7 @@ public sealed class AppSettings
 
     public bool EnableColorization = true;
     public bool EnableSemanticColorization = true;
+    public bool AutomaticallyDetectLanguage = true;
 
     public TimeSpan UserInputDelay = TimeSpan.FromMilliseconds(600);
 
