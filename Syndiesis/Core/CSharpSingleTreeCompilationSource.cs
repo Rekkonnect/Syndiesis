@@ -9,9 +9,13 @@ public sealed class CSharpSingleTreeCompilationSource
 {
     public override string LanguageName => LanguageNames.CSharp;
 
+    public override RoslynLanguageVersion LanguageVersion => new(ParseOptions.LanguageVersion);
+
     protected override CSharpParseOptions CreateDefaultParseOptions()
     {
-        return CSharpParseOptions.Default;
+        return CSharpParseOptions.Default
+            .WithLanguageVersion(
+                Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp12);
     }
 
     public override void AdjustLanguageVersion(RoslynLanguageVersion version)

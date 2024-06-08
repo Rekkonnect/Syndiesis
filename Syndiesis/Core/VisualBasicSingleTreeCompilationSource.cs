@@ -9,9 +9,13 @@ public sealed class VisualBasicSingleTreeCompilationSource
 {
     public override string LanguageName => LanguageNames.VisualBasic;
 
+    public override RoslynLanguageVersion LanguageVersion => new(ParseOptions.LanguageVersion);
+
     protected override VisualBasicParseOptions CreateDefaultParseOptions()
     {
-        return VisualBasicParseOptions.Default;
+        return VisualBasicParseOptions.Default
+            .WithLanguageVersion(
+                Microsoft.CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic16_9);
     }
 
     public override void AdjustLanguageVersion(RoslynLanguageVersion version)

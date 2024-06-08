@@ -30,6 +30,8 @@ public abstract class BaseSingleTreeCompilationSource<TCompilation, TParseOption
 
     public TParseOptions ParseOptions { get; set; }
 
+    public abstract RoslynLanguageVersion LanguageVersion { get; }
+
     protected BaseSingleTreeCompilationSource()
     {
         InitializeCompilation();

@@ -87,10 +87,23 @@ public partial class MainView : UserControl
 
         languageVersionDropDown.LanguageVersionChanged += SetLanguageVersion;
 
+        AnalysisPipelineHandler.AnalysisCompleted += OnAnalysisCompleted;
+
         codeEditor.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
         syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
 
         InitializeButtonEvents();
+    }
+
+    private void OnAnalysisCompleted(AnalysisResult result)
+    {
+        void UpdateUI()
+        {
+            var version = ViewModel.HybridCompilationSource.CurrentSource.LanguageVersion;
+            languageVersionDropDown.DisplayVersion(version);
+        }
+
+        Dispatcher.UIThread.InvokeAsync(UpdateUI);
     }
 
     private void InitializeButtonEvents()
@@ -321,6 +334,10 @@ public partial class MainView : UserControl
         if (newLanguageName != currentLanguageName)
         {
             ResetToLanguage(newLanguageName);
+        }
+        else
+        {
+            ForceRedoAnalysis();
         }
     }
 
