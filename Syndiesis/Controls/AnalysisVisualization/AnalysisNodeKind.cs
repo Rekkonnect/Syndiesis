@@ -6,4 +6,5 @@ public enum AnalysisNodeKind
     Syntax,
     Symbol,
     Operation,
+    Attribute,
 }

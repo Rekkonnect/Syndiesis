@@ -60,6 +60,7 @@ public partial class MainView : UserControl
             Envelope("Syntax", AnalysisNodeKind.Syntax),
             Envelope("Symbols", AnalysisNodeKind.Symbol),
             Envelope("Operations", AnalysisNodeKind.Operation),
+            Envelope("Attributes", AnalysisNodeKind.Attribute),
         ];
 
         analysisTreeViewTabs.TabSelected += HandleSelectedAnalysisTab;

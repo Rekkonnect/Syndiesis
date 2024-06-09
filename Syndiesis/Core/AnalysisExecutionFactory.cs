@@ -14,10 +14,12 @@ public sealed class AnalysisExecutionFactory(
         {
             case AnalysisNodeKind.Syntax:
                 return new SyntaxNodeAnalysisExecution(_compilationSource);
-            case AnalysisNodeKind.Operation:
-                return new OperationAnalysisExecution(_compilationSource);
             case AnalysisNodeKind.Symbol:
                 return new SymbolAnalysisExecution(_compilationSource);
+            case AnalysisNodeKind.Operation:
+                return new OperationAnalysisExecution(_compilationSource);
+            case AnalysisNodeKind.Attribute:
+                return new AttributeAnalysisExecution(_compilationSource);
             default:
                 throw ThrowUnsupportedAnalysisKind();
         }
