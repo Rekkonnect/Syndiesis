@@ -116,7 +116,7 @@ partial class AttributesAnalysisNodeCreator
             AttributeTree AttributeTree, DisplayValueSource valueSource)
         {
             var type = AttributeTree.GetType();
-            var inline = NestedTypeDisplayGroupedRun(type);
+            var inline = FullyQualifiedTypeDisplayGroupedRun(type);
 
             return AnalysisTreeListNodeLine(
                 [inline],

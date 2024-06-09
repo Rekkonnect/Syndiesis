@@ -146,6 +146,28 @@ public abstract partial class BaseAnalysisNodeCreator
         return false;
     }
 
+    protected static GroupedRunInline FullyQualifiedTypeDisplayGroupedRun(Type type)
+    {
+        var rightmost = NestedTypeDisplayGroupedRun(type);
+        var fullNamespace = type.Namespace;
+
+        if (string.IsNullOrEmpty(fullNamespace))
+            return rightmost;
+
+        var runList = new List<RunOrGrouped>();
+
+        var namespaces = fullNamespace.Split('.');
+        for (int i = 0; i < namespaces.Length; i++)
+        {
+            var inline = new SingleRunInline(Run(namespaces[i], CommonStyles.RawValueBrush));
+            runList.Add(new(inline));
+            runList.Add(CreateQualifierSeparatorRun());
+        }
+
+        runList.Add(new(rightmost));
+        return new ComplexGroupedRunInline(runList);
+    }
+
     protected static GroupedRunInline NestedTypeDisplayGroupedRun(Type type)
     {
         var rightmost = TypeDisplayGroupedRun(type);

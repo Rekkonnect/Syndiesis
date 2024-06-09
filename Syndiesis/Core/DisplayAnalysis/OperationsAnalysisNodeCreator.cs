@@ -222,7 +222,7 @@ partial class OperationsAnalysisNodeCreator
             OperationTree operationTree, DisplayValueSource valueSource)
         {
             var type = operationTree.GetType();
-            var inline = NestedTypeDisplayGroupedRun(type);
+            var inline = FullyQualifiedTypeDisplayGroupedRun(type);
 
             return AnalysisTreeListNodeLine(
                 [inline],
