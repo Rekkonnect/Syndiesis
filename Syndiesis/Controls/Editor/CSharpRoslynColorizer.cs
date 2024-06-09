@@ -424,6 +424,31 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
 
                 break;
             }
+
+            case SymbolKind.Parameter:
+            {
+                var parameter = (IParameterSymbol)symbol;
+                bool isValueOfSetter = parameter
+                    is
+                    {
+                        Name: "value",
+                        IsImplicitlyDeclared: true,
+                    }
+                    && parameter.ContainingSymbol
+                    is IMethodSymbol
+                    {
+                        MethodKind: MethodKind.PropertySet
+                            or MethodKind.EventAdd
+                            or MethodKind.EventRemove
+                    };
+
+                if (isValueOfSetter)
+                {
+                    return ColorizerForBrush(Styles.KeywordForeground);
+                }
+
+                break;
+            }
         }
 
         return GetColorizer(kind);

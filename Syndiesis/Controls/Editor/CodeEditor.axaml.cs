@@ -141,7 +141,7 @@ public partial class CodeEditor : UserControl
 
         _nodeSpanHoverLayer = new NodeSpanHoverLayer(this)
         {
-            HoverForeground = new SolidColorBrush(0x60A0A0A0)
+            HoverForeground = new SolidColorBrush(0x58909090)
         };
 
         textArea.TextView.InsertLayer(
@@ -507,13 +507,9 @@ public partial class CodeEditor : UserControl
         if (symbol is null)
             return false;
 
-        if (symbol is IMethodSymbol
-            { 
-                MethodKind: MethodKind.Constructor,
-                IsImplicitlyDeclared: true
-            } constructor)
+        if (symbol.IsImplicitlyDeclared)
         {
-            symbol = constructor.ContainingType;
+            symbol = symbol.ContainingType;
         }
 
         var syntax = symbol.DeclaringSyntaxReferences.FirstOrDefault();
@@ -521,6 +517,7 @@ public partial class CodeEditor : UserControl
             return false;
 
         var targetSpeakableName = symbol.Name;
+
         if (symbol is IMethodSymbol { MethodKind: MethodKind.Constructor })
         {
             targetSpeakableName = symbol.ContainingType.Name;

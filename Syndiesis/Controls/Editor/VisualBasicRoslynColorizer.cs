@@ -141,7 +141,7 @@ public sealed partial class VisualBasicRoslynColorizer(
             }
             else
             {
-                var colorizer = GetTokenColorizer(token.Kind());
+                var colorizer = GetTokenColorizer(token);
                 ColorizeSpan(line, token.Span, colorizer);
             }
         }
@@ -376,6 +376,19 @@ public sealed partial class VisualBasicRoslynColorizer(
         }
 
         return GetColorizer(kind);
+    }
+
+    private Action<VisualLineElement>? GetTokenColorizer(SyntaxToken token)
+    {
+        if (token.IsKeyword())
+        {
+            var parent = token.Parent;
+            if (parent is DirectiveTriviaSyntax)
+                return null;
+        }
+
+        var manualColorizer = GetTokenColorizer(token.Kind());
+        return manualColorizer;
     }
 
     private Action<VisualLineElement>? GetTokenColorizer(SyntaxKind kind)
