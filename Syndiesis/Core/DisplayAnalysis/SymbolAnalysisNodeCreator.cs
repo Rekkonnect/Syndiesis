@@ -896,56 +896,12 @@ partial class SymbolAnalysisNodeCreator
     }
 
     public sealed class TypedConstantRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
-        : SymbolRootViewNodeCreator<TypedConstant>(creator)
+        : AttributesAnalysisNodeCreator.TypedConstantRootViewNodeCreator(
+            creator.ParentContainer.AttributeCreator)
     {
-        public override AnalysisTreeListNodeLine CreateNodeLine(
-            TypedConstant constant, DisplayValueSource valueSource)
+        public override AnalysisNodeKind GetNodeKind(TypedConstant value)
         {
-            var inlines = new GroupedRunInlineCollection();
-            AppendValueSource(valueSource, inlines);
-            var inline = NestedTypeDisplayGroupedRun(typeof(TypedConstant));
-            inlines.Add(inline);
-            inlines.Add(NewValueKindSplitterRun());
-            inlines.Add(CreateKindInline(constant));
-
-            return AnalysisTreeListNodeLine(
-                inlines,
-                Styles.TypedConstantDisplay);
-        }
-
-        public override AnalysisNodeChildRetriever? GetChildRetriever(
-            TypedConstant constant)
-        {
-            return () => GetChildren(constant);
-        }
-
-        private IReadOnlyList<AnalysisTreeListNode> GetChildren(TypedConstant constant)
-        {
-            return
-            [
-                Creator.CreateRootGeneral(
-                    constant.Type,
-                    Property(nameof(TypedConstant.Type)))!,
-
-                Creator.CreateRootBasic(
-                    constant.IsNull,
-                    Property(nameof(TypedConstant.IsNull))),
-
-                Creator.CreateGeneralOrThrowsExceptionNode<InvalidOperationException>(
-                    constant.Kind is not TypedConstantKind.Array,
-                    () => constant.Value,
-                    Property(nameof(TypedConstant.Value)))!,
-
-                Creator.CreateGeneralOrThrowsExceptionNode<InvalidOperationException>(
-                    constant.Kind is TypedConstantKind.Array,
-                    () => constant.Values,
-                    Property(nameof(TypedConstant.Values)))!,
-            ];
-        }
-
-        private static SingleRunInline CreateKindInline(TypedConstant constant)
-        {
-            return new(Run(constant.Kind.ToString(), CommonStyles.ConstantMainBrush));
+            return AnalysisNodeKind.Symbol;
         }
     }
 }
@@ -962,8 +918,6 @@ partial class SymbolAnalysisNodeCreator
         // 'Collection' was used instead of 'List' to avoid
         // the confusion of SL with [Separated]SyntaxList
         public const string SymbolCollection = "SC";
-
-        public const string TypedConstant = "TC";
     }
 
     public class SymbolStyles
@@ -976,8 +930,5 @@ partial class SymbolAnalysisNodeCreator
 
         public NodeTypeDisplay SymbolCollectionDisplay
             => new(Types.SymbolCollection, SymbolCollectionColor);
-
-        public NodeTypeDisplay TypedConstantDisplay
-            => new(Types.TypedConstant, CommonStyles.ConstantMainColor);
     }
 }

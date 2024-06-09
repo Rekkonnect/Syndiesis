@@ -3,8 +3,8 @@ using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Utilities;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
@@ -17,7 +17,6 @@ using GroupedRunInline = GroupedRunInline.IBuilder;
 using SingleRunInline = SingleRunInline.Builder;
 using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
-using static Syndiesis.Core.DisplayAnalysis.SymbolAnalysisNodeCreator;
 
 public sealed partial class AttributesAnalysisNodeCreator
     : BaseAnalysisNodeCreator
@@ -26,6 +25,7 @@ public sealed partial class AttributesAnalysisNodeCreator
     private readonly AttributeTreeRootViewNodeCreator _attributeTreeCreator;
     private readonly AttributeDataRootViewNodeCreator _attributeDataCreator;
     private readonly AttributeDataListRootViewNodeCreator _attributeDataListCreator;
+    private readonly TypedConstantRootViewNodeCreator _typedConstantCreator;
     private readonly AttributeTreeSymbolContainerRootViewNodeCreator _symbolContainerCreator;
 
     public AttributesAnalysisNodeCreator(
@@ -35,6 +35,7 @@ public sealed partial class AttributesAnalysisNodeCreator
         _attributeTreeCreator = new(this);
         _attributeDataCreator = new(this);
         _attributeDataListCreator = new(this);
+        _typedConstantCreator = new(this);
         _symbolContainerCreator = new(this);
     }
 
@@ -52,6 +53,9 @@ public sealed partial class AttributesAnalysisNodeCreator
 
             case IReadOnlyList<AttributeData> attributeList:
                 return CreateRootAttributeList(attributeList, valueSource);
+
+            case TypedConstant typedConstant:
+                return CreateRootTypedConstant(typedConstant, valueSource);
 
             case SyntaxNode syntaxNode:
                 return CreateRootSyntaxNode(syntaxNode, valueSource);
@@ -81,6 +85,13 @@ public sealed partial class AttributesAnalysisNodeCreator
         DisplayValueSource valueSource)
     {
         return _attributeDataListCreator.CreateNode(attributeList, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootTypedConstant(
+        TypedConstant typedConstant,
+        DisplayValueSource valueSource)
+    {
+        return _typedConstantCreator.CreateNode(typedConstant, valueSource);
     }
 
     public AnalysisTreeListNode CreateRootAttributeTreeSymbolContainer(
@@ -189,13 +200,39 @@ partial class AttributesAnalysisNodeCreator
         {
             var inlines = new GroupedRunInlineCollection();
             AppendValueSource(valueSource, inlines);
-            var type = attribute.GetType();
-            var inline = NestedTypeDisplayGroupedRun(type);
+            var inline = TypeDisplayGroupedRun(typeof(AttributeData));
             inlines.Add(inline);
+            inlines.Add(NewValueKindSplitterRun());
+            var className = attribute.AttributeClass?.Name;
+            var nameInline = CreateNameInline(className);
+            inlines.Add(nameInline);
 
             return AnalysisTreeListNodeLine(
                 inlines,
                 Styles.AttributeDataDisplay);
+        }
+
+        private GroupedRunInline CreateNameInline(string? name)
+        {
+            if (string.IsNullOrEmpty(name))
+                return CreateNullValueSingleRun();
+
+            return TypeDetailsInline(name);
+        }
+
+        protected GroupedRunInline TypeDetailsInline(string name)
+        {
+            if (name is nameof(Attribute))
+            {
+                return new SingleRunInline(Run(name, CommonStyles.ClassMainBrush));
+            }
+
+            var typeName = name;
+
+            const string attributeSuffix = nameof(Attribute);
+            return TypeDisplayWithFadeSuffix(
+                typeName, attributeSuffix,
+                CommonStyles.IdentifierWildcardBrush, CommonStyles.IdentifierWildcardFadedBrush);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(
@@ -221,7 +258,7 @@ partial class AttributesAnalysisNodeCreator
                     Property(nameof(AttributeData.NamedArguments)))!,
 
                 Creator.CreateRootGeneral(
-                    attribute.ConstructorArguments,
+                    attribute.ApplicationSyntaxReference,
                     Property(nameof(AttributeData.ApplicationSyntaxReference)))!,
             ];
         }
@@ -266,6 +303,60 @@ partial class AttributesAnalysisNodeCreator
                 ;
         }
     }
+
+    public class TypedConstantRootViewNodeCreator(AttributesAnalysisNodeCreator creator)
+        : AttributeRootViewNodeCreator<TypedConstant>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            TypedConstant constant, DisplayValueSource valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+            AppendValueSource(valueSource, inlines);
+            var inline = NestedTypeDisplayGroupedRun(typeof(TypedConstant));
+            inlines.Add(inline);
+            inlines.Add(NewValueKindSplitterRun());
+            inlines.Add(CreateKindInline(constant));
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.TypedConstantDisplay);
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(
+            TypedConstant constant)
+        {
+            return () => GetChildren(constant);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(TypedConstant constant)
+        {
+            return
+            [
+                Creator.CreateRootGeneral(
+                    constant.Type,
+                    Property(nameof(TypedConstant.Type)))!,
+
+                Creator.CreateRootBasic(
+                    constant.IsNull,
+                    Property(nameof(TypedConstant.IsNull))),
+
+                Creator.CreateGeneralOrThrowsExceptionNode<InvalidOperationException>(
+                    constant.Kind is not TypedConstantKind.Array,
+                    () => constant.Value,
+                    Property(nameof(TypedConstant.Value)))!,
+
+                Creator.CreateGeneralOrThrowsExceptionNode<InvalidOperationException>(
+                    constant.Kind is TypedConstantKind.Array,
+                    () => constant.Values,
+                    Property(nameof(TypedConstant.Values)))!,
+            ];
+        }
+
+        private static SingleRunInline CreateKindInline(TypedConstant constant)
+        {
+            return new(Run(constant.Kind.ToString(), CommonStyles.ConstantMainBrush));
+        }
+    }
 }
 
 partial class AttributesAnalysisNodeCreator
@@ -278,6 +369,8 @@ partial class AttributesAnalysisNodeCreator
         public const string AttributeTree = "AT";
         public const string AttributeData = "A";
         public const string AttributeDataList = "AL";
+
+        public const string TypedConstant = "TC";
     }
 
     public class AttributeStyles
@@ -294,5 +387,7 @@ partial class AttributesAnalysisNodeCreator
         public NodeTypeDisplay AttributeDataListDisplay
             => new(Types.AttributeDataList, AttributeDataListColor);
 
+        public NodeTypeDisplay TypedConstantDisplay
+            => new(Types.TypedConstant, CommonStyles.ConstantMainColor);
     }
 }
