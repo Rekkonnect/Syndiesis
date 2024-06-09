@@ -332,7 +332,7 @@ partial class AttributesAnalysisNodeCreator
         {
             return
             [
-                Creator.CreateRootGeneral(
+                CreateRootTypeOrNull(
                     constant.Type,
                     Property(nameof(TypedConstant.Type)))!,
 
@@ -350,6 +350,18 @@ partial class AttributesAnalysisNodeCreator
                     () => constant.Values,
                     Property(nameof(TypedConstant.Values)))!,
             ];
+        }
+
+        private AnalysisTreeListNode CreateRootTypeOrNull(
+            ITypeSymbol? type, DisplayValueSource valueSource)
+        {
+            if (type is null)
+            {
+                return Creator.CreateRootBasic(null, valueSource);
+            }
+
+            return Creator.ParentContainer.SymbolCreator.CreateRootChildlessSymbol(
+                type, valueSource)!;
         }
 
         private static SingleRunInline CreateKindInline(TypedConstant constant)
