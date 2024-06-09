@@ -122,7 +122,7 @@ partial class OperationsAnalysisNodeCreator
             IOperation operation, DisplayValueSource valueSource)
         {
             var inlines = new GroupedRunInlineCollection();
-            Creator.AppendValueSource(valueSource, inlines);
+            AppendValueSource(valueSource, inlines);
             var type = operation.GetType();
             var preferredType = _propertyCache.FilterForType(type).PreferredType ?? type;
             var typeDetailsInline = TypeDetailsInline(preferredType);
@@ -182,9 +182,9 @@ partial class OperationsAnalysisNodeCreator
             OperationList operations, DisplayValueSource valueSource)
         {
             var inlines = new GroupedRunInlineCollection();
-            Creator.AppendValueSource(valueSource, inlines);
+            AppendValueSource(valueSource, inlines);
             var type = operations.GetType();
-            var inline = Creator.NestedTypeDisplayGroupedRun(type);
+            var inline = NestedTypeDisplayGroupedRun(type);
             inlines.Add(inline);
             AppendCountValueDisplay(
                 inlines,
@@ -222,7 +222,7 @@ partial class OperationsAnalysisNodeCreator
             OperationTree operationTree, DisplayValueSource valueSource)
         {
             var type = operationTree.GetType();
-            var inline = Creator.NestedTypeDisplayGroupedRun(type);
+            var inline = NestedTypeDisplayGroupedRun(type);
 
             return AnalysisTreeListNodeLine(
                 [inline],

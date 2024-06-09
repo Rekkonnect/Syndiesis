@@ -98,15 +98,16 @@ public sealed record SyntaxObjectInfo(
             case SyntaxReference reference:
                 return reference.SyntaxTree;
 
+            case VirtualTree virtualTree:
+                return virtualTree.SyntaxTree;
+
+            // Attribute
             case AttributeData attribute:
                 return attribute.GetAttributeApplicationSyntax()?.SyntaxTree;
 
             // Operation
             case IOperation operation:
                 return operation.Syntax.SyntaxTree;
-
-            case OperationTree operationTree:
-                return operationTree.SyntaxTree;
 
             // Semantic model
             case SemanticModel semanticModel:
@@ -152,6 +153,10 @@ public sealed record SyntaxObjectInfo(
             case SyntaxReference reference:
                 return reference.Span;
 
+            case VirtualTree virtualTree:
+                return GetSpan(virtualTree.SyntaxTree);
+
+            // Attribute
             case AttributeData attribute:
                 return attribute.ApplicationSyntaxReference
                     ?.Span ?? default;
@@ -159,9 +164,6 @@ public sealed record SyntaxObjectInfo(
             // Operation
             case IOperation operation:
                 return operation.Syntax.Span;
-
-            case OperationTree operationTree:
-                return GetSpan(operationTree.SyntaxTree);
 
             // Semantic model
             case SemanticModel semanticModel:
@@ -208,6 +210,10 @@ public sealed record SyntaxObjectInfo(
             case SyntaxReference reference:
                 return reference.GetSyntax().FullSpan;
 
+            case VirtualTree virtualTree:
+                return GetFullSpan(virtualTree.SyntaxTree);
+
+            // Attribute
             case AttributeData attribute:
                 return attribute.GetAttributeApplicationSyntax()
                     ?.FullSpan ?? default;
@@ -215,9 +221,6 @@ public sealed record SyntaxObjectInfo(
             // Operation
             case IOperation operation:
                 return operation.Syntax.FullSpan;
-
-            case OperationTree operationTree:
-                return GetFullSpan(operationTree.SyntaxTree);
 
             // Semantic model
             case SemanticModel semanticModel:

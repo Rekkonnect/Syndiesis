@@ -201,7 +201,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
             var inlines = new GroupedRunInlineCollection();
 
             Creator.AppendComplexValueSource(valueSource, inlines);
-            var typeDisplay = Creator.TypeDisplayGroupedRun(annotations.GetType());
+            var typeDisplay = TypeDisplayGroupedRun(annotations.GetType());
             inlines.Add(typeDisplay);
             inlines.Add(NewValueKindSplitterRun());
             var countDisplayRun = CountDisplayRunGroup(annotations)!;
@@ -240,7 +240,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         {
             var inlines = new GroupedRunInlineCollection();
 
-            var run = Creator.TypeDisplayGroupedRun(typeof(SyntaxAnnotation));
+            var run = TypeDisplayGroupedRun(typeof(SyntaxAnnotation));
             inlines.Add(run);
 
             if (annotation.IsElastic())
@@ -400,7 +400,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         {
             var inlines = new GroupedRunInlineCollection();
 
-            Creator.AppendValueSource(valueSource, inlines);
+            AppendValueSource(valueSource, inlines);
             AppendTokenKindDetails(token, valueSource.Name, inlines);
 
             return AnalysisTreeListNodeLine(
@@ -746,7 +746,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         {
             var inlines = new GroupedRunInlineCollection();
 
-            Creator.AppendValueSource(valueSource, inlines);
+            AppendValueSource(valueSource, inlines);
             var display = FormatTriviaDisplay(trivia, inlines);
 
             return AnalysisTreeListNodeLine(inlines, display);
@@ -1062,8 +1062,8 @@ partial class CSharpSyntaxAnalysisNodeCreator
             SyntaxReference reference, DisplayValueSource valueSource)
         {
             var inlines = new GroupedRunInlineCollection();
-            Creator.AppendValueSource(valueSource, inlines);
-            var inline = Creator.NestedTypeDisplayGroupedRun(typeof(SyntaxReference));
+            AppendValueSource(valueSource, inlines);
+            var inline = NestedTypeDisplayGroupedRun(typeof(SyntaxReference));
             inlines.Add(inline);
 
             return AnalysisTreeListNodeLine(
@@ -1099,8 +1099,8 @@ partial class CSharpSyntaxAnalysisNodeCreator
             TextSpan span, DisplayValueSource valueSource)
         {
             var inlines = new GroupedRunInlineCollection();
-            Creator.AppendValueSource(valueSource, inlines);
-            var inline = Creator.NestedTypeDisplayGroupedRun(typeof(TextSpan));
+            AppendValueSource(valueSource, inlines);
+            var inline = NestedTypeDisplayGroupedRun(typeof(TextSpan));
             inlines.Add(inline);
             inlines.Add(NewValueKindSplitterRun());
             var spanView = CreateSpanViewRun(span);

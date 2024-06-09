@@ -146,7 +146,7 @@ public abstract partial class BaseAnalysisNodeCreator
         return false;
     }
 
-    protected GroupedRunInline NestedTypeDisplayGroupedRun(Type type)
+    protected static GroupedRunInline NestedTypeDisplayGroupedRun(Type type)
     {
         var rightmost = TypeDisplayGroupedRun(type);
         var runList = new List<RunOrGrouped> { new(rightmost) };
@@ -166,7 +166,7 @@ public abstract partial class BaseAnalysisNodeCreator
         return new ComplexGroupedRunInline(runList);
     }
 
-    protected GroupedRunInline TypeDisplayGroupedRun(Type type)
+    protected static GroupedRunInline TypeDisplayGroupedRun(Type type)
     {
         var brush = GetBrushForTypeKind(type);
         if (type.IsGenericType)
@@ -420,7 +420,7 @@ static string Code(string type)
         inlines.Add(colonRun);
     }
 
-    protected void AppendValueSourceWithoutSplitter(
+    protected static void AppendValueSourceWithoutSplitter(
         DisplayValueSource valueSource,
         GroupedRunInlineCollection inlines)
     {
@@ -442,7 +442,7 @@ static string Code(string type)
         }
     }
 
-    protected void AppendValueSource(
+    protected static void AppendValueSource(
         DisplayValueSource valueSource,
         GroupedRunInlineCollection inlines)
     {
@@ -455,7 +455,7 @@ static string Code(string type)
         inlines.Add(colonRun);
     }
 
-    protected void AppendMethodDetail(
+    protected static void AppendMethodDetail(
         DisplayValueSource valueSource, GroupedRunInlineCollection inlines)
     {
         var methodNameRun = Run(valueSource.Name!, CommonStyles.MethodBrush);
@@ -485,7 +485,7 @@ static string Code(string type)
         }
     }
 
-    protected void AppendPropertyDetail(string propertyName, GroupedRunInlineCollection inlines)
+    protected static void AppendPropertyDetail(string propertyName, GroupedRunInlineCollection inlines)
     {
         var propertyNameRun = Run(propertyName, CommonStyles.PropertyBrush);
         inlines.AddSingle(propertyNameRun);
@@ -958,7 +958,7 @@ partial class BaseAnalysisNodeCreator
         {
             var inlines = new GroupedRunInlineCollection();
 
-            Creator.AppendValueSource(valueSource, inlines);
+            AppendValueSource(valueSource, inlines);
             var basicValueInline = BasicValueInline(value);
             inlines.Add(basicValueInline);
 
@@ -1018,7 +1018,7 @@ partial class BaseAnalysisNodeCreator
                     return Creator.RunForSimpleObjectValue(value);
             }
 
-            return Creator.NestedTypeDisplayGroupedRun(type);
+            return NestedTypeDisplayGroupedRun(type);
         }
 
         private GroupedRunInline OptionalValueInline(object optional)
@@ -1090,7 +1090,7 @@ partial class BaseAnalysisNodeCreator
         {
             var inlines = new GroupedRunInlineCollection();
 
-            Creator.AppendValueSource(valueSource, inlines);
+            AppendValueSource(valueSource, inlines);
             var run = Creator.RunForSimpleObjectValue(value);
             inlines.Add(run);
 
@@ -1113,7 +1113,7 @@ partial class BaseAnalysisNodeCreator
         {
             var inlines = new GroupedRunInlineCollection();
 
-            Creator.AppendValueSource(valueSource, inlines);
+            AppendValueSource(valueSource, inlines);
             var valueRun = SingleRunForBoolean(value);
             inlines.Add(valueRun);
 
@@ -1160,8 +1160,8 @@ partial class BaseAnalysisNodeCreator
         {
             var inlines = new GroupedRunInlineCollection();
 
-            Creator.AppendValueSource(valueSource, inlines);
-            var typeRun = Creator.NestedTypeDisplayGroupedRun(value.GetType());
+            AppendValueSource(valueSource, inlines);
+            var typeRun = NestedTypeDisplayGroupedRun(value.GetType());
             inlines.Add(typeRun);
             inlines.Add(CreateQualifierSeparatorRun());
             var valueRun = EnumValueRun(value);
@@ -1194,7 +1194,7 @@ partial class BaseAnalysisNodeCreator
 
             var inlines = new GroupedRunInlineCollection();
 
-            Creator.AppendValueSource(valueSource, inlines);
+            AppendValueSource(valueSource, inlines);
             var valueRun = CreateNullValueSingleRun();
             inlines.Add(valueRun);
 
@@ -1327,8 +1327,8 @@ partial class BaseAnalysisNodeCreator
         {
             var inlines = new GroupedRunInlineCollection();
 
-            Creator.AppendValueSource(valueSource, inlines);
-            var typeRun = Creator.NestedTypeDisplayGroupedRun(value.GetType());
+            AppendValueSource(valueSource, inlines);
+            var typeRun = NestedTypeDisplayGroupedRun(value.GetType());
             inlines.Add(typeRun);
 
             var countDisplayRun = CountDisplayRunGroup(value);
