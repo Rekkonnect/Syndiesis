@@ -499,6 +499,15 @@ public partial class CodeEditor : UserControl
         if (symbol is null)
             return false;
 
+        if (symbol is IMethodSymbol
+            { 
+                MethodKind: MethodKind.Constructor,
+                IsImplicitlyDeclared: true
+            } constructor)
+        {
+            symbol = constructor.ContainingType;
+        }
+
         var syntax = symbol.DeclaringSyntaxReferences.FirstOrDefault();
         if (syntax is null)
             return false;
@@ -528,23 +537,26 @@ public partial class CodeEditor : UserControl
         var model = source.SemanticModel!;
         int position = textEditor.TextArea.Caret.Offset;
         var node = SyntaxNodeAtPosition(tree, position);
-        var info = GetSymbolInfo(node);
-        if (info.Symbol is null)
+        var symbol = GetSymbol(node);
+        if (symbol is null)
         {
             // Attempt at the left side of the caret
             var otherNode = SyntaxNodeAtPosition(tree, position - 1);
-            var otherInfo = GetSymbolInfo(otherNode);
-            return info.Symbol;
+            var otherSymbol = GetSymbol(otherNode);
+            return otherSymbol;
         }
 
-        return info.Symbol;
+        return symbol;
 
-        SymbolInfo GetSymbolInfo(SyntaxNode? node)
+        ISymbol? GetSymbol(SyntaxNode? node)
         {
             if (node is null)
                 return default;
 
-            return model.GetSymbolInfo(node);
+            var symbolInfo = model.GetSymbolInfo(node);
+            return symbolInfo.Symbol
+                ?? symbolInfo.CandidateSymbols.FirstOrDefault()
+                ?? model.GetDeclaredSymbol(node);
         }
     }
 
