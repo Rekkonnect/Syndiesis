@@ -444,18 +444,26 @@ public partial class CodeEditor : UserControl
 
         switch (e.Key)
         {
-            case Key.W:
-                if (modifiers is KeyModifiers.Control)
-                {
-                    SelectCurrentWord();
-                    e.Handled = true;
-                }
-                break;
-
             case Key.U:
                 if (modifiers is KeyModifiers.Control)
                 {
                     ExpandSelectNextParentNode();
+                    e.Handled = true;
+                }
+                break;
+
+            case Key.V:
+                if (modifiers is (KeyModifiers.Shift | KeyModifiers.Control))
+                {
+                    Dispatcher.UIThread.InvokeAsync(PasteDirectAsync);
+                    e.Handled = true;
+                }
+                break;
+
+            case Key.W:
+                if (modifiers is KeyModifiers.Control)
+                {
+                    SelectCurrentWord();
                     e.Handled = true;
                 }
                 break;
@@ -512,9 +520,15 @@ public partial class CodeEditor : UserControl
         if (syntax is null)
             return false;
 
+        var targetSpeakableName = symbol.Name;
+        if (symbol is IMethodSymbol { MethodKind: MethodKind.Constructor })
+        {
+            targetSpeakableName = symbol.ContainingType.Name;
+        }
+
         var syntaxNode = syntax.GetSyntax();
         var tokens = syntaxNode.DescendantTokens();
-        var token = tokens.FirstOrDefault(s => s.Text == symbol.Name);
+        var token = tokens.FirstOrDefault(s => s.Text == targetSpeakableName);
         if (token == default)
             return false;
 
