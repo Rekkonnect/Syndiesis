@@ -383,7 +383,7 @@ public partial class MainView : UserControl
         base.OnGotFocus(e);
         if (!e.Handled)
         {
-            codeEditor.Focus();
+            codeEditor.textEditor.Focus();
         }
     }
 

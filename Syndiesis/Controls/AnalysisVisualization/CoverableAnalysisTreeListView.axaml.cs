@@ -53,19 +53,9 @@ public partial class CoverableAnalysisTreeListView : UserControl
 
             switch (analysisResult)
             {
-                case SyntaxNodeAnalysisResult syntaxNodeAnalysisResult:
-                    listView.RootNode = syntaxNodeAnalysisResult.NodeRoot.Build()!;
-                    listView.TargetAnalysisNodeKind = AnalysisNodeKind.Syntax;
-                    break;
-
-                case OperationAnalysisResult operationAnalysisResult:
-                    listView.RootNode = operationAnalysisResult.NodeRoot.Build()!;
-                    listView.TargetAnalysisNodeKind = AnalysisNodeKind.Operation;
-                    break;
-
-                case SymbolAnalysisResult symbolAnalysisResult:
-                    listView.RootNode = symbolAnalysisResult.NodeRoot.Build()!;
-                    listView.TargetAnalysisNodeKind = AnalysisNodeKind.Symbol;
+                case NodeRootAnalysisResult result:
+                    listView.RootNode = result.NodeRoot.Build()!;
+                    listView.TargetAnalysisNodeKind = result.TargetAnalysisNodeKind;
                     break;
             }
 

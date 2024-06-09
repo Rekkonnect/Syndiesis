@@ -26,6 +26,7 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly IModuleSymbolRootViewNodeCreator _moduleSymbolCreator;
     private readonly INamespaceSymbolRootViewNodeCreator _namespaceSymbolCreator;
     private readonly ITypeSymbolRootViewNodeCreator _typeSymbolCreator;
+    private readonly INamedTypeSymbolRootViewNodeCreator _namedTypeSymbolCreator;
     private readonly IFieldSymbolRootViewNodeCreator _fieldSymbolCreator;
     private readonly IPropertySymbolRootViewNodeCreator _propertySymbolCreator;
     private readonly IEventSymbolRootViewNodeCreator _eventSymbolCreator;
@@ -50,6 +51,7 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         _moduleSymbolCreator = new(this);
         _namespaceSymbolCreator = new(this);
         _typeSymbolCreator = new(this);
+        _namedTypeSymbolCreator = new(this);
         _fieldSymbolCreator = new(this);
         _propertySymbolCreator = new(this);
         _eventSymbolCreator = new(this);
@@ -138,6 +140,9 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
             case IRangeVariableSymbol rangeVariableSymbol:
                 return _rangeVariableSymbolCreator.CreateNodeLine(rangeVariableSymbol, valueSource);
 
+            case INamedTypeSymbol namedTypeSymbol:
+                return _namedTypeSymbolCreator.CreateNodeLine(namedTypeSymbol, valueSource);
+
             case ITypeSymbol typeSymbol:
                 return _typeSymbolCreator.CreateNodeLine(typeSymbol, valueSource);
 
@@ -187,6 +192,9 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
 
             case IRangeVariableSymbol rangeVariableSymbol:
                 return _rangeVariableSymbolCreator.CreateChildlessNode(rangeVariableSymbol, valueSource);
+
+            case INamedTypeSymbol namedTypeSymbol:
+                return _namedTypeSymbolCreator.CreateChildlessNode(namedTypeSymbol, valueSource);
 
             case ITypeSymbol typeSymbol:
                 return _typeSymbolCreator.CreateChildlessNode(typeSymbol, valueSource);
@@ -593,11 +601,15 @@ partial class SymbolAnalysisNodeCreator
         protected override void CreateChildren(
             INamedTypeSymbol symbol, List<AnalysisTreeListNode> list)
         {
-            list.Add(
+            list.AddRange([
                 Creator.CreateRootSymbolList(
                     symbol.TypeParameters,
-                    Property(nameof(INamedTypeSymbol.TypeParameters)))
-            );
+                    Property(nameof(INamedTypeSymbol.TypeParameters))),
+
+                Creator.CreateRootGeneral(
+                    symbol.DelegateInvokeMethod,
+                    Property(nameof(INamedTypeSymbol.DelegateInvokeMethod))),
+            ]);
 
             base.CreateChildren(symbol, list);
         }
@@ -681,6 +693,10 @@ partial class SymbolAnalysisNodeCreator
             IMethodSymbol symbol, List<AnalysisTreeListNode> list)
         {
             list.AddRange([
+                Creator.CreateRootAttributeList(
+                    symbol.GetReturnTypeAttributes(),
+                    MethodSource(nameof(IMethodSymbol.GetReturnTypeAttributes))),
+
                 Creator.CreateRootGeneral(
                     symbol.CallingConvention,
                     Property(nameof(IMethodSymbol.CallingConvention)))!,

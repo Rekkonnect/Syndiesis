@@ -24,7 +24,7 @@ public class AttributeAnalysisExecution(HybridSingleTreeCompilationSource compil
             return Cancelled();
 
         var rootNode = creator.CreateRootAttributeTree(attributeTree!, default);
-        var result = new OperationAnalysisResult(rootNode);
+        var result = new AttributeAnalysisResult(rootNode);
         return Task.FromResult<AnalysisResult>(result);
     }
 }

@@ -137,7 +137,9 @@ partial class AttributesAnalysisNodeCreator
         public override AnalysisNodeChildRetriever? GetChildRetriever(
             AttributeTree.SymbolContainer container)
         {
-            Debug.Assert(container.Attributes.Length > 0);
+            if (container.Attributes.Length > 0)
+                return null;
+
             return () => GetChildren(container);
         }
 

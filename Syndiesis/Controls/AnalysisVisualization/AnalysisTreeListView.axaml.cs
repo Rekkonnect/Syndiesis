@@ -65,6 +65,7 @@ public partial class AnalysisTreeListView : UserControl
         RootNode.Loaded -= NewRootNodeLoaded;
         UpdateScrollLimits();
         CorrectContainedNodeWidths(Bounds.Size);
+        ResetToInitialRootView();
         NewRootLoaded?.Invoke();
     }
 
