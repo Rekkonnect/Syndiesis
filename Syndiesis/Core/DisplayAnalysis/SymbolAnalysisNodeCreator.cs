@@ -26,6 +26,7 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly IModuleSymbolRootViewNodeCreator _moduleSymbolCreator;
     private readonly INamespaceSymbolRootViewNodeCreator _namespaceSymbolCreator;
     private readonly ITypeSymbolRootViewNodeCreator _typeSymbolCreator;
+    private readonly INamedTypeSymbolRootViewNodeCreator _namedTypeSymbolCreator;
     private readonly IFieldSymbolRootViewNodeCreator _fieldSymbolCreator;
     private readonly IPropertySymbolRootViewNodeCreator _propertySymbolCreator;
     private readonly IEventSymbolRootViewNodeCreator _eventSymbolCreator;
@@ -50,6 +51,7 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         _moduleSymbolCreator = new(this);
         _namespaceSymbolCreator = new(this);
         _typeSymbolCreator = new(this);
+        _namedTypeSymbolCreator = new(this);
         _fieldSymbolCreator = new(this);
         _propertySymbolCreator = new(this);
         _eventSymbolCreator = new(this);
@@ -138,6 +140,9 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
             case IRangeVariableSymbol rangeVariableSymbol:
                 return _rangeVariableSymbolCreator.CreateNodeLine(rangeVariableSymbol, valueSource);
 
+            case INamedTypeSymbol namedTypeSymbol:
+                return _namedTypeSymbolCreator.CreateNodeLine(namedTypeSymbol, valueSource);
+
             case ITypeSymbol typeSymbol:
                 return _typeSymbolCreator.CreateNodeLine(typeSymbol, valueSource);
 
@@ -187,6 +192,9 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
 
             case IRangeVariableSymbol rangeVariableSymbol:
                 return _rangeVariableSymbolCreator.CreateChildlessNode(rangeVariableSymbol, valueSource);
+
+            case INamedTypeSymbol namedTypeSymbol:
+                return _namedTypeSymbolCreator.CreateChildlessNode(namedTypeSymbol, valueSource);
 
             case ITypeSymbol typeSymbol:
                 return _typeSymbolCreator.CreateChildlessNode(typeSymbol, valueSource);
@@ -407,7 +415,7 @@ partial class SymbolAnalysisNodeCreator
             TSymbol symbol, DisplayValueSource valueSource)
         {
             var inlines = new GroupedRunInlineCollection();
-            Creator.AppendValueSource(valueSource, inlines);
+            AppendValueSource(valueSource, inlines);
             var type = MatchingSymbolInterface(symbol.GetType());
             var typeDetailsInline = TypeDetailsInline(type);
             inlines.Add(typeDetailsInline);
@@ -593,11 +601,15 @@ partial class SymbolAnalysisNodeCreator
         protected override void CreateChildren(
             INamedTypeSymbol symbol, List<AnalysisTreeListNode> list)
         {
-            list.Add(
+            list.AddRange([
                 Creator.CreateRootSymbolList(
                     symbol.TypeParameters,
-                    Property(nameof(INamedTypeSymbol.TypeParameters)))
-            );
+                    Property(nameof(INamedTypeSymbol.TypeParameters))),
+
+                Creator.CreateRootGeneral(
+                    symbol.DelegateInvokeMethod,
+                    Property(nameof(INamedTypeSymbol.DelegateInvokeMethod))),
+            ]);
 
             base.CreateChildren(symbol, list);
         }
@@ -700,6 +712,10 @@ partial class SymbolAnalysisNodeCreator
                 Creator.CreateRootSymbolList(
                     symbol.Parameters,
                     Property(nameof(IMethodSymbol.Parameters))),
+
+                Creator.CreateRootAttributeList(
+                    symbol.GetReturnTypeAttributes(),
+                    MethodSource(nameof(IMethodSymbol.GetReturnTypeAttributes))),
             ]);
 
             base.CreateChildren(symbol, list);
@@ -826,9 +842,9 @@ partial class SymbolAnalysisNodeCreator
             IReadOnlyList<ISymbol> symbols, DisplayValueSource valueSource)
         {
             var inlines = new GroupedRunInlineCollection();
-            Creator.AppendValueSource(valueSource, inlines);
+            AppendValueSource(valueSource, inlines);
             var type = symbols.GetType();
-            var inline = Creator.NestedTypeDisplayGroupedRun(type);
+            var inline = NestedTypeDisplayGroupedRun(type);
             inlines.Add(inline);
             AppendCountValueDisplay(
                 inlines,
@@ -860,142 +876,32 @@ partial class SymbolAnalysisNodeCreator
     }
 
     public sealed class AttributeDataRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
-        : SymbolRootViewNodeCreator<AttributeData>(creator)
+        : AttributesAnalysisNodeCreator.AttributeDataRootViewNodeCreator(
+            creator.ParentContainer.AttributeCreator)
     {
-        public override AnalysisTreeListNodeLine CreateNodeLine(
-            AttributeData attribute, DisplayValueSource valueSource)
+        public override AnalysisNodeKind GetNodeKind(AttributeData value)
         {
-            var inlines = new GroupedRunInlineCollection();
-            Creator.AppendValueSource(valueSource, inlines);
-            var type = attribute.GetType();
-            var inline = Creator.NestedTypeDisplayGroupedRun(type);
-            inlines.Add(inline);
-
-            return AnalysisTreeListNodeLine(
-                inlines,
-                Styles.AttributeDataDisplay);
-        }
-
-        public override AnalysisNodeChildRetriever? GetChildRetriever(
-            AttributeData attribute)
-        {
-            return () => GetChildren(attribute);
-        }
-
-        private IReadOnlyList<AnalysisTreeListNode> GetChildren(AttributeData attribute)
-        {
-            return
-            [
-                Creator.CreateRootChildlessSymbol(
-                    attribute.AttributeClass!,
-                    Property(nameof(AttributeData.AttributeClass)))!,
-
-                Creator.CreateRootGeneral(
-                    attribute.ConstructorArguments,
-                    Property(nameof(AttributeData.ConstructorArguments)))!,
-
-                Creator.CreateRootGeneral(
-                    attribute.NamedArguments,
-                    Property(nameof(AttributeData.NamedArguments)))!,
-
-                Creator.CreateRootGeneral(
-                    attribute.ConstructorArguments,
-                    Property(nameof(AttributeData.ApplicationSyntaxReference)))!,
-            ];
+            return AnalysisNodeKind.Symbol;
         }
     }
 
     public sealed class AttributeDataListRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
-        : SymbolRootViewNodeCreator<IReadOnlyList<AttributeData>>(creator)
+        : AttributesAnalysisNodeCreator.AttributeDataListRootViewNodeCreator(
+            creator.ParentContainer.AttributeCreator)
     {
-        public override AnalysisTreeListNodeLine CreateNodeLine(
-            IReadOnlyList<AttributeData> attributes, DisplayValueSource valueSource)
+        public override AnalysisNodeKind GetNodeKind(IReadOnlyList<AttributeData> value)
         {
-            var inlines = new GroupedRunInlineCollection();
-            Creator.AppendValueSource(valueSource, inlines);
-            var type = attributes.GetType();
-            var inline = Creator.NestedTypeDisplayGroupedRun(type);
-            inlines.Add(inline);
-            AppendCountValueDisplay(
-                inlines,
-                attributes.Count,
-                nameof(IReadOnlyList<AttributeData>.Count));
-
-            return AnalysisTreeListNodeLine(
-                inlines,
-                Styles.AttributeDataListDisplay);
-        }
-
-        public override AnalysisNodeChildRetriever? GetChildRetriever(
-            IReadOnlyList<AttributeData> attributes)
-        {
-            if (attributes.IsEmpty())
-                return null;
-
-            return () => GetChildren(attributes);
-        }
-
-        private IReadOnlyList<AnalysisTreeListNode> GetChildren(
-            IReadOnlyList<AttributeData> attributes)
-        {
-            return attributes
-                .Select(symbol => Creator.CreateRootAttribute(symbol, default))
-                .ToList()
-                ;
+            return AnalysisNodeKind.Symbol;
         }
     }
 
     public sealed class TypedConstantRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
-        : SymbolRootViewNodeCreator<TypedConstant>(creator)
+        : AttributesAnalysisNodeCreator.TypedConstantRootViewNodeCreator(
+            creator.ParentContainer.AttributeCreator)
     {
-        public override AnalysisTreeListNodeLine CreateNodeLine(
-            TypedConstant constant, DisplayValueSource valueSource)
+        public override AnalysisNodeKind GetNodeKind(TypedConstant value)
         {
-            var inlines = new GroupedRunInlineCollection();
-            Creator.AppendValueSource(valueSource, inlines);
-            var inline = Creator.NestedTypeDisplayGroupedRun(typeof(TypedConstant));
-            inlines.Add(inline);
-            inlines.Add(NewValueKindSplitterRun());
-            inlines.Add(CreateKindInline(constant));
-
-            return AnalysisTreeListNodeLine(
-                inlines,
-                Styles.TypedConstantDisplay);
-        }
-
-        public override AnalysisNodeChildRetriever? GetChildRetriever(
-            TypedConstant constant)
-        {
-            return () => GetChildren(constant);
-        }
-
-        private IReadOnlyList<AnalysisTreeListNode> GetChildren(TypedConstant constant)
-        {
-            return
-            [
-                Creator.CreateRootGeneral(
-                    constant.Type,
-                    Property(nameof(TypedConstant.Type)))!,
-
-                Creator.CreateRootBasic(
-                    constant.IsNull,
-                    Property(nameof(TypedConstant.IsNull))),
-
-                Creator.CreateGeneralOrThrowsExceptionNode<InvalidOperationException>(
-                    constant.Kind is not TypedConstantKind.Array,
-                    () => constant.Value,
-                    Property(nameof(TypedConstant.Value)))!,
-
-                Creator.CreateGeneralOrThrowsExceptionNode<InvalidOperationException>(
-                    constant.Kind is TypedConstantKind.Array,
-                    () => constant.Values,
-                    Property(nameof(TypedConstant.Values)))!,
-            ];
-        }
-
-        private static SingleRunInline CreateKindInline(TypedConstant constant)
-        {
-            return new(Run(constant.Kind.ToString(), CommonStyles.ConstantMainBrush));
+            return AnalysisNodeKind.Symbol;
         }
     }
 }
@@ -1012,32 +918,17 @@ partial class SymbolAnalysisNodeCreator
         // 'Collection' was used instead of 'List' to avoid
         // the confusion of SL with [Separated]SyntaxList
         public const string SymbolCollection = "SC";
-
-        public const string AttributeData = "A";
-        public const string AttributeDataList = "AL";
-        public const string TypedConstant = "TC";
     }
 
     public class SymbolStyles
     {
         public Color SymbolColor = CommonStyles.InterfaceMainColor;
         public Color SymbolCollectionColor = CommonStyles.StructMainColor;
-        public Color AttributeDataColor = Color.FromUInt32(0xFFDE526E);
-        public Color AttributeDataListColor = Color.FromUInt32(0xFFDE526E);
 
         public NodeTypeDisplay SymbolDisplay
             => new(Types.Symbol, SymbolColor);
 
         public NodeTypeDisplay SymbolCollectionDisplay
             => new(Types.SymbolCollection, SymbolCollectionColor);
-
-        public NodeTypeDisplay AttributeDataDisplay
-            => new(Types.AttributeData, AttributeDataColor);
-
-        public NodeTypeDisplay AttributeDataListDisplay
-            => new(Types.AttributeDataList, AttributeDataListColor);
-
-        public NodeTypeDisplay TypedConstantDisplay
-            => new(Types.TypedConstant, CommonStyles.ConstantMainColor);
     }
 }

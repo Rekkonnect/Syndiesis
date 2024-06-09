@@ -60,6 +60,7 @@ public partial class MainView : UserControl
             Envelope("Syntax", AnalysisNodeKind.Syntax),
             Envelope("Symbols", AnalysisNodeKind.Symbol),
             Envelope("Operations", AnalysisNodeKind.Operation),
+            Envelope("Attributes", AnalysisNodeKind.Attribute),
         ];
 
         analysisTreeViewTabs.TabSelected += HandleSelectedAnalysisTab;
@@ -377,25 +378,14 @@ public partial class MainView : UserControl
         TriggerPipeline();
     }
 
-    protected override void OnGotFocus(GotFocusEventArgs e)
-    {
-        base.OnGotFocus(e);
-        if (!e.Handled)
-        {
-            codeEditor.Focus();
-        }
-    }
-
     protected override void OnKeyDown(KeyEventArgs e)
     {
         var modifiers = e.KeyModifiers.NormalizeByPlatform();
 
-        bool hasControl = modifiers.HasFlag(KeyModifiers.Control);
-
         switch (e.Key)
         {
             case Key.S:
-                if (hasControl)
+                if (modifiers is KeyModifiers.Control)
                 {
                     RequestSettings();
                     e.Handled = true;
@@ -403,9 +393,20 @@ public partial class MainView : UserControl
                 break;
 
             case Key.R:
-                if (hasControl)
+                if (modifiers is KeyModifiers.Control)
                 {
                     Reset();
+                    e.Handled = true;
+                }
+                break;
+
+            // Override Ctrl+Tab to quickly focus on the text area
+            // This is also a patch to the inability to gracefully handle automatic
+            // focus on the text area, for a variety of focus bugs occurring in AvaloniaEdit
+            case Key.Tab:
+                if (modifiers is KeyModifiers.Control)
+                {
+                    codeEditor.textEditor.Focus();
                     e.Handled = true;
                 }
                 break;

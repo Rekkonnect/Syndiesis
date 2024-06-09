@@ -12,8 +12,8 @@ namespace Syndiesis.Core;
 public sealed class OperationTree(
     SyntaxTree tree,
     ImmutableArray<OperationTree.SymbolContainer> operations)
+    : VirtualTree(tree)
 {
-    public SyntaxTree SyntaxTree { get; } = tree;
     public ImmutableArray<SymbolContainer> Containers { get; } = operations;
 
     public static OperationTree? FromTree(

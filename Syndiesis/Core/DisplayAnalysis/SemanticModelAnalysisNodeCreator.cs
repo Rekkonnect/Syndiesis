@@ -74,7 +74,7 @@ partial class SemanticModelAnalysisNodeCreator
             SemanticModel model, DisplayValueSource valueSource)
         {
             var type = model.GetType();
-            var inline = Creator.NestedTypeDisplayGroupedRun(type);
+            var inline = NestedTypeDisplayGroupedRun(type);
 
             return AnalysisTreeListNodeLine(
                 [inline],
