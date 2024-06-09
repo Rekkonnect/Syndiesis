@@ -426,8 +426,7 @@ public partial class AnalysisTreeListView : UserControl
 
         if (span.Start >= AnalyzedTree.Length)
         {
-            var last = GetLastLoadedNode();
-            return last;
+            span = new(AnalyzedTree.Length - 1, 0);
         }
 
         if (span.End >= AnalyzedTree.Length)
