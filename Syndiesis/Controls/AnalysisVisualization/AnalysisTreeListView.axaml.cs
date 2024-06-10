@@ -252,7 +252,12 @@ public partial class AnalysisTreeListView : UserControl
         }
         else
         {
+            var previous = _allowedHover;
             _allowedHover = true;
+            if (!previous)
+            {
+                RootNode.EvaluateHoveringRecursivelyBinary(e);
+            }
         }
     }
 
