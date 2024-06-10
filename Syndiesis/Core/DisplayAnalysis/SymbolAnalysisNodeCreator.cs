@@ -426,7 +426,8 @@ partial class SymbolAnalysisNodeCreator
                 inlines.Add(nameInline);
             }
             inlines.Add(NewValueKindSplitterRun());
-            inlines.Add(CreateKindInline(symbol));
+            var kindInline = CreateKindInline(symbol);
+            inlines.Add(kindInline);
 
             return AnalysisTreeListNodeLine(
                 inlines,
@@ -443,7 +444,15 @@ partial class SymbolAnalysisNodeCreator
 
         protected virtual SingleRunInline CreateKindInline(TSymbol symbol)
         {
-            return new(Run(symbol.Kind.ToString(), CommonStyles.ConstantMainBrush));
+            return CreateKindInlineForText(symbol.Kind.ToString());
+        }
+
+        protected static SingleRunInline CreateKindInlineForText(string text)
+        {
+            return new(Run(
+                text,
+                CommonStyles.ConstantMainBrush,
+                FontStyle.Italic));
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(TSymbol symbol)
@@ -586,7 +595,7 @@ partial class SymbolAnalysisNodeCreator
     {
         protected override SingleRunInline CreateKindInline(TSymbol symbol)
         {
-            return new(Run(symbol.TypeKind.ToString(), CommonStyles.ConstantMainBrush));
+            return CreateKindInlineForText(symbol.TypeKind.ToString());
         }
     }
 
@@ -689,6 +698,11 @@ partial class SymbolAnalysisNodeCreator
     public sealed class IMethodSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
         : ISymbolRootViewNodeCreator<IMethodSymbol>(creator)
     {
+        protected override SingleRunInline CreateKindInline(IMethodSymbol symbol)
+        {
+            return CreateKindInlineForText(symbol.MethodKind.ToString());
+        }
+
         protected override void CreateChildren(
             IMethodSymbol symbol, List<AnalysisTreeListNode> list)
         {

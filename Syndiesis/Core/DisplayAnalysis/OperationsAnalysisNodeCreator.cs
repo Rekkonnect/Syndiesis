@@ -153,7 +153,10 @@ partial class OperationsAnalysisNodeCreator
 
         private SingleRunInline CreateKindInline(OperationKind kind)
         {
-            return new(Run(kind.ToString(), CommonStyles.ConstantMainBrush));
+            return new(Run(
+                kind.ToString(),
+                CommonStyles.ConstantMainBrush,
+                FontStyle.Italic));
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(IOperation operation)
@@ -221,11 +224,17 @@ partial class OperationsAnalysisNodeCreator
         public override AnalysisTreeListNodeLine CreateNodeLine(
             OperationTree operationTree, DisplayValueSource valueSource)
         {
+            var inlines = new GroupedRunInlineCollection();
             var type = operationTree.GetType();
             var inline = FullyQualifiedTypeDisplayGroupedRun(type);
+            inlines.Add(inline);
+            AppendCountValueDisplay(
+                inlines,
+                operationTree.Containers.Length,
+                nameof(operationTree.Containers.Length));
 
             return AnalysisTreeListNodeLine(
-                [inline],
+                inlines,
                 Styles.OperationTreeDisplay);
         }
 

@@ -124,13 +124,19 @@ partial class AttributesAnalysisNodeCreator
         : AttributeRootViewNodeCreator<AttributeTree>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            AttributeTree AttributeTree, DisplayValueSource valueSource)
+            AttributeTree attributeTree, DisplayValueSource valueSource)
         {
-            var type = AttributeTree.GetType();
+            var inlines = new GroupedRunInlineCollection();
+            var type = attributeTree.GetType();
             var inline = FullyQualifiedTypeDisplayGroupedRun(type);
+            inlines.Add(inline);
+            AppendCountValueDisplay(
+                inlines,
+                attributeTree.Containers.Length,
+                nameof(attributeTree.Containers.Length));
 
             return AnalysisTreeListNodeLine(
-                [inline],
+                inlines,
                 Styles.AttributeTreeDisplay);
         }
 
