@@ -141,7 +141,7 @@ public partial class CodeEditor : UserControl
 
         _nodeSpanHoverLayer = new NodeSpanHoverLayer(this)
         {
-            HoverForeground = new SolidColorBrush(0x60A0A0A0)
+            HoverForeground = new SolidColorBrush(0x58909090)
         };
 
         textArea.TextView.InsertLayer(
@@ -444,18 +444,26 @@ public partial class CodeEditor : UserControl
 
         switch (e.Key)
         {
-            case Key.W:
-                if (modifiers is KeyModifiers.Control)
-                {
-                    SelectCurrentWord();
-                    e.Handled = true;
-                }
-                break;
-
             case Key.U:
                 if (modifiers is KeyModifiers.Control)
                 {
                     ExpandSelectNextParentNode();
+                    e.Handled = true;
+                }
+                break;
+
+            case Key.V:
+                if (modifiers is (KeyModifiers.Shift | KeyModifiers.Control))
+                {
+                    Dispatcher.UIThread.InvokeAsync(PasteDirectAsync);
+                    e.Handled = true;
+                }
+                break;
+
+            case Key.W:
+                if (modifiers is KeyModifiers.Control)
+                {
+                    SelectCurrentWord();
                     e.Handled = true;
                 }
                 break;
@@ -499,13 +507,25 @@ public partial class CodeEditor : UserControl
         if (symbol is null)
             return false;
 
+        if (symbol.IsImplicitlyDeclared)
+        {
+            symbol = symbol.ContainingType;
+        }
+
         var syntax = symbol.DeclaringSyntaxReferences.FirstOrDefault();
         if (syntax is null)
             return false;
 
+        var targetSpeakableName = symbol.Name;
+
+        if (symbol is IMethodSymbol { MethodKind: MethodKind.Constructor })
+        {
+            targetSpeakableName = symbol.ContainingType.Name;
+        }
+
         var syntaxNode = syntax.GetSyntax();
         var tokens = syntaxNode.DescendantTokens();
-        var token = tokens.FirstOrDefault(s => s.Text == symbol.Name);
+        var token = tokens.FirstOrDefault(s => s.Text == targetSpeakableName);
         if (token == default)
             return false;
 
@@ -528,23 +548,26 @@ public partial class CodeEditor : UserControl
         var model = source.SemanticModel!;
         int position = textEditor.TextArea.Caret.Offset;
         var node = SyntaxNodeAtPosition(tree, position);
-        var info = GetSymbolInfo(node);
-        if (info.Symbol is null)
+        var symbol = GetSymbol(node);
+        if (symbol is null)
         {
             // Attempt at the left side of the caret
             var otherNode = SyntaxNodeAtPosition(tree, position - 1);
-            var otherInfo = GetSymbolInfo(otherNode);
-            return info.Symbol;
+            var otherSymbol = GetSymbol(otherNode);
+            return otherSymbol;
         }
 
-        return info.Symbol;
+        return symbol;
 
-        SymbolInfo GetSymbolInfo(SyntaxNode? node)
+        ISymbol? GetSymbol(SyntaxNode? node)
         {
             if (node is null)
                 return default;
 
-            return model.GetSymbolInfo(node);
+            var symbolInfo = model.GetSymbolInfo(node);
+            return symbolInfo.Symbol
+                ?? symbolInfo.CandidateSymbols.FirstOrDefault()
+                ?? model.GetDeclaredSymbol(node);
         }
     }
 

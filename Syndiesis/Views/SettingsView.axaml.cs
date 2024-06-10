@@ -61,10 +61,28 @@ public partial class SettingsView : UserControl
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
+        var modifiers = e.KeyModifiers.NormalizeByPlatform();
+
         switch (e.Key)
         {
             case Key.Escape:
                 CancelSettings();
+                break;
+
+            case Key.R:
+                if (modifiers is (KeyModifiers.Control | KeyModifiers.Shift))
+                {
+                    ResetSettings();
+                    e.Handled = true;
+                }
+                break;
+
+            case Key.S:
+                if (modifiers is KeyModifiers.Control)
+                {
+                    SaveSettings();
+                    e.Handled = true;
+                }
                 break;
         }
     }
@@ -91,9 +109,31 @@ public partial class SettingsView : UserControl
 
     private void ResetSettings()
     {
-        AppSettings.TryLoad();
-        LoadFromSettings();
-        SettingsReset?.Invoke();
+        bool success = AppSettings.TryLoad();
+        var notificationContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
+        if (success)
+        {
+            LoadFromSettings();
+            if (notificationContainer is not null)
+            {
+                var popup = new ToastNotificationPopup();
+                popup.defaultTextBlock.Text = "Reverted settings to current file state";
+                var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
+                _ = notificationContainer.Show(popup, animation);
+            }
+            SettingsReset?.Invoke();
+        }
+        else
+        {
+            if (notificationContainer is not null)
+            {
+                var popup = new ToastNotificationPopup();
+                popup.BackgroundFill = Color.FromUInt32(0xFF660030);
+                popup.defaultTextBlock.Text = "Failed to reset settings. Please check the logs for details.";
+                var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(4));
+                _ = notificationContainer.Show(popup, animation);
+            }
+        }
     }
 
     private void SaveSettings()
@@ -112,6 +152,7 @@ public partial class SettingsView : UserControl
                 var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
                 _ = notificationContainer.Show(popup, animation);
             }
+            SettingsSaved?.Invoke();
         }
         else
         {
@@ -129,7 +170,6 @@ public partial class SettingsView : UserControl
                 _ = notificationContainer.Show(popup, animation);
             }
         }
-        SettingsSaved?.Invoke();
     }
 
     private void SetSettingsValues(AppSettings settings)

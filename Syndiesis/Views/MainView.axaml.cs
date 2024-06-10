@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Tabs;
+using Syndiesis.Controls.Toast;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
@@ -378,6 +379,18 @@ public partial class MainView : UserControl
         TriggerPipeline();
     }
 
+    private void ShowResetSettingsPopup()
+    {
+        var notificationContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
+        if (notificationContainer is not null)
+        {
+            var popup = new ToastNotificationPopup();
+            popup.defaultTextBlock.Text = "Reverted settings to current file state";
+            var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
+            _ = notificationContainer.Show(popup, animation);
+        }
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         var modifiers = e.KeyModifiers.NormalizeByPlatform();
@@ -396,6 +409,12 @@ public partial class MainView : UserControl
                 if (modifiers is KeyModifiers.Control)
                 {
                     Reset();
+                    e.Handled = true;
+                }
+                if (modifiers is (KeyModifiers.Control | KeyModifiers.Shift))
+                {
+                    ApplyCurrentSettings();
+                    ShowResetSettingsPopup();
                     e.Handled = true;
                 }
                 break;

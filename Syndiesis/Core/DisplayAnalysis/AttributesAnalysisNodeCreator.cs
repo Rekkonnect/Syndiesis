@@ -124,13 +124,19 @@ partial class AttributesAnalysisNodeCreator
         : AttributeRootViewNodeCreator<AttributeTree>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            AttributeTree AttributeTree, DisplayValueSource valueSource)
+            AttributeTree attributeTree, DisplayValueSource valueSource)
         {
-            var type = AttributeTree.GetType();
+            var inlines = new GroupedRunInlineCollection();
+            var type = attributeTree.GetType();
             var inline = FullyQualifiedTypeDisplayGroupedRun(type);
+            inlines.Add(inline);
+            AppendCountValueDisplay(
+                inlines,
+                attributeTree.Containers.Length,
+                nameof(attributeTree.Containers.Length));
 
             return AnalysisTreeListNodeLine(
-                [inline],
+                inlines,
                 Styles.AttributeTreeDisplay);
         }
 
@@ -332,7 +338,7 @@ partial class AttributesAnalysisNodeCreator
         {
             return
             [
-                Creator.CreateRootGeneral(
+                CreateRootTypeOrNull(
                     constant.Type,
                     Property(nameof(TypedConstant.Type)))!,
 
@@ -350,6 +356,18 @@ partial class AttributesAnalysisNodeCreator
                     () => constant.Values,
                     Property(nameof(TypedConstant.Values)))!,
             ];
+        }
+
+        private AnalysisTreeListNode CreateRootTypeOrNull(
+            ITypeSymbol? type, DisplayValueSource valueSource)
+        {
+            if (type is null)
+            {
+                return Creator.CreateRootBasic(null, valueSource);
+            }
+
+            return Creator.ParentContainer.SymbolCreator.CreateRootChildlessSymbol(
+                type, valueSource)!;
         }
 
         private static SingleRunInline CreateKindInline(TypedConstant constant)

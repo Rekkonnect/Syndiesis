@@ -36,6 +36,7 @@ public partial class LanguageVersionDropDown : UserControl
     public void DisplayVersion(RoslynLanguageVersion version)
     {
         envelope.DisplayVersion(version);
+        items.SetVersion(version);
     }
 
     private void HandlePointerPressed(object? sender, PointerPressedEventArgs e)

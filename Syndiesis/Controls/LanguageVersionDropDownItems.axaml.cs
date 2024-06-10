@@ -1,8 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Microsoft.CodeAnalysis;
 using Syndiesis.Core;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 using CSharpVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
 using VisualBasicVersion = Microsoft.CodeAnalysis.VisualBasic.LanguageVersion;
@@ -11,6 +15,13 @@ namespace Syndiesis.Controls;
 
 public partial class LanguageVersionDropDownItems : UserControl
 {
+    private static readonly SolidColorBrush csVersionForeground = new(0xFF7BB0A6);
+    private static readonly SolidColorBrush vbVersionForeground = new(0xFF7BA6B0);
+    private static readonly SolidColorBrush selectedButtonBackground = new(0x40A0A0A0);
+
+    private readonly List<LanguageVersionDropDownItem> _csItems = new();
+    private readonly List<LanguageVersionDropDownItem> _vbItems = new();
+
     public event EventHandler<RoutedEventArgs>? ItemClicked;
 
     public LanguageVersionDropDownItems()
@@ -19,11 +30,44 @@ public partial class LanguageVersionDropDownItems : UserControl
         InitializeValidLanguageVersions();
     }
 
-    private static readonly SolidColorBrush csVersionForeground = new(0xFF7BB0A6);
-    private static readonly SolidColorBrush vbVersionForeground = new(0xFF7BA6B0);
+    public void SetVersion(RoslynLanguageVersion version)
+    {
+        UncheckAll();
+        var displayedVersion = version.DisplayVersionNumber();
+        var item = ItemsForLanguage(version.LanguageName)
+            .FirstOrDefault(item => item.TextBlock.Text == displayedVersion);
+        Debug.Assert(item is not null, "the language cannot be out of the list");
+        SetItemChecked(item);
+    }
+
+    private void UncheckAll()
+    {
+        foreach (var item in _csItems)
+        {
+            SetItemUnchecked(item);
+        }
+
+        foreach (var item in _vbItems)
+        {
+            SetItemUnchecked(item);
+        }
+    }
+
+    private void SetItemChecked(LanguageVersionDropDownItem item)
+    {
+        item.Button.Background = selectedButtonBackground;
+    }
+
+    private void SetItemUnchecked(LanguageVersionDropDownItem item)
+    {
+        item.Button.Background = Brushes.Transparent;
+    }
 
     private void InitializeValidLanguageVersions()
     {
+        _csItems.Clear();
+        _vbItems.Clear();
+
         var csPreviewItem = CreateItem(new(CSharpVersion.Preview));
         csPreviewItem.TextBlock.Foreground = csVersionForeground;
 
@@ -135,7 +179,24 @@ public partial class LanguageVersionDropDownItems : UserControl
     private LanguageVersionDropDownItem CreateItem(RoslynLanguageVersion version)
     {
         var item = new LanguageVersionDropDownItem(version);
+        var items = ItemsForLanguage(version.LanguageName);
+        items.Add(item);
         item.Clicked += (_, e) => HandleItemClicked(item, e);
         return item;
+    }
+
+    private List<LanguageVersionDropDownItem> ItemsForLanguage(string languageName)
+    {
+        switch (languageName)
+        {
+            case LanguageNames.CSharp:
+                return _csItems;
+            case LanguageNames.VisualBasic:
+                return _vbItems;
+
+            default:
+                throw RoslynExceptions.ThrowInvalidLanguageArgument(
+                    languageName, nameof(languageName));
+        }
     }
 }
