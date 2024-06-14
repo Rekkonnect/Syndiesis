@@ -13,9 +13,9 @@
     HorizontalAlignment="Center"
     >
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="40" />
+      <ColumnDefinition Width="60" />
       <ColumnDefinition Width="*" />
-      <ColumnDefinition Width="40" />
+      <ColumnDefinition Width="60" />
     </Grid.ColumnDefinitions>
 
     <Rectangle
@@ -23,16 +23,16 @@
       >
       <Rectangle.Fill>
         <LinearGradientBrush
-          StartPoint="40, 0"
+          StartPoint="60, 0"
           EndPoint="0, 0"
           >
           <LinearGradientBrush.GradientStops>
             <GradientStop
-              Color="#FF001116"
+              Color="#FF001719"
               Offset="0"
                 />
             <GradientStop
-              Color="#00001116"
+              Color="#00001719"
               Offset="1"
                 />
           </LinearGradientBrush.GradientStops>
@@ -46,15 +46,15 @@
       <Rectangle.Fill>
         <LinearGradientBrush
           StartPoint="0, 0"
-          EndPoint="40, 0"
+          EndPoint="60, 0"
           >
           <LinearGradientBrush.GradientStops>
             <GradientStop
-              Color="#FF001116"
+              Color="#FF001719"
               Offset="0"
                 />
             <GradientStop
-              Color="#00001116"
+              Color="#00001719"
               Offset="1"
                 />
           </LinearGradientBrush.GradientStops>
@@ -66,7 +66,7 @@
     <StackPanel
       MaxWidth="520"
       MinWidth="520"
-      Background="#001116"
+      Background="#001719"
       Grid.Column="1"
     >
 
