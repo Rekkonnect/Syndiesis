@@ -231,7 +231,7 @@ public abstract partial class BaseAnalysisNodeCreator
         return new(Run(alias, brush));
     }
 
-    private static SingleRunInline GetGeneralTypeDisplay(string typeName, SolidColorBrush brush)
+    private static SingleRunInline GetGeneralTypeDisplay(string typeName, LazilyUpdatedSolidBrush brush)
     {
         var typeNameRun = Run(typeName, brush);
         return new SingleRunInline(typeNameRun);
@@ -354,7 +354,7 @@ static string Code(string type)
         return null;
     }
 
-    private static SolidColorBrush GetBrushForTypeKind(Type type)
+    private static LazilyUpdatedSolidBrush GetBrushForTypeKind(Type type)
     {
         if (type.IsEnum)
             return CommonStyles.EnumMainBrush;
@@ -593,12 +593,12 @@ static string Code(string type)
         return Run("internal ", CommonStyles.KeywordBrush);
     }
 
-    protected static Run Run(string text, IBrush brush)
+    protected static Run Run(string text, ILazilyUpdatedBrush brush)
     {
         return new(text, brush);
     }
 
-    protected static Run Run(string text, IBrush brush, FontStyle fontStyle)
+    protected static Run Run(string text, ILazilyUpdatedBrush brush, FontStyle fontStyle)
     {
         return new(
             text,
@@ -802,7 +802,7 @@ static string Code(string type)
     }
 
     protected static GroupedRunInline TypeDisplayWithFadeSuffix(
-        string typeName, string suffix, IBrush main, IBrush fade)
+        string typeName, string suffix, ILazilyUpdatedBrush main, ILazilyUpdatedBrush fade)
     {
         if (typeName.EndsWith(suffix))
         {
@@ -1367,8 +1367,8 @@ partial class BaseAnalysisNodeCreator
 
 partial class BaseAnalysisNodeCreator
 {
-    public static NodeCommonStyles CommonStyles { get; }
-        = Dispatcher.UIThread.ExecuteOrDispatch<NodeCommonStyles>(() => new());
+    public static NodeCommonStyles CommonStyles
+        => AppSettings.Instance.NodeColorPreferences.CommonStyles!;
 
     public abstract class CommonTypes
     {

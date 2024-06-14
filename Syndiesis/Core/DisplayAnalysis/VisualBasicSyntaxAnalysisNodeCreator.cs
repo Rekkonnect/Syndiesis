@@ -985,7 +985,7 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
 
         private static void AddTriviaKindWithSplitter(
             SyntaxTrivia trivia,
-            IBrush brush,
+            ILazilyUpdatedBrush brush,
             GroupedRunInlineCollection inlines)
         {
             inlines.Add(NewValueKindSplitterRun());

@@ -2,10 +2,12 @@
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
+using Syndiesis.InternalGenerators.Core;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -298,7 +300,7 @@ partial class OperationsAnalysisNodeCreator
 partial class OperationsAnalysisNodeCreator
 {
     public static OperationStyles Styles
-        => AppSettings.Instance.StylePreferences.OperationStyles!;
+        => AppSettings.Instance.NodeColorPreferences.OperationStyles!;
 
     public abstract class Types : CommonTypes
     {
@@ -307,10 +309,9 @@ partial class OperationsAnalysisNodeCreator
         public const string OperationTree = "OT";
     }
 
-    public class OperationStyles
+    [SolidColor("Operation", 0xFFA2D080)]
+    public sealed partial class OperationStyles
     {
-        public Color OperationColor = CommonStyles.InterfaceMainColor;
-
         public NodeTypeDisplay OperationDisplay
             => new(Types.Operation, OperationColor);
 

@@ -268,7 +268,7 @@ partial class BaseSyntaxAnalysisNodeCreator
 partial class BaseSyntaxAnalysisNodeCreator
 {
     public static SyntaxStyles Styles
-        => AppSettings.Instance.StylePreferences.SyntaxStyles!;
+        => AppSettings.Instance.NodeColorPreferences.SyntaxStyles!;
 
     public abstract class Types : CommonTypes
     {
