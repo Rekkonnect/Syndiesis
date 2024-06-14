@@ -22,12 +22,22 @@
 
   <Window.Styles>
     <Style Selector="Button">
-      <Setter Property="Background" Value="#005055" />
       <Setter Property="FontFamily" Value="{StaticResource AptosDisplayFontFamily}" />
       <Setter Property="FontSize" Value="16" />
     </Style>
+
   </Window.Styles>
 
+  <Window.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Syndiesis/Styles/ButtonStyles.axaml"/>
+        <ResourceInclude Source="avares://Syndiesis/Styles/CheckBoxStyles.axaml"/>
+        <ResourceInclude Source="avares://Syndiesis/Styles/SliderStyles.axaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </Window.Resources>
+  
   <Design.DataContext>
     <vm:MainWindowViewModel/>
   </Design.DataContext>

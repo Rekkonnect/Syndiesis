@@ -1,0 +1,16 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <Design.PreviewWith>
+    <Border Padding="20">
+      <StackPanel Spacing="20">
+        <Button Content="Syndiesis button" />
+      </StackPanel>
+    </Border>
+  </Design.PreviewWith>
+
+  <SolidColorBrush x:Key="ButtonBackground" Color="#005055" />
+  <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#003033" />
+  <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#004044" />
+
+</ResourceDictionary>

@@ -27,9 +27,7 @@
       Grid.Column="1"
       Grid.RowSpan="2"
       Margin="15 0 0 0"
-      Foreground="#009099"
-      Background="#00232E"
-        />
+      />
     <TextBlock
       HorizontalAlignment="Right"
       VerticalAlignment="Center"
@@ -38,7 +36,7 @@
       Name="NameTextBlock"
       Text="Typing delay wait"
       TextAlignment="Right"
-        />
+      />
 
     <TextBlock
       HorizontalAlignment="Right"
@@ -49,7 +47,7 @@
       Name="ValueTextBlock"
       Text="600 ms"
       TextAlignment="Right"
-        />
+      />
 
   </Grid>
 

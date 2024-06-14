@@ -17,7 +17,7 @@ public partial class LanguageVersionDropDownItems : UserControl
 {
     private static readonly SolidColorBrush csVersionForeground = new(0xFF7BB0A6);
     private static readonly SolidColorBrush vbVersionForeground = new(0xFF7BA6B0);
-    private static readonly SolidColorBrush selectedButtonBackground = new(0x40A0A0A0);
+    private static readonly SolidColorBrush selectedButtonBackground = new(0x80909090);
 
     private readonly List<LanguageVersionDropDownItem> _csItems = new();
     private readonly List<LanguageVersionDropDownItem> _vbItems = new();
