@@ -205,7 +205,7 @@ partial class RoslynColorizer
             }
         }
 
-        public const uint ConflictMarkerEndDefaultInt = 0xFFFF01C1;
+        public const uint ConflictMarkerEndDefaultInt = 0xFF99B5E6;
         private Color _ConflictMarkerEndColor = Color.FromUInt32(ConflictMarkerEndDefaultInt);
         [JsonInclude]
         public Color ConflictMarkerEndColor

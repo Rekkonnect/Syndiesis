@@ -545,6 +545,8 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             SyntaxKind.SingleLineDocumentationCommentTrivia or
             SyntaxKind.MultiLineDocumentationCommentTrivia => Styles.DocumentationBrush,
 
+            SyntaxKind.ConflictMarkerTrivia => Styles.ConflictMarkerBrush,
+
             _ => null,
         };
     }

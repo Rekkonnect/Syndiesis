@@ -454,9 +454,14 @@ public sealed partial class VisualBasicRoslynColorizer(
         return kind switch
         {
             SyntaxKind.DisabledTextTrivia => Styles.DisabledTextBrush,
+
             SyntaxKind.CommentTrivia => Styles.CommentBrush,
+
             SyntaxKind.DocumentationCommentTrivia or
             SyntaxKind.DocumentationCommentExteriorTrivia => Styles.DocumentationBrush,
+
+            SyntaxKind.ConflictMarkerTrivia => Styles.ConflictMarkerBrush,
+
             _ => null,
         };
     }
