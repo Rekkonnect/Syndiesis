@@ -17,6 +17,7 @@ public sealed class AppSettings
     public IndentationOptions IndentationOptions = new();
 
     public StylePreferences NodeColorPreferences = new();
+    public ColorizationPreferences ColorizationPreferences = new();
 
     public bool ShowWhitespaceGlyphs = true;
     public bool WordWrap = true;
