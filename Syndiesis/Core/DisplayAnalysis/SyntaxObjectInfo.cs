@@ -11,6 +11,8 @@ namespace Syndiesis.Core.DisplayAnalysis;
 public sealed record SyntaxObjectInfo(
     object SyntaxObject, TextSpan Span, TextSpan FullSpan)
 {
+    public static readonly TextSpan InvalidTextSpan = new(0, int.MaxValue - 5584);
+
     public SyntaxTree? SyntaxTree => GetSyntaxTree(SyntaxObject);
 
     public LinePositionSpan GetLineFullSpan(SyntaxTree? tree)
@@ -62,7 +64,7 @@ public sealed record SyntaxObjectInfo(
         }
 
         var span = GetSpan(x);
-        if (span == default)
+        if (span == InvalidTextSpan)
             return null;
 
         var fullSpan = GetFullSpan(x);
@@ -159,7 +161,7 @@ public sealed record SyntaxObjectInfo(
             // Attribute
             case AttributeData attribute:
                 return attribute.ApplicationSyntaxReference
-                    ?.Span ?? default;
+                    ?.Span ?? InvalidTextSpan;
 
             // Operation
             case IOperation operation:
@@ -175,10 +177,10 @@ public sealed record SyntaxObjectInfo(
                 // Partial declarations could have multiple such references, and thus
                 // result in inaccurate behavior when interacting with the code.
                 return SymbolDeclaringSyntax(symbol)
-                    ?.GetSyntax().Span ?? default;
+                    ?.GetSyntax().Span ?? InvalidTextSpan;
         }
 
-        return default;
+        return InvalidTextSpan;
     }
 
     private static TextSpan GetFullSpan(object x)
@@ -216,7 +218,7 @@ public sealed record SyntaxObjectInfo(
             // Attribute
             case AttributeData attribute:
                 return attribute.GetAttributeApplicationSyntax()
-                    ?.FullSpan ?? default;
+                    ?.FullSpan ?? InvalidTextSpan;
 
             // Operation
             case IOperation operation:
@@ -232,10 +234,10 @@ public sealed record SyntaxObjectInfo(
                 // Partial declarations could have multiple such references, and thus
                 // result in inaccurate behavior when interacting with the code.
                 return SymbolDeclaringSyntax(symbol)
-                    ?.GetSyntax().FullSpan ?? default;
+                    ?.GetSyntax().FullSpan ?? InvalidTextSpan;
         }
 
-        return default;
+        return InvalidTextSpan;
     }
 
     private static TextSpan ExtractSpanFromList<T>(
@@ -243,7 +245,7 @@ public sealed record SyntaxObjectInfo(
         Func<object, TextSpan> spanGetter)
     {
         if (nodeList.IsEmpty())
-            return default;
+            return InvalidTextSpan;
 
         var first = nodeList[0];
         var firstSpan = spanGetter(first!);
