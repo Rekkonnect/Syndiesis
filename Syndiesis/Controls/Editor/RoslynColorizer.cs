@@ -143,6 +143,7 @@ partial class RoslynColorizer
             }
         }
 
+        [JsonIgnore]
         public readonly LazilyUpdatedGradientBrush RangeVariableBrush;
 
         // Preprocessing 
@@ -183,6 +184,7 @@ partial class RoslynColorizer
             }
         }
 
+        [JsonIgnore]
         public readonly LazilyUpdatedGradientBrush PreprocessingBrush;
 
         // Conflict markers 
@@ -223,6 +225,7 @@ partial class RoslynColorizer
             }
         }
 
+        [JsonIgnore]
         public readonly LazilyUpdatedGradientBrush ConflictMarkerBrush;
 
         public ColorizationStyles()
