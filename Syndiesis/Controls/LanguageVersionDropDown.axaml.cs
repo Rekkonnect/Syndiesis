@@ -45,7 +45,7 @@ public partial class LanguageVersionDropDown : UserControl
             return;
 
         var attached = Flyout.GetAttachedFlyout(this)!;
-        ToggleFlyout(attached, envelope);
+        ToggleFlyout(attached, this);
         e.Handled = false;
     }
 
