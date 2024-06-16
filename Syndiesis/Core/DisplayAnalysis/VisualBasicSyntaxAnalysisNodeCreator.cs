@@ -791,6 +791,21 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
 
                     return Styles.WhitespaceTriviaDisplay;
                 }
+                case SyntaxKind.ColonTrivia:
+                case SyntaxKind.LineContinuationTrivia:
+                {
+                    var displayText = CommentTriviaText(trivia, out var fullString);
+                    var displayTextRun = Run(displayText, Styles.WhitespaceTriviaBrush);
+                    var group = new SingleRunInline(displayTextRun, fullString);
+                    inlines.Add(group);
+
+                    AddTriviaKindWithSplitter(
+                        trivia,
+                        Styles.WhitespaceTriviaKindBrush,
+                        inlines);
+
+                    return Styles.SplitterTriviaDisplay;
+                }
                 case SyntaxKind.CommentTrivia:
                 case SyntaxKind.DocumentationCommentTrivia:
                 case SyntaxKind.DocumentationCommentExteriorTrivia:
