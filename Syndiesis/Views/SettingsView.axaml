@@ -301,6 +301,26 @@
 
       </Grid>
 
+      <StackPanel
+        HorizontalAlignment="Center"
+        Orientation="Horizontal"
+        Spacing="10"
+        Margin="0 30 0 0"
+        >
+        <Button
+          Name="openLogsButton"
+          >
+            <TextBlock>Open logs</TextBlock>
+        </Button>
+
+        <Button
+          Name="viewSettingsFileButton"
+          >
+          <TextBlock>View settings file</TextBlock>
+        </Button>
+
+      </StackPanel>
+      
     </StackPanel>
   </Grid>
 

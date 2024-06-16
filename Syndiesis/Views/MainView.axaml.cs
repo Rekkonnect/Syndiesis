@@ -114,7 +114,7 @@ public partial class MainView : UserControl
         pasteOverButton.Click += HandlePasteOverClick;
         settingsButton.Click += HandleSettingsClick;
         collapseAllButton.Click += CollapseAllClick;
-        githubButton.Click += GitHubClick;
+        githubButton.AttachAsyncClick(GitHubClick);
     }
 
     private void InitializeAnalysisView()
@@ -140,10 +140,11 @@ public partial class MainView : UserControl
         await Task.Run(AnalysisPipelineHandler.ForceAnalysis);
     }
 
-    private void GitHubClick(object? sender, RoutedEventArgs e)
+    private void GitHubClick()
     {
         const string githubLink = "https://github.com/Rekkonnect/Syndiesis";
-        ProcessUtilities.OpenUrl(githubLink);
+        ProcessUtilities.OpenUrl(githubLink)
+            .AwaitProcessInitialized();
     }
 
     private void CollapseAllClick(object? sender, RoutedEventArgs e)
