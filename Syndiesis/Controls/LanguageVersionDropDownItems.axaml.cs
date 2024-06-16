@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Microsoft.CodeAnalysis;
@@ -28,6 +29,55 @@ public partial class LanguageVersionDropDownItems : UserControl
     {
         InitializeComponent();
         InitializeValidLanguageVersions();
+        InitializeEvents();
+    }
+
+    private void InitializeEvents()
+    {
+        vbSlide.PointerEntered += HandleVBSlideEntered;
+        vbSlide.PointerExited += HandleVBSlideExited;
+    }
+
+    private void HandleVBSlideEntered(object? sender, PointerEventArgs e)
+    {
+        SetVisualBasicHover();
+    }
+
+    private void HandleVBSlideExited(object? sender, PointerEventArgs e)
+    {
+        var position = e.GetPosition(vbSlide);
+        if (!vbSlide.DefiningGeometry!.FillContains(position))
+        {
+            SetCSharpHover();
+        }
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        SetNeutralHover();
+    }
+
+    protected override void OnPointerEntered(PointerEventArgs e)
+    {
+        if (!vbSlide.IsPointerOver)
+        {
+            SetCSharpHover();
+        }
+    }
+
+    private void SetCSharpHover()
+    {
+        vbSlide.Margin = new(20, 0, 0, 0);
+    }
+
+    private void SetVisualBasicHover()
+    {
+        vbSlide.Margin = new(-20, 0, 0, 0);
+    }
+
+    private void SetNeutralHover()
+    {
+        vbSlide.Margin = new(0);
     }
 
     public void SetVersion(RoslynLanguageVersion version)
