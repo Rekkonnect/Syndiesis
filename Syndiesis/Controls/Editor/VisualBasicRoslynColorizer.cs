@@ -1,6 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Media;
-using AvaloniaEdit.Document;
+﻿using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.VisualBasic;
@@ -579,6 +577,7 @@ public sealed partial class VisualBasicRoslynColorizer(
                 {
                     case ParameterSyntax:
                         return SymbolKind.Parameter;
+
                     case VariableDeclaratorSyntax variableDeclarator:
                     {
                         var container = variableDeclarator.Parent;
@@ -588,6 +587,24 @@ public sealed partial class VisualBasicRoslynColorizer(
                                 return SymbolKind.Local;
                             case FieldDeclarationSyntax:
                                 return SymbolKind.Field;
+                            default:
+                                return SymbolKind.Alias;
+                        }
+                    }
+
+                    case CollectionRangeVariableSyntax:
+                    {
+                        return SymbolKind.RangeVariable;
+                    }
+
+                    case VariableNameEqualsSyntax variableNameEquals:
+                    {
+                        var container = variableNameEquals.Parent;
+                        switch (container)
+                        {
+                            case AggregationRangeVariableSyntax:
+                            case ExpressionRangeVariableSyntax:
+                                return SymbolKind.RangeVariable;
                             default:
                                 return SymbolKind.Alias;
                         }

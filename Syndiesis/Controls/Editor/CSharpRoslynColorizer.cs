@@ -687,6 +687,18 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             case LocalFunctionStatementSyntax localFunctionDeclaration
             when localFunctionDeclaration.Identifier.Span == token.Span:
                 return SymbolKind.Method;
+
+            case FromClauseSyntax fromClause
+            when fromClause.Identifier.Span == token.Span:
+                return SymbolKind.RangeVariable;
+
+            case LetClauseSyntax letClause
+            when letClause.Identifier.Span == token.Span:
+                return SymbolKind.RangeVariable;
+
+            case QueryContinuationSyntax queryContinuation
+            when queryContinuation.Identifier.Span == token.Span:
+                return SymbolKind.RangeVariable;
         }
 
         return default;
