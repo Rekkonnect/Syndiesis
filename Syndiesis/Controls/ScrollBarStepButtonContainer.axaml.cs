@@ -11,6 +11,12 @@ public partial class ScrollBarStepButtonContainer : UserControl
     public IBrush? ContentFillBrush { get; set; }
     public IBrush? HoverContentFillBrush { get; set; }
 
+    public bool Enabled
+    {
+        get => button.IsEnabled;
+        set => button.IsEnabled = value;
+    }
+
     public object? ContainerContent
     {
         get => contentControl.Content;

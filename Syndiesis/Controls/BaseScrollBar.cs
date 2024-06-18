@@ -162,7 +162,9 @@ public abstract class BaseScrollBar : UserControl
 
     public void SetAvailableScrollOnScrollableWindow()
     {
-        HasAvailableScroll = !HasFullRangeWindow;
+        const double ratioThreshold = 0.985;
+        var windowRatio = ScrollWindowLength / ValidValueRange;
+        HasAvailableScroll = windowRatio < ratioThreshold;
     }
 
     public UpdateBlock BeginUpdateBlock()
@@ -301,7 +303,14 @@ public abstract class BaseScrollBar : UserControl
 
     private void BasicUpdateScroll()
     {
-        DraggableRectangle.IsVisible = HasAvailableScroll;
+        SetAvailableScrollVisibility(HasAvailableScroll);
+    }
+
+    private void SetAvailableScrollVisibility(bool value)
+    {
+        DraggableRectangle.IsVisible = value;
+        PreviousButtonContainer.Enabled = value;
+        NextButtonContainer.Enabled = value;
     }
 
     protected abstract void OnUpdateScroll();
