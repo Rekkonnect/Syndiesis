@@ -29,10 +29,17 @@
       </controls:ScrollBarStepButtonContainer.ContainerContent>
     </controls:ScrollBarStepButtonContainer>
 
+    <Rectangle
+      Name="draggableContainerRectangle"
+      Grid.Column="1"
+      IsHitTestVisible="True"
+      Fill="Transparent"
+      />
+
     <Canvas
+      Name="draggableRectangleCanvas"
       Grid.Column="1"
       ClipToBounds="True"
-      Name="draggableRectangleCanvas"
       >
 
       <!--
