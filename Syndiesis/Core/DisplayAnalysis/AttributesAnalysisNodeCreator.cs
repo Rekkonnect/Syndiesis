@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
+using Syndiesis.InternalGenerators.Core;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
@@ -380,7 +381,7 @@ partial class AttributesAnalysisNodeCreator
 partial class AttributesAnalysisNodeCreator
 {
     public static AttributeStyles Styles
-        => AppSettings.Instance.StylePreferences.AttributeStyles!;
+        => AppSettings.Instance.NodeColorPreferences.AttributeStyles!;
 
     public abstract class Types : CommonTypes
     {
@@ -391,11 +392,10 @@ partial class AttributesAnalysisNodeCreator
         public const string TypedConstant = "TC";
     }
 
-    public class AttributeStyles
+    [SolidColor("AttributeData", 0xFFDE526E)]
+    [SolidColor("AttributeDataList", 0xFFDE526E)]
+    public sealed partial class AttributeStyles
     {
-        public Color AttributeDataColor = Color.FromUInt32(0xFFDE526E);
-        public Color AttributeDataListColor = Color.FromUInt32(0xFFDE526E);
-
         public NodeTypeDisplay AttributeTreeDisplay
             => new(Types.AttributeTree, CommonStyles.ClassMainColor);
 

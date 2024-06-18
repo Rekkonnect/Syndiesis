@@ -3,7 +3,6 @@ using Syndiesis.Core.DisplayAnalysis;
 using System;
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Syndiesis;
 
@@ -17,8 +16,8 @@ public sealed class AppSettings
     public AnalysisNodeCreationOptions NodeLineOptions = new();
     public IndentationOptions IndentationOptions = new();
 
-    [JsonIgnore]
-    public StylePreferences StylePreferences = new();
+    public StylePreferences NodeColorPreferences = new();
+    public ColorizationPreferences ColorizationPreferences = new();
 
     public bool ShowWhitespaceGlyphs = true;
     public bool WordWrap = true;
@@ -38,8 +37,8 @@ public sealed class AppSettings
         try
         {
             var json = File.ReadAllText(path);
-            var returned = JsonSerializer.Deserialize(
-                json, AppSettingsSerializationContext.CustomDefault.AppSettings);
+            var returned = JsonSerializer.Deserialize<AppSettings>(
+                json, AppSettingsSerialization.DefaultOptions);
             if (returned is null)
                 return false;
 
@@ -59,7 +58,7 @@ public sealed class AppSettings
         try
         {
             var json = JsonSerializer.Serialize(
-                Instance, AppSettingsSerializationContext.CustomDefault.AppSettings);
+                Instance, AppSettingsSerialization.DefaultOptions);
             File.WriteAllText(path, json);
             Log.Information($"Settings saved to '{path}'");
             return true;

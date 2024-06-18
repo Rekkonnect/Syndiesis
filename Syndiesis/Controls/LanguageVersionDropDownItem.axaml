@@ -4,6 +4,13 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              x:Class="Syndiesis.Controls.LanguageVersionDropDownItem">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="#50808080" />
+      <SolidColorBrush x:Key="ButtonBackgroundPressed" Color="#70808080" />
+    </ResourceDictionary>
+  </UserControl.Resources>
+  
   <Button
     Name="Button"
     Background="Transparent"

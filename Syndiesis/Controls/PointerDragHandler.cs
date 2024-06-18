@@ -22,18 +22,34 @@ public class PointerDragHandler
         control.PointerReleased += HandlePointerReleased;
     }
 
+    public void InitiateDrag(PointerPressedEventArgs e)
+    {
+        var sourcePoint = e.GetPosition(null);
+        InitiateDrag(sourcePoint);
+    }
+
+    public void StopDrag()
+    {
+        _sourcePoint = null;
+        DragEnded?.Invoke();
+    }
+
+    private void InitiateDrag(Point sourcePoint)
+    {
+        _sourcePoint = sourcePoint;
+        _previousPoint = sourcePoint;
+        DragStarted?.Invoke(sourcePoint);
+    }
+
     private void HandlePointerPressed(object? sender, PointerPressedEventArgs e)
     {
         var position = e.GetPosition(null);
-        _sourcePoint = position;
-        _previousPoint = position;
-        DragStarted?.Invoke(position);
+        InitiateDrag(position);
     }
 
     private void HandlePointerReleased(object? sender, PointerReleasedEventArgs e)
     {
-        _sourcePoint = null;
-        DragEnded?.Invoke();
+        StopDrag();
     }
 
     private void HandlePointerMoved(object? sender, PointerEventArgs e)

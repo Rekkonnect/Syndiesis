@@ -1,6 +1,7 @@
 ﻿using Syndiesis.Core.DisplayAnalysis;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
@@ -13,6 +14,9 @@ public sealed class AnalysisTreeViewNodeBuilderObjectSpanComparer
     {
         ArgumentNullException.ThrowIfNull(x, nameof(x));
         ArgumentNullException.ThrowIfNull(y, nameof(y));
+
+        Debug.Assert(x.AssociatedSyntaxObject is not null);
+        Debug.Assert(y.AssociatedSyntaxObject is not null);
 
         var xObject = x.AssociatedSyntaxObject!.Span;
         var yObject = y.AssociatedSyntaxObject!.Span;

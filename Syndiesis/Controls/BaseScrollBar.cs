@@ -152,6 +152,7 @@ public abstract class BaseScrollBar : UserControl
     public abstract Shape PreviousIconShape { get; }
     public abstract Shape NextIconShape { get; }
     public abstract Rectangle DraggableRectangle { get; }
+    public abstract Rectangle DraggableRegion { get; }
 
     private bool _hasChanges = false;
     private int _updateLocks = 0;
@@ -162,7 +163,9 @@ public abstract class BaseScrollBar : UserControl
 
     public void SetAvailableScrollOnScrollableWindow()
     {
-        HasAvailableScroll = !HasFullRangeWindow;
+        const double ratioThreshold = 0.985;
+        var windowRatio = ScrollWindowLength / ValidValueRange;
+        HasAvailableScroll = windowRatio < ratioThreshold;
     }
 
     public UpdateBlock BeginUpdateBlock()
@@ -216,6 +219,39 @@ public abstract class BaseScrollBar : UserControl
         draggableRectangle.PointerEntered += HandlePointerOverRectangle;
         draggableRectangle.PointerExited += HandlePointerOverRectangle;
         draggableRectangle.PointerMoved += HandlePointerOverRectangle;
+
+        var region = DraggableRegion;
+        region.PointerPressed += HandleDraggableRegionPressed;
+        region.PointerEntered += HandlePointerOverRectangle;
+        region.PointerExited += HandlePointerOverRectangle;
+        region.PointerMoved += HandlePointerOverRectangle;
+    }
+
+    protected abstract void HandleDraggableRegionPressed(object? sender, PointerPressedEventArgs e);
+
+    protected void HandleDraggable(
+        PointerPressedEventArgs e,
+        double dimension,
+        double dimensionLength,
+        double centerOffset,
+        double end)
+    {
+        if (!HasAvailableScroll)
+            return;
+
+        _dragInitialStartPosition = StartPosition;
+        if (dimension < 0)
+        {
+            var target = dimension - centerOffset;
+            var step = CalculateStep(target, dimensionLength);
+            Step(step);
+        }
+        if (dimension > end)
+        {
+            var target = dimension + centerOffset;
+            var step = CalculateStep(target, dimensionLength);
+            Step(step);
+        }
     }
 
     protected void InitializeDraggableHandler()
@@ -223,6 +259,7 @@ public abstract class BaseScrollBar : UserControl
         DragHandler.DragStarted += HandleDragStart;
         DragHandler.Dragged += HandleDragging;
         DragHandler.Attach(DraggableRectangle);
+        DragHandler.Attach(DraggableRegion);
     }
 
     protected abstract void HandleDragging(PointerDragHandler.PointerDragArgs args);
@@ -230,6 +267,8 @@ public abstract class BaseScrollBar : UserControl
     private void HandleDragStart(Point startPoint)
     {
         _dragInitialStartPosition = StartPosition;
+        var brush = BrushForHoverState(true);
+        DraggableRectangle.Fill = brush;
     }
 
     protected double CalculateStep(double totalStep, double dimensionLength)
@@ -301,7 +340,14 @@ public abstract class BaseScrollBar : UserControl
 
     private void BasicUpdateScroll()
     {
-        DraggableRectangle.IsVisible = HasAvailableScroll;
+        SetAvailableScrollVisibility(HasAvailableScroll);
+    }
+
+    private void SetAvailableScrollVisibility(bool value)
+    {
+        DraggableRectangle.IsVisible = value;
+        PreviousButtonContainer.Enabled = value;
+        NextButtonContainer.Enabled = value;
     }
 
     protected abstract void OnUpdateScroll();

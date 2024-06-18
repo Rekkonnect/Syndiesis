@@ -18,7 +18,7 @@ public static class UIBuilder
 {
     public sealed record Run(
         string Text,
-        IBrush Brush,
+        ILazilyUpdatedBrush Brush,
         FontStyle FontStyle = FontStyle.Normal)
         : UIBuilder<ARun>
     {
@@ -26,7 +26,7 @@ public static class UIBuilder
         {
             return new(Text)
             {
-                Foreground = Brush,
+                Foreground = Brush.Brush,
                 FontStyle = FontStyle,
             };
         }

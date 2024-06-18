@@ -268,7 +268,7 @@ partial class BaseSyntaxAnalysisNodeCreator
 partial class BaseSyntaxAnalysisNodeCreator
 {
     public static SyntaxStyles Styles
-        => AppSettings.Instance.StylePreferences.SyntaxStyles!;
+        => AppSettings.Instance.NodeColorPreferences.SyntaxStyles!;
 
     public abstract class Types : CommonTypes
     {
@@ -295,6 +295,7 @@ partial class BaseSyntaxAnalysisNodeCreator
         public const string DirectiveTrivia = "#";
         public const string DisabledTextTrivia = "~";
         public const string EndOfLineTrivia = @"\n";
+        public const string SplitterTrivia = ":";
     }
 
     [SolidColor("CSharpTree", 0xFF33E5A5)]
@@ -373,5 +374,8 @@ partial class BaseSyntaxAnalysisNodeCreator
 
         public NodeTypeDisplay DisabledTextTriviaDisplay
             => new(Types.DisabledTextTrivia, DisabledTextTriviaNodeTypeColor);
+
+        public NodeTypeDisplay SplitterTriviaDisplay
+            => new(Types.SplitterTrivia, BasicTriviaNodeTypeColor);
     }
 }

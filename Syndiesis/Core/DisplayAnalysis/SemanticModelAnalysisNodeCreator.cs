@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
+using Syndiesis.InternalGenerators.Core;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -104,17 +105,16 @@ partial class SemanticModelAnalysisNodeCreator
 partial class SemanticModelAnalysisNodeCreator
 {
     public static SemanticModelStyles Styles
-        => AppSettings.Instance.StylePreferences.SemanticModelStyles!;
+        => AppSettings.Instance.NodeColorPreferences.SemanticModelStyles!;
 
     public abstract class Types : CommonTypes
     {
         public const string SemanticModel = "SM";
     }
 
-    public class SemanticModelStyles
+    [SolidColor("SemanticModel", 0xFF33E5A5)]
+    public sealed partial class SemanticModelStyles
     {
-        public Color SemanticModelColor = CommonStyles.ClassMainColor;
-
         public NodeTypeDisplay SemanticModelDisplay
             => new(Types.SemanticModel, SemanticModelColor);
     }

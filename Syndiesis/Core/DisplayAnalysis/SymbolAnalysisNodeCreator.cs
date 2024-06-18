@@ -2,6 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
+using Syndiesis.InternalGenerators.Core;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
@@ -923,7 +924,7 @@ partial class SymbolAnalysisNodeCreator
 partial class SymbolAnalysisNodeCreator
 {
     public static SymbolStyles Styles
-        => AppSettings.Instance.StylePreferences.SymbolStyles!;
+        => AppSettings.Instance.NodeColorPreferences.SymbolStyles!;
 
     public abstract class Types : CommonTypes
     {
@@ -934,11 +935,10 @@ partial class SymbolAnalysisNodeCreator
         public const string SymbolCollection = "SC";
     }
 
-    public class SymbolStyles
+    [SolidColor("Symbol", 0xFFA2D080)]
+    [SolidColor("SymbolCollection", 0xFF4DCA85)]
+    public sealed partial class SymbolStyles
     {
-        public Color SymbolColor = CommonStyles.InterfaceMainColor;
-        public Color SymbolCollectionColor = CommonStyles.StructMainColor;
-
         public NodeTypeDisplay SymbolDisplay
             => new(Types.Symbol, SymbolColor);
 

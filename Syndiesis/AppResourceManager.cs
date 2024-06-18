@@ -18,7 +18,7 @@ public class AppResourceManager(App app)
     // https://github.com/FrankenApps/Avalonia-CustomTitleBarTemplate
     private const string _minimizeIconPathData =
         """
-        M2048 1229v-205h-2048v205h2048z
+        M0 0h2048M2048 1229v-205h-2048v205h2048z
         """;
 
     private const string _restoreDownIconPathData =

@@ -3,10 +3,12 @@ using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
+using Syndiesis.Controls;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace Syndiesis.Views;
 
@@ -37,6 +39,8 @@ public partial class SettingsView : UserControl
         saveButton.Click += OnSaveClicked;
         cancelButton.Click += OnCancelClicked;
         resetButton.Click += OnResetClicked;
+        openLogsButton.AttachAsyncClick(OpenLogs);
+        viewSettingsFileButton.AttachAsyncClick(ViewSettingsFile);
     }
 
     public void LoadFromSettings()
@@ -100,6 +104,28 @@ public partial class SettingsView : UserControl
     private void OnCancelClicked(object? sender, RoutedEventArgs e)
     {
         CancelSettings();
+    }
+
+    private void OpenLogs()
+    {
+        var currentDirectory = CurrentExecutingDirectory();
+        var fullPath = Path.Combine(currentDirectory.FullName, "logs");
+        ProcessUtilities.ShowDirectoryInFileViewer(fullPath)
+            .AwaitProcessInitialized();
+    }
+
+    private void ViewSettingsFile()
+    {
+        var currentDirectory = CurrentExecutingDirectory();
+        var fullPath = Path.Combine(currentDirectory.FullName, AppSettings.DefaultPath);
+        ProcessUtilities.ShowFileInFileViewer(fullPath)
+            .AwaitProcessInitialized();
+    }
+
+    private static DirectoryInfo CurrentExecutingDirectory()
+    {
+        var currentPath = Assembly.GetExecutingAssembly().Location;
+        return Directory.GetParent(currentPath)!;
     }
 
     private void CancelSettings()

@@ -5,18 +5,24 @@
              mc:Ignorable="d" d:DesignWidth="20" d:DesignHeight="20"
              x:Class="Syndiesis.Controls.ScrollBarStepButtonContainer">
 
+  <UserControl.Resources>
+    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Transparent" />
+    <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
+  </UserControl.Resources>
+
   <Panel>
-    <ContentControl
-      Name="contentControl"
-      HorizontalAlignment="Stretch"
-      VerticalAlignment="Stretch"
-      />
     <Button
       Name="button"
       HorizontalAlignment="Stretch"
       VerticalAlignment="Stretch"
       CornerRadius="0"
       Background="Transparent"
+      />
+    <ContentControl
+      Name="contentControl"
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Stretch"
+      IsHitTestVisible="False"
       />
   </Panel>
   

@@ -1,6 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Media;
-using AvaloniaEdit.Document;
+﻿using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.VisualBasic;
@@ -93,17 +91,6 @@ public sealed partial class VisualBasicRoslynColorizer(
 
             ColorizeTokenInLine(line, token);
         }
-
-        var descendantNodes = parent.DescendantNodes();
-
-        foreach (var node in descendantNodes)
-        {
-            if (cancellationToken.IsCancellationRequested)
-                return;
-
-            var colorizer = GetNodeColorizer(node.Kind());
-            ColorizeSpan(line, node.Span, colorizer);
-        }
     }
 
     private void ColorizeTokenInLine(DocumentLine line, SyntaxToken token)
@@ -113,7 +100,7 @@ public sealed partial class VisualBasicRoslynColorizer(
             var symbolKind = GetDeclaringSymbolKind(token);
             if (symbolKind.IsEnumField)
             {
-                var enumFieldColorizer = ColorizerForBrush(Styles.EnumFieldForeground);
+                var enumFieldColorizer = ColorizerForBrush(Styles.EnumFieldBrush);
                 ColorizeSpan(line, token.Span, enumFieldColorizer);
                 return;
             }
@@ -123,7 +110,7 @@ public sealed partial class VisualBasicRoslynColorizer(
                 bool isConst = IsConstDeclaration(token);
                 if (isConst)
                 {
-                    var constColorizer = ColorizerForBrush(Styles.ConstantForeground);
+                    var constColorizer = ColorizerForBrush(Styles.ConstantBrush);
                     ColorizeSpan(line, token.Span, constColorizer);
                     return;
                 }
@@ -154,11 +141,11 @@ public sealed partial class VisualBasicRoslynColorizer(
         switch (tokenKind)
         {
             case SyntaxKind.XmlEntityLiteralToken:
-                return ColorizerForBrush(Styles.XmlEntityLiteralForeground);
+                return ColorizerForBrush(Styles.XmlEntityLiteralBrush);
 
             case SyntaxKind.BeginCDataToken:
             case SyntaxKind.EndCDataToken:
-                return ColorizerForBrush(Styles.XmlCDataForeground);
+                return ColorizerForBrush(Styles.XmlCDataBrush);
         }
 
         var tokenParent = token.Parent!;
@@ -169,10 +156,10 @@ public sealed partial class VisualBasicRoslynColorizer(
             switch (tokenParentKind)
             {
                 case SyntaxKind.XmlString:
-                    return ColorizerForBrush(Styles.XmlTextForeground);
+                    return ColorizerForBrush(Styles.XmlTextBrush);
 
                 case SyntaxKind.XmlCDataSection:
-                    return ColorizerForBrush(Styles.XmlCDataForeground);
+                    return ColorizerForBrush(Styles.XmlCDataBrush);
             }
         }
 
@@ -183,11 +170,11 @@ public sealed partial class VisualBasicRoslynColorizer(
             switch (nameParentKind)
             {
                 case SyntaxKind.XmlAttribute:
-                    return ColorizerForBrush(Styles.XmlAttributeForeground);
+                    return ColorizerForBrush(Styles.XmlAttributeBrush);
 
                 case SyntaxKind.XmlElementStartTag:
                 case SyntaxKind.XmlElementEndTag:
-                    return ColorizerForBrush(Styles.XmlTagForeground);
+                    return ColorizerForBrush(Styles.XmlTagBrush);
             }
         }
 
@@ -351,13 +338,13 @@ public sealed partial class VisualBasicRoslynColorizer(
                     is INamedTypeSymbol { TypeKind: TypeKind.Enum };
                 if (withinEnum)
                 {
-                    return ColorizerForBrush(Styles.EnumFieldForeground);
+                    return ColorizerForBrush(Styles.EnumFieldBrush);
                 }
 
                 var field = (IFieldSymbol)symbol;
                 if (field.IsConst)
                 {
-                    return ColorizerForBrush(Styles.ConstantForeground);
+                    return ColorizerForBrush(Styles.ConstantBrush);
                 }
 
                 break;
@@ -368,7 +355,7 @@ public sealed partial class VisualBasicRoslynColorizer(
                 var local = (ILocalSymbol)symbol;
                 if (local.IsConst)
                 {
-                    return ColorizerForBrush(Styles.ConstantForeground);
+                    return ColorizerForBrush(Styles.ConstantBrush);
                 }
 
                 break;
@@ -403,12 +390,6 @@ public sealed partial class VisualBasicRoslynColorizer(
         return ColorizerForBrush(brush);
     }
 
-    private Action<VisualLineElement>? GetNodeColorizer(SyntaxKind kind)
-    {
-        var brush = BrushForNodeSyntaxKind(kind);
-        return ColorizerForBrush(brush);
-    }
-
     private Action<VisualLineElement>? GetColorizer(SymbolKind kind)
     {
         var brush = BrushForSymbolKind(kind);
@@ -421,7 +402,7 @@ public sealed partial class VisualBasicRoslynColorizer(
         return ColorizerForBrush(brush);
     }
 
-    private Action<VisualLineElement>? ColorizerForBrush(IBrush? brush)
+    private Action<VisualLineElement>? ColorizerForBrush(ILazilyUpdatedBrush? brush)
     {
         if (brush is not null)
         {
@@ -442,79 +423,76 @@ public sealed partial class VisualBasicRoslynColorizer(
         return GetColorizer(symbolKind);
     }
 
-    private static IBrush? BrushForTokenSyntaxKind(SyntaxKind kind)
+    private static ILazilyUpdatedBrush? BrushForTokenSyntaxKind(SyntaxKind kind)
     {
         if (SyntaxFacts.IsKeywordKind(kind))
-            return Styles.KeywordForeground;
+            return Styles.KeywordBrush;
 
         return kind switch
         {
             SyntaxKind.IntegerLiteralToken or
             SyntaxKind.DecimalLiteralToken or
-            SyntaxKind.FloatingLiteralToken => Styles.NumericLiteralForeground,
+            SyntaxKind.FloatingLiteralToken => Styles.NumericLiteralBrush,
 
             SyntaxKind.DateLiteralToken or
             SyntaxKind.StringLiteralToken or
             SyntaxKind.InterpolatedStringTextToken or
             SyntaxKind.InterpolatedStringText or
-            SyntaxKind.CharacterLiteralToken => Styles.StringLiteralForeground,
+            SyntaxKind.CharacterLiteralToken => Styles.StringLiteralBrush,
 
             _ => null,
         };
     }
 
-    private static IBrush? BrushForTriviaSyntaxKind(SyntaxKind kind)
+    private static ILazilyUpdatedBrush? BrushForTriviaSyntaxKind(SyntaxKind kind)
     {
         if (SyntaxFacts.IsPreprocessorDirective(kind))
-            return Styles.PreprocessingStatementForeground;
+            return Styles.PreprocessingStatementBrush;
 
         return kind switch
         {
-            SyntaxKind.DisabledTextTrivia => Styles.DisabledTextForeground,
-            SyntaxKind.CommentTrivia => Styles.CommentForeground,
+            SyntaxKind.DisabledTextTrivia => Styles.DisabledTextBrush,
+
+            SyntaxKind.CommentTrivia => Styles.CommentBrush,
+
             SyntaxKind.DocumentationCommentTrivia or
-            SyntaxKind.DocumentationCommentExteriorTrivia => Styles.DocumentationForeground,
+            SyntaxKind.DocumentationCommentExteriorTrivia => Styles.DocumentationBrush,
+
+            SyntaxKind.ConflictMarkerTrivia => Styles.ConflictMarkerBrush,
+
             _ => null,
         };
     }
 
-    private static IBrush? BrushForNodeSyntaxKind(SyntaxKind kind)
+    private static ILazilyUpdatedBrush? BrushForSymbolKind(SymbolKind kind)
     {
         return kind switch
         {
+            SymbolKind.Field => Styles.FieldBrush,
+            SymbolKind.Property => Styles.PropertyBrush,
+            SymbolKind.Event => Styles.EventBrush,
+            SymbolKind.Method => Styles.MethodBrush,
+            SymbolKind.Local => Styles.LocalBrush,
+            SymbolKind.Label => Styles.LabelBrush,
+            SymbolKind.Parameter => Styles.ParameterBrush,
+            SymbolKind.RangeVariable => Styles.RangeVariableBrush,
+            SymbolKind.Preprocessing => Styles.PreprocessingBrush,
+            SymbolKind.TypeParameter => Styles.TypeParameterBrush,
             _ => null,
         };
     }
 
-    private static IBrush? BrushForSymbolKind(SymbolKind kind)
+    private static ILazilyUpdatedBrush? BrushForTypeKind(TypeKind kind)
     {
         return kind switch
         {
-            SymbolKind.Field => Styles.FieldForeground,
-            SymbolKind.Property => Styles.PropertyForeground,
-            SymbolKind.Event => Styles.EventForeground,
-            SymbolKind.Method => Styles.MethodForeground,
-            SymbolKind.Local => Styles.LocalForeground,
-            SymbolKind.Label => Styles.LabelForeground,
-            SymbolKind.Parameter => Styles.ParameterForeground,
-            SymbolKind.RangeVariable => Styles.RangeVariableForeground,
-            SymbolKind.Preprocessing => Styles.PreprocessingForeground,
-            SymbolKind.TypeParameter => Styles.TypeParameterForeground,
-            _ => null,
-        };
-    }
-
-    private static IBrush? BrushForTypeKind(TypeKind kind)
-    {
-        return kind switch
-        {
-            TypeKind.Module => Styles.ClassForeground,
-            TypeKind.Class => Styles.ClassForeground,
-            TypeKind.Struct => Styles.StructForeground,
-            TypeKind.Interface => Styles.InterfaceForeground,
-            TypeKind.Delegate => Styles.DelegateForeground,
-            TypeKind.Enum => Styles.EnumForeground,
-            TypeKind.TypeParameter => Styles.TypeParameterForeground,
+            TypeKind.Module => Styles.ModuleBrush,
+            TypeKind.Class => Styles.ClassBrush,
+            TypeKind.Struct => Styles.StructBrush,
+            TypeKind.Interface => Styles.InterfaceBrush,
+            TypeKind.Delegate => Styles.DelegateBrush,
+            TypeKind.Enum => Styles.EnumBrush,
+            TypeKind.TypeParameter => Styles.TypeParameterBrush,
             _ => null,
         };
     }
@@ -599,6 +577,7 @@ public sealed partial class VisualBasicRoslynColorizer(
                 {
                     case ParameterSyntax:
                         return SymbolKind.Parameter;
+
                     case VariableDeclaratorSyntax variableDeclarator:
                     {
                         var container = variableDeclarator.Parent;
@@ -608,6 +587,24 @@ public sealed partial class VisualBasicRoslynColorizer(
                                 return SymbolKind.Local;
                             case FieldDeclarationSyntax:
                                 return SymbolKind.Field;
+                            default:
+                                return SymbolKind.Alias;
+                        }
+                    }
+
+                    case CollectionRangeVariableSyntax:
+                    {
+                        return SymbolKind.RangeVariable;
+                    }
+
+                    case VariableNameEqualsSyntax variableNameEquals:
+                    {
+                        var container = variableNameEquals.Parent;
+                        switch (container)
+                        {
+                            case AggregationRangeVariableSyntax:
+                            case ExpressionRangeVariableSyntax:
+                                return SymbolKind.RangeVariable;
                             default:
                                 return SymbolKind.Alias;
                         }
@@ -641,9 +638,9 @@ public sealed partial class VisualBasicRoslynColorizer(
         }
     }
 
-    private void FormatWith(VisualLineElement element, IBrush brush)
+    private void FormatWith(VisualLineElement element, ILazilyUpdatedBrush brush)
     {
-        element.TextRunProperties.SetForegroundBrush(brush);
+        element.TextRunProperties.SetForegroundBrush(brush.Brush);
     }
 
     private SyntaxNode CommonParent(SyntaxNode a, SyntaxNode b)
@@ -688,136 +685,5 @@ public sealed partial class VisualBasicRoslynColorizer(
         {
             _dictionary.TryRemove(line.LineNumber, out _);
         }
-    }
-}
-
-partial class VisualBasicRoslynColorizer
-{
-    public static class Styles
-    {
-        // Token kinds
-        public static readonly SolidColorBrush CommentForeground
-            = new(0xFF57A64A);
-
-        public static readonly SolidColorBrush DocumentationForeground
-            = new(0xFF608B4E);
-
-        public static readonly SolidColorBrush StringLiteralForeground
-            = new(0xFFD69D85);
-
-        public static readonly SolidColorBrush PreprocessingStatementForeground
-            = new(0xFF9B9B9B);
-
-        public static readonly SolidColorBrush DisabledTextForeground
-            = new(0xFF767676);
-
-        public static readonly SolidColorBrush NumericLiteralForeground
-            = new(0xFFBB5E00);
-
-        public static readonly SolidColorBrush KeywordForeground
-            = new(0xFF569CD6);
-
-        // Symbol kinds
-        public static readonly SolidColorBrush PropertyForeground
-            = new(0xFFFFC9B9);
-
-        public static readonly SolidColorBrush FieldForeground
-            = new(0xFFDCDCDC);
-
-        public static readonly SolidColorBrush EventForeground
-            = new(0xFFFFB9EA);
-
-        public static readonly SolidColorBrush MethodForeground
-            = new(0xFFFFF4B9);
-
-        public static readonly SolidColorBrush LocalForeground
-            = new(0xFF88EAFF);
-
-        public static readonly SolidColorBrush ParameterForeground
-            = new(0xFF88EAFF);
-
-        public static readonly SolidColorBrush LabelForeground
-            = new(0xFFDCDCDC);
-
-        public static readonly SolidColorBrush ConstantForeground
-            = new(0xFFC0B9FF);
-
-        public static readonly SolidColorBrush EnumFieldForeground
-            = new(0xFFE9A0FA);
-
-        // Give a premium feeling
-        public static readonly LinearGradientBrush RangeVariableForeground
-            = new()
-            {
-                StartPoint = new(new(0, 0), RelativeUnit.Relative),
-                EndPoint = new(new(0.2, 1), RelativeUnit.Relative),
-                SpreadMethod = GradientSpreadMethod.Reflect,
-                GradientStops =
-                {
-                    new(Color.FromUInt32(0xFFDCDCDC), 0),
-                    new(Color.FromUInt32(0xFF88EAFF), 1),
-                }
-            };
-
-        public static readonly LinearGradientBrush PreprocessingForeground
-            = new()
-            {
-                StartPoint = new(new(0, 0), RelativeUnit.Relative),
-                EndPoint = new(new(0.2, 1), RelativeUnit.Relative),
-                SpreadMethod = GradientSpreadMethod.Reflect,
-                GradientStops =
-                {
-                    new(Color.FromUInt32(0xFF9B9B9B), 0),
-                    new(Color.FromUInt32(0xFFCBCBCB), 1),
-                }
-            };
-
-        public static readonly LinearGradientBrush ConflictMarkerForeground
-            = new()
-            {
-                StartPoint = new(new(0, 0), RelativeUnit.Relative),
-                EndPoint = new(new(0.2, 1), RelativeUnit.Relative),
-                SpreadMethod = GradientSpreadMethod.Reflect,
-                GradientStops =
-                {
-                    new(Color.FromUInt32(0xFFA699E6), 0),
-                    new(Color.FromUInt32(0xFFFF01C1), 1),
-                }
-            };
-
-        // Named type kinds
-        public static readonly SolidColorBrush TypeParameterForeground
-            = new(0xFFBFD39A);
-
-        public static readonly SolidColorBrush ClassForeground
-            = new(0xFF4EC9B0);
-
-        public static readonly SolidColorBrush StructForeground
-            = new(0xFF4DCA85);
-
-        public static readonly SolidColorBrush InterfaceForeground
-            = new(0xFFA2D080);
-
-        public static readonly SolidColorBrush EnumForeground
-            = new(0xFFB8D7A3);
-
-        public static readonly SolidColorBrush DelegateForeground
-            = new(0xFF4BCBC8);
-
-        // XML literal kinds
-        public static readonly SolidColorBrush XmlTextForeground
-            = new(0xFFC2A186);
-
-        public static readonly SolidColorBrush XmlAttributeForeground
-            = new(0xFF88EAFF);
-
-        public static readonly SolidColorBrush XmlTagForeground
-            = new(0xFFA6BFFF);
-
-        public static readonly SolidColorBrush XmlEntityLiteralForeground
-            = new(0xFF88EAFF);
-
-        public static readonly SolidColorBrush XmlCDataForeground
-            = new(0xFFFFF4B9);
     }
 }

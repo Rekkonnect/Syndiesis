@@ -1,6 +1,7 @@
 using Avalonia.Controls;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
+using System.Net.WebSockets;
 
 namespace Syndiesis.Controls;
 
@@ -9,6 +10,7 @@ public partial class VerticalScrollBar : BaseScrollBar
     public override ScrollBarStepButtonContainer PreviousButtonContainer => upButton;
     public override ScrollBarStepButtonContainer NextButtonContainer => downButton;
     public override Rectangle DraggableRectangle => draggableRectangle;
+    public override Rectangle DraggableRegion => draggableContainerRectangle;
 
     public override Shape PreviousIconShape => upIcon;
     public override Shape NextIconShape => downIcon;
@@ -17,19 +19,25 @@ public partial class VerticalScrollBar : BaseScrollBar
     {
         InitializeComponent();
         InitializeBrushes();
-        InitializeBrushesExtra();
         InitializeEvents();
         InitializeDraggableHandler();
     }
 
-    private void InitializeBrushesExtra()
+    protected override void HandleDraggableRegionPressed(object? sender, PointerPressedEventArgs e)
     {
-        hitboxPanel.Background = Background;
+        var position = e.GetPosition(draggableRectangle);
+        var dimension = position.Y;
+        var dimensionLength = draggableRectangleCanvas.Bounds.Height;
+        var top = Canvas.GetTop(draggableRectangle);
+        var height = draggableRectangle.Height;
+        var centerOffset = height / 2;
+        var end = height;
+        HandleDraggable(e, dimension, dimensionLength, centerOffset, end);
     }
 
     protected override void HandleDragging(PointerDragHandler.PointerDragArgs args)
     {
-        var step = CalculateStep(args.TotalDelta.Y, draggableRectangleCanvas.Bounds.Height);
+        var step = TranslateHeightToStep(args.TotalDelta.Y);
         Step(step);
     }
 
@@ -57,5 +65,10 @@ public partial class VerticalScrollBar : BaseScrollBar
                 return 0;
             return scrollValue / valueRange * availableHeight;
         }
+    }
+
+    private double TranslateHeightToStep(double height)
+    {
+        return CalculateStep(height, draggableRectangleCanvas.Bounds.Height);
     }
 }

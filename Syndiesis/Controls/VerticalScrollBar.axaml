@@ -28,10 +28,17 @@
       </controls:ScrollBarStepButtonContainer.ContainerContent>
     </controls:ScrollBarStepButtonContainer>
 
+    <Rectangle
+      Name="draggableContainerRectangle"
+      Grid.Row="1"
+      IsHitTestVisible="True"
+      Fill="Transparent"
+      />
+    
     <Canvas
+      Name="draggableRectangleCanvas"
       Grid.Row="1"
       ClipToBounds="True"
-      Name="draggableRectangleCanvas"
       >
 
       <!--
@@ -62,16 +69,6 @@
         />
       </controls:ScrollBarStepButtonContainer.ContainerContent>
     </controls:ScrollBarStepButtonContainer>
-
-    <!-- this might be useless -->
-    <Panel
-      Name="hitboxPanel"
-      Grid.RowSpan="2"
-      VerticalAlignment="Stretch"
-      HorizontalAlignment="Stretch"
-      ZIndex="-1"
-      Background="Transparent"
-      />
 
   </Grid>
 

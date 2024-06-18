@@ -79,6 +79,8 @@ public class SolidColorFieldGenerator : IIncrementalGenerator
             const string header = """
                 using Color = Avalonia.Media.Color;
                 using SolidColorBrush = Avalonia.Media.SolidColorBrush;
+                using LazilyUpdatedSolidBrush = Syndiesis.LazilyUpdatedSolidBrush;
+                using JsonIncludeAttribute = System.Text.Json.Serialization.JsonIncludeAttribute;
 
 
                 """;
@@ -100,9 +102,26 @@ public class SolidColorFieldGenerator : IIncrementalGenerator
             }
 
             var valueString = data.DefaultColorValue.ToString("X8");
+            var backingFieldName = $"_{data.Name}Color";
+            var brushName = $"{data.Name}Brush";
+            var backingBrushName = $"_{brushName}";
             AppendLine($"public const uint {data.Name}DefaultInt = 0x{valueString};");
-            AppendLine($"public Color {data.Name}Color = Color.FromUInt32({data.Name}DefaultInt);");
-            AppendLine($"public SolidColorBrush {data.Name}Brush = new({data.Name}DefaultInt);");
+            AppendLine($"private Color {backingFieldName} = Color.FromUInt32({data.Name}DefaultInt);");
+            AppendLine("[JsonInclude]");
+            AppendLine($"public Color {data.Name}Color");
+            AppendLine("{");
+            AppendLine($"    get => {backingFieldName};");
+            AppendLine($"    set => {backingFieldName} = value;");
+            AppendLine("}");
+            AppendLine($"private LazilyUpdatedSolidBrush {backingBrushName} = new();");
+            AppendLine($"public LazilyUpdatedSolidBrush {brushName}");
+            AppendLine("{");
+            AppendLine("    get");
+            AppendLine("    {");
+            AppendLine($"        {backingBrushName}.Color = {backingFieldName};");
+            AppendLine($"        return {backingBrushName};");
+            AppendLine("    }");
+            AppendLine("}");
         }
 
         public sealed class TypeScope : IDisposable

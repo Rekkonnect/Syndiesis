@@ -9,6 +9,7 @@ public partial class HorizontalScrollBar : BaseScrollBar
     public override ScrollBarStepButtonContainer PreviousButtonContainer => leftButton;
     public override ScrollBarStepButtonContainer NextButtonContainer => rightButton;
     public override Rectangle DraggableRectangle => draggableRectangle;
+    public override Rectangle DraggableRegion => draggableContainerRectangle;
 
     public override Shape PreviousIconShape => leftIcon;
     public override Shape NextIconShape => rightIcon;
@@ -19,6 +20,19 @@ public partial class HorizontalScrollBar : BaseScrollBar
         InitializeBrushes();
         InitializeEvents();
         InitializeDraggableHandler();
+    }
+
+    protected override void HandleDraggableRegionPressed(object? sender, PointerPressedEventArgs e)
+    {
+        var position = e.GetPosition(draggableRectangle);
+        var dimension = position.X;
+        var dimensionLength = draggableRectangleCanvas.Bounds.Width;
+        var left = Canvas.GetLeft(draggableRectangle);
+        var width = draggableRectangle.Width;
+        var centerOffset = width / 2;
+        var offset = left;
+        var end = width;
+        HandleDraggable(e, dimension, dimensionLength, centerOffset, end);
     }
 
     protected override void HandleDragging(PointerDragHandler.PointerDragArgs args)

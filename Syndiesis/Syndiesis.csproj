@@ -60,4 +60,8 @@
     </Compile>
   </ItemGroup>
 
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Styles\CheckBoxStyles.axaml" />
+  </ItemGroup>
+
 </Project>
