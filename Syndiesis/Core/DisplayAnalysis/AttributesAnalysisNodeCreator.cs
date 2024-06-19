@@ -433,7 +433,10 @@ partial class AttributesAnalysisNodeCreator
 
         private static SingleRunInline CreateKindInline(TypedConstant constant)
         {
-            return new(Run(constant.Kind.ToString(), CommonStyles.ConstantMainBrush));
+            return new(Run(
+                constant.Kind.ToString(),
+                CommonStyles.ConstantMainBrush,
+                FontStyle.Italic));
         }
     }
 }
