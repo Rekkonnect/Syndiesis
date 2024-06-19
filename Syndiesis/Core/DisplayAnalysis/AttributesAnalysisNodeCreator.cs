@@ -24,6 +24,7 @@ public sealed partial class AttributesAnalysisNodeCreator
 {
     // node creators
     private readonly AttributeTreeRootViewNodeCreator _attributeTreeCreator;
+    private readonly AttributeDataViewRootViewNodeCreator _attributeDataViewCreator;
     private readonly AttributeDataRootViewNodeCreator _attributeDataCreator;
     private readonly AttributeDataListRootViewNodeCreator _attributeDataListCreator;
     private readonly TypedConstantRootViewNodeCreator _typedConstantCreator;
@@ -34,6 +35,7 @@ public sealed partial class AttributesAnalysisNodeCreator
         : base(parentContainer)
     {
         _attributeTreeCreator = new(this);
+        _attributeDataViewCreator = new(this);
         _attributeDataCreator = new(this);
         _attributeDataListCreator = new(this);
         _typedConstantCreator = new(this);
@@ -48,6 +50,9 @@ public sealed partial class AttributesAnalysisNodeCreator
         {
             case AttributeTree AttributeTree:
                 return CreateRootAttributeTree(AttributeTree, valueSource);
+
+            case AttributeTree.AttributeDataView view:
+                return CreateRootAttributeView(view, valueSource);
 
             case AttributeData attribute:
                 return CreateRootAttribute(attribute, valueSource);
@@ -72,6 +77,13 @@ public sealed partial class AttributesAnalysisNodeCreator
         DisplayValueSource valueSource)
     {
         return _attributeTreeCreator.CreateNode(AttributeTree, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootAttributeView(
+        AttributeTree.AttributeDataView view,
+        DisplayValueSource valueSource)
+    {
+        return _attributeDataViewCreator.CreateNode(view, valueSource);
     }
 
     public AnalysisTreeListNode CreateRootAttribute(
@@ -196,6 +208,54 @@ partial class AttributesAnalysisNodeCreator
                 .Select(attribute => Creator.CreateRootGeneral(attribute, default))
                 .ToList()
                 ;
+        }
+    }
+
+    public sealed class AttributeDataViewRootViewNodeCreator(
+        AttributesAnalysisNodeCreator creator)
+        : AttributeRootViewNodeCreator<AttributeTree.AttributeDataView>(creator)
+    {
+        public override object? AssociatedSyntaxObject(AttributeTree.AttributeDataView value)
+        {
+            return value.Data;
+        }
+
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            AttributeTree.AttributeDataView view, DisplayValueSource valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+            var type = view.GetType();
+            var inline = FullyQualifiedTypeDisplayGroupedRun(type);
+            inlines.Add(inline);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.AttributeDataViewDisplay);
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(
+            AttributeTree.AttributeDataView view)
+        {
+            return () => GetChildren(view);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(
+            AttributeTree.AttributeDataView view)
+        {
+            var list = new List<AnalysisTreeListNode>();
+
+            var attributeDataChild = Creator.CreateRootGeneral(view.Data, default);
+            list.Add(attributeDataChild);
+
+            if (view.AttributeOperation is not null)
+            {
+                var attributeOperationChild = Creator.ParentContainer.OperationCreator
+                    .CreateRootOperation(
+                        view.AttributeOperation, default);
+                list.Add(attributeOperationChild);
+            }
+
+            return list;
         }
     }
 
@@ -386,6 +446,7 @@ partial class AttributesAnalysisNodeCreator
     public abstract class Types : CommonTypes
     {
         public const string AttributeTree = "AT";
+        public const string AttributeDataView = "AV";
         public const string AttributeData = "A";
         public const string AttributeDataList = "AL";
 
@@ -398,6 +459,9 @@ partial class AttributesAnalysisNodeCreator
     {
         public NodeTypeDisplay AttributeTreeDisplay
             => new(Types.AttributeTree, CommonStyles.ClassMainColor);
+
+        public NodeTypeDisplay AttributeDataViewDisplay
+            => new(Types.AttributeDataView, CommonStyles.ClassMainColor);
 
         public NodeTypeDisplay AttributeDataDisplay
             => new(Types.AttributeData, AttributeDataColor);

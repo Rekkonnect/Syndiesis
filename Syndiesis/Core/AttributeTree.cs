@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.VisualBasic;
 using RoseLynn;
 using System.Collections.Generic;
@@ -101,11 +102,36 @@ public abstract class AttributeTree(
                 ISymbol symbol,
                 ImmutableArray<AttributeData> attributes)
             {
+                var dataViews = DataViews(attributes);
+                CreateSymbolContainerAddViews(symbol, dataViews);
+            }
+
+            void CreateSymbolContainerAddViews(
+                ISymbol symbol,
+                ImmutableArray<AttributeDataView> attributes)
+            {
                 if (attributes.Length is 0)
                     return;
 
                 var container = new SymbolContainer(symbol, attributes);
                 attributeContainers.Add(container);
+            }
+
+            ImmutableArray<AttributeDataView> DataViews(
+                ImmutableArray<AttributeData> data)
+            {
+                return data.Select(FromAttribute)
+                    .ToImmutableArray();
+            }
+
+            AttributeDataView FromAttribute(AttributeData data)
+            {
+                var syntax = data.ApplicationSyntaxReference?.GetSyntax(cancellationToken);
+                if (syntax is null)
+                    return new(data, null);
+
+                var operation = semanticModel.GetOperation(syntax, cancellationToken);
+                return new AttributeDataView(data, operation as IAttributeOperation);
             }
         }
 
@@ -161,7 +187,8 @@ public abstract class AttributeTree(
         {
             if (symbol is IMethodSymbol method)
             {
-                return [
+                return
+                [
                     .. method.GetAttributes(),
                     .. method.GetReturnTypeAttributes(),
                 ];
@@ -169,7 +196,8 @@ public abstract class AttributeTree(
 
             if (symbol is INamedTypeSymbol { TypeKind: TypeKind.Delegate } delegateType)
             {
-                return [
+                return
+                [
                     .. delegateType.GetAttributes(),
                     .. delegateType.DelegateInvokeMethod?.GetReturnTypeAttributes() ?? [],
                 ];
@@ -189,5 +217,8 @@ public abstract class AttributeTree(
     }
 
     public sealed record SymbolContainer(
-        ISymbol Symbol, ImmutableArray<AttributeData> Attributes);
+        ISymbol Symbol, ImmutableArray<AttributeDataView> Attributes);
+
+    public sealed record AttributeDataView(
+        AttributeData Data, IAttributeOperation? AttributeOperation);
 }
