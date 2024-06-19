@@ -158,6 +158,9 @@ public sealed record SyntaxObjectInfo(
             case VirtualTree virtualTree:
                 return GetSpan(virtualTree.SyntaxTree);
 
+            case TextSpan span:
+                return span;
+
             // Attribute
             case AttributeData attribute:
                 return attribute.ApplicationSyntaxReference
@@ -214,6 +217,9 @@ public sealed record SyntaxObjectInfo(
 
             case VirtualTree virtualTree:
                 return GetFullSpan(virtualTree.SyntaxTree);
+
+            case TextSpan span:
+                return span;
 
             // Attribute
             case AttributeData attribute:
