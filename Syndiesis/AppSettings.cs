@@ -26,6 +26,8 @@ public sealed class AppSettings
     public bool EnableSemanticColorization = true;
     public bool AutomaticallyDetectLanguage = true;
 
+    public bool DiagnosticsEnabled = true;
+
     public TimeSpan UserInputDelay = TimeSpan.FromMilliseconds(600);
 
     public int RecursiveExpansionDepth = 4;

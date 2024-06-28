@@ -318,6 +318,7 @@ public partial class MainView : UserControl
         LoggerExtensionsEx.LogMethodInvocation($"{nameof(ResetToLanguage)}({languageName})");
         var defaultCode = DefaultCode(languageName);
         SetSource(defaultCode);
+        codeEditor.DiagnosticsEnabled = AppSettings.Instance.DiagnosticsEnabled;
     }
 
     public string ToggleLanguage()

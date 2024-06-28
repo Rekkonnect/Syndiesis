@@ -40,6 +40,7 @@ public partial class CodeEditor : UserControl
     private int _disabledNodeHoverTimes;
 
     private NodeSpanHoverLayer _nodeSpanHoverLayer;
+    private DiagnosticsLayer _diagnosticsLayer;
     private RoslynColorizerContainer? _roslynColorizer;
 
     private HybridSingleTreeCompilationSource? _compilationSource;
@@ -53,17 +54,20 @@ public partial class CodeEditor : UserControl
         set
         {
             _compilationSource = value;
+            var lineTransformers = textEditor.TextArea.TextView.LineTransformers;
             if (value is not null)
             {
+                lineTransformers.Clear();
+
                 _roslynColorizer = new RoslynColorizerContainer(value);
                 _effectiveColorizer = _roslynColorizer.EffectiveColorizer;
-                textEditor.TextArea.TextView.LineTransformers.Add(_effectiveColorizer);
+                lineTransformers.Add(_effectiveColorizer);
             }
             else
             {
                 _roslynColorizer = null;
                 _effectiveColorizer = null;
-                textEditor.TextArea.TextView.LineTransformers.Remove(_effectiveColorizer);
+                lineTransformers.Clear();
             }
         }
     }
@@ -98,6 +102,15 @@ public partial class CodeEditor : UserControl
         }
     }
 
+    public bool DiagnosticsEnabled
+    {
+        get => _diagnosticsLayer.Enabled;
+        set
+        {
+            _diagnosticsLayer.Enabled = value;
+        }
+    }
+
     public event EventHandler? TextChanged
     {
         add => textEditor.Document.TextChanged += value;
@@ -124,6 +137,7 @@ public partial class CodeEditor : UserControl
     }
 
     [MemberNotNull(nameof(_nodeSpanHoverLayer))]
+    [MemberNotNull(nameof(_diagnosticsLayer))]
     private void InitializeTextEditor()
     {
         var textArea = textEditor.TextArea;
@@ -147,6 +161,13 @@ public partial class CodeEditor : UserControl
         textArea.TextView.InsertLayer(
             _nodeSpanHoverLayer,
             KnownLayer.Selection,
+            LayerInsertionPosition.Above);
+
+        _diagnosticsLayer = new DiagnosticsLayer(this);
+
+        textArea.TextView.InsertLayer(
+            _diagnosticsLayer,
+            KnownLayer.Text,
             LayerInsertionPosition.Above);
 
         textArea.LeftMargins[0] = new BackgroundLineNumberPanel(textArea.TextView);

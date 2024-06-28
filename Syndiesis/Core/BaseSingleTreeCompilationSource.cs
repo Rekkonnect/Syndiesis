@@ -10,6 +10,8 @@ public abstract class BaseSingleTreeCompilationSource<TCompilation, TParseOption
     where TCompilation : Compilation
     where TParseOptions : ParseOptions
 {
+    private DiagnosticsCollection? _diagnostics = null;
+
     public abstract string LanguageName { get; }
 
     public TCompilation Compilation { get; private set; }
@@ -27,6 +29,8 @@ public abstract class BaseSingleTreeCompilationSource<TCompilation, TParseOption
             return Compilation.GetSemanticModel(Tree);
         }
     }
+
+    public DiagnosticsCollection Diagnostics => RediscoverDiagnostics();
 
     public TParseOptions ParseOptions { get; set; }
 
@@ -48,10 +52,33 @@ public abstract class BaseSingleTreeCompilationSource<TCompilation, TParseOption
 
     protected abstract TParseOptions CreateDefaultParseOptions();
 
-    public abstract void AdjustLanguageVersion(RoslynLanguageVersion version);
+    public void AdjustLanguageVersion(RoslynLanguageVersion version)
+    {
+        AdjustLanguageVersionCore(version);
+        InitializeCompilation();
+
+        if (Tree is not null)
+        {
+            var text = Tree.GetText(default);
+            Tree = null;
+            SetSource(text.ToString(), default);
+        }
+    }
+
+    protected abstract void AdjustLanguageVersionCore(RoslynLanguageVersion version);
 
     protected abstract TCompilation CreateCompilation();
     protected abstract SyntaxTree ParseTree(string source, CancellationToken cancellationToken);
+
+    private DiagnosticsCollection RediscoverDiagnostics()
+    {
+        if (_diagnostics is not null)
+            return _diagnostics;
+
+        var diagnostics = Compilation.GetDiagnostics();
+        _diagnostics = DiagnosticsCollection.CreateForDiagnostics(diagnostics);
+        return _diagnostics;
+    }
 
     public void ReParseCurrent(CancellationToken token)
     {
@@ -68,6 +95,7 @@ public abstract class BaseSingleTreeCompilationSource<TCompilation, TParseOption
         var previousTree = Tree;
         SetTree(source, cancellationToken);
         Compilation = AddOrReplaceSyntaxTree(Compilation, previousTree, Tree);
+        _diagnostics = null;
     }
 
     private static TCompilation AddOrReplaceSyntaxTree(
