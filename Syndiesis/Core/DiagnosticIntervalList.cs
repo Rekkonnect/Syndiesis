@@ -80,6 +80,7 @@ public sealed class DiagnosticIntervalList
         {
             var current = _entries[i];
             var next = _entries[i + 1];
+            Debug.Assert(current.Span.Start <= next.Span.Start, "The entries must be sorted by start.");
             if (current.TryMerge(next, out var merged))
             {
                 _entries[i] = merged;
@@ -112,8 +113,7 @@ public sealed class DiagnosticIntervalList
                 i--;
                 if (!inserted)
                 {
-                    if (i < 0)
-                        i = 0;
+                    i++;
                     _entries.Insert(i, entry);
                     inserted = true;
                 }
@@ -173,12 +173,14 @@ public sealed class DiagnosticIntervalList
 
         public Entry NewWithStart(int start)
         {
+            Debug.Assert(start <= Span.End);
             var span = TextSpan.FromBounds(start, Span.End);
             return new(Severity, span);
         }
 
         public Entry NewWithEnd(int end)
         {
+            Debug.Assert(Span.Start <= end);
             var span = TextSpan.FromBounds(Span.Start, end);
             return new(Severity, span);
         }
