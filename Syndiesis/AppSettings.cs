@@ -29,6 +29,7 @@ public sealed class AppSettings
     public bool DiagnosticsEnabled = true;
 
     public TimeSpan UserInputDelay = TimeSpan.FromMilliseconds(600);
+    public TimeSpan HoverInfoDelay = TimeSpan.FromMilliseconds(400);
 
     public int RecursiveExpansionDepth = 4;
     #endregion
