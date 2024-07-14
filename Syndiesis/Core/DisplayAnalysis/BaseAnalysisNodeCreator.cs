@@ -919,7 +919,7 @@ partial class BaseAnalysisNodeCreator
         {
             var rootLine = CreateNodeLine(value, valueSource);
             var syntaxObject = AssociatedSyntaxObject(value);
-            rootLine.AnalysisNodeKind = GetNodeKind(value);
+            rootLine.AnalysisNodeKind = AnalysisNodeKind.None;
             return AnalysisTreeListNode(
                 rootLine,
                 null,
