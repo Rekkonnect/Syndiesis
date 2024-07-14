@@ -273,7 +273,7 @@ public sealed record SyntaxObjectInfo(
                 {
                     var node = nodeList[i]!;
                     var span = spanGetter(node);
-                    if (span.IsEmpty)
+                    if (span.IsEmpty || span == InvalidTextSpan)
                         continue;
 
                     if (!hasValid)
