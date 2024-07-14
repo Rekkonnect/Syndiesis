@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
 using Syndiesis.InternalGenerators.Core;
+using System;
 
 namespace Syndiesis.Controls.Editor;
 
@@ -34,7 +35,7 @@ public sealed partial class DiagnosticsLayer : SyndiesisTextEditorLayer
         if (diagnostics is null)
             return;
 
-        var firstLineIndex = TextView.GetFirstVisibleLine();
+        var firstLineIndex = Math.Max(TextView.GetFirstVisibleLine() - 1, 0);
         var lastLineIndex = TextView.GetLastVisibleLine();
 
         var geometryBuilder = new DiagnosticLineGeometryBuilder();

@@ -10,6 +10,7 @@
              xmlns:syntax="using:Syndiesis.Controls.AnalysisVisualization"
              xmlns:previews="using:Syndiesis.Views.DesignerPreviews"
              xmlns:tabs="using:Syndiesis.Controls.Tabs"
+             xmlns:editor="using:Syndiesis.Controls.Editor"
              x:Class="Syndiesis.Views.MainView"
              >
   <Panel>
@@ -182,5 +183,12 @@
         </Grid>
       </Grid>
     </Grid>
+
+    <editor:QuickInfoDisplayPopup
+      Name="quickInfoDisplayPopup"
+      VerticalAlignment="Top"
+      HorizontalAlignment="Left"
+      IsVisible="False"
+      />
   </Panel>
 </UserControl>

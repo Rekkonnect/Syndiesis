@@ -20,6 +20,9 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <None Remove=".gitignore" />
+    <None Remove="Assets\Icons\diagnostic-error.png" />
+    <None Remove="Assets\Icons\diagnostic-suggestion.png" />
+    <None Remove="Assets\Icons\diagnostic-warning.png" />
   </ItemGroup>
   
   <ItemGroup>
@@ -64,6 +67,10 @@
 
   <ItemGroup>
     <UpToDateCheckInput Remove="Styles\CheckBoxStyles.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Controls\Editor\QuickInfoDiagnosticItem.axaml" />
   </ItemGroup>
 
 </Project>

@@ -211,7 +211,7 @@ public sealed class DiagnosticIntervalList
         public bool Covers(Entry other)
         {
             return other.Span != Span
-                && other.Span.Contains(Span)
+                && Span.Contains(other.Span)
                 ;
         }
 

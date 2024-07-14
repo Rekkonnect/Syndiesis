@@ -1,8 +1,10 @@
 ﻿using Garyon.Extensions;
 using Jamarino.IntervalTree;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Linq;
 
 namespace Syndiesis.Core;
 
@@ -19,6 +21,22 @@ public sealed class DiagnosticsCollection
     public IReadOnlyList<Diagnostic> DiagnosticsForLine(int line)
     {
         return _diagnostics.Query(line)
+            .ToReadOnlyListOrExisting();
+    }
+
+    public IReadOnlyList<Diagnostic> DiagnosticsAtPosition(LinePosition position)
+    {
+        var diagnostics = DiagnosticsForLine(position.Line);
+        if (diagnostics is [])
+            return diagnostics;
+
+        var first = diagnostics[0];
+        var sourceTree = first.Location.SourceTree;
+        if (sourceTree is null)
+            return diagnostics;
+
+        return diagnostics
+            .Where(d => d.Location.GetLineSpan().Span.Contains(position))
             .ToReadOnlyListOrExisting();
     }
 

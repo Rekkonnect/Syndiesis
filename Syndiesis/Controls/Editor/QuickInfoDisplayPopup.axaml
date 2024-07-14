@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:local="using:Syndiesis.Controls"
+             xmlns:mca="using:Microsoft.CodeAnalysis"
+             mc:Ignorable="d"
+             VerticalAlignment="Stretch"
+             HorizontalAlignment="Stretch"
+             x:Class="Syndiesis.Controls.Editor.QuickInfoDisplayPopup">
+
+  <Border
+    Name="outerBorder"
+    Background="#FF282828"
+    CornerRadius="4"
+    Padding="5"
+    >
+
+    <StackPanel
+      Orientation="Vertical"
+      >
+
+      <ContentControl
+        Name="symbolInfoContainer"
+        />
+
+      <Rectangle
+        Name="splitter"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Center"
+        Height="2"
+        Margin="5 15 5 15"
+        Fill="#80808080"
+        />
+
+      <StackPanel
+        Name="diagnosticsPanel"
+        Orientation="Vertical"
+        />
+
+    </StackPanel>
+    
+  </Border>
+
+</UserControl>

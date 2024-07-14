@@ -1,3 +1,4 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -13,12 +14,16 @@ using Syndiesis.Core;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
 using System;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Views;
 
 public partial class MainView : UserControl
 {
+    private QuickInfoHandler _quickInfoHandler;
+
     public readonly AnalysisPipelineHandler AnalysisPipelineHandler = new();
 
     public readonly MainWindowViewModel ViewModel = new();
@@ -34,8 +39,15 @@ public partial class MainView : UserControl
         InitializeAnalysisView();
     }
 
+    [MemberNotNull(nameof(_quickInfoHandler))]
     private void InitializeView()
     {
+        _quickInfoHandler = new(quickInfoDisplayPopup);
+        _quickInfoHandler.RegisterMovementHandling(this);
+        _quickInfoHandler.PrepareShowing += PrepareQuickInfoShowing;
+
+        LoggerExtensionsEx.LogMethodInvocation(nameof(InitializeView));
+
         const string initializingSource = """
             using System;
 
@@ -44,8 +56,6 @@ public partial class MainView : UserControl
             Console.WriteLine("Initializing application...");
 
             """;
-
-        LoggerExtensionsEx.LogMethodInvocation(nameof(InitializeView));
 
         ViewModel.CompilationSource.SetSource(initializingSource, default);
 
@@ -75,6 +85,89 @@ public partial class MainView : UserControl
                 TagValue = analysisKind,
             };
         }
+    }
+
+    private void PrepareQuickInfoShowing(QuickInfoHandler.PrepareShowingEventArgs e)
+    {
+        var pointerArgs = e.LastPointerArgs;
+        if (pointerArgs is null)
+            return;
+
+        var viewPosition = pointerArgs.GetPosition(this);
+        var editorPosition = pointerArgs.GetPosition(codeEditor.textEditor);
+        var diagnostics = GetCurrentHoveredDiagnostics(editorPosition);
+
+        if (diagnostics.IsEmpty)
+        {
+            e.CancelShowing = true;
+            return;
+        }
+
+        quickInfoDisplayPopup.SetDiagnostics(diagnostics);
+        quickInfoDisplayPopup.SetPointerOrigin(viewPosition);
+    }
+
+    private void SetBoundedMargin(Control control, Point origin)
+    {
+        var bounds = Bounds;
+        var controlSize = control.Bounds.Size;
+
+        control.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Left;
+        control.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Top;
+        control.Margin = new(0, 0, 0, 0);
+
+        control.Measure(bounds.Size);
+
+        if (bounds.Width >= controlSize.Width)
+        {
+            if (origin.X + controlSize.Width >= bounds.Width)
+            {
+                control.HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right;
+
+                var rightMargin = bounds.Right - origin.X;
+                if (rightMargin < controlSize.Width)
+                {
+                    rightMargin = 0;
+                }
+
+                control.Margin = control.Margin
+                    .WithLeft(0)
+                    .WithRight(rightMargin)
+                    ;
+            }
+        }
+
+        if (bounds.Height >= controlSize.Height)
+        {
+            if (origin.Y + controlSize.Height >= bounds.Height)
+            {
+                control.VerticalAlignment = Avalonia.Layout.VerticalAlignment.Bottom;
+
+                var bottomMargin = bounds.Bottom - origin.Y;
+                if (bottomMargin < controlSize.Height)
+                {
+                    bottomMargin = 0;
+                }
+
+                control.Margin = control.Margin
+                    .WithTop(0)
+                    .WithBottom(bottomMargin)
+                    ;
+            }
+        }
+    }
+
+    private ImmutableArray<Diagnostic> GetCurrentHoveredDiagnostics(Point point)
+    {
+        var documentPosition = codeEditor.textEditor.GetPositionFromPoint(point) ?? default;
+        var linePosition = new LinePosition(
+            documentPosition.Line - 1,
+            documentPosition.Column - 1);
+        var diagnostics = codeEditor.CompilationSource?.CurrentSource.Diagnostics
+            .DiagnosticsAtPosition(linePosition)
+            .ToImmutableArray()
+            ?? [];
+        return diagnostics;
     }
 
     private void InitializeEvents()
