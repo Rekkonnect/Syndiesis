@@ -32,6 +32,8 @@ public partial class QuickInfoDiagnosticItem : UserControl
             DiagnosticSeverity.Error => resourceManager.DiagnosticErrorImage,
             DiagnosticSeverity.Warning => resourceManager.DiagnosticWarningImage,
             DiagnosticSeverity.Info => resourceManager.DiagnosticSuggestionImage,
+            // no dedicated image for now
+            DiagnosticSeverity.Hidden => resourceManager.DiagnosticSuggestionImage,
             _ => null,
         };
     }

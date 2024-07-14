@@ -26,6 +26,7 @@ public sealed class DiagnosticIntervalList
 
     public void AddDiagnostics(IReadOnlyList<Diagnostic> diagnostics)
     {
+        var hiddenDiagnostics = new List<Diagnostic>(diagnostics.Count);
         var informationDiagnostics = new List<Diagnostic>(diagnostics.Count);
         var warningDiagnostics = new List<Diagnostic>(diagnostics.Count);
         var errorDiagnostics = new List<Diagnostic>(diagnostics.Count);
@@ -34,6 +35,9 @@ public sealed class DiagnosticIntervalList
         {
             switch (diagnostic.Severity)
             {
+                case DiagnosticSeverity.Hidden:
+                    hiddenDiagnostics.Add(diagnostic);
+                    break;
                 case DiagnosticSeverity.Info:
                     informationDiagnostics.Add(diagnostic);
                     break;
@@ -46,6 +50,7 @@ public sealed class DiagnosticIntervalList
             }
         }
 
+        AddDiagnosticList(hiddenDiagnostics);
         AddDiagnosticList(informationDiagnostics);
         AddDiagnosticList(warningDiagnostics);
         AddDiagnosticList(errorDiagnostics);
@@ -118,6 +123,12 @@ public sealed class DiagnosticIntervalList
                     inserted = true;
                 }
                 continue;
+            }
+
+            // do nothing if the existing entry covers this one with the same severity
+            if (existing.Severity == entry.Severity && existing.Covers(entry))
+            {
+                return;
             }
 
             // otherwise try reducing the existing entry
@@ -195,6 +206,9 @@ public sealed class DiagnosticIntervalList
 
             if (Span.End >= next.Span.Start)
             {
+                Debug.Assert(
+                    next.Span.End > Span.End,
+                    "We should have never added the completely overlapped entry");
                 merged = NewWithEnd(next.Span.End);
                 return true;
             }
@@ -228,9 +242,13 @@ public sealed class DiagnosticIntervalList
             // this span is a proper superset of other span
             if (thisSuperset)
             {
+                Debug.Assert(
+                    other.Severity != Severity,
+                    "We should have already evaluated this case previously");
+
                 var newThisSpan = TextSpan.FromBounds(span.Start, otherSpan.Start);
-                Span = newThisSpan;
                 split = NewWithStart(otherSpan.End);
+                Span = newThisSpan;
                 return;
             }
 
@@ -258,8 +276,9 @@ public sealed class DiagnosticIntervalList
 
         private static bool Superset(TextSpan outer, TextSpan inner)
         {
-            return outer.Start < inner.Start
-                && outer.End > inner.End
+            return outer.Start <= inner.Start
+                && outer.End >= inner.End
+                && outer.Length > inner.Length
                 ;
         }
 
@@ -269,6 +288,16 @@ public sealed class DiagnosticIntervalList
             {
                 split = null;
                 return false;
+            }
+            
+            if (other.Severity == Severity)
+            {
+                var superset = Superset(Span, other.Span);
+                if (superset)
+                {
+                    split = null;
+                    return false;
+                }
             }
 
             ReduceFor(other, out split);

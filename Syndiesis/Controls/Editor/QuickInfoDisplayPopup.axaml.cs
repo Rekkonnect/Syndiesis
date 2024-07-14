@@ -121,7 +121,7 @@ public partial class QuickInfoDisplayPopup : UserControl
 
     private static QuickInfoDiagnosticItem? CreateDiagnosticItem(Diagnostic diagnostic)
     {
-        if (diagnostic.IsSuppressed || diagnostic.Severity is DiagnosticSeverity.Hidden)
+        if (diagnostic.IsSuppressed)
             return null;
 
         var item = new QuickInfoDiagnosticItem();

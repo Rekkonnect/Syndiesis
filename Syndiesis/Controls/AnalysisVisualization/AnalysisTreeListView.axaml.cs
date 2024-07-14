@@ -429,14 +429,18 @@ public partial class AnalysisTreeListView : UserControl
         if (AnalyzedTree is null)
             return null;
 
-        if (span.Start >= AnalyzedTree.Length)
+        var analyzedLength = AnalyzedTree.Length;
+        if (analyzedLength > 0)
         {
-            span = new(AnalyzedTree.Length - 1, 0);
-        }
+            if (span.Start >= analyzedLength)
+            {
+                span = new(analyzedLength - 1, 0);
+            }
 
-        if (span.End >= AnalyzedTree.Length)
-        {
-            span = TextSpan.FromBounds(span.Start, AnalyzedTree.Length);
+            if (span.End >= analyzedLength)
+            {
+                span = TextSpan.FromBounds(span.Start, analyzedLength);
+            }
         }
 
         var current = root;

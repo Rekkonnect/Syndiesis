@@ -49,9 +49,6 @@ public sealed partial class DiagnosticsLayer : SyndiesisTextEditorLayer
             foreach (var diagnostic in intervalList.Entries)
             {
                 var severity = diagnostic.Severity;
-                if (severity is DiagnosticSeverity.Hidden)
-                    continue;
-
                 var diagnosticLineSpan = diagnostic.Span;
                 var brush = Styles.BrushForDiagnosticSeverity(severity);
                 geometryBuilder.AddSegment(TextView, diagnosticLineSpan, brush.Brush);
@@ -89,6 +86,7 @@ partial class DiagnosticsLayer
     [SolidColor("Error", 0xFFFC3E36)]
     [SolidColor("Warning", 0xFF95DB7D)]
     [SolidColor("Information", 0xFF55AAFF)]
+    [SolidColor("Hidden", 0xFF505050)]
     public sealed partial class DecorationStyles
     {
         public ILazilyUpdatedBrush BrushForDiagnosticSeverity(DiagnosticSeverity severity)
@@ -98,6 +96,7 @@ partial class DiagnosticsLayer
                 DiagnosticSeverity.Error => ErrorBrush,
                 DiagnosticSeverity.Warning => WarningBrush,
                 DiagnosticSeverity.Info => InformationBrush,
+                DiagnosticSeverity.Hidden => HiddenBrush,
                 _ => OtherErrorBrush,
             };
         }
