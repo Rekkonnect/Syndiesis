@@ -7,6 +7,7 @@ namespace Syndiesis;
 public class ColorizationPreferences
 {
     public RoslynColorizer.ColorizationStyles? ColorizationStyles;
+    public DiagnosticsLayer.DecorationStyles? DiagnosticStyles;
 
     public ColorizationPreferences()
     {
@@ -15,6 +16,7 @@ public class ColorizationPreferences
         void Initialize()
         {
             ColorizationStyles = new();
+            DiagnosticStyles = new();
         }
     }
 }

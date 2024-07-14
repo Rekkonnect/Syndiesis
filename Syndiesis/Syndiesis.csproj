@@ -20,6 +20,9 @@
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <None Remove=".gitignore" />
+    <None Remove="Assets\Icons\diagnostic-error.png" />
+    <None Remove="Assets\Icons\diagnostic-suggestion.png" />
+    <None Remove="Assets\Icons\diagnostic-warning.png" />
   </ItemGroup>
   
   <ItemGroup>
@@ -33,7 +36,9 @@
     <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Garyon" Version="0.3.3" />
+    <PackageReference Include="Jamarino.IntervalTree" Version="1.2.1" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.9.2" />
     <PackageReference Include="RoseLynn" Version="0.6.4.1" />
@@ -62,6 +67,10 @@
 
   <ItemGroup>
     <UpToDateCheckInput Remove="Styles\CheckBoxStyles.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <UpToDateCheckInput Remove="Controls\Editor\QuickInfoDiagnosticItem.axaml" />
   </ItemGroup>
 
 </Project>

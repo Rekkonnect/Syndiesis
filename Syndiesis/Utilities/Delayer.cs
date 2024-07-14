@@ -27,6 +27,12 @@ public sealed class Delayer
         _nextUnblock = next;
     }
 
+    public void CancelUnblock()
+    {
+        _nextUnblock = DateTime.MinValue;
+        _delayTask = null;
+    }
+
     public async Task WaitUnblock(CancellationToken cancellationToken)
     {
         // locking this is not crucial; it's probably not too bad spawning a

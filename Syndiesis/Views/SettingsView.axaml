@@ -4,7 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="600"
              x:Class="Syndiesis.Views.SettingsView"
+             xmlns:sv="using:Syndiesis.Views"
              xmlns:sc="using:Syndiesis.Controls.Settings"
+             x:CompileBindings="True"
              Background="Black"
              Focusable="True"
              >
@@ -147,6 +149,26 @@
       </Grid>
 
       <StackPanel
+        HorizontalAlignment="Center"
+        Orientation="Horizontal"
+        Spacing="10"
+        Margin="0 20 0 0"
+        >
+        <Button
+          Name="openLogsButton"
+          >
+          <TextBlock>Open logs</TextBlock>
+        </Button>
+
+        <Button
+          Name="viewSettingsFileButton"
+          >
+          <TextBlock>View settings file</TextBlock>
+        </Button>
+
+      </StackPanel>
+
+      <StackPanel
         Name="settingsContainer"
         Margin="30 20 30 0"
         Spacing="10"
@@ -246,6 +268,12 @@
         </sc:LabelledSlider>
 
         <sc:LabelledSlider
+          Name="hoverInfoDelaySlider"
+          NameText="Hover info delay"
+          >
+        </sc:LabelledSlider>
+
+        <sc:LabelledSlider
           Name="indentationWidthSlider"
           NameText="Indentation width"
           >
@@ -301,26 +329,6 @@
 
       </Grid>
 
-      <StackPanel
-        HorizontalAlignment="Center"
-        Orientation="Horizontal"
-        Spacing="10"
-        Margin="0 30 0 0"
-        >
-        <Button
-          Name="openLogsButton"
-          >
-            <TextBlock>Open logs</TextBlock>
-        </Button>
-
-        <Button
-          Name="viewSettingsFileButton"
-          >
-          <TextBlock>View settings file</TextBlock>
-        </Button>
-
-      </StackPanel>
-      
     </StackPanel>
   </Grid>
 

@@ -24,5 +24,9 @@
     <Image x:Key="SpinnerImage" Source="avares://Syndiesis/Assets/Icons/fa-hurricane.png" />
     <Image x:Key="SuccessImage" Source="avares://Syndiesis/Assets/Icons/fa-check.png" />
     <Image x:Key="FailureImage" Source="avares://Syndiesis/Assets/Icons/fa-xmark.png" />
+
+    <Image x:Key="DiagnosticErrorImage" Source="avares://Syndiesis/Assets/Icons/diagnostic-error.png" />
+    <Image x:Key="DiagnosticWarningImage" Source="avares://Syndiesis/Assets/Icons/diagnostic-warning.png" />
+    <Image x:Key="DiagnosticSuggestionImage" Source="avares://Syndiesis/Assets/Icons/diagnostic-suggestion.png" />
   </Application.Resources>
 </Application>

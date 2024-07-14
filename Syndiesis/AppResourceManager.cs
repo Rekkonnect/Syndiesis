@@ -14,6 +14,10 @@ public class AppResourceManager(App app)
     public Image? SuccessImage => _app.FindResource("SuccessImage") as Image;
     public Image? FailureImage => _app.FindResource("FailureImage") as Image;
 
+    public Image? DiagnosticErrorImage => _app.FindResource("DiagnosticErrorImage") as Image;
+    public Image? DiagnosticWarningImage => _app.FindResource("DiagnosticWarningImage") as Image;
+    public Image? DiagnosticSuggestionImage => _app.FindResource("DiagnosticSuggestionImage") as Image;
+
     // with help from
     // https://github.com/FrankenApps/Avalonia-CustomTitleBarTemplate
     private const string _minimizeIconPathData =

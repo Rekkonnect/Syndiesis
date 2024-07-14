@@ -15,10 +15,12 @@ namespace Syndiesis.Views;
 public partial class SettingsView : UserControl
 {
     private int TypingDelayMilliseconds => typingDelaySlider.ValueSlider.Value.RoundInt32();
+    private int HoverInfoDelayMilliseconds => hoverInfoDelaySlider.ValueSlider.Value.RoundInt32();
     private int IndentationWidth => indentationWidthSlider.ValueSlider.Value.RoundInt32();
     private int RecursiveExpansionDepth => recursiveExpansionDepthSlider.ValueSlider.Value.RoundInt32();
 
     private TimeSpan TypingDelay => TimeSpan.FromMilliseconds(TypingDelayMilliseconds);
+    private TimeSpan HoverInfoDelay => TimeSpan.FromMilliseconds(HoverInfoDelayMilliseconds);
 
     public event Action? SettingsSaved;
     public event Action? SettingsReset;
@@ -34,6 +36,7 @@ public partial class SettingsView : UserControl
     private void InitializeEvents()
     {
         typingDelaySlider.ValueSlider.ValueChanged += OnDelaySliderValueChanged;
+        hoverInfoDelaySlider.ValueSlider.ValueChanged += OnHoverInfoDelayValueChanged;
         indentationWidthSlider.ValueSlider.ValueChanged += OnIndentationSliderValueChanged;
         recursiveExpansionDepthSlider.ValueSlider.ValueChanged += OnRecursiveExpansionDepthValueChanged;
         saveButton.Click += OnSaveClicked;
@@ -53,6 +56,7 @@ public partial class SettingsView : UserControl
         enableSemanticColorizationCheck.IsChecked = settings.EnableSemanticColorization;
         automaticallyDetectLanguageCheck.IsChecked = settings.AutomaticallyDetectLanguage;
         typingDelaySlider.ValueSlider.Value = settings.UserInputDelay.TotalMilliseconds;
+        hoverInfoDelaySlider.ValueSlider.Value = settings.HoverInfoDelay.TotalMilliseconds;
         indentationWidthSlider.ValueSlider.Value = settings.IndentationOptions.IndentationWidth;
         recursiveExpansionDepthSlider.ValueSlider.Value = settings.RecursiveExpansionDepth;
     }
@@ -201,6 +205,7 @@ public partial class SettingsView : UserControl
     private void SetSettingsValues(AppSettings settings)
     {
         settings.UserInputDelay = TypingDelay;
+        settings.HoverInfoDelay = HoverInfoDelay;
         settings.RecursiveExpansionDepth = RecursiveExpansionDepth;
         settings.IndentationOptions.IndentationWidth = IndentationWidth;
         settings.NodeLineOptions.ShowTrivia = showTriviaCheck.IsChecked is true;
@@ -231,6 +236,16 @@ public partial class SettingsView : UserControl
         typingDelaySlider.ValueText = $"{TypingDelayMilliseconds} ms";
     }
 
+    private void OnHoverInfoDelayValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
+    {
+        UpdateHoverInfoDelayValue();
+    }
+
+    private void UpdateHoverInfoDelayValue()
+    {
+        hoverInfoDelaySlider.ValueText = $"{HoverInfoDelayMilliseconds} ms";
+    }
+
     private void OnRecursiveExpansionDepthValueChanged(object? sender, RangeBaseValueChangedEventArgs e)
     {
         UpdateRecursiveExpansionDepthValue();
@@ -253,12 +268,23 @@ public partial class SettingsView : UserControl
         }
 
         {
+            var valueSlider = hoverInfoDelaySlider.ValueSlider;
+            valueSlider.Minimum = 100;
+            valueSlider.Maximum = 1000;
+            valueSlider.Value = 400;
+            valueSlider.SmallChange = 50;
+            valueSlider.LargeChange = 100;
+        }
+
+        {
             var valueSlider = indentationWidthSlider.ValueSlider;
             valueSlider.Minimum = 1;
             valueSlider.Maximum = 12;
             valueSlider.Value = 4;
             valueSlider.SmallChange = 1;
             valueSlider.LargeChange = 2;
+            valueSlider.TickFrequency = 1;
+            valueSlider.IsSnapToTickEnabled = true;
         }
 
         {
@@ -268,6 +294,8 @@ public partial class SettingsView : UserControl
             valueSlider.Value = 4;
             valueSlider.SmallChange = 1;
             valueSlider.LargeChange = 2;
+            valueSlider.TickFrequency = 1;
+            valueSlider.IsSnapToTickEnabled = true;
         }
     }
 }

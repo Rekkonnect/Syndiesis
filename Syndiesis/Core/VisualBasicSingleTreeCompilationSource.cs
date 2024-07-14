@@ -18,7 +18,7 @@ public sealed class VisualBasicSingleTreeCompilationSource
                 Microsoft.CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic16_9);
     }
 
-    public override void AdjustLanguageVersion(RoslynLanguageVersion version)
+    protected override void AdjustLanguageVersionCore(RoslynLanguageVersion version)
     {
         var vbVersion = version.VisualBasicVersion;
         ParseOptions = ParseOptions.WithLanguageVersion(vbVersion);
