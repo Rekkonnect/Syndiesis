@@ -160,6 +160,9 @@ public partial class MainView : UserControl
     private ImmutableArray<Diagnostic> GetCurrentHoveredDiagnostics(Point point)
     {
         var documentPosition = codeEditor.textEditor.GetPositionFromPoint(point) ?? default;
+        if (documentPosition == default)
+            return [];
+
         var linePosition = new LinePosition(
             documentPosition.Line - 1,
             documentPosition.Column - 1);
