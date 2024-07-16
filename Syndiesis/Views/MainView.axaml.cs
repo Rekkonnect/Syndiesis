@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
-using Syndiesis.Controls.Tabs;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
@@ -62,29 +61,11 @@ public partial class MainView : UserControl
         codeEditor.Document = ViewModel.Document;
         codeEditor.SetSource(initializingSource);
         codeEditor.CaretPosition = new(4, 48);
-        codeEditor.AssociatedTreeView = syntaxTreeView.listView;
+        codeEditor.AssociatedTreeView = analysisTreeView.listView;
 
         codeEditor.CompilationSource = ViewModel.HybridCompilationSource;
 
-        analysisTreeViewTabs.Envelopes =
-        [
-            Envelope("Syntax", AnalysisNodeKind.Syntax),
-            Envelope("Symbols", AnalysisNodeKind.Symbol),
-            Envelope("Operations", AnalysisNodeKind.Operation),
-            Envelope("Attributes", AnalysisNodeKind.Attribute),
-        ];
-
-        analysisTreeViewTabs.TabSelected += HandleSelectedAnalysisTab;
-
-        static TabEnvelope Envelope(string text, AnalysisNodeKind analysisKind)
-        {
-            return new()
-            {
-                Text = text,
-                MinWidth = 100,
-                TagValue = analysisKind,
-            };
-        }
+        analysisViewTabs.TabSelected += HandleSelectedAnalysisTab;
     }
 
     private void PrepareQuickInfoShowing(QuickInfoHandler.PrepareShowingEventArgs e)
@@ -178,17 +159,17 @@ public partial class MainView : UserControl
         codeEditor.TextChanged += HandleCodeChanged;
         codeEditor.CaretMoved += HandleCaretPositionChanged;
         codeEditor.SelectionChanged += HandleSelectionChanged;
-        syntaxTreeView.listView.HoveredNode += HandleHoveredNode;
-        syntaxTreeView.listView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
-        syntaxTreeView.listView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
-        syntaxTreeView.listView.NewRootLoaded += HandleNewRootNodeLoaded;
+        analysisTreeView.listView.HoveredNode += HandleHoveredNode;
+        analysisTreeView.listView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
+        analysisTreeView.listView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
+        analysisTreeView.listView.NewRootLoaded += HandleNewRootNodeLoaded;
 
         languageVersionDropDown.LanguageVersionChanged += SetLanguageVersion;
 
         AnalysisPipelineHandler.AnalysisCompleted += OnAnalysisCompleted;
 
         codeEditor.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
-        syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
+        analysisTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
 
         InitializeButtonEvents();
     }
@@ -215,12 +196,33 @@ public partial class MainView : UserControl
 
     private void InitializeAnalysisView()
     {
-        analysisTreeViewTabs.SelectIndex(0);
+        analysisViewTabs.LoadFromSettings(AppSettings.Instance);
     }
 
-    private void HandleSelectedAnalysisTab(TabEnvelope tab)
+    private void HandleSelectedAnalysisTab()
     {
-        var analysisKind = (AnalysisNodeKind)tab.TagValue!;
+        analysisViewTabs.SetDefaultsInSettings(AppSettings.Instance);
+
+        var analysisKind = analysisViewTabs.AnalysisNodeKind;
+        var analysisView = analysisViewTabs.AnalysisViewKind;
+        if (analysisView is AnalysisViewKind.Tree)
+        {
+            LoadTreeView(analysisKind);
+        }
+        else
+        {
+            LoadDetailsView();
+        }
+    }
+
+    private void LoadDetailsView()
+    {
+        analysisTreeView.IsVisible = false;
+    }
+
+    private void LoadTreeView(AnalysisNodeKind analysisKind)
+    {
+        analysisTreeView.IsVisible = true;
         var analysisFactory = new AnalysisExecutionFactory(ViewModel.HybridCompilationSource);
         var analysisExecution = analysisFactory.CreateAnalysisExecution(analysisKind);
         AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
@@ -245,7 +247,7 @@ public partial class MainView : UserControl
 
     private void CollapseAllClick(object? sender, RoutedEventArgs e)
     {
-        syntaxTreeView.listView.ResetToInitialRootView();
+        analysisTreeView.listView.ResetToInitialRootView();
     }
 
     private void HandleSettingsClick(object? sender, RoutedEventArgs e)
@@ -308,7 +310,7 @@ public partial class MainView : UserControl
     private void ShowCurrentCursorPosition(TextSpan span)
     {
         Dispatcher.UIThread.InvokeAsync(()
-            => syntaxTreeView.listView.EnsureHighlightedPositionRecurring(span));
+            => analysisTreeView.listView.EnsureHighlightedPositionRecurring(span));
     }
 
     private void HandleHoveredNode(AnalysisTreeListNode? obj)

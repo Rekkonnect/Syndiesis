@@ -1,4 +1,5 @@
 ﻿using Serilog;
+using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
 using System;
 using System.IO;
@@ -32,6 +33,9 @@ public sealed class AppSettings
     public TimeSpan HoverInfoDelay = TimeSpan.FromMilliseconds(400);
 
     public int RecursiveExpansionDepth = 4;
+
+    public AnalysisNodeKind DefaultAnalysisTab = AnalysisNodeKind.Syntax;
+    public AnalysisViewKind DefaultAnalysisView = AnalysisViewKind.Tree;
     #endregion
 
     #region Persistence

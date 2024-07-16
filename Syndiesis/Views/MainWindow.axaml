@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="1450" d:DesignHeight="850"
         MinWidth="1000"
-        MinHeight="600"
+        MinHeight="650"
         x:Class="Syndiesis.Views.MainWindow"
         xmlns:controls="using:Syndiesis.Controls"
         xmlns:syntax="using:Syndiesis.Controls.AnalysisVisualization"

@@ -7,9 +7,8 @@
              MinHeight="400"
              Focusable="True"
              xmlns:controls="using:Syndiesis.Controls"
-             xmlns:syntax="using:Syndiesis.Controls.AnalysisVisualization"
+             xmlns:av="using:Syndiesis.Controls.AnalysisVisualization"
              xmlns:previews="using:Syndiesis.Views.DesignerPreviews"
-             xmlns:tabs="using:Syndiesis.Controls.Tabs"
              xmlns:editor="using:Syndiesis.Controls.Editor"
              x:Class="Syndiesis.Views.MainView"
              >
@@ -165,19 +164,19 @@
             <RowDefinition Height="*"/>
           </Grid.RowDefinitions>
 
-          <tabs:TabEnvelopeRow
-            Name="analysisTreeViewTabs"
+          <av:AnalysisViewTabRow
+            Name="analysisViewTabs"
             HorizontalAlignment="Stretch"
             Height="28"
             />
-          
+
           <Border
             BorderBrush="#38A0FF"
             BorderThickness="2"
             Grid.Row="1"
           >
-            <syntax:CoverableAnalysisTreeListView
-              Name="syntaxTreeView"
+            <av:CoverableAnalysisTreeListView
+              Name="analysisTreeView"
             />
           </Border>
         </Grid>

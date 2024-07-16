@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis;
 using Serilog;
 using Serilog.Events;
 using Syndiesis.Utilities;
-using Syndiesis.ViewModels;
 using Syndiesis.Views;
 using System;
 using System.Reflection;
@@ -42,6 +41,7 @@ public partial class App : Application
         AvaloniaXamlLoader.Load(this);
         ResourceManager = new(this);
         AppInfo = CreateAppInfo();
+        SetupGeneral();
     }
 
     private AppInfo CreateAppInfo()
@@ -61,23 +61,60 @@ public partial class App : Application
             assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!);
     }
 
+    private static void SetupGeneral()
+    {
+        SetupSerilog();
+        AppSettings.TryLoad();
+    }
+
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            SetupSerilog(desktop);
-            AppSettings.TryLoad();
+            SetupDesktop(desktop);
+        }
 
-            desktop.MainWindow = new MainWindow
-            {
-                DataContext = new MainWindowViewModel(),
-            };
+        if (ApplicationLifetime is ISingleViewApplicationLifetime single)
+        {
+            SetupSingleView(single);
+        }
+
+        if (ApplicationLifetime is IControlledApplicationLifetime controlled)
+        {
+            SetupControlled(controlled);
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
-    private void SetupSerilog(IClassicDesktopStyleApplicationLifetime desktop)
+    private void SetupDesktop(IClassicDesktopStyleApplicationLifetime desktop)
+    {
+        desktop.MainWindow = new MainWindow();
+    }
+
+    private void SetupSingleView(ISingleViewApplicationLifetime single)
+    {
+        single.MainView = new MainView();
+    }
+
+    private void SetupControlled(IControlledApplicationLifetime controlled)
+    {
+        SetupSerilog(controlled);
+        controlled.Exit += HandleControlledLifetimeExit;
+    }
+
+    private void HandleControlledLifetimeExit(
+        object? sender, ControlledApplicationLifetimeExitEventArgs e)
+    {
+        AppSettings.TrySave();
+    }
+
+    private void SetupSerilog(IControlledApplicationLifetime lifetime)
+    {
+        lifetime.Exit += LogApplicationExit;
+    }
+
+    private static void SetupSerilog()
     {
         Log.Logger = new LoggerConfiguration()
             .MinimumLevel.Is(DefaultLogEventLevel)
@@ -87,8 +124,6 @@ public partial class App : Application
                 outputTemplate: LoggerExtensionsEx.DefaultOutputTemplate)
             .CreateLogger()
             ;
-
-        desktop.Exit += LogApplicationExit;
 
         Log.Information("---- Application is starting -- Serilog was setup");
     }
