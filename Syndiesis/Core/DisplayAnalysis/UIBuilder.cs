@@ -2,6 +2,8 @@
 using Avalonia.Media;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
+using System.IO.IsolatedStorage;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -43,6 +45,8 @@ public static class UIBuilder
         public TextSpanSource DisplaySpanSource { get; set; }
             = TextSpanSource.FullSpan;
 
+        public bool IsLoading { get; set; }
+
         public AnalysisTreeListNodeLine(
             GroupedRunInlineCollection inlines,
             NodeTypeDisplay nodeTypeDisplay)
@@ -59,6 +63,7 @@ public static class UIBuilder
                 NodeTypeDisplay = NodeTypeDisplay,
                 AnalysisNodeKind = AnalysisNodeKind,
                 DisplaySpanSource = DisplaySpanSource,
+                IsLoading = IsLoading,
             };
         }
     }
@@ -72,6 +77,8 @@ public static class UIBuilder
         public SyntaxObjectInfo? AssociatedSyntaxObject { get; }
             = SyntaxObjectInfo.GetInfoForObject(AssociatedSyntaxObjectContent);
 
+        public Task<AnalysisTreeListNode>? NodeLoader { get; set; }
+
         public AnalysisTreeListNode WithAssociatedSyntaxObjectContent(object? content)
         {
             return new(NodeLine, ChildRetriever, content);
@@ -79,12 +86,19 @@ public static class UIBuilder
 
         public override SAnalysisTreeListNode Build()
         {
-            return new()
+            var node = new SAnalysisTreeListNode()
             {
                 NodeLine = NodeLine.Build(),
                 ChildRetriever = ChildRetriever,
                 AssociatedSyntaxObject = AssociatedSyntaxObject,
             };
+
+            if (NodeLoader is not null)
+            {
+                _ = node.LoadFromTask(NodeLoader);
+            }
+
+            return node;
         }
     }
 }

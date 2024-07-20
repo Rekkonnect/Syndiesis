@@ -70,6 +70,34 @@ public sealed partial class OperationsAnalysisNodeCreator
             ;
     }
 
+    public override AnalysisTreeListNode? CreateRootViewNode(
+        object? value,
+        ComplexDisplayValueSource? valueSource = null)
+    {
+        switch (value)
+        {
+            case IOperation operation:
+                return CreateRootOperation(operation, valueSource);
+
+            case OperationList operationList:
+                return CreateRootOperationList(operationList, valueSource);
+
+            case OperationTree operationTree:
+                return CreateRootOperationTree(operationTree, valueSource);
+
+            // Hack to avoid infecting more code with the refactoring
+            // TODO: Account for this
+            case SyntaxNode syntaxNode:
+                return CreateRootSyntaxNode(syntaxNode, valueSource?.Value ?? default);
+        }
+
+        // fallback
+        return ParentContainer.SyntaxCreator.CreateRootViewNode(value, valueSource)
+            ?? ParentContainer.SymbolCreator.CreateRootViewNode(value, valueSource)
+            ?? ParentContainer.SemanticCreator.CreateRootViewNode(value, valueSource)
+            ;
+    }
+
     public AnalysisTreeListNode CreateRootOperation(
         IOperation operation,
         DisplayValueSource valueSource)
@@ -103,6 +131,34 @@ public sealed partial class OperationsAnalysisNodeCreator
         DisplayValueSource valueSource)
     {
         return ParentContainer.SyntaxCreator.CreateChildlessRootNode(node, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootOperation(
+        IOperation operation,
+        ComplexDisplayValueSource? valueSource)
+    {
+        return _operationCreator.CreateNode(operation, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootOperationList(
+        OperationList operations,
+        ComplexDisplayValueSource? valueSource)
+    {
+        return _operationListCreator.CreateNode(operations, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootOperationTree(
+        OperationTree operationTree,
+        ComplexDisplayValueSource? valueSource)
+    {
+        return _operationTreeCreator.CreateNode(operationTree, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootOperationTreeSymbolContainer(
+        OperationTree.SymbolContainer container,
+        ComplexDisplayValueSource? valueSource)
+    {
+        return _symbolContainerCreator.CreateNode(container, valueSource);
     }
 }
 

@@ -56,6 +56,9 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
             case SyntaxTokenList tokenList:
                 return CreateRootTokenList(tokenList, valueSource);
 
+            case ChildSyntaxList childList:
+                return CreateRootChildSyntaxList(childList, valueSource);
+
             case SyntaxTrivia trivia:
                 return CreateRootTrivia(trivia, valueSource);
 
@@ -92,6 +95,9 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
 
     public abstract AnalysisTreeListNode CreateRootTokenList(
         SyntaxTokenList list, DisplayValueSource valueSource = default);
+
+    public abstract AnalysisTreeListNode CreateRootChildSyntaxList(
+        ChildSyntaxList list, DisplayValueSource valueSource = default);
 
     public abstract AnalysisTreeListNode CreateRootTrivia(
         SyntaxTrivia trivia, DisplayValueSource valueSource = default);

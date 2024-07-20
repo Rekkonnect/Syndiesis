@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             xmlns:local="using:Syndiesis.Controls.AnalysisVisualization"
+             xmlns:controls="using:Syndiesis.Controls"
+             xmlns:ca="using:Microsoft.CodeAnalysis.CSharp"
+             xmlns:syntax="using:Microsoft.CodeAnalysis.CSharp.Syntax"
+             x:Class="Syndiesis.Controls.AnalysisVisualization.NodeDetailsView">
+
+  <StackPanel
+    Orientation="Vertical"
+    Spacing="5"
+    >
+
+    <local:NodeDetailsSection
+      Name="currentNodeSection"
+      HeaderText="Current node"
+      />
+
+    <local:NodeDetailsSection
+      Name="parentSection"
+      HeaderText="Parent node"
+      />
+
+    <local:NodeDetailsSection
+      Name="propertiesSection"
+      HeaderText="Properties"
+      />
+
+  </StackPanel>
+
+</UserControl>

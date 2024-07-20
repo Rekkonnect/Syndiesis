@@ -5,13 +5,14 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Garyon.Extensions;
-using Serilog;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
@@ -189,7 +190,7 @@ public partial class AnalysisTreeListNode : UserControl
 
             if (chunk <= 5)
             {
-                Log.Information("Low-end device detected, are you sure this application is running smoothly?");
+                LoggerExtensionsEx.LogLowEndDevice();
             }
 
             var taken = builders.Skip(start).Take(chunk);
@@ -459,5 +460,25 @@ public partial class AnalysisTreeListNode : UserControl
         var animationToken = _expansionAnimationCancellationTokenFactory.CurrentToken;
         _ = RequestInitializedChildren(expand);
         _ = expandableCanvas.SetExpansionState(expand, animationToken);
+    }
+
+    /// <remarks>
+    /// Always invoke this from the UI thread. The builder task may be a task
+    /// executing on any thread.
+    /// </remarks>
+    public async Task LoadFromTask(Task<UIBuilder.AnalysisTreeListNode> builderTask)
+    {
+        var builder = await builderTask;
+        ReloadFromBuilder(builder);
+    }
+
+    /// <remarks>
+    /// Always invoke this from the UI thread.
+    /// </remarks>
+    public void ReloadFromBuilder(UIBuilder.AnalysisTreeListNode builder)
+    {
+        NodeLine = builder.NodeLine.Build();
+        ChildRetriever = builder.ChildRetriever;
+        AssociatedSyntaxObject = builder.AssociatedSyntaxObject;
     }
 }

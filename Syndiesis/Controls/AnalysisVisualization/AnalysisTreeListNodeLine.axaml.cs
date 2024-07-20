@@ -131,6 +131,29 @@ public partial class AnalysisTreeListNodeLine : UserControl
 
     public AnalysisNodeKind AnalysisNodeKind { get; set; }
 
+    private bool _isLoading;
+
+    public bool IsLoading
+    {
+        get
+        {
+            return _isLoading;
+        }
+        set
+        {
+            if (_isLoading == value)
+                return;
+
+            _isLoading = value;
+
+            optionalLoadingNodeContainer.Content = value
+                ? new LoadingSpinner()
+                : null;
+
+            nodeTypeIconText.IsVisible = !value;
+        }
+    }
+
     public AnalysisTreeListNodeLine()
     {
         InitializeComponent();

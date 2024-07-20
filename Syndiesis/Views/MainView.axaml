@@ -175,7 +175,7 @@
             BorderThickness="2"
             Grid.Row="1"
           >
-            <av:CoverableAnalysisTreeListView
+            <av:CoverableAnalysisView
               Name="analysisTreeView"
             />
           </Border>

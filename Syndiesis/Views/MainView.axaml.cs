@@ -61,7 +61,7 @@ public partial class MainView : UserControl
         codeEditor.Document = ViewModel.Document;
         codeEditor.SetSource(initializingSource);
         codeEditor.CaretPosition = new(4, 48);
-        codeEditor.AssociatedTreeView = analysisTreeView.listView;
+        codeEditor.AssociatedTreeView = analysisTreeView.ListView;
 
         codeEditor.CompilationSource = ViewModel.HybridCompilationSource;
 
@@ -159,10 +159,10 @@ public partial class MainView : UserControl
         codeEditor.TextChanged += HandleCodeChanged;
         codeEditor.CaretMoved += HandleCaretPositionChanged;
         codeEditor.SelectionChanged += HandleSelectionChanged;
-        analysisTreeView.listView.HoveredNode += HandleHoveredNode;
-        analysisTreeView.listView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
-        analysisTreeView.listView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
-        analysisTreeView.listView.NewRootLoaded += HandleNewRootNodeLoaded;
+        analysisTreeView.ListView.HoveredNode += HandleHoveredNode;
+        analysisTreeView.ListView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
+        analysisTreeView.ListView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
+        analysisTreeView.ListView.NewRootLoaded += HandleNewRootNodeLoaded;
 
         languageVersionDropDown.LanguageVersionChanged += SetLanguageVersion;
 
@@ -180,6 +180,14 @@ public partial class MainView : UserControl
         {
             var version = ViewModel.HybridCompilationSource.CurrentSource.LanguageVersion;
             languageVersionDropDown.DisplayVersion(version);
+
+            switch (result)
+            {
+                case NodeRootAnalysisResult result:
+                    analysisTreeView.ListView.RootNode = result.NodeRoot.Build()!;
+                    analysisTreeView.ListView.TargetAnalysisNodeKind = result.TargetAnalysisNodeKind;
+                    break;
+            }
         }
 
         Dispatcher.UIThread.InvokeAsync(UpdateUI);
@@ -247,7 +255,7 @@ public partial class MainView : UserControl
 
     private void CollapseAllClick(object? sender, RoutedEventArgs e)
     {
-        analysisTreeView.listView.ResetToInitialRootView();
+        analysisTreeView.ListView.ResetToInitialRootView();
     }
 
     private void HandleSettingsClick(object? sender, RoutedEventArgs e)
@@ -310,7 +318,7 @@ public partial class MainView : UserControl
     private void ShowCurrentCursorPosition(TextSpan span)
     {
         Dispatcher.UIThread.InvokeAsync(()
-            => analysisTreeView.listView.EnsureHighlightedPositionRecurring(span));
+            => analysisTreeView.ListView.EnsureHighlightedPositionRecurring(span));
     }
 
     private void HandleHoveredNode(AnalysisTreeListNode? obj)

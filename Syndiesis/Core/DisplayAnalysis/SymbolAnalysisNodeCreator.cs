@@ -829,6 +829,7 @@ partial class SymbolAnalysisNodeCreator
         }
     }
 
+    // Congratulations, you were proven worthy
     public sealed class IPreprocessingSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
         : ISymbolRootViewNodeCreator<IPreprocessingSymbol>(creator)
     {

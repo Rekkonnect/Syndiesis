@@ -66,4 +66,30 @@ public static class RoslynExtensions
             current = node;
         }
     }
+
+    // We have no publicly exposed common conversion
+    public static ConversionUnion GetConversionUnion(
+        this SemanticModel semanticModel,
+        SyntaxNode node,
+        CancellationToken cancellationToken = default)
+    {
+        switch (semanticModel.Language)
+        {
+            case LanguageNames.CSharp:
+                return Microsoft.CodeAnalysis.CSharp.CSharpExtensions.GetConversion(
+                    semanticModel,
+                    node,
+                    cancellationToken)
+                    ;
+
+            case LanguageNames.VisualBasic:
+                return Microsoft.CodeAnalysis.VisualBasic.VisualBasicExtensions.GetConversion(
+                    semanticModel,
+                    node,
+                    cancellationToken)
+                    ;
+        }
+
+        return ConversionUnion.None;
+    }
 }

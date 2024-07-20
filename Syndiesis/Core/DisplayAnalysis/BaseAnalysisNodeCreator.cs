@@ -11,10 +11,12 @@ using System;
 using System.Buffers;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -34,6 +36,7 @@ public delegate IReadOnlyList<AnalysisTreeListNode> AnalysisNodeChildRetriever()
 public abstract partial class BaseAnalysisNodeCreator
 {
     // node creators
+    private readonly GeneralLoadingRootViewNodeCreator _loadingCreator;
     private readonly GeneralRootViewNodeCreator _generalCreator;
     private readonly PrimitiveRootViewNodeCreator _primitiveCreator;
     private readonly NullValueRootAnalysisNodeCreator _nullValueCreator;
@@ -52,6 +55,7 @@ public abstract partial class BaseAnalysisNodeCreator
     {
         ParentContainer = parentContainer;
 
+        _loadingCreator = new(this);
         _generalCreator = new(this);
         _primitiveCreator = new(this);
         _nullValueCreator = new(this);
@@ -64,8 +68,21 @@ public abstract partial class BaseAnalysisNodeCreator
     public abstract AnalysisTreeListNode? CreateRootViewNode(
         object? value, DisplayValueSource valueSource = default);
 
+    public virtual AnalysisTreeListNode? CreateRootViewNode(
+        object? value, ComplexDisplayValueSource? valueSource = null)
+    {
+        return null;
+    }
+
     public AnalysisTreeListNode CreateRootGeneral(
         object? value, DisplayValueSource valueSource = default)
+    {
+        return CreateRootViewNode(value, valueSource)
+            ?? CreateRootBasic(value, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootGeneral(
+        object? value, ComplexDisplayValueSource? valueSource = null)
     {
         return CreateRootViewNode(value, valueSource)
             ?? CreateRootBasic(value, valueSource);
@@ -110,6 +127,85 @@ public abstract partial class BaseAnalysisNodeCreator
         }
 
         return _generalCreator.CreateNode(value, valueSource);
+    }
+
+    private AnalysisTreeListNode CreateRootNullableStruct<T>(
+        Nullable<T> value, DisplayValueSource valueSource = default)
+        where T : struct
+    {
+        Debug.Assert(value is not null);
+
+        var inner = value.Value;
+        return CreateRootBasic(inner, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootBasic(
+        object? value, ComplexDisplayValueSource? valueSource = null)
+    {
+        if (value is null)
+            return _nullValueCreator.CreateNode(value, valueSource);
+
+        switch (value)
+        {
+            case bool b:
+                return _booleanCreator.CreateNode(b, valueSource);
+        }
+
+        var type = value.GetType();
+        if (type.IsEnum)
+        {
+            return _enumCreator.CreateNode(value, valueSource);
+        }
+
+        if (type.IsNullableValueType())
+        {
+            return CreateRootNullableStruct(value as dynamic, valueSource);
+        }
+
+        if (IsPrimitiveType(type))
+        {
+            return _primitiveCreator.CreateNode(value, valueSource);
+        }
+
+        if (IsDictionaryType(type))
+        {
+            return _dictionaryCreator.CreateNode(value, valueSource);
+        }
+
+        if (SupportsEnumeration(type))
+        {
+            return _enumerableCreator.CreateNode(value, valueSource);
+        }
+
+        return _generalCreator.CreateNode(value, valueSource);
+    }
+
+    private AnalysisTreeListNode CreateRootNullableStruct<T>(
+        Nullable<T> value, ComplexDisplayValueSource? valueSource = null)
+        where T : struct
+    {
+        Debug.Assert(value is not null);
+
+        var inner = value.Value;
+        return CreateRootBasic(inner, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateLoadingNode(
+        Task<AnalysisTreeListNode> nodeTask,
+        DisplayValueSource valueSource = default)
+    {
+        var node = _loadingCreator.CreateNode(valueSource);
+        node.NodeLoader = nodeTask;
+        return node;
+    }
+
+    public AnalysisTreeListNode CreateLoadingNode(
+        Task<AnalysisTreeListNode> nodeTask,
+        ComplexDisplayValueSource? valueSource = null)
+    {
+        var node = _loadingCreator.CreateNode(valueSource);
+        node.NodeLoader = nodeTask;
+        return node;
     }
 
     private static bool IsDictionaryType(Type type)
@@ -207,7 +303,7 @@ public abstract partial class BaseAnalysisNodeCreator
 
                 if (i < arguments.Length - 1)
                 {
-                    innerRuns.Add(CreateGenericArgumentSeparatorRun());
+                    innerRuns.Add(CreateArgumentSeparatorRun());
                 }
             }
 
@@ -377,7 +473,7 @@ static string Code(string type)
         throw new UnreachableException("Type kinds should have all been evaluated here");
     }
 
-    private static Run CreateGenericArgumentSeparatorRun()
+    private static Run CreateArgumentSeparatorRun()
     {
         return Run(", ", CommonStyles.RawValueBrush);
     }
@@ -407,39 +503,46 @@ static string Code(string type)
         return true;
     }
 
-    private AnalysisTreeListNode CreateRootNullableStruct<T>(
-        Nullable<T> value, DisplayValueSource valueSource = default)
-        where T : struct
-    {
-        Debug.Assert(value is not null);
-
-        var inner = value.Value;
-        return CreateRootBasic(inner, valueSource);
-    }
-
-    protected void AppendComplexValueSource(
-        ComplexDisplayValueSource valueSource,
+    protected static void AppendComplexValueSource(
+        ComplexDisplayValueSource? valueSource,
         GroupedRunInlineCollection inlines)
     {
-        var group = new SimpleGroupedRunInline(Children: []);
+        var inline = new ComplexGroupedRunInline();
+        AppendComplexValueSource(valueSource, inline);
+        inlines.Add(inline);
+    }
+
+    protected static void AppendComplexValueSource(
+        ComplexDisplayValueSource? valueSource,
+        ComplexGroupedRunInline inlines)
+    {
+        if (valueSource is null)
+            return;
+
+        var group = new ComplexGroupedRunInline(Children: []);
         AppendValueSourceKindModifiers(valueSource.Modifiers, group);
-        inlines.Add(group);
+        inlines.Children!.Add(new(group));
 
         bool hadPrevious = false;
 
-        foreach (var child in valueSource.ChildrenValueSources())
+        var currentSource = valueSource;
+        while (currentSource is not null)
         {
             if (hadPrevious)
             {
-                inlines.Add(CreateQualifierSeparatorRun());
+                inlines.Children!.Add(CreateQualifierSeparatorRun());
             }
 
-            AppendValueSourceWithoutSplitter(child, inlines);
+            AppendValueSourceWithoutSplitter(
+                currentSource.Value,
+                currentSource.Arguments,
+                inlines);
             hadPrevious = true;
+            currentSource = currentSource.Child;
         }
 
         var colonRun = CreateValueSplitterRun();
-        inlines.Add(colonRun);
+        inlines.Children!.Add(colonRun);
     }
 
     protected static void AppendValueSourceWithoutSplitter(
@@ -457,6 +560,37 @@ static string Code(string type)
 
             case DisplayValueSource.SymbolKind.Method:
                 AppendMethodDetail(valueSource, inlines);
+                break;
+
+            case DisplayValueSource.SymbolKind.This:
+                AppendThisDetail(inlines);
+                break;
+
+            default:
+                return;
+        }
+    }
+
+    protected static void AppendValueSourceWithoutSplitter(
+        DisplayValueSource valueSource,
+        ImmutableArray<ComplexDisplayValueSource> arguments,
+        ComplexGroupedRunInline inlines)
+    {
+        if (valueSource.IsDefault)
+            return;
+
+        switch (valueSource.Kind)
+        {
+            case DisplayValueSource.SymbolKind.Property:
+                AppendPropertyDetail(valueSource.Name!, inlines);
+                break;
+
+            case DisplayValueSource.SymbolKind.Method:
+                AppendMethodDetail(valueSource, arguments, inlines);
+                break;
+
+            case DisplayValueSource.SymbolKind.This:
+                AppendThisDetail(inlines);
                 break;
 
             default:
@@ -480,20 +614,71 @@ static string Code(string type)
     protected static void AppendMethodDetail(
         DisplayValueSource valueSource, GroupedRunInlineCollection inlines)
     {
+        var frontGroup = CreateMethodDetailGroup(valueSource);
+        inlines.Add(frontGroup);
+    }
+
+    protected static void AppendMethodDetail(
+        DisplayValueSource valueSource, ComplexGroupedRunInline inline)
+    {
+        var frontGroup = CreateMethodDetailGroup(valueSource);
+        inline.Children!.Add(new RunOrGrouped(frontGroup));
+    }
+
+    private static ComplexGroupedRunInline CreateMethodDetailGroup(DisplayValueSource valueSource)
+    {
         var methodNameRun = Run(valueSource.Name!, CommonStyles.MethodBrush);
         var parenthesesRun = Run("()", CommonStyles.RawValueBrush);
-        var frontGroup = new SimpleGroupedRunInline([
+        var frontGroup = new ComplexGroupedRunInline([
             methodNameRun,
             parenthesesRun,
         ]);
 
         AppendValueSourceKindModifiers(valueSource.Kind, frontGroup);
+        return frontGroup;
+    }
 
-        inlines.Add(frontGroup);
+    protected static void AppendMethodDetail(
+        DisplayValueSource valueSource,
+        ImmutableArray<ComplexDisplayValueSource> arguments,
+        ComplexGroupedRunInline inlines)
+    {
+        if (arguments.IsDefaultOrEmpty)
+        {
+            AppendMethodDetail(valueSource, inlines);
+            return;
+        }
+
+        var methodNameRun = Run(valueSource.Name!, CommonStyles.MethodBrush);
+        var openParenthesisRun = Run("(", CommonStyles.RawValueBrush);
+        var closedParenthesisRun = Run(")", CommonStyles.RawValueBrush);
+        var frontGroup = new ComplexGroupedRunInline([
+            methodNameRun,
+            openParenthesisRun,
+        ]);
+
+        AppendValueSourceKindModifiers(valueSource.Kind, frontGroup);
+
+        var argumentGroup = new ComplexGroupedRunInline();
+        for (int i = 0; i < arguments.Length; i++)
+        {
+            var argument = arguments[i];
+            if (i > 0)
+            {
+                var argumentSplitter = CreateArgumentSeparatorRun();
+                frontGroup.Children!.Add(argumentSplitter);
+            }
+            AppendComplexValueSource(argument, argumentGroup);
+        }
+
+        frontGroup.Children!.Add(new RunOrGrouped(argumentGroup));
+        frontGroup.Children!.Add(closedParenthesisRun);
+
+        inlines.Children!.Add(new RunOrGrouped(frontGroup));
     }
 
     private static void AppendValueSourceKindModifiers(
-        DisplayValueSource.SymbolKind kind, SimpleGroupedRunInline frontGroup)
+        DisplayValueSource.SymbolKind kind, ComplexGroupedRunInline frontGroup)
     {
         if (kind.IsInternal())
         {
@@ -511,6 +696,26 @@ static string Code(string type)
     {
         var propertyNameRun = Run(propertyName, CommonStyles.PropertyBrush);
         inlines.AddSingle(propertyNameRun);
+    }
+
+    protected static void AppendThisDetail(GroupedRunInlineCollection inlines)
+    {
+        var thisRun = Run("this", CommonStyles.PropertyBrush);
+        inlines.AddSingle(thisRun);
+    }
+
+    protected static void AppendPropertyDetail(string propertyName, ComplexGroupedRunInline inlines)
+    {
+        var propertyNameRun = Run(propertyName, CommonStyles.PropertyBrush);
+        var single = new SingleRunInline(propertyNameRun);
+        inlines.Children!.Add(new(single));
+    }
+
+    protected static void AppendThisDetail(ComplexGroupedRunInline inlines)
+    {
+        var thisRun = Run("this", CommonStyles.PropertyBrush);
+        var single = new SingleRunInline(thisRun);
+        inlines.Children!.Add(new(single));
     }
 
     private static Run CreateValueSplitterRun()
@@ -874,7 +1079,7 @@ static string Code(string type)
 partial class BaseAnalysisNodeCreator
 {
     /// <summary>
-    /// An <see cref="AnalysisTreeListNode"/> creator, creating root nodes for the given
+    /// A <see cref="UIBuilder.AnalysisTreeListNode"/> creator, creating root nodes for the given
     /// values. The creator is provided access to the <see cref="BaseAnalysisNodeCreator"/>
     /// that encapsulates all other <see cref="RootViewNodeCreator{TValue, TCreator}"/>
     /// instances, allowing interaction between different types of nodes.
@@ -914,8 +1119,35 @@ partial class BaseAnalysisNodeCreator
             );
         }
 
+        public AnalysisTreeListNode CreateNode(
+            TValue value, ComplexDisplayValueSource? valueSource = null)
+        {
+            var rootLine = CreateNodeLine(value, valueSource);
+            var children = GetChildRetriever(value);
+            var syntaxObject = AssociatedSyntaxObject(value);
+            rootLine.AnalysisNodeKind = GetNodeKind(value);
+            return AnalysisTreeListNode(
+                rootLine,
+                children,
+                syntaxObject
+            );
+        }
+
         public AnalysisTreeListNode CreateChildlessNode(
             TValue value, DisplayValueSource valueSource = default)
+        {
+            var rootLine = CreateNodeLine(value, valueSource);
+            var syntaxObject = AssociatedSyntaxObject(value);
+            rootLine.AnalysisNodeKind = AnalysisNodeKind.None;
+            return AnalysisTreeListNode(
+                rootLine,
+                null,
+                syntaxObject
+            );
+        }
+
+        public AnalysisTreeListNode CreateChildlessNode(
+            TValue value, ComplexDisplayValueSource? valueSource = null)
         {
             var rootLine = CreateNodeLine(value, valueSource);
             var syntaxObject = AssociatedSyntaxObject(value);
@@ -931,6 +1163,19 @@ partial class BaseAnalysisNodeCreator
 
         public abstract AnalysisTreeListNodeLine CreateNodeLine(
             TValue value, DisplayValueSource valueSource);
+
+        public virtual AnalysisTreeListNodeLine CreateNodeLine(
+            TValue value, ComplexDisplayValueSource? valueSource)
+        {
+            // I'm so tired of refactoring this entire application. This whole
+            // node processing has been refactored at least 4 times, and it needs
+            // a complete overhaul once again. Too many methods are implemented
+            // using the existing structure, and it will require tremendous effort
+            // to refactor it. For now, we just provide this virtual method to
+            // support ComplexDisplayValueSource values, which is already very
+            // narrowly scoped.
+            throw new NotImplementedException("This method is not yet implemented.");
+        }
 
         protected AnalysisTreeListNode CreateFromProperty(PropertyInfo property, object target)
         {
@@ -960,6 +1205,48 @@ partial class BaseAnalysisNodeCreator
             var name = property.Name;
             propertySource = Property(name);
             value = property.GetValue(target);
+        }
+    }
+
+    public sealed class GeneralLoadingRootViewNodeCreator(BaseAnalysisNodeCreator creator)
+        : GeneralValueRootViewNodeCreator<object?>(creator)
+    {
+        public AnalysisTreeListNode CreateNode(DisplayValueSource valueSource)
+        {
+            return CreateNode(null, valueSource);
+        }
+
+        public AnalysisTreeListNode CreateNode(ComplexDisplayValueSource? valueSource)
+        {
+            return CreateNode(null, valueSource);
+        }
+
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            object? value, DisplayValueSource valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+
+            AppendValueSource(valueSource, inlines);
+            var loadingInline = NewLoadingInline();
+            inlines.Add(loadingInline);
+
+            var line = AnalysisTreeListNodeLine(
+                inlines,
+                default);
+
+            line.IsLoading = true;
+
+            return line;
+        }
+
+        private static SingleRunInline NewLoadingInline()
+        {
+            return new(new Run("Loading...", NodeCommonStyles.LoadingColorBrush));
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
+        {
+            return null;
         }
     }
 
@@ -1246,7 +1533,7 @@ partial class BaseAnalysisNodeCreator
         private IReadOnlyList<AnalysisTreeListNode> GetChildNodes(IReadOnlyList<object> values)
         {
             return values
-                .Select(value => Creator.CreateRootGeneral(value))
+                .Select(value => Creator.CreateRootGeneral(value, null))
                 .ToList()
                 ;
         }
@@ -1287,7 +1574,7 @@ partial class BaseAnalysisNodeCreator
         private IReadOnlyList<AnalysisTreeListNode> GetChildNodes(KvpList values)
         {
             return values
-                .Select(value => Creator.CreateRootGeneral(value))
+                .Select(value => Creator.CreateRootGeneral(value, null))
                 .ToList()
                 ;
         }
@@ -1399,6 +1686,9 @@ partial class BaseAnalysisNodeCreator
     [SolidColor("Throws", 0xFFB33E3E)]
     public sealed partial class NodeCommonStyles
     {
+        public static readonly Color LoadingColor = Color.FromUInt32(0xFF007077);
+        public static readonly LazilyUpdatedSolidBrush LoadingColorBrush = new(LoadingColor);
+
         public NodeTypeDisplay PropertyAnalysisValueDisplay
             => new(CommonTypes.PropertyAnalysisValue, RawValueColor);
 

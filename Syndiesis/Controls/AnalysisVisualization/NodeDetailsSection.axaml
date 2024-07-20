@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="250"
+             xmlns:local="using:Syndiesis.Controls.AnalysisVisualization"
+             xmlns:controls="using:Syndiesis.Controls"
+             xmlns:ca="using:Microsoft.CodeAnalysis.CSharp"
+             xmlns:syntax="using:Microsoft.CodeAnalysis.CSharp.Syntax"
+             x:Class="Syndiesis.Controls.AnalysisVisualization.NodeDetailsSection">
+
+  <StackPanel
+    Orientation="Vertical"
+    Spacing="5">
+
+    <TextBlock
+      Name="headerText"
+      Text="Header"
+      Padding="10 10 0 0"
+      />
+
+    <StackPanel
+      Name="nodeLineStackPanel"
+      Orientation="Vertical"
+      />
+
+  </StackPanel>
+
+</UserControl>

@@ -25,7 +25,7 @@
       HorizontalAlignment="Right"
       />
 
-    <ContentControl
+    <Panel
       Grid.Column="1"
       VerticalAlignment="Center"
       >
@@ -40,7 +40,11 @@
         Height="26"
         Name="nodeTypeIconText"
         />
-    </ContentControl>
+
+      <ContentControl
+        Name="optionalLoadingNodeContainer"
+        />
+    </Panel>
 
     <inlines:CopyableGroupedRunInlineTextBlock
       FontFamily="{StaticResource AptosFontFamily}"
