@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
 using System.Collections.Immutable;
 using System.Linq;
@@ -67,7 +68,7 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
             methodSource);
     }
 
-    public async Task ExecuteCore(CancellationToken cancellationToken)
+    public NodeDetailsViewData? ExecuteCore(CancellationToken cancellationToken)
     {
         var syntaxCreator = _container.SyntaxCreator;
         var currentNode = syntaxCreator.CreateRootNode(_node);
@@ -75,22 +76,54 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
             _node.Parent, _parentValueSource);
 
         if (cancellationToken.IsCancellationRequested)
-            return;
+            return null;
 
         var childNodes = syntaxCreator.CreateLoadingNode(
-            CreateChildNodesRootNode(), _childNodesValueSource);
+            CreateChildNodesRootNode(),
+            _childNodesValueSource);
         var childTokens = syntaxCreator.CreateLoadingNode(
-            CreateChildTokensRootNode(), _childTokensValueSource);
+            CreateChildTokensRootNode(),
+            _childTokensValueSource);
         var childNodesAndTokens = syntaxCreator.CreateLoadingNode(
-            CreateChildNodesAndTokensRootNode(), _childNodesAndTokensValueSource);
+            CreateChildNodesAndTokensRootNode(),
+            _childNodesAndTokensValueSource);
 
         if (cancellationToken.IsCancellationRequested)
-            return;
+            return null;
 
         var symbolInfo = syntaxCreator.CreateLoadingNode(
             CreateSymbolInfoRootNode(cancellationToken),
             _getSymbolInfoValueSource);
-        // TODO: So much copy-pasting is involved
+        var typeInfo = syntaxCreator.CreateLoadingNode(
+            CreateTypeInfoRootNode(cancellationToken),
+            _getTypeInfoValueSource);
+        var aliasInfo = syntaxCreator.CreateLoadingNode(
+            CreateAliasInfoRootNode(cancellationToken),
+            _getAliasInfoValueSource);
+        var preprocessingSymbolInfo = syntaxCreator.CreateLoadingNode(
+            CreatePreprocessingSymbolInfoRootNode(),
+            _getPreprocessingSymbolInfoValueSource);
+        var conversion = syntaxCreator.CreateLoadingNode(
+            CreateConversionRootNode(cancellationToken),
+            _getConversionValueSource);
+        var operation = syntaxCreator.CreateLoadingNode(
+            CreateOperationRootNode(cancellationToken),
+            _getOperationValueSource);
+
+        if (cancellationToken.IsCancellationRequested)
+            return null;
+
+        return new(
+            currentNode,
+            parentNode,
+            [
+                symbolInfo,
+                typeInfo,
+                aliasInfo,
+                preprocessingSymbolInfo,
+                conversion,
+                operation,
+            ]);
     }
 
     private async Task<UIBuilder.AnalysisTreeListNode> CreateChildNodesRootNode()
@@ -159,21 +192,23 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
                 _getPreprocessingSymbolInfoValueSource);
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreateConversionRootNode()
+    private async Task<UIBuilder.AnalysisTreeListNode> CreateConversionRootNode(
+        CancellationToken cancellationToken)
     {
         await Task.Yield();
         return
             _container.SemanticCreator.CreateRootConversion(
-                _semanticModel.GetConversionUnion(_node),
+                _semanticModel.GetConversionUnion(_node, cancellationToken),
                 _getConversionValueSource);
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreateOperationRootNode()
+    private async Task<UIBuilder.AnalysisTreeListNode> CreateOperationRootNode(
+        CancellationToken cancellationToken)
     {
         await Task.Yield();
         return
             _container.OperationCreator.CreateRootGeneral(
-                _semanticModel.GetOperation(_node),
+                _semanticModel.GetOperation(_node, cancellationToken),
                 _getOperationValueSource)!;
     }
 }

@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Garyon.Reflection;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -638,6 +639,7 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
                 bool isSyntaxList =
                     genericDefinition == typeof(SyntaxList<>)
                     || genericDefinition == typeof(SeparatedSyntaxList<>)
+                    || listType.GenericTypeArguments[0].InheritsOrEquals<SyntaxNode>()
                     ;
 
                 if (isSyntaxList)

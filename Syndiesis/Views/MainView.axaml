@@ -175,9 +175,15 @@
             BorderThickness="2"
             Grid.Row="1"
           >
-            <av:CoverableAnalysisView
-              Name="analysisTreeView"
-            />
+            <Panel>
+              <av:CoverableAnalysisView
+                Name="analysisTreeView"
+              />
+              <av:NodeDetailsView
+                Name="nodeDetailsViewView"
+                IsVisible="False"
+              />
+            </Panel>
           </Border>
         </Grid>
       </Grid>

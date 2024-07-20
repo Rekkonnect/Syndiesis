@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -643,6 +644,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
                 bool isSyntaxList =
                     genericDefinition == typeof(SyntaxList<>)
                     || genericDefinition == typeof(SeparatedSyntaxList<>)
+                    || listType.GenericTypeArguments[0].InheritsOrEquals<SyntaxNode>()
                     ;
 
                 if (isSyntaxList)

@@ -1,4 +1,5 @@
-﻿using Avalonia.Media;
+﻿using Avalonia.Controls.Documents;
+using Avalonia.Media;
 using Avalonia.Threading;
 using Garyon.Extensions;
 using Garyon.Reflection;
@@ -507,7 +508,7 @@ static string Code(string type)
         ComplexDisplayValueSource? valueSource,
         GroupedRunInlineCollection inlines)
     {
-        var inline = new ComplexGroupedRunInline();
+        var inline = NewComplexInlineGroup();
         AppendComplexValueSource(valueSource, inline);
         inlines.Add(inline);
     }
@@ -519,7 +520,25 @@ static string Code(string type)
         if (valueSource is null)
             return;
 
-        var group = new ComplexGroupedRunInline(Children: []);
+        AppendValueSourceWithoutSplitter(valueSource, inlines);
+
+        var colonRun = CreateValueSplitterRun();
+        inlines.Children!.Add(colonRun);
+    }
+
+    private static ComplexGroupedRunInline NewComplexInlineGroup()
+    {
+        return new ComplexGroupedRunInline(Children: []);
+    }
+
+    protected static void AppendValueSourceWithoutSplitter(
+        ComplexDisplayValueSource? valueSource,
+        ComplexGroupedRunInline inlines)
+    {
+        if (valueSource is null)
+            return;
+
+        var group = NewComplexInlineGroup();
         AppendValueSourceKindModifiers(valueSource.Modifiers, group);
         inlines.Children!.Add(new(group));
 
@@ -540,9 +559,6 @@ static string Code(string type)
             hadPrevious = true;
             currentSource = currentSource.Child;
         }
-
-        var colonRun = CreateValueSplitterRun();
-        inlines.Children!.Add(colonRun);
     }
 
     protected static void AppendValueSourceWithoutSplitter(
@@ -659,7 +675,7 @@ static string Code(string type)
 
         AppendValueSourceKindModifiers(valueSource.Kind, frontGroup);
 
-        var argumentGroup = new ComplexGroupedRunInline();
+        var argumentGroup = NewComplexInlineGroup();
         for (int i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
@@ -668,7 +684,7 @@ static string Code(string type)
                 var argumentSplitter = CreateArgumentSeparatorRun();
                 frontGroup.Children!.Add(argumentSplitter);
             }
-            AppendComplexValueSource(argument, argumentGroup);
+            AppendValueSourceWithoutSplitter(argument, argumentGroup);
         }
 
         frontGroup.Children!.Add(new RunOrGrouped(argumentGroup));
@@ -700,7 +716,7 @@ static string Code(string type)
 
     protected static void AppendThisDetail(GroupedRunInlineCollection inlines)
     {
-        var thisRun = Run("this", CommonStyles.PropertyBrush);
+        var thisRun = Run("this", CommonStyles.KeywordBrush);
         inlines.AddSingle(thisRun);
     }
 
@@ -713,7 +729,7 @@ static string Code(string type)
 
     protected static void AppendThisDetail(ComplexGroupedRunInline inlines)
     {
-        var thisRun = Run("this", CommonStyles.PropertyBrush);
+        var thisRun = Run("this", CommonStyles.KeywordBrush);
         var single = new SingleRunInline(thisRun);
         inlines.Children!.Add(new(single));
     }
@@ -1239,6 +1255,24 @@ partial class BaseAnalysisNodeCreator
             return line;
         }
 
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            object? value, ComplexDisplayValueSource? valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+
+            AppendComplexValueSource(valueSource, inlines);
+            var loadingInline = NewLoadingInline();
+            inlines.Add(loadingInline);
+
+            var line = AnalysisTreeListNodeLine(
+                inlines,
+                default);
+
+            line.IsLoading = true;
+
+            return line;
+        }
+
         private static SingleRunInline NewLoadingInline()
         {
             return new(new Run("Loading...", NodeCommonStyles.LoadingColorBrush));
@@ -1408,6 +1442,20 @@ partial class BaseAnalysisNodeCreator
                 CommonStyles.MemberAccessValueDisplay);
         }
 
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            object? value, ComplexDisplayValueSource? valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+
+            AppendComplexValueSource(valueSource, inlines);
+            var run = Creator.RunForSimpleObjectValue(value);
+            inlines.Add(run);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.MemberAccessValueDisplay);
+        }
+
         public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
         {
             return null;
@@ -1423,6 +1471,20 @@ partial class BaseAnalysisNodeCreator
             var inlines = new GroupedRunInlineCollection();
 
             AppendValueSource(valueSource, inlines);
+            var valueRun = SingleRunForBoolean(value);
+            inlines.Add(valueRun);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.MemberAccessValueDisplay);
+        }
+
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            bool value, ComplexDisplayValueSource? valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+
+            AppendComplexValueSource(valueSource, inlines);
             var valueRun = SingleRunForBoolean(value);
             inlines.Add(valueRun);
 
@@ -1481,6 +1543,23 @@ partial class BaseAnalysisNodeCreator
                 CommonStyles.MemberAccessValueDisplay);
         }
 
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            object value, ComplexDisplayValueSource? valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+
+            AppendComplexValueSource(valueSource, inlines);
+            var typeRun = NestedTypeDisplayGroupedRun(value.GetType());
+            inlines.Add(typeRun);
+            inlines.Add(CreateQualifierSeparatorRun());
+            var valueRun = EnumValueRun(value);
+            inlines.AddSingle(valueRun);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.MemberAccessValueDisplay);
+        }
+
         public override AnalysisNodeChildRetriever? GetChildRetriever(object value)
         {
             return null;
@@ -1512,6 +1591,22 @@ partial class BaseAnalysisNodeCreator
                 CommonStyles.MemberAccessValueDisplay);
         }
 
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            object? value, ComplexDisplayValueSource? valueSource)
+        {
+            Debug.Assert(value is null);
+
+            var inlines = new GroupedRunInlineCollection();
+
+            AppendComplexValueSource(valueSource, inlines);
+            var valueRun = CreateNullValueSingleRun();
+            inlines.Add(valueRun);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.MemberAccessValueDisplay);
+        }
+
         public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
         {
             return null;
@@ -1533,7 +1628,7 @@ partial class BaseAnalysisNodeCreator
         private IReadOnlyList<AnalysisTreeListNode> GetChildNodes(IReadOnlyList<object> values)
         {
             return values
-                .Select(value => Creator.CreateRootGeneral(value, null))
+                .Select(value => Creator.CreateRootGeneral(value, default(DisplayValueSource)))
                 .ToList()
                 ;
         }
@@ -1574,7 +1669,7 @@ partial class BaseAnalysisNodeCreator
         private IReadOnlyList<AnalysisTreeListNode> GetChildNodes(KvpList values)
         {
             return values
-                .Select(value => Creator.CreateRootGeneral(value, null))
+                .Select(value => Creator.CreateRootGeneral(value, default(DisplayValueSource)))
                 .ToList()
                 ;
         }
@@ -1631,12 +1726,37 @@ partial class BaseAnalysisNodeCreator
                 CommonStyles.MemberAccessValueDisplay);
         }
 
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            object value, ComplexDisplayValueSource? valueSource)
+        {
+            var inlines = CreateNodeDisplayRuns(value, valueSource);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.MemberAccessValueDisplay);
+        }
+
         protected GroupedRunInlineCollection CreateNodeDisplayRuns(
             object value, DisplayValueSource valueSource)
         {
             var inlines = new GroupedRunInlineCollection();
-
             AppendValueSource(valueSource, inlines);
+            CreateNodeDisplayRuns(value, inlines);
+            return inlines;
+        }
+
+        protected GroupedRunInlineCollection CreateNodeDisplayRuns(
+            object value, ComplexDisplayValueSource? valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+            AppendComplexValueSource(valueSource, inlines);
+            CreateNodeDisplayRuns(value, inlines);
+            return inlines;
+        }
+
+        protected void CreateNodeDisplayRuns(
+            object value, GroupedRunInlineCollection inlines)
+        {
             var typeRun = NestedTypeDisplayGroupedRun(value.GetType());
             inlines.Add(typeRun);
 
@@ -1646,8 +1766,6 @@ partial class BaseAnalysisNodeCreator
                 inlines.Add(NewValueKindSplitterRun());
                 inlines.Add(countDisplayRun);
             }
-
-            return inlines;
         }
     }
 }

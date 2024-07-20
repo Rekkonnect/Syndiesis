@@ -567,13 +567,13 @@ public partial class CodeEditor : UserControl
             return null;
 
         var model = source.SemanticModel!;
-        int position = textEditor.TextArea.Caret.Offset;
-        var node = SyntaxNodeAtPosition(tree, position);
+        int position = textEditor.CaretOffset;
+        var node = tree.SyntaxNodeAtPosition(position);
         var symbol = GetSymbol(node);
         if (symbol is null)
         {
             // Attempt at the left side of the caret
-            var otherNode = SyntaxNodeAtPosition(tree, position - 1);
+            var otherNode = tree.SyntaxNodeAtPosition(position - 1);
             var otherSymbol = GetSymbol(otherNode);
             return otherSymbol;
         }
@@ -590,12 +590,6 @@ public partial class CodeEditor : UserControl
                 ?? symbolInfo.CandidateSymbols.FirstOrDefault()
                 ?? model.GetDeclaredSymbol(node);
         }
-    }
-
-    private SyntaxNode? SyntaxNodeAtPosition(SyntaxTree tree, int position)
-    {
-        var root = tree.GetRoot();
-        return root.DeepestNodeContainingPosition(position);
     }
 
     private void SelectCurrentWord()

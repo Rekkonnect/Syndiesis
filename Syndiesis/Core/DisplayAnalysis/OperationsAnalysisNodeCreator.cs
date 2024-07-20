@@ -181,6 +181,20 @@ partial class OperationsAnalysisNodeCreator
         {
             var inlines = new GroupedRunInlineCollection();
             AppendValueSource(valueSource, inlines);
+            return CreateNodeLine(operation, inlines);
+        }
+
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            IOperation operation, ComplexDisplayValueSource? valueSource)
+        {
+            var inlines = new GroupedRunInlineCollection();
+            AppendComplexValueSource(valueSource, inlines);
+            return CreateNodeLine(operation, inlines);
+        }
+
+        private AnalysisTreeListNodeLine CreateNodeLine(
+            IOperation operation, GroupedRunInlineCollection inlines)
+        {
             var type = operation.GetType();
             var preferredType = _propertyCache.FilterForType(type).PreferredType ?? type;
             var typeDetailsInline = TypeDetailsInline(preferredType);

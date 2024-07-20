@@ -213,6 +213,8 @@ public partial class MainView : UserControl
 
         var analysisKind = analysisViewTabs.AnalysisNodeKind;
         var analysisView = analysisViewTabs.AnalysisViewKind;
+        SetViewVisibility(analysisView);
+
         if (analysisView is AnalysisViewKind.Tree)
         {
             LoadTreeView(analysisKind);
@@ -225,23 +227,49 @@ public partial class MainView : UserControl
 
     private void LoadDetailsView()
     {
-        analysisTreeView.IsVisible = false;
+        SetCurrentDetailsView();
+    }
+
+    private readonly CancellationTokenFactory _detailsViewCancellationTokenFactory = new();
+
+    private void SetCurrentDetailsView()
+    {
+        var currentSource = ViewModel.HybridCompilationSource.CurrentSource;
+        var currentIndex = codeEditor.textEditor.CaretOffset;
+        var node = currentSource.Tree!.SyntaxNodeAtPosition(currentIndex);
+        if (node is null)
+            return;
+
+        _detailsViewCancellationTokenFactory.Cancel();
+        var cancellationToken = _detailsViewCancellationTokenFactory.CurrentToken;
+
+        var execution = new NodeViewAnalysisExecution(currentSource.Compilation, node);
+        var detailsData = execution.ExecuteCore(cancellationToken);
+        if (detailsData is null)
+            return;
+
+        nodeDetailsViewView.Load(detailsData);
     }
 
     private void LoadTreeView(AnalysisNodeKind analysisKind)
     {
-        analysisTreeView.IsVisible = true;
         var analysisFactory = new AnalysisExecutionFactory(ViewModel.HybridCompilationSource);
         var analysisExecution = analysisFactory.CreateAnalysisExecution(analysisKind);
         AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
         AnalysisPipelineHandler.IgnoreInputDelayOnce();
         if (IsLoaded)
         {
-            Task.Run(ForceAnalysisResetView);
+            Task.Run(ForceAnalysisResetTreeView);
         }
     }
 
-    private async Task ForceAnalysisResetView()
+    private void SetViewVisibility(AnalysisViewKind viewKind)
+    {
+        analysisTreeView.IsVisible = viewKind is AnalysisViewKind.Tree;
+        nodeDetailsViewView.IsVisible = viewKind is AnalysisViewKind.Details;
+    }
+
+    private async Task ForceAnalysisResetTreeView()
     {
         await Task.Run(AnalysisPipelineHandler.ForceAnalysis);
     }

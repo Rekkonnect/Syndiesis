@@ -67,6 +67,12 @@ public static class RoslynExtensions
         }
     }
 
+    public static SyntaxNode? SyntaxNodeAtPosition(this SyntaxTree tree, int position)
+    {
+        var root = tree.GetRoot();
+        return root.DeepestNodeContainingPosition(position);
+    }
+
     // We have no publicly exposed common conversion
     public static ConversionUnion GetConversionUnion(
         this SemanticModel semanticModel,

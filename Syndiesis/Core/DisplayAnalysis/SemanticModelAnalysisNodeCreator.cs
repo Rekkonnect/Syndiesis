@@ -85,6 +85,45 @@ public sealed partial class SemanticModelAnalysisNodeCreator : BaseAnalysisNodeC
         return ParentContainer.SyntaxCreator.CreateRootViewNode(value, valueSource);
     }
 
+    public override AnalysisTreeListNode? CreateRootViewNode(
+        object? value,
+        ComplexDisplayValueSource? valueSource = null)
+    {
+        switch (value)
+        {
+            case SemanticModel semanticModel:
+                return CreateRootSemanticModel(semanticModel, valueSource);
+
+            case TypeInfo typeInfo:
+                return CreateRootTypeInfo(typeInfo, valueSource);
+
+            case SymbolInfo symbolInfo:
+                return CreateRootSymbolInfo(symbolInfo, valueSource);
+
+            case NullabilityInfo nullabilityInfo:
+                return CreateRootNullabilityInfo(nullabilityInfo, valueSource);
+
+            case PreprocessingSymbolInfo preprocessingSymbolInfo:
+                return CreateRootPreprocessingSymbolInfo(preprocessingSymbolInfo, valueSource);
+
+            case CSharpConversion conversion:
+                return CreateRootConversion(conversion, valueSource);
+
+            case VisualBasicConversion conversion:
+                return CreateRootConversion(conversion, valueSource);
+
+            // internal API to wrap around the lack of abstraction for conversions
+            case ConversionUnion conversion:
+                return CreateRootViewNode(conversion.AppliedConversion, valueSource);
+
+            default:
+                break;
+        }
+
+        // fallback
+        return ParentContainer.SyntaxCreator.CreateRootViewNode(value, valueSource);
+    }
+
     public AnalysisTreeListNode CreateRootSemanticModel(
         SemanticModel semanticModel,
         DisplayValueSource valueSource)
@@ -131,7 +170,7 @@ public sealed partial class SemanticModelAnalysisNodeCreator : BaseAnalysisNodeC
         ConversionUnion conversionUnion,
         DisplayValueSource valueSource)
     {
-        return CreateRootBasic(conversionUnion.AppliedConversion, valueSource);
+        return CreateRootGeneral(conversionUnion.AppliedConversion, valueSource);
     }
 
     public AnalysisTreeListNode CreateRootConversion(
@@ -141,37 +180,44 @@ public sealed partial class SemanticModelAnalysisNodeCreator : BaseAnalysisNodeC
         return _visualBasicConversionCreator.CreateNode(conversion, valueSource);
     }
 
+    public AnalysisTreeListNode CreateRootSemanticModel(
+        SemanticModel semanticModel,
+        ComplexDisplayValueSource? valueSource)
+    {
+        return _semanticModelCreator.CreateNode(semanticModel, valueSource);
+    }
+
     public AnalysisTreeListNode CreateRootTypeInfo(
         TypeInfo typeInfo,
-        ComplexDisplayValueSource valueSource)
+        ComplexDisplayValueSource? valueSource)
     {
         return _typeInfoCreator.CreateNode(typeInfo, valueSource);
     }
 
     public AnalysisTreeListNode CreateRootSymbolInfo(
         SymbolInfo symbolInfo,
-        ComplexDisplayValueSource valueSource)
+        ComplexDisplayValueSource? valueSource)
     {
         return _symbolInfoCreator.CreateNode(symbolInfo, valueSource);
     }
 
     public AnalysisTreeListNode CreateRootNullabilityInfo(
         NullabilityInfo nullabilityInfo,
-        ComplexDisplayValueSource valueSource)
+        ComplexDisplayValueSource? valueSource)
     {
         return _nullabilityInfoCreator.CreateNode(nullabilityInfo, valueSource);
     }
 
     public AnalysisTreeListNode CreateRootPreprocessingSymbolInfo(
         PreprocessingSymbolInfo preprocessingSymbolInfo,
-        ComplexDisplayValueSource valueSource)
+        ComplexDisplayValueSource? valueSource)
     {
         return _preprocessingSymbolInfoCreator.CreateNode(preprocessingSymbolInfo, valueSource);
     }
 
     public AnalysisTreeListNode CreateRootConversion(
         CSharpConversion conversion,
-        ComplexDisplayValueSource valueSource)
+        ComplexDisplayValueSource? valueSource)
     {
         return _cSharpConversionCreator.CreateNode(conversion, valueSource);
     }
@@ -180,12 +226,12 @@ public sealed partial class SemanticModelAnalysisNodeCreator : BaseAnalysisNodeC
         ConversionUnion conversionUnion,
         ComplexDisplayValueSource? valueSource)
     {
-        return CreateRootBasic(conversionUnion.AppliedConversion, valueSource);
+        return CreateRootGeneral(conversionUnion.AppliedConversion, valueSource);
     }
 
     public AnalysisTreeListNode CreateRootConversion(
         VisualBasicConversion conversion,
-        ComplexDisplayValueSource valueSource)
+        ComplexDisplayValueSource? valueSource)
     {
         return _visualBasicConversionCreator.CreateNode(conversion, valueSource);
     }

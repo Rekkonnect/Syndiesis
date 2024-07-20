@@ -3,8 +3,8 @@
 public readonly record struct DisplayValueSource(
     DisplayValueSource.SymbolKind Kind, string? Name)
 {
-    public static readonly DisplayValueSource This = new(SymbolKind.This, null);
-    public static readonly DisplayValueSource Indexer = new(SymbolKind.Indexer, null);
+    public static readonly DisplayValueSource This = new(SymbolKind.This, string.Empty);
+    public static readonly DisplayValueSource Indexer = new(SymbolKind.Indexer, string.Empty);
 
     public bool IsDefault
         => Kind is SymbolKind.None

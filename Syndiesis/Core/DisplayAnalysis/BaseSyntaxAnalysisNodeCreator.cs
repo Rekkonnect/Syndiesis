@@ -159,24 +159,20 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
         if (type.IsGenericType)
         {
             var originalDefinition = type.GetGenericTypeDefinition();
-            if (originalDefinition == typeof(SeparatedSyntaxList<>) ||
-                originalDefinition == typeof(SyntaxList<>))
-            {
-                const string genericSuffix = "`1";
-                string name = originalDefinition.Name[..^genericSuffix.Length];
-                var outerRun = Run($"{name}<", Styles.SyntaxListBrush);
-                var closingTag = Run(">", Styles.SyntaxListBrush);
-                var argument = type.GenericTypeArguments[0];
-                var inner = SyntaxTypeDetailsGroupedRun(argument);
+            var originalName = originalDefinition.Name;
+            int lastGenericIndex = originalName.LastIndexOf('`');
+            Debug.Assert(lastGenericIndex > 0);
+            string name = originalName[..^lastGenericIndex];
+            var outerRun = Run($"{name}<", Styles.SyntaxListBrush);
+            var closingTag = Run(">", Styles.SyntaxListBrush);
+            var argument = type.GenericTypeArguments[0];
+            var inner = SyntaxTypeDetailsGroupedRun(argument);
 
-                return new ComplexGroupedRunInline([
-                    outerRun,
-                    new(inner),
-                    closingTag,
-                ]);
-            }
-
-            throw new UnreachableException("We should have handled any incoming generic type");
+            return new ComplexGroupedRunInline([
+                outerRun,
+                new(inner),
+                closingTag,
+            ]);
         }
 
         var typeName = type.Name;
