@@ -5,24 +5,86 @@
              mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="250"
              xmlns:local="using:Syndiesis.Controls.AnalysisVisualization"
              xmlns:controls="using:Syndiesis.Controls"
+             xmlns:ex="using:Syndiesis.Controls.Extensions"
              xmlns:ca="using:Microsoft.CodeAnalysis.CSharp"
              xmlns:syntax="using:Microsoft.CodeAnalysis.CSharp.Syntax"
-             x:Class="Syndiesis.Controls.AnalysisVisualization.NodeDetailsSection">
+             x:Class="Syndiesis.Controls.AnalysisVisualization.NodeDetailsSection"
+             IsHitTestVisible="True"
+             >
 
   <StackPanel
     Orientation="Vertical"
-    Spacing="5">
+    Spacing="5"
+    IsHitTestVisible="True"
+    >
 
-    <TextBlock
-      Name="headerText"
-      Text="Header"
-      Padding="10 10 0 0"
-      />
+    <Grid
+      Name="outerDisplayGrid"
+      Margin="0 5 0 0"
+      IsHitTestVisible="True"
+      PointerPressed="OnOuterDisplayPointerPressed"
+      >
 
-    <StackPanel
-      Name="nodeLineStackPanel"
-      Orientation="Vertical"
-      />
+      <Grid.Styles>
+        <Style
+          Selector="Grid#outerDisplayGrid:pointerover"
+          >
+          <Style.Setters>
+            <Setter Property="Background" Value="#80404040" />
+          </Style.Setters>
+        </Style>
+      </Grid.Styles>
+
+      <Grid
+        Name="headerDisplayGrid"
+        Margin="15 5 15 5"
+        >
+
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+      
+        <local:VisualExpandToggle
+          Name="expandToggle"
+          Width="15"
+          Height="15"
+          Foreground="#AAAAAA"
+          VerticalAlignment="Center"
+          IsExpandingToggle="False"
+          />
+      
+        <TextBlock
+          Grid.Column="1"
+          Name="headerText"
+          Text="Header"
+          FontFamily="{StaticResource AptosFontFamily}"
+          FontSize="16"
+          VerticalAlignment="Center"
+          Margin="10 0 0 0"
+        />
+
+        <Rectangle
+          Grid.Column="2"
+          Margin="10 0 0 0"
+          HorizontalAlignment="Stretch"
+          Height="1"
+          Fill="#888888"
+          />
+      </Grid>
+    </Grid>
+
+    <ex:VerticallyExpandablePanel
+      Name="nodeLinePanelContainer"
+      >
+      <StackPanel
+        Name="nodeLineStackPanel"
+        Orientation="Vertical"
+        Margin="15 0 0 0"
+        />
+
+    </ex:VerticallyExpandablePanel>
 
   </StackPanel>
 

@@ -14,19 +14,20 @@
     Spacing="5"
     >
 
-    <local:NodeDetailsSection
+    <local:CurrentNodeDetailsSection
       Name="currentNodeSection"
-      HeaderText="Current node"
       />
 
-    <local:NodeDetailsSection
+    <local:ParentNodeDetailsSection
       Name="parentSection"
-      HeaderText="Parent node"
       />
 
-    <local:NodeDetailsSection
-      Name="propertiesSection"
-      HeaderText="Properties"
+    <local:ChildrenNodeDetailsSection
+      Name="childrenSection"
+      />
+
+    <local:SemanticModelNodeDetailsSection
+      Name="semanticModelSection"
       />
 
   </StackPanel>

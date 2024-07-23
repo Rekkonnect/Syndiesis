@@ -119,7 +119,7 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
         SyntaxAnnotation annotation, DisplayValueSource valueSource);
 
     public abstract AnalysisTreeListNode CreateChildlessRootNode(
-        SyntaxNode node, DisplayValueSource valueSource = default);
+        SyntaxNode? node, DisplayValueSource valueSource = default);
 
     protected IReadOnlyList<AnalysisTreeListNode> CreateNodeListChildren(SyntaxNodeOrTokenList list)
     {
@@ -160,9 +160,9 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
         {
             var originalDefinition = type.GetGenericTypeDefinition();
             var originalName = originalDefinition.Name;
-            int lastGenericIndex = originalName.LastIndexOf('`');
-            Debug.Assert(lastGenericIndex > 0);
-            string name = originalName[..^lastGenericIndex];
+            int firstGenericMarkerIndex = originalName.LastIndexOf('`');
+            Debug.Assert(firstGenericMarkerIndex > 0);
+            string name = originalName[..firstGenericMarkerIndex];
             var outerRun = Run($"{name}<", Styles.SyntaxListBrush);
             var closingTag = Run(">", Styles.SyntaxListBrush);
             var argument = type.GenericTypeArguments[0];

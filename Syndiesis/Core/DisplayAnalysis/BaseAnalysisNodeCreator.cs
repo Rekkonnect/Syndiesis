@@ -93,7 +93,7 @@ public abstract partial class BaseAnalysisNodeCreator
         object? value, DisplayValueSource valueSource = default)
     {
         if (value is null)
-            return _nullValueCreator.CreateNode(value, valueSource);
+            return CreateRootNull(valueSource);
 
         switch (value)
         {
@@ -128,6 +128,16 @@ public abstract partial class BaseAnalysisNodeCreator
         }
 
         return _generalCreator.CreateNode(value, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootNull(DisplayValueSource valueSource)
+    {
+        return _nullValueCreator.CreateNode(null, valueSource);
+    }
+
+    public AnalysisTreeListNode CreateRootNull(ComplexDisplayValueSource? valueSource)
+    {
+        return _nullValueCreator.CreateNode(null, valueSource);
     }
 
     private AnalysisTreeListNode CreateRootNullableStruct<T>(
@@ -192,7 +202,7 @@ public abstract partial class BaseAnalysisNodeCreator
     }
 
     public AnalysisTreeListNode CreateLoadingNode(
-        Task<AnalysisTreeListNode> nodeTask,
+        Task<AnalysisTreeListNode>? nodeTask,
         DisplayValueSource valueSource = default)
     {
         var node = _loadingCreator.CreateNode(valueSource);
@@ -201,7 +211,7 @@ public abstract partial class BaseAnalysisNodeCreator
     }
 
     public AnalysisTreeListNode CreateLoadingNode(
-        Task<AnalysisTreeListNode> nodeTask,
+        Task<AnalysisTreeListNode>? nodeTask,
         ComplexDisplayValueSource? valueSource = null)
     {
         var node = _loadingCreator.CreateNode(valueSource);

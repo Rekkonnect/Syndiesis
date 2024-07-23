@@ -14,13 +14,10 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
-public partial class AnalysisTreeListView : UserControl
+public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManager
 {
     private const double extraScrollHeight = 50;
     private const double extraScrollWidth = 20;
-
-    private bool _allowedHover;
-    private AnalysisTreeListNode? _hoveredNode;
 
     private AnalysisTreeListNode _rootNode = new();
 
@@ -75,6 +72,8 @@ public partial class AnalysisTreeListView : UserControl
         InitializeEvents();
     }
 
+    #region Scrolls
+
     private bool _isUpdatingScrollLimits = false;
 
     private void UpdateScrollLimits()
@@ -127,6 +126,8 @@ public partial class AnalysisTreeListView : UserControl
         Canvas.SetLeft(topLevelNodeContent, -left);
         InvalidateArrange();
     }
+
+    #endregion
 
     public void ResetToInitialRootView()
     {
@@ -306,6 +307,9 @@ public partial class AnalysisTreeListView : UserControl
     }
 
     #region Node hovers
+    private bool _allowedHover;
+    private AnalysisTreeListNode? _hoveredNode;
+
     public bool RequestHover(AnalysisTreeListNode node)
     {
         if (!_allowedHover)
@@ -351,6 +355,7 @@ public partial class AnalysisTreeListView : UserControl
         node.UpdateHovering(true);
         HoveredNode?.Invoke(node);
     }
+    #endregion
 
     // Initialize to an impossible value to trigger
     private TextSpan _recurringSpanExpansion = new(0, int.MaxValue);
@@ -512,7 +517,6 @@ public partial class AnalysisTreeListView : UserControl
         node.SetExpansionWithoutAnimation(true);
         return node.LazyChildren;
     }
-    #endregion
 
     public void BringToView(AnalysisTreeListNode node)
     {

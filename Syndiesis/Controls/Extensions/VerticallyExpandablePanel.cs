@@ -15,6 +15,8 @@ namespace Syndiesis.Controls.Extensions;
 
 public class VerticallyExpandablePanel : Panel
 {
+    private readonly CancellationTokenFactory _animationCancellationTokenFactory = new();
+
     public ExpansionState ExpansionState { get; private set; } = ExpansionState.Collapsed;
 
     public static readonly StyledProperty<double> ChildrenHeightProperty =
@@ -95,23 +97,25 @@ public class VerticallyExpandablePanel : Panel
         Opacity = expand ? 1.0 : 0.0;
     }
 
-    public async Task Collapse(CancellationToken cancellationToken)
+    public async Task Collapse(CancellationToken cancellationToken = default)
     {
         await SetExpansionState(ExpansionState.Collapsed, cancellationToken);
     }
 
-    public async Task Expand(CancellationToken cancellationToken)
+    public async Task Expand(CancellationToken cancellationToken = default)
     {
         await SetExpansionState(ExpansionState.Expanded, cancellationToken);
     }
 
-    public async Task SetExpansionState(bool expand, CancellationToken cancellationToken)
+    public async Task SetExpansionState(
+        bool expand, CancellationToken cancellationToken = default)
     {
         var state = expand ? ExpansionState.Expanded : ExpansionState.Collapsed;
         await SetExpansionState(state, cancellationToken);
     }
 
-    public async Task SetExpansionState(ExpansionState state, CancellationToken cancellationToken)
+    public async Task SetExpansionState(
+        ExpansionState state, CancellationToken cancellationToken = default)
     {
         if (ExpansionState == state)
             return;
@@ -124,6 +128,12 @@ public class VerticallyExpandablePanel : Panel
         bool expand,
         CancellationToken cancellationToken)
     {
+        if (cancellationToken == default)
+        {
+            _animationCancellationTokenFactory.Cancel();
+            cancellationToken = _animationCancellationTokenFactory.CurrentToken;
+        }
+
         double from = expand ? 0.0 : 1.0;
         double to = expand ? 1.0 : 0.0;
 

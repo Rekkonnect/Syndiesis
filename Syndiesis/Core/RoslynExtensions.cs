@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using System;
 using System.Diagnostics;
 using System.Threading;
 
@@ -70,6 +71,7 @@ public static class RoslynExtensions
     public static SyntaxNode? SyntaxNodeAtPosition(this SyntaxTree tree, int position)
     {
         var root = tree.GetRoot();
+        position = Math.Max(0, Math.Min(position, root.FullSpan.End - 1));
         return root.DeepestNodeContainingPosition(position);
     }
 

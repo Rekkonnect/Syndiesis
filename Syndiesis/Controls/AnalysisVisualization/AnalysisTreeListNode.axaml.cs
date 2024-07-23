@@ -5,14 +5,12 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Garyon.Extensions;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
@@ -22,8 +20,6 @@ using NodeChildren = IReadOnlyList<AnalysisTreeListNode>;
 
 public partial class AnalysisTreeListNode : UserControl
 {
-    private static readonly CancellationTokenFactory _expansionAnimationCancellationTokenFactory = new();
-
     public object? AssociatedSyntaxObjectContent
     {
         get => AssociatedSyntaxObject?.SyntaxObject;
@@ -103,7 +99,7 @@ public partial class AnalysisTreeListNode : UserControl
 
     public bool HasLoadedChildren => _childRetriever?.IsValueCreated ?? true;
 
-    internal AnalysisTreeListView? ListView { get; set; }
+    internal IAnalysisNodeHoverManager? AnalysisNodeHoverManager { get; set; }
 
     public AnalysisTreeListNode? ParentNode
     {
@@ -204,7 +200,7 @@ public partial class AnalysisTreeListNode : UserControl
                 innerStackPanel.Children.AddRange(children);
                 foreach (var child in children)
                 {
-                    child.ListView = ListView;
+                    child.AnalysisNodeHoverManager = AnalysisNodeHoverManager;
                 }
             }
 
@@ -229,13 +225,13 @@ public partial class AnalysisTreeListNode : UserControl
 
     protected override void OnPointerExited(PointerEventArgs e)
     {
-        ListView?.RemoveHover(this);
+        AnalysisNodeHoverManager?.RemoveHover(this);
         base.OnPointerExited(e);
     }
 
     private void EvaluateHovering(PointerEventArgs e)
     {
-        var allowedHover = ListView?.RequestHover(this) ?? true;
+        var allowedHover = AnalysisNodeHoverManager?.RequestHover(this) ?? true;
         if (!allowedHover)
         {
             UpdateHovering(false);
@@ -249,31 +245,31 @@ public partial class AnalysisTreeListNode : UserControl
 
         if (isHovered)
         {
-            ListView?.OverrideHover(this);
+            AnalysisNodeHoverManager?.OverrideHover(this);
             _ = RequestInitializedChildren();
         }
         else
         {
-            ListView?.RemoveHover(this);
+            AnalysisNodeHoverManager?.RemoveHover(this);
         }
     }
 
     private void SetAsHovered()
     {
-        var allowedHover = ListView?.RequestHover(this) ?? true;
+        var allowedHover = AnalysisNodeHoverManager?.RequestHover(this) ?? true;
         if (!allowedHover)
         {
             UpdateHovering(false);
             return;
         }
 
-        ListView?.OverrideHover(this);
+        AnalysisNodeHoverManager?.OverrideHover(this);
         _ = RequestInitializedChildren();
     }
 
     internal void SetListViewRecursively(AnalysisTreeListView listView)
     {
-        ListView = listView;
+        AnalysisNodeHoverManager = listView;
 
         foreach (var child in LazyChildren)
         {
@@ -352,7 +348,7 @@ public partial class AnalysisTreeListNode : UserControl
         var properties = e.GetCurrentPoint(this).Properties;
         if (properties.IsLeftButtonPressed)
         {
-            if (ListView?.IsHovered(this) is not true)
+            if (AnalysisNodeHoverManager?.IsHovered(this) is not true)
                 return;
 
             switch (modifiers)
@@ -454,20 +450,34 @@ public partial class AnalysisTreeListNode : UserControl
 
         nodeLine.IsExpanded = expand;
 
-        // cancel any currently running animation
-        _expansionAnimationCancellationTokenFactory.Cancel();
-
-        var animationToken = _expansionAnimationCancellationTokenFactory.CurrentToken;
         _ = RequestInitializedChildren(expand);
-        _ = expandableCanvas.SetExpansionState(expand, animationToken);
+        _ = expandableCanvas.SetExpansionState(expand, default);
+    }
+
+    public async Task SetLoading(
+        UIBuilder.AnalysisTreeListNode loadingAppearance,
+        Task<UIBuilder.AnalysisTreeListNode>? builderTask)
+    {
+        SetLoadingState(loadingAppearance);
+        await LoadFromTask(builderTask);
+    }
+
+    public void SetLoadingState(UIBuilder.AnalysisTreeListNode loadingAppearance)
+    {
+        innerStackPanel.Children.Clear();
+        _loadedChildren = null;
+        ReloadFromBuilder(loadingAppearance);
     }
 
     /// <remarks>
     /// Always invoke this from the UI thread. The builder task may be a task
     /// executing on any thread.
     /// </remarks>
-    public async Task LoadFromTask(Task<UIBuilder.AnalysisTreeListNode> builderTask)
+    public async Task LoadFromTask(Task<UIBuilder.AnalysisTreeListNode>? builderTask)
     {
+        if (builderTask is null)
+            return;
+
         var builder = await builderTask;
         ReloadFromBuilder(builder);
     }

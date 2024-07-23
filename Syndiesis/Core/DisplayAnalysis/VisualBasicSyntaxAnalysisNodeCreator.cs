@@ -140,8 +140,10 @@ public sealed partial class VisualBasicSyntaxAnalysisNodeCreator : BaseSyntaxAna
     }
 
     public override AnalysisTreeListNode CreateChildlessRootNode(
-        SyntaxNode node, DisplayValueSource valueSource = default)
+        SyntaxNode? node, DisplayValueSource valueSource = default)
     {
+        if (node is null)
+            return CreateRootNull(valueSource);
         return _syntaxNodeCreator.CreateChildlessNode(node, valueSource);
     }
 }

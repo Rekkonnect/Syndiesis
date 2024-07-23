@@ -8,6 +8,7 @@ namespace Syndiesis.Controls.AnalysisVisualization;
 public partial class CoverableAnalysisView : UserControl
 {
     public AnalysisTreeListView ListView = new();
+    public NodeDetailsView NodeDetailsView = new();
 
     public CoverableAnalysisView()
     {
@@ -21,6 +22,16 @@ public partial class CoverableAnalysisView : UserControl
         coverable.ShowCover(spinner, "Initializing application", TimeSpan.Zero);
 
         coverable.ContainedContent = ListView;
+    }
+
+    public void SetContent(AnalysisViewKind viewKind)
+    {
+        coverable.ContainedContent = viewKind switch
+        {
+            AnalysisViewKind.Tree => ListView,
+            AnalysisViewKind.Details => NodeDetailsView,
+            _ => throw new ArgumentOutOfRangeException(nameof(viewKind)),
+        };
     }
 
     public void RegisterAnalysisPipelineHandler(

@@ -61,7 +61,7 @@ public partial class MainView : UserControl
         codeEditor.Document = ViewModel.Document;
         codeEditor.SetSource(initializingSource);
         codeEditor.CaretPosition = new(4, 48);
-        codeEditor.AssociatedTreeView = analysisTreeView.ListView;
+        codeEditor.AssociatedTreeView = coverableView.ListView;
 
         codeEditor.CompilationSource = ViewModel.HybridCompilationSource;
 
@@ -159,17 +159,17 @@ public partial class MainView : UserControl
         codeEditor.TextChanged += HandleCodeChanged;
         codeEditor.CaretMoved += HandleCaretPositionChanged;
         codeEditor.SelectionChanged += HandleSelectionChanged;
-        analysisTreeView.ListView.HoveredNode += HandleHoveredNode;
-        analysisTreeView.ListView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
-        analysisTreeView.ListView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
-        analysisTreeView.ListView.NewRootLoaded += HandleNewRootNodeLoaded;
+        coverableView.ListView.HoveredNode += HandleHoveredNode;
+        coverableView.ListView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
+        coverableView.ListView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
+        coverableView.ListView.NewRootLoaded += HandleNewRootNodeLoaded;
 
         languageVersionDropDown.LanguageVersionChanged += SetLanguageVersion;
 
         AnalysisPipelineHandler.AnalysisCompleted += OnAnalysisCompleted;
 
         codeEditor.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
-        analysisTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
+        coverableView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
 
         InitializeButtonEvents();
     }
@@ -184,8 +184,8 @@ public partial class MainView : UserControl
             switch (result)
             {
                 case NodeRootAnalysisResult result:
-                    analysisTreeView.ListView.RootNode = result.NodeRoot.Build()!;
-                    analysisTreeView.ListView.TargetAnalysisNodeKind = result.TargetAnalysisNodeKind;
+                    coverableView.ListView.RootNode = result.NodeRoot.Build()!;
+                    coverableView.ListView.TargetAnalysisNodeKind = result.TargetAnalysisNodeKind;
                     break;
             }
         }
@@ -236,6 +236,7 @@ public partial class MainView : UserControl
     {
         var currentSource = ViewModel.HybridCompilationSource.CurrentSource;
         var currentIndex = codeEditor.textEditor.CaretOffset;
+        // TODO: Handle selection to navigate to the 
         var node = currentSource.Tree!.SyntaxNodeAtPosition(currentIndex);
         if (node is null)
             return;
@@ -248,7 +249,7 @@ public partial class MainView : UserControl
         if (detailsData is null)
             return;
 
-        nodeDetailsViewView.Load(detailsData);
+        coverableView.NodeDetailsView.Load(detailsData);
     }
 
     private void LoadTreeView(AnalysisNodeKind analysisKind)
@@ -265,8 +266,7 @@ public partial class MainView : UserControl
 
     private void SetViewVisibility(AnalysisViewKind viewKind)
     {
-        analysisTreeView.IsVisible = viewKind is AnalysisViewKind.Tree;
-        nodeDetailsViewView.IsVisible = viewKind is AnalysisViewKind.Details;
+        coverableView.SetContent(viewKind);
     }
 
     private async Task ForceAnalysisResetTreeView()
@@ -283,7 +283,7 @@ public partial class MainView : UserControl
 
     private void CollapseAllClick(object? sender, RoutedEventArgs e)
     {
-        analysisTreeView.ListView.ResetToInitialRootView();
+        coverableView.ListView.ResetToInitialRootView();
     }
 
     private void HandleSettingsClick(object? sender, RoutedEventArgs e)
@@ -345,8 +345,27 @@ public partial class MainView : UserControl
 
     private void ShowCurrentCursorPosition(TextSpan span)
     {
+        var analysisView = analysisViewTabs.AnalysisViewKind;
+        switch (analysisView)
+        {
+            case AnalysisViewKind.Tree:
+                ShowCurrentCursorPositionForTree(span);
+                break;
+            case AnalysisViewKind.Details:
+                ShowCurrentCursorPositionForDetails(span);
+                break;
+        }
+    }
+
+    private void ShowCurrentCursorPositionForTree(TextSpan span)
+    {
         Dispatcher.UIThread.InvokeAsync(()
-            => analysisTreeView.ListView.EnsureHighlightedPositionRecurring(span));
+            => coverableView.ListView.EnsureHighlightedPositionRecurring(span));
+    }
+
+    private void ShowCurrentCursorPositionForDetails(TextSpan span)
+    {
+        SetCurrentDetailsView();
     }
 
     private void HandleHoveredNode(AnalysisTreeListNode? obj)
