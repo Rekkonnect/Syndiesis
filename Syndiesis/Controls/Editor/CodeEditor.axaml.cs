@@ -298,7 +298,7 @@ public partial class CodeEditor : UserControl
     }
 
     private static readonly PropertyInfo _scrollViewerProperty
-        = typeof(TextEditor)
+        = typeof(SyndiesisTextEditor)
             .GetProperty(
                 "ScrollViewer",
                 BindingFlags.NonPublic | BindingFlags.Instance)!
