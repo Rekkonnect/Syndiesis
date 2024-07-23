@@ -1,4 +1,5 @@
-﻿using Avalonia.Controls.Documents;
+﻿using Avalonia;
+using Avalonia.Controls.Documents;
 using Avalonia.Media;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
@@ -57,14 +58,18 @@ public static class UIBuilder
 
         public override SAnalysisTreeListNodeLine Build()
         {
-            return new()
-            {
-                GroupedRunInlines = Inlines.Build(),
-                NodeTypeDisplay = NodeTypeDisplay,
-                AnalysisNodeKind = AnalysisNodeKind,
-                DisplaySpanSource = DisplaySpanSource,
-                IsLoading = IsLoading,
-            };
+            var result = new SAnalysisTreeListNodeLine();
+            BuildOnto(result);
+            return result;
+        }
+
+        public void BuildOnto(SAnalysisTreeListNodeLine line)
+        {
+            line.GroupedRunInlines = Inlines.Build();
+            line.NodeTypeDisplay = NodeTypeDisplay;
+            line.AnalysisNodeKind = AnalysisNodeKind;
+            line.DisplaySpanSource = DisplaySpanSource;
+            line.IsLoading = IsLoading;
         }
     }
 

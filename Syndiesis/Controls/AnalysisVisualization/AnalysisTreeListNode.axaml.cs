@@ -46,7 +46,7 @@ public partial class AnalysisTreeListNode : UserControl
         {
             _nodeLine = value;
             topNodeContent.Content = value;
-            value.HasChildren = _childRetriever is not null;
+            HasChildren = _childRetriever is not null;
             value.PointerEntered += OnPointerEnteredLine;
         }
     }
@@ -57,11 +57,25 @@ public partial class AnalysisTreeListNode : UserControl
         set
         {
             SetChildNodes(value);
-            NodeLine.HasChildren = value.Count > 0;
+            HasChildren = value.Count > 0;
         }
     }
 
-    public bool HasChildren => NodeLine.HasChildren;
+    public bool HasChildren
+    {
+        get
+        {
+            return NodeLine.HasChildren;
+        }
+        set
+        {
+            NodeLine.HasChildren = value;
+            if (!value)
+            {
+                SetExpansionWithoutAnimation(false);
+            }
+        }
+    }
 
     private AdvancedLazy<NodeBuilderChildren>? _childRetriever;
     private Task? _childRetrievalTask;
@@ -83,9 +97,13 @@ public partial class AnalysisTreeListNode : UserControl
                 // if only delegates could be converted more seamlessly
                 _childRetriever = new(new Func<NodeBuilderChildren>(value));
                 SetLoadingNode();
+                if (NodeLine.IsExpanded)
+                {
+                    _ = RequestInitializedChildren();
+                }
             }
 
-            NodeLine.HasChildren = value is not null;
+            HasChildren = value is not null;
         }
     }
 
@@ -487,7 +505,16 @@ public partial class AnalysisTreeListNode : UserControl
     /// </remarks>
     public void ReloadFromBuilder(UIBuilder.AnalysisTreeListNode builder)
     {
-        NodeLine = builder.NodeLine.Build();
+        // for initialization purposes; avoid this hack in the future
+        if (NodeLine.Bounds.Height is 0)
+        {
+            NodeLine = builder.NodeLine.Build();
+        }
+        else
+        {
+            NodeLine.ReloadFromBuilder(builder.NodeLine);
+        }
+
         ChildRetriever = builder.ChildRetriever;
         AssociatedSyntaxObject = builder.AssociatedSyntaxObject;
     }

@@ -273,7 +273,7 @@ partial class SemanticModelAnalysisNodeCreator
             if (!value)
                 return;
 
-            var node = Creator.CreateRootBasic(value, Property(nameof(name)));
+            var node = Creator.CreateRootBasic(value, Property(name));
             list.Add(node);
         }
     }

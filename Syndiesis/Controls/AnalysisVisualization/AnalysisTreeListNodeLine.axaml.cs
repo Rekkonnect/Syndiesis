@@ -146,9 +146,11 @@ public partial class AnalysisTreeListNodeLine : UserControl
 
             _isLoading = value;
 
-            optionalLoadingNodeContainer.Content = value
-                ? new LoadingSpinner()
-                : null;
+            if (value)
+            {
+                optionalLoadingNodeContainer.Content ??= new LoadingSpinner();
+            }
+            optionalLoadingNodeContainer.IsVisible = value;
 
             nodeTypeIconText.IsVisible = !value;
         }
@@ -217,5 +219,10 @@ public partial class AnalysisTreeListNodeLine : UserControl
         animation.Duration = TimeSpan.FromMilliseconds(750);
         animation.Easing = Singleton<CubicEaseOut>.Instance;
         _ = animation.RunAsync(this, _pulseLineCancellationTokenFactory.CurrentToken);
+    }
+
+    public void ReloadFromBuilder(UIBuilder.AnalysisTreeListNodeLine builder)
+    {
+        builder.BuildOnto(this);
     }
 }
