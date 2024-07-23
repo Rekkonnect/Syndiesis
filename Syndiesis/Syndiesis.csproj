@@ -59,25 +59,4 @@
     <ProjectReference Include="..\Syndiesis.InternalGenerators\Syndiesis.InternalGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Controls\AnalysisVisualization\CoverableAnalysisView.axaml.cs">
-      <DependentUpon>CoverableAnalysisView.axaml</DependentUpon>
-    </Compile>
-    <Compile Update="Controls\LanguageVersionDropDownEnvelope.axaml.cs">
-      <DependentUpon>LanguageVersionDropDownEnvelope.axaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <UpToDateCheckInput Remove="Styles\CheckBoxStyles.axaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UpToDateCheckInput Remove="Controls\Editor\QuickInfoDiagnosticItem.axaml" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <UpToDateCheckInput Remove="Controls\AnalysisVisualization\NodeDetailsView.axaml" />
-  </ItemGroup>
-
 </Project>
