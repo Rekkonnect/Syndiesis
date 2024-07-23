@@ -35,6 +35,8 @@
         <ResourceInclude Source="avares://Syndiesis/Styles/ButtonStyles.axaml"/>
         <ResourceInclude Source="avares://Syndiesis/Styles/CheckBoxStyles.axaml"/>
         <ResourceInclude Source="avares://Syndiesis/Styles/SliderStyles.axaml"/>
+        <ResourceInclude Source="avares://Syndiesis/Controls/Editor/SyndiesisTextEditor.axaml"/>
+        <ResourceInclude Source="avares://Syndiesis/Controls/Editor/SyndiesisTextArea.axaml"/>
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Window.Resources>

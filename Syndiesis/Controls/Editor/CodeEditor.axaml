@@ -25,15 +25,14 @@
         <RowDefinition Height="20"/>
       </Grid.RowDefinitions>
 
-      <aedit:TextEditor
+      <controls:SyndiesisTextEditor
         Name="textEditor"
         Text="Hello AvaloniaEdit from Syndiesis!"
         ShowLineNumbers="True"
         HorizontalScrollBarVisibility="Hidden"
         VerticalScrollBarVisibility="Hidden"
         FontFamily="{StaticResource FiraCodeFontFamily}"
-      >
-      </aedit:TextEditor>
+      />
 
       <Panel
         Background="#003034"
