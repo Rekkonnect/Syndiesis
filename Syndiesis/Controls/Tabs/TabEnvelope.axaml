@@ -91,7 +91,7 @@
       VerticalAlignment="Center"
       HorizontalAlignment="Stretch"
       TextAlignment="Center"
-      FontFamily="{StaticResource AptosDisplayFontFamily}"
+      FontFamily="{StaticResource AptosFontFamily}"
       FontSize="16"
       Padding="10 2 10 0"
       />
