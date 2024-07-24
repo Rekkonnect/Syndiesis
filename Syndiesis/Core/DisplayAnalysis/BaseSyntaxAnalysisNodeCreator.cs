@@ -33,98 +33,121 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
         : base(parentContainer)
     { }
 
-    public override AnalysisTreeListNode? CreateRootViewNode(
-        object? value, DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
+        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
         switch (value)
         {
             case SyntaxTree tree:
-                return CreateRootTree(tree, valueSource);
+                return CreateRootTree(tree, valueSource, includeChildren);
 
             case SyntaxNodeOrToken nodeOrToken:
-                return CreateRootNodeOrToken(nodeOrToken, valueSource);
+                return CreateRootNodeOrToken(nodeOrToken, valueSource, includeChildren);
 
             case SyntaxNode node:
-                return CreateRootNode(node, valueSource);
+                return CreateRootNode(node, valueSource, includeChildren);
 
             case SyntaxToken token:
-                return CreateRootToken(token, valueSource);
+                return CreateRootToken(token, valueSource, includeChildren);
 
             case ReadOnlySyntaxNodeList nodeList:
-                return CreateRootNodeList(nodeList, valueSource);
+                return CreateRootNodeList(nodeList, valueSource, includeChildren);
 
             case SyntaxTokenList tokenList:
-                return CreateRootTokenList(tokenList, valueSource);
+                return CreateRootTokenList(tokenList, valueSource, includeChildren);
 
             case ChildSyntaxList childList:
-                return CreateRootChildSyntaxList(childList, valueSource);
+                return CreateRootChildSyntaxList(childList, valueSource, includeChildren);
 
             case SyntaxTrivia trivia:
-                return CreateRootTrivia(trivia, valueSource);
+                return CreateRootTrivia(trivia, valueSource, includeChildren);
 
             case SyntaxTriviaList triviaList:
-                return CreateRootTriviaList(triviaList, valueSource);
+                return CreateRootTriviaList(triviaList, valueSource, includeChildren);
 
             case SyntaxReference reference:
-                return CreateRootSyntaxReference(reference, valueSource);
+                return CreateRootSyntaxReference(reference, valueSource, includeChildren);
 
             case TextSpan span:
-                return CreateRootTextSpan(span, valueSource);
+                return CreateRootTextSpan(span, valueSource, includeChildren);
 
             case SyntaxAnnotation annotation:
-                return CreateRootSyntaxAnnotation(annotation, valueSource);
+                return CreateRootSyntaxAnnotation(annotation, valueSource, includeChildren);
         }
 
         return null;
     }
 
-    public abstract AnalysisTreeListNode CreateRootTree(
-        SyntaxTree tree, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootTree<TDisplayValueSource>(
+        SyntaxTree tree, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootNodeOrToken(
-        SyntaxNodeOrToken nodeOrToken, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootNodeOrToken<TDisplayValueSource>(
+        SyntaxNodeOrToken nodeOrToken, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootNode(
-        SyntaxNode node, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootNode<TDisplayValueSource>(
+        SyntaxNode node, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootToken(
-        SyntaxToken token, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootToken<TDisplayValueSource>(
+        SyntaxToken token, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootNodeList(
-        ReadOnlySyntaxNodeList node, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootNodeList<TDisplayValueSource>(
+        ReadOnlySyntaxNodeList node, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootTokenList(
-        SyntaxTokenList list, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootTokenList<TDisplayValueSource>(
+        SyntaxTokenList list, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootChildSyntaxList(
-        ChildSyntaxList list, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootChildSyntaxList<TDisplayValueSource>(
+        ChildSyntaxList list, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootTrivia(
-        SyntaxTrivia trivia, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootTrivia<TDisplayValueSource>(
+        SyntaxTrivia trivia, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootTriviaList(
-        SyntaxTriviaList triviaList, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootTriviaList<TDisplayValueSource>(
+        SyntaxTriviaList triviaList, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootSyntaxReference(
-        SyntaxReference reference, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootSyntaxReference<TDisplayValueSource>(
+        SyntaxReference reference, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootTextSpan(
-        TextSpan span, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootTextSpan<TDisplayValueSource>(
+        TextSpan span, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootSyntaxAnnotationList(
-        IReadOnlyList<SyntaxAnnotation> annotations,
-        ComplexDisplayValueSource valueSource);
+    public abstract AnalysisTreeListNode CreateRootSyntaxAnnotation<TDisplayValueSource>(
+        SyntaxAnnotation annotation, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
-    public abstract AnalysisTreeListNode CreateRootSyntaxAnnotation(
-        SyntaxAnnotation annotation, DisplayValueSource valueSource);
-
-    public abstract AnalysisTreeListNode CreateChildlessRootNode(
-        SyntaxNode? node, DisplayValueSource valueSource = default);
+    public abstract AnalysisTreeListNode CreateRootSyntaxAnnotationList<TDisplayValueSource>(
+        IReadOnlyList<SyntaxAnnotation> annotations, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+        ;
 
     protected IReadOnlyList<AnalysisTreeListNode> CreateNodeListChildren(SyntaxNodeOrTokenList list)
     {
         return list
-            .Select(s => CreateRootNodeOrToken(s))
+            .Select(s => CreateRootNodeOrToken<IDisplayValueSource>(s, default, true))
             .ToList()
             ;
     }
@@ -142,16 +165,11 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
         inlines.Add(typeNameRun);
     }
 
-    public GroupedRunInlineCollection CreateSyntaxTypeInlines(
-        object value, DisplayValueSource valueSource)
+    public void AppendSyntaxDetails(
+        object value, GroupedRunInlineCollection inlines)
     {
-        var inlines = new GroupedRunInlineCollection();
         var type = value.GetType();
-
-        AppendValueSource(valueSource, inlines);
         AppendSyntaxTypeDetails(type, inlines);
-
-        return inlines;
     }
 
     protected GroupedRunInline SyntaxTypeDetailsGroupedRun(Type type)
@@ -228,9 +246,9 @@ partial class BaseSyntaxAnalysisNodeCreator
         : GeneralSyntaxRootViewNodeCreator<SyntaxTree, BaseSyntaxAnalysisNodeCreator>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            SyntaxTree tree, DisplayValueSource valueSource)
+            SyntaxTree tree, GroupedRunInlineCollection inlines)
         {
-            var inlines = Creator.CreateSyntaxTypeInlines(tree, valueSource);
+            Creator.AppendSyntaxDetails(tree, inlines);
 
             var language = tree.GetLanguage();
 
@@ -247,7 +265,8 @@ partial class BaseSyntaxAnalysisNodeCreator
         private IReadOnlyList<AnalysisTreeListNode> GetChildren(SyntaxTree tree)
         {
             var root = tree.GetRoot();
-            return [
+            return
+            [
                 Creator.CreateRootNode(root, MethodSource(nameof(SyntaxTree.GetRoot))),
                 Creator.CreateRootGeneral(tree.Options, Property(nameof(SyntaxTree.Options))),
             ];

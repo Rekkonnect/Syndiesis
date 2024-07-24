@@ -77,8 +77,8 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
     {
         var syntaxCreator = _container.SyntaxCreator;
         var currentNode = syntaxCreator.CreateRootNode(_node, _currentNodeValueSource);
-        var parentNode = syntaxCreator.CreateChildlessRootNode(
-            _node.Parent, _parentValueSource);
+        var parentNode = syntaxCreator.CreateRootGeneral(
+            _node.Parent, _parentValueSource, false);
 
         if (cancellationToken.IsCancellationRequested)
             return null;
