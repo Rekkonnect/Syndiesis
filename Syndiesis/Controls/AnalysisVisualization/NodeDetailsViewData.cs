@@ -27,6 +27,7 @@ public sealed record NodeDetailsViewData(
 
     public sealed record SemanticModelSection(
         UIBuilder.AnalysisTreeListNode SymbolInfo,
+        UIBuilder.AnalysisTreeListNode DeclaredSymbolInfo,
         UIBuilder.AnalysisTreeListNode TypeInfo,
         UIBuilder.AnalysisTreeListNode AliasInfo,
         UIBuilder.AnalysisTreeListNode PreprocessingSymbolInfo,

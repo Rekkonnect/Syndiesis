@@ -31,6 +31,9 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
     private static readonly ComplexDisplayValueSource _getSymbolInfoValueSource
         = ConstructSemanticModelValueSource(nameof(ModelExtensions.GetSymbolInfo));
 
+    private static readonly ComplexDisplayValueSource _getDeclaredSymbolInfoValueSource
+        = ConstructSemanticModelValueSource(nameof(ModelExtensions.GetDeclaredSymbol));
+
     private static readonly ComplexDisplayValueSource _getTypeInfoValueSource
         = ConstructSemanticModelValueSource(nameof(ModelExtensions.GetTypeInfo));
 
@@ -99,6 +102,9 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
         var symbolInfo = syntaxCreator.CreateLoadingNode(
             CreateSymbolInfoRootNode(cancellationToken),
             _getSymbolInfoValueSource);
+        var declaredSymbolInfo = syntaxCreator.CreateLoadingNode(
+            CreateDeclaredSymbolInfoRootNode(cancellationToken),
+            _getDeclaredSymbolInfoValueSource);
         var typeInfo = syntaxCreator.CreateLoadingNode(
             CreateTypeInfoRootNode(cancellationToken),
             _getTypeInfoValueSource);
@@ -130,6 +136,7 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
 
             new(
                 symbolInfo,
+                declaredSymbolInfo,
                 typeInfo,
                 aliasInfo,
                 preprocessingSymbolInfo,
@@ -160,6 +167,8 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
 
         var symbolInfo = syntaxCreator
             .CreateLoadingNode(null, _getSymbolInfoValueSource);
+        var declaredSymbolInfo = syntaxCreator
+            .CreateLoadingNode(null, _getDeclaredSymbolInfoValueSource);
         var typeInfo = syntaxCreator
             .CreateLoadingNode(null, _getTypeInfoValueSource);
         var aliasInfo = syntaxCreator
@@ -183,6 +192,7 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
 
             new(
                 symbolInfo,
+                declaredSymbolInfo,
                 typeInfo,
                 aliasInfo,
                 preprocessingSymbolInfo,
@@ -226,6 +236,16 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
             _container.SemanticCreator.CreateRootSymbolInfo(
                 _semanticModel.GetSymbolInfo(_node, cancellationToken),
                 _getSymbolInfoValueSource);
+    }
+
+    private async Task<UIBuilder.AnalysisTreeListNode> CreateDeclaredSymbolInfoRootNode(
+        CancellationToken cancellationToken)
+    {
+        await BreatheAsync();
+        return
+            _container.SymbolCreator.CreateRootGeneral(
+                _semanticModel.GetDeclaredSymbol(_node, cancellationToken),
+                _getDeclaredSymbolInfoValueSource)!;
     }
 
     private async Task<UIBuilder.AnalysisTreeListNode> CreateTypeInfoRootNode(
