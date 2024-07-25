@@ -236,7 +236,7 @@ public partial class MainView : UserControl
     {
         var currentSource = ViewModel.HybridCompilationSource.CurrentSource;
         var currentIndex = codeEditor.textEditor.CaretOffset;
-        // TODO: Handle selection to navigate to the 
+        // TODO: Handle selection to display the entire node covering the selection
         var node = currentSource.Tree!.SyntaxNodeAtPosition(currentIndex);
         if (node is null)
             return;

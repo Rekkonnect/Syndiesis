@@ -42,26 +42,26 @@ public sealed partial class AttributesAnalysisNodeCreator
         _symbolContainerCreator = new(this);
     }
 
-    public override AnalysisTreeListNode? CreateRootViewNode(
-        object? value,
-        DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
+        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
         switch (value)
         {
             case AttributeTree AttributeTree:
-                return CreateRootAttributeTree(AttributeTree, valueSource);
+                return CreateRootAttributeTree(AttributeTree, valueSource, includeChildren);
 
             case AttributeTree.AttributeDataView view:
-                return CreateRootAttributeView(view, valueSource);
+                return CreateRootAttributeView(view, valueSource, includeChildren);
 
             case AttributeData attribute:
-                return CreateRootAttribute(attribute, valueSource);
+                return CreateRootAttribute(attribute, valueSource, includeChildren);
 
             case IReadOnlyList<AttributeData> attributeList:
-                return CreateRootAttributeList(attributeList, valueSource);
+                return CreateRootAttributeList(attributeList, valueSource, includeChildren);
 
             case TypedConstant typedConstant:
-                return CreateRootTypedConstant(typedConstant, valueSource);
+                return CreateRootTypedConstant(typedConstant, valueSource, includeChildren);
 
             case SyntaxNode syntaxNode:
                 return CreateRootSyntaxNode(syntaxNode, valueSource);
@@ -72,53 +72,66 @@ public sealed partial class AttributesAnalysisNodeCreator
             ;
     }
 
-    public AnalysisTreeListNode CreateRootAttributeTree(
-        AttributeTree AttributeTree,
-        DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootAttributeTree<TDisplayValueSource>(
+        AttributeTree attributeTree,
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _attributeTreeCreator.CreateNode(AttributeTree, valueSource);
+        return _attributeTreeCreator.CreateNode(attributeTree, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootAttributeView(
+    public AnalysisTreeListNode CreateRootAttributeView<TDisplayValueSource>(
         AttributeTree.AttributeDataView view,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _attributeDataViewCreator.CreateNode(view, valueSource);
+        return _attributeDataViewCreator.CreateNode(view, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootAttribute(
+    public AnalysisTreeListNode CreateRootAttribute<TDisplayValueSource>(
         AttributeData attribute,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _attributeDataCreator.CreateNode(attribute, valueSource);
+        return _attributeDataCreator.CreateNode(attribute, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootAttributeList(
+    public AnalysisTreeListNode CreateRootAttributeList<TDisplayValueSource>(
         IReadOnlyList<AttributeData> attributeList,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _attributeDataListCreator.CreateNode(attributeList, valueSource);
+        return _attributeDataListCreator.CreateNode(attributeList, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootTypedConstant(
+    public AnalysisTreeListNode CreateRootTypedConstant<TDisplayValueSource>(
         TypedConstant typedConstant,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _typedConstantCreator.CreateNode(typedConstant, valueSource);
+        return _typedConstantCreator.CreateNode(typedConstant, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootAttributeTreeSymbolContainer(
+    public AnalysisTreeListNode CreateRootAttributeTreeSymbolContainer<TDisplayValueSource>(
         AttributeTree.SymbolContainer container,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _symbolContainerCreator.CreateNode(container, valueSource);
+        return _symbolContainerCreator.CreateNode(container, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootSyntaxNode(
+    public AnalysisTreeListNode CreateRootSyntaxNode<TDisplayValueSource>(
         SyntaxNode node,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return ParentContainer.SyntaxCreator.CreateChildlessRootNode(node, valueSource);
+        return ParentContainer.SyntaxCreator.CreateRootNode(node, valueSource, false);
     }
 }
 
@@ -137,9 +150,8 @@ partial class AttributesAnalysisNodeCreator
         : AttributeRootViewNodeCreator<AttributeTree>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            AttributeTree attributeTree, DisplayValueSource valueSource)
+            AttributeTree attributeTree, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
             var type = attributeTree.GetType();
             var inline = FullyQualifiedTypeDisplayGroupedRun(type);
             inlines.Add(inline);
@@ -166,7 +178,7 @@ partial class AttributesAnalysisNodeCreator
             var containers = AttributeTree.Containers;
 
             return containers
-                .Select(container => Creator.CreateRootAttributeTreeSymbolContainer(
+                .Select(container => Creator.CreateRootAttributeTreeSymbolContainer<IDisplayValueSource>(
                     container, default))
                 .ToList()
                 ;
@@ -183,11 +195,11 @@ partial class AttributesAnalysisNodeCreator
         }
 
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            AttributeTree.SymbolContainer container, DisplayValueSource valueSource)
+            AttributeTree.SymbolContainer container, GroupedRunInlineCollection inlines)
         {
             return Creator.ParentContainer.SymbolCreator
                 .CreateRootSymbolNodeLine(
-                    container.Symbol, valueSource)!;
+                    container.Symbol, inlines)!;
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(
@@ -205,7 +217,7 @@ partial class AttributesAnalysisNodeCreator
             var attributes = container.Attributes;
 
             return attributes
-                .Select(attribute => Creator.CreateRootGeneral(attribute, default))
+                .Select(attribute => Creator.CreateRootGeneral<IDisplayValueSource>(attribute, default))
                 .ToList()
                 ;
         }
@@ -221,9 +233,8 @@ partial class AttributesAnalysisNodeCreator
         }
 
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            AttributeTree.AttributeDataView view, DisplayValueSource valueSource)
+            AttributeTree.AttributeDataView view, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
             var type = view.GetType();
             var inline = FullyQualifiedTypeDisplayGroupedRun(type);
             inlines.Add(inline);
@@ -244,13 +255,13 @@ partial class AttributesAnalysisNodeCreator
         {
             var list = new List<AnalysisTreeListNode>();
 
-            var attributeDataChild = Creator.CreateRootGeneral(view.Data, default);
+            var attributeDataChild = Creator.CreateRootGeneral<IDisplayValueSource>(view.Data, default);
             list.Add(attributeDataChild);
 
             if (view.AttributeOperation is not null)
             {
                 var attributeOperationChild = Creator.ParentContainer.OperationCreator
-                    .CreateRootOperation(
+                    .CreateRootOperation<IDisplayValueSource>(
                         view.AttributeOperation, default);
                 list.Add(attributeOperationChild);
             }
@@ -263,10 +274,8 @@ partial class AttributesAnalysisNodeCreator
         : AttributeRootViewNodeCreator<AttributeData>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            AttributeData attribute, DisplayValueSource valueSource)
+            AttributeData attribute, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
-            AppendValueSource(valueSource, inlines);
             var inline = TypeDisplayGroupedRun(typeof(AttributeData));
             inlines.Add(inline);
             inlines.Add(NewValueKindSplitterRun());
@@ -312,9 +321,10 @@ partial class AttributesAnalysisNodeCreator
         {
             return
             [
-                Creator.ParentContainer.SymbolCreator.CreateRootChildlessSymbol(
+                Creator.ParentContainer.SymbolCreator.CreateRootSymbol(
                     attribute.AttributeClass!,
-                    Property(nameof(AttributeData.AttributeClass)))!,
+                    Property(nameof(AttributeData.AttributeClass)),
+                    false)!,
 
                 Creator.CreateRootGeneral(
                     attribute.ConstructorArguments,
@@ -335,10 +345,8 @@ partial class AttributesAnalysisNodeCreator
         : AttributeRootViewNodeCreator<IReadOnlyList<AttributeData>>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            IReadOnlyList<AttributeData> attributes, DisplayValueSource valueSource)
+            IReadOnlyList<AttributeData> attributes, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
-            AppendValueSource(valueSource, inlines);
             var type = attributes.GetType();
             var inline = NestedTypeDisplayGroupedRun(type);
             inlines.Add(inline);
@@ -365,7 +373,7 @@ partial class AttributesAnalysisNodeCreator
             IReadOnlyList<AttributeData> attributes)
         {
             return attributes
-                .Select(symbol => Creator.CreateRootAttribute(symbol, default))
+                .Select(symbol => Creator.CreateRootAttribute<IDisplayValueSource>(symbol, default))
                 .ToList()
                 ;
         }
@@ -375,10 +383,8 @@ partial class AttributesAnalysisNodeCreator
         : AttributeRootViewNodeCreator<TypedConstant>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            TypedConstant constant, DisplayValueSource valueSource)
+            TypedConstant constant, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
-            AppendValueSource(valueSource, inlines);
             var inline = NestedTypeDisplayGroupedRun(typeof(TypedConstant));
             inlines.Add(inline);
             inlines.Add(NewValueKindSplitterRun());
@@ -419,16 +425,17 @@ partial class AttributesAnalysisNodeCreator
             ];
         }
 
-        private AnalysisTreeListNode CreateRootTypeOrNull(
-            ITypeSymbol? type, DisplayValueSource valueSource)
+        private AnalysisTreeListNode CreateRootTypeOrNull<TDisplayValueSource>(
+            ITypeSymbol? type, TDisplayValueSource? valueSource)
+            where TDisplayValueSource : IDisplayValueSource
         {
             if (type is null)
             {
                 return Creator.CreateRootBasic(null, valueSource);
             }
 
-            return Creator.ParentContainer.SymbolCreator.CreateRootChildlessSymbol(
-                type, valueSource)!;
+            return Creator.ParentContainer.SymbolCreator.CreateRootSymbol(
+                type, valueSource, false)!;
         }
 
         private static SingleRunInline CreateKindInline(TypedConstant constant)

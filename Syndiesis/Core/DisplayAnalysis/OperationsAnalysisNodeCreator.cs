@@ -44,121 +44,74 @@ public sealed partial class OperationsAnalysisNodeCreator
         _symbolContainerCreator = new(this);
     }
 
-    public override AnalysisTreeListNode? CreateRootViewNode(
-        object? value,
-        DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
+        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
         switch (value)
         {
             case IOperation operation:
-                return CreateRootOperation(operation, valueSource);
+                return CreateRootOperation(operation, valueSource, includeChildren);
 
             case OperationList operationList:
-                return CreateRootOperationList(operationList, valueSource);
+                return CreateRootOperationList(operationList, valueSource, includeChildren);
 
             case OperationTree operationTree:
-                return CreateRootOperationTree(operationTree, valueSource);
+                return CreateRootOperationTree(operationTree, valueSource, includeChildren);
 
             case SyntaxNode syntaxNode:
                 return CreateRootSyntaxNode(syntaxNode, valueSource);
         }
 
         // fallback
-        return ParentContainer.SyntaxCreator.CreateRootViewNode(value, valueSource)
-            ?? ParentContainer.SymbolCreator.CreateRootViewNode(value, valueSource)
-            ?? ParentContainer.SemanticCreator.CreateRootViewNode(value, valueSource)
+        return ParentContainer.SyntaxCreator.CreateRootViewNode(value, valueSource, includeChildren)
+            ?? ParentContainer.SymbolCreator.CreateRootViewNode(value, valueSource, includeChildren)
+            ?? ParentContainer.SemanticCreator.CreateRootViewNode(value, valueSource, includeChildren)
             ;
     }
 
-    public override AnalysisTreeListNode? CreateRootViewNode(
-        object? value,
-        ComplexDisplayValueSource? valueSource = null)
-    {
-        switch (value)
-        {
-            case IOperation operation:
-                return CreateRootOperation(operation, valueSource);
-
-            case OperationList operationList:
-                return CreateRootOperationList(operationList, valueSource);
-
-            case OperationTree operationTree:
-                return CreateRootOperationTree(operationTree, valueSource);
-
-            // Hack to avoid infecting more code with the refactoring
-            // TODO: Account for this
-            case SyntaxNode syntaxNode:
-                return CreateRootSyntaxNode(syntaxNode, valueSource?.Value ?? default);
-        }
-
-        // fallback
-        return ParentContainer.SyntaxCreator.CreateRootViewNode(value, valueSource)
-            ?? ParentContainer.SymbolCreator.CreateRootViewNode(value, valueSource)
-            ?? ParentContainer.SemanticCreator.CreateRootViewNode(value, valueSource)
-            ;
-    }
-
-    public AnalysisTreeListNode CreateRootOperation(
+    public AnalysisTreeListNode CreateRootOperation<TDisplayValueSource>(
         IOperation operation,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _operationCreator.CreateNode(operation, valueSource);
+        return _operationCreator.CreateNode(operation, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootOperationList(
+    public AnalysisTreeListNode CreateRootOperationList<TDisplayValueSource>(
         OperationList operations,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _operationListCreator.CreateNode(operations, valueSource);
+        return _operationListCreator.CreateNode(operations, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootOperationTree(
+    public AnalysisTreeListNode CreateRootOperationTree<TDisplayValueSource>(
         OperationTree operationTree,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _operationTreeCreator.CreateNode(operationTree, valueSource);
+        return _operationTreeCreator.CreateNode(operationTree, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootOperationTreeSymbolContainer(
+    public AnalysisTreeListNode CreateRootOperationTreeSymbolContainer<TDisplayValueSource>(
         OperationTree.SymbolContainer container,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _symbolContainerCreator.CreateNode(container, valueSource);
+        return _symbolContainerCreator.CreateNode(container, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootSyntaxNode(
+    public AnalysisTreeListNode CreateRootSyntaxNode<TDisplayValueSource>(
         SyntaxNode node,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return ParentContainer.SyntaxCreator.CreateChildlessRootNode(node, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootOperation(
-        IOperation operation,
-        ComplexDisplayValueSource? valueSource)
-    {
-        return _operationCreator.CreateNode(operation, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootOperationList(
-        OperationList operations,
-        ComplexDisplayValueSource? valueSource)
-    {
-        return _operationListCreator.CreateNode(operations, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootOperationTree(
-        OperationTree operationTree,
-        ComplexDisplayValueSource? valueSource)
-    {
-        return _operationTreeCreator.CreateNode(operationTree, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootOperationTreeSymbolContainer(
-        OperationTree.SymbolContainer container,
-        ComplexDisplayValueSource? valueSource)
-    {
-        return _symbolContainerCreator.CreateNode(container, valueSource);
+        return ParentContainer.SyntaxCreator.CreateRootNode(node, valueSource, false);
     }
 }
 
@@ -177,22 +130,6 @@ partial class OperationsAnalysisNodeCreator
         : OperationRootViewNodeCreator<IOperation>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            IOperation operation, DisplayValueSource valueSource)
-        {
-            var inlines = new GroupedRunInlineCollection();
-            AppendValueSource(valueSource, inlines);
-            return CreateNodeLine(operation, inlines);
-        }
-
-        public override AnalysisTreeListNodeLine CreateNodeLine(
-            IOperation operation, ComplexDisplayValueSource? valueSource)
-        {
-            var inlines = new GroupedRunInlineCollection();
-            AppendComplexValueSource(valueSource, inlines);
-            return CreateNodeLine(operation, inlines);
-        }
-
-        private AnalysisTreeListNodeLine CreateNodeLine(
             IOperation operation, GroupedRunInlineCollection inlines)
         {
             var type = operation.GetType();
@@ -254,10 +191,8 @@ partial class OperationsAnalysisNodeCreator
         : OperationRootViewNodeCreator<OperationList>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            OperationList operations, DisplayValueSource valueSource)
+            OperationList operations, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
-            AppendValueSource(valueSource, inlines);
             var type = operations.GetType();
             var inline = NestedTypeDisplayGroupedRun(type);
             inlines.Add(inline);
@@ -284,7 +219,7 @@ partial class OperationsAnalysisNodeCreator
             OperationList operations)
         {
             return operations
-                .Select(operation => Creator.CreateRootOperation(operation, default))
+                .Select(operation => Creator.CreateRootOperation<IDisplayValueSource>(operation, default))
                 .ToList()
                 ;
         }
@@ -294,9 +229,8 @@ partial class OperationsAnalysisNodeCreator
         : OperationRootViewNodeCreator<OperationTree>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            OperationTree operationTree, DisplayValueSource valueSource)
+            OperationTree operationTree, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
             var type = operationTree.GetType();
             var inline = FullyQualifiedTypeDisplayGroupedRun(type);
             inlines.Add(inline);
@@ -323,7 +257,7 @@ partial class OperationsAnalysisNodeCreator
             var containers = operationTree.Containers;
 
             return containers
-                .Select(container => Creator.CreateRootOperationTreeSymbolContainer(
+                .Select(container => Creator.CreateRootOperationTreeSymbolContainer<IDisplayValueSource>(
                     container, default))
                 .ToList()
                 ;
@@ -340,11 +274,11 @@ partial class OperationsAnalysisNodeCreator
         }
 
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            OperationTree.SymbolContainer container, DisplayValueSource valueSource)
+            OperationTree.SymbolContainer container, GroupedRunInlineCollection inlines)
         {
             return Creator.ParentContainer.SymbolCreator
                 .CreateRootSymbolNodeLine(
-                    container.Symbol, valueSource)!;
+                    container.Symbol, inlines)!;
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(
@@ -360,7 +294,7 @@ partial class OperationsAnalysisNodeCreator
             var operations = container.Operations;
 
             return operations
-                .Select(operation => Creator.CreateRootOperation(operation, default))
+                .Select(operation => Creator.CreateRootOperation<IDisplayValueSource>(operation, default))
                 .ToList()
                 ;
         }

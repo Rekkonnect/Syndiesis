@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using Syndiesis.Core.DisplayAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
@@ -23,7 +24,7 @@ public class OperationAnalysisExecution(HybridSingleTreeCompilationSource compil
         if (token.IsCancellationRequested)
             return Cancelled();
 
-        var rootNode = creator.CreateRootOperationTree(operationTree!, default);
+        var rootNode = creator.CreateRootOperationTree(operationTree!, null as IDisplayValueSource);
         var result = new OperationAnalysisResult(rootNode);
         return Task.FromResult<AnalysisResult>(result);
     }

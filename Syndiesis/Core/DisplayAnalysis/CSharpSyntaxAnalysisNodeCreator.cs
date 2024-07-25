@@ -60,91 +60,97 @@ public sealed partial class CSharpSyntaxAnalysisNodeCreator : BaseSyntaxAnalysis
         _syntaxAnnotationListCreator = new(this);
     }
 
-    public override AnalysisTreeListNode CreateRootTree(
-        SyntaxTree tree, DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode CreateRootTree<TDisplayValueSource>(
+        SyntaxTree tree, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _treeCreator.CreateNode(tree, valueSource);
+        return _treeCreator.CreateNode(tree, valueSource, includeChildren);
     }
 
-    public override AnalysisTreeListNode CreateRootNodeOrToken(
-        SyntaxNodeOrToken nodeOrToken, DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode CreateRootNodeOrToken<TDisplayValueSource>(
+        SyntaxNodeOrToken nodeOrToken, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _nodeOrTokenCreator.CreateNode(nodeOrToken, valueSource);
+        return _nodeOrTokenCreator.CreateNode(nodeOrToken, valueSource, includeChildren);
     }
 
-    public override AnalysisTreeListNode CreateRootNode(
-        SyntaxNode node, DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode CreateRootNode<TDisplayValueSource>(
+        SyntaxNode node, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _syntaxNodeCreator.CreateNode(node, valueSource);
+        return _syntaxNodeCreator.CreateNode(node, valueSource, includeChildren);
     }
 
-    public override AnalysisTreeListNode CreateRootToken(
-        SyntaxToken token, DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode CreateRootToken<TDisplayValueSource>(
+        SyntaxToken token, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _syntaxTokenCreator.CreateNode(token, valueSource);
+        return _syntaxTokenCreator.CreateNode(token, valueSource, includeChildren);
     }
 
-    public override AnalysisTreeListNode CreateRootNodeList(
-        ReadOnlySyntaxNodeList node, DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode CreateRootNodeList<TDisplayValueSource>(
+        ReadOnlySyntaxNodeList node, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _syntaxNodeListCreator.CreateNode(node, valueSource);
+        return _syntaxNodeListCreator.CreateNode(node, valueSource, includeChildren);
     }
 
-    public override AnalysisTreeListNode CreateRootTokenList(
-        SyntaxTokenList list, DisplayValueSource valueSource)
+    public override AnalysisTreeListNode CreateRootTokenList<TDisplayValueSource>(
+        SyntaxTokenList list, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _syntaxTokenListCreator.CreateNode(list, valueSource);
+        return _syntaxTokenListCreator.CreateNode(list, valueSource, includeChildren);
     }
 
-    public override AnalysisTreeListNode CreateRootChildSyntaxList(
-        ChildSyntaxList list, DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode CreateRootChildSyntaxList<TDisplayValueSource>(
+        ChildSyntaxList list, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _childSyntaxListCreator.CreateNode(list, valueSource);
+        return _childSyntaxListCreator.CreateNode(list, valueSource, includeChildren);
     }
 
-    public override AnalysisTreeListNode CreateRootTrivia(
-        SyntaxTrivia trivia, DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode CreateRootTrivia<TDisplayValueSource>(
+        SyntaxTrivia trivia, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _syntaxTriviaCreator.CreateNode(trivia, valueSource);
+        return _syntaxTriviaCreator.CreateNode(trivia, valueSource, includeChildren);
     }
 
-    public override AnalysisTreeListNode CreateRootTriviaList(
-        SyntaxTriviaList triviaList, DisplayValueSource valueSource)
+    public override AnalysisTreeListNode CreateRootTriviaList<TDisplayValueSource>(
+        SyntaxTriviaList triviaList, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _syntaxTriviaListCreator.CreateNode(triviaList, valueSource);
+        return _syntaxTriviaListCreator.CreateNode(triviaList, valueSource, includeChildren);
     }
 
-    public override AnalysisTreeListNode CreateRootSyntaxReference(
-        SyntaxReference reference, DisplayValueSource valueSource)
+    public override AnalysisTreeListNode CreateRootSyntaxReference<TDisplayValueSource>(
+        SyntaxReference reference, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _syntaxReferenceCreator.CreateNode(reference, valueSource);
+        return _syntaxReferenceCreator.CreateNode(reference, valueSource, includeChildren);
     }
 
-    public override AnalysisTreeListNode CreateRootTextSpan(
-        TextSpan span, DisplayValueSource valueSource)
+    public override AnalysisTreeListNode CreateRootTextSpan<TDisplayValueSource>(
+        TextSpan span, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _textSpanCreator.CreateNode(span, valueSource);
+        return _textSpanCreator.CreateNode(span, valueSource, includeChildren);
     }
 
-    public override AnalysisTreeListNode CreateRootSyntaxAnnotationList(
+    public override AnalysisTreeListNode CreateRootSyntaxAnnotation<TDisplayValueSource>(
+        SyntaxAnnotation annotation, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
+    {
+        return _syntaxAnnotationCreator.CreateNode(annotation, valueSource, includeChildren);
+    }
+
+    public override AnalysisTreeListNode CreateRootSyntaxAnnotationList<TDisplayValueSource>(
         IReadOnlyList<SyntaxAnnotation> annotations,
-        ComplexDisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : default
     {
-        return _syntaxAnnotationListCreator.CreateNode(annotations, valueSource);
-    }
-
-    public override AnalysisTreeListNode CreateRootSyntaxAnnotation(
-        SyntaxAnnotation annotation, DisplayValueSource valueSource)
-    {
-        return _syntaxAnnotationCreator.CreateNode(annotation, valueSource);
-    }
-
-    public override AnalysisTreeListNode CreateChildlessRootNode(
-        SyntaxNode? node, DisplayValueSource valueSource = default)
-    {
-        if (node is null)
-            return CreateRootNull(valueSource);
-        return _syntaxNodeCreator.CreateChildlessNode(node, valueSource);
+        return _syntaxAnnotationListCreator.CreateNode(annotations, valueSource, includeChildren);
     }
 }
 
@@ -159,14 +165,14 @@ partial class CSharpSyntaxAnalysisNodeCreator
         : SyntaxRootViewNodeCreator<SyntaxNodeOrToken>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            SyntaxNodeOrToken value, DisplayValueSource valueSource)
+            SyntaxNodeOrToken value, GroupedRunInlineCollection inlines)
         {
             if (value.IsNode)
             {
-                return Creator._syntaxNodeCreator.CreateNodeLine(value.AsNode()!, valueSource);
+                return Creator._syntaxNodeCreator.CreateNodeLine(value.AsNode()!, inlines);
             }
 
-            return Creator._syntaxTokenCreator.CreateNodeLine(value.AsToken(), valueSource);
+            return Creator._syntaxTokenCreator.CreateNodeLine(value.AsToken(), inlines);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(SyntaxNodeOrToken value)
@@ -185,19 +191,8 @@ partial class CSharpSyntaxAnalysisNodeCreator
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
             IReadOnlyList<SyntaxAnnotation> annotations,
-            DisplayValueSource valueSource)
+            GroupedRunInlineCollection inlines)
         {
-            throw new NotSupportedException(
-                $"Do not invoke this method; instead use the overload with {nameof(ComplexDisplayValueSource)}");
-        }
-
-        public override AnalysisTreeListNodeLine CreateNodeLine(
-            IReadOnlyList<SyntaxAnnotation> annotations,
-            ComplexDisplayValueSource? valueSource)
-        {
-            var inlines = new GroupedRunInlineCollection();
-
-            AppendComplexValueSource(valueSource, inlines);
             var typeDisplay = TypeDisplayGroupedRun(annotations.GetType());
             inlines.Add(typeDisplay);
             inlines.Add(NewValueKindSplitterRun());
@@ -223,7 +218,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
             IReadOnlyList<SyntaxAnnotation> annotations)
         {
             return annotations
-                .Select(s => Creator.CreateRootSyntaxAnnotation(s, default))
+                .Select(s => Creator.CreateRootSyntaxAnnotation<IDisplayValueSource>(s, null, true))
                 .ToList()
                 ;
         }
@@ -233,10 +228,8 @@ partial class CSharpSyntaxAnalysisNodeCreator
         : SyntaxRootViewNodeCreator<SyntaxAnnotation>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            SyntaxAnnotation annotation, DisplayValueSource valueSource)
+            SyntaxAnnotation annotation, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
-
             var run = TypeDisplayGroupedRun(typeof(SyntaxAnnotation));
             inlines.Add(run);
 
@@ -283,9 +276,9 @@ partial class CSharpSyntaxAnalysisNodeCreator
         : SyntaxRootViewNodeCreator<SyntaxNode>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            SyntaxNode node, DisplayValueSource valueSource)
+            SyntaxNode node, GroupedRunInlineCollection inlines)
         {
-            var inlines = Creator.CreateSyntaxTypeInlines(node, valueSource);
+            Creator.AppendSyntaxDetails(node, inlines);
 
             return AnalysisTreeListNodeLine(
                 inlines,
@@ -393,12 +386,9 @@ partial class CSharpSyntaxAnalysisNodeCreator
         : SyntaxRootViewNodeCreator<SyntaxToken>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            SyntaxToken token, DisplayValueSource valueSource)
+            SyntaxToken token, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
-
-            AppendValueSource(valueSource, inlines);
-            AppendTokenKindDetails(token, valueSource.Name, inlines);
+            AppendTokenKindDetails(token, inlines);
 
             return AnalysisTreeListNodeLine(
                 inlines,
@@ -419,12 +409,14 @@ partial class CSharpSyntaxAnalysisNodeCreator
             return () => CreateTokenChildren(token);
         }
 
+        // Here we removed the property name of the display value source of the line
+        // This would probably be nice to bring back as a design touch
         private void AppendTokenKindDetails(
-            SyntaxToken token, string? propertyName, GroupedRunInlineCollection inlines)
+            SyntaxToken token, GroupedRunInlineCollection inlines)
         {
             var kind = token.Kind();
             var kindName = kind.ToString();
-            bool hasEqualName = propertyName == kindName;
+            bool hasEqualName = false;
             bool isKeyword = SyntaxFacts.IsKeywordKind(kind);
             var displayTextRun = CreateDisplayTextRun(token, kind, isKeyword);
 
@@ -531,7 +523,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         private AnalysisTreeListNodeLine CreateDisplayNodeLine(SyntaxToken token)
         {
             var fullText = token.Text;
-            var line = Creator.LineForNodeValue(
+            var line = Creator.LineForNodeValue<IDisplayValueSource>(
                 fullText,
                 default,
                 Styles.DisplayValueDisplay);
@@ -637,7 +629,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         : SyntaxRootViewNodeCreator<ReadOnlySyntaxNodeList>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            ReadOnlySyntaxNodeList list, DisplayValueSource valueSource)
+            ReadOnlySyntaxNodeList list, GroupedRunInlineCollection inlines)
         {
             var listType = list.GetType();
             if (listType.IsGenericType)
@@ -651,7 +643,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
 
                 if (isSyntaxList)
                 {
-                    return CreateBasicSyntaxListLine(list, valueSource);
+                    return CreateBasicSyntaxListLine(list, inlines);
                 }
             }
 
@@ -667,9 +659,9 @@ partial class CSharpSyntaxAnalysisNodeCreator
         }
 
         private AnalysisTreeListNodeLine CreateBasicSyntaxListLine(
-            ReadOnlySyntaxNodeList list, DisplayValueSource valueSource)
+            ReadOnlySyntaxNodeList list, GroupedRunInlineCollection inlines)
         {
-            var inlines = Creator.CreateSyntaxTypeInlines(list, valueSource);
+            Creator.AppendSyntaxDetails(list, inlines);
             AppendCountValueDisplay(
                 inlines,
                 list.Count,
@@ -696,7 +688,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
             }
 
             return list
-                .Select(s => Creator.CreateRootNode(s))
+                .Select(s => Creator.CreateRootNode<IDisplayValueSource>(s, null, true))
                 .ToList()
                 ;
         }
@@ -706,9 +698,9 @@ partial class CSharpSyntaxAnalysisNodeCreator
         : SyntaxRootViewNodeCreator<SyntaxTokenList>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            SyntaxTokenList list, DisplayValueSource valueSource)
+            SyntaxTokenList list, GroupedRunInlineCollection inlines)
         {
-            var inlines = Creator.CreateSyntaxTypeInlines(list, valueSource);
+            Creator.AppendSyntaxDetails(list, inlines);
             AppendCountValueDisplay(
                 inlines,
                 list.Count,
@@ -730,7 +722,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         private IReadOnlyList<AnalysisTreeListNode> CreateTokenListChildren(SyntaxTokenList list)
         {
             return list
-                .Select(s => Creator.CreateRootToken(s))
+                .Select(s => Creator.CreateRootToken<IDisplayValueSource>(s, null, true))
                 .ToList()
                 ;
         }
@@ -740,9 +732,9 @@ partial class CSharpSyntaxAnalysisNodeCreator
         : SyntaxRootViewNodeCreator<ChildSyntaxList>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            ChildSyntaxList list, DisplayValueSource valueSource)
+            ChildSyntaxList list, GroupedRunInlineCollection inlines)
         {
-            var inlines = Creator.CreateSyntaxTypeInlines(list, valueSource);
+            Creator.AppendSyntaxDetails(list, inlines);
             AppendCountValueDisplay(
                 inlines,
                 list.Count,
@@ -764,7 +756,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         private IReadOnlyList<AnalysisTreeListNode> CreateTokenListChildren(ChildSyntaxList list)
         {
             return list
-                .Select(s => Creator.CreateRootNodeOrToken(s))
+                .Select(s => Creator.CreateRootNodeOrToken<IDisplayValueSource>(s, null, true))
                 .ToList()
                 ;
         }
@@ -774,13 +766,9 @@ partial class CSharpSyntaxAnalysisNodeCreator
         : SyntaxRootViewNodeCreator<SyntaxTrivia>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            SyntaxTrivia trivia, DisplayValueSource valueSource)
+            SyntaxTrivia trivia, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
-
-            AppendValueSource(valueSource, inlines);
             var display = FormatTriviaDisplay(trivia, inlines);
-
             return AnalysisTreeListNodeLine(inlines, display);
         }
 
@@ -1047,9 +1035,9 @@ partial class CSharpSyntaxAnalysisNodeCreator
         : SyntaxRootViewNodeCreator<SyntaxTriviaList>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            SyntaxTriviaList list, DisplayValueSource valueSource)
+            SyntaxTriviaList list, GroupedRunInlineCollection inlines)
         {
-            var inlines = Creator.CreateSyntaxTypeInlines(list, valueSource);
+            Creator.AppendSyntaxDetails(list, inlines);
 
             return AnalysisTreeListNodeLine(
                 inlines,
@@ -1067,7 +1055,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
         private IReadOnlyList<AnalysisTreeListNode> CreateTriviaListChildren(SyntaxTriviaList list)
         {
             var children = list
-                .Select(s => Creator.CreateRootTrivia(s))
+                .Select(s => Creator.CreateRootTrivia<IDisplayValueSource>(s, null, true))
                 .ToList()
                 ;
 
@@ -1091,10 +1079,8 @@ partial class CSharpSyntaxAnalysisNodeCreator
         : SyntaxRootViewNodeCreator<SyntaxReference>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            SyntaxReference reference, DisplayValueSource valueSource)
+            SyntaxReference reference, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
-            AppendValueSource(valueSource, inlines);
             var inline = NestedTypeDisplayGroupedRun(typeof(SyntaxReference));
             inlines.Add(inline);
 
@@ -1128,10 +1114,8 @@ partial class CSharpSyntaxAnalysisNodeCreator
         : SyntaxRootViewNodeCreator<TextSpan>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            TextSpan span, DisplayValueSource valueSource)
+            TextSpan span, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
-            AppendValueSource(valueSource, inlines);
             var inline = NestedTypeDisplayGroupedRun(typeof(TextSpan));
             inlines.Add(inline);
             inlines.Add(NewValueKindSplitterRun());

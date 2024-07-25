@@ -19,7 +19,7 @@ public class SyntaxNodeAnalysisExecution(HybridSingleTreeCompilationSource compi
 
         if (CreationOptions.ShowSyntaxTreeRootNode)
         {
-            root = creator.CreateRootTree(syntaxTree);
+            root = creator.CreateRootTree(syntaxTree, null as IDisplayValueSource);
             if (token.IsCancellationRequested)
                 return Cancelled();
         }
@@ -29,7 +29,7 @@ public class SyntaxNodeAnalysisExecution(HybridSingleTreeCompilationSource compi
             if (token.IsCancellationRequested)
                 return Cancelled();
 
-            root = creator.CreateRootNode(treeRoot);
+            root = creator.CreateRootNode(treeRoot, null as IDisplayValueSource);
             if (token.IsCancellationRequested)
                 return Cancelled();
         }

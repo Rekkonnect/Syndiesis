@@ -46,36 +46,39 @@ public sealed partial class SemanticModelAnalysisNodeCreator : BaseAnalysisNodeC
         _visualBasicConversionCreator = new(this);
     }
 
-    public override AnalysisTreeListNode? CreateRootViewNode(
-        object? value,
-        DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
+        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
         switch (value)
         {
             case SemanticModel semanticModel:
-                return CreateRootSemanticModel(semanticModel, valueSource);
+                return CreateRootSemanticModel(semanticModel, valueSource, includeChildren);
 
             case TypeInfo typeInfo:
-                return CreateRootTypeInfo(typeInfo, valueSource);
+                return CreateRootTypeInfo(typeInfo, valueSource, includeChildren);
 
             case SymbolInfo symbolInfo:
-                return CreateRootSymbolInfo(symbolInfo, valueSource);
+                return CreateRootSymbolInfo(symbolInfo, valueSource, includeChildren);
 
             case NullabilityInfo nullabilityInfo:
-                return CreateRootNullabilityInfo(nullabilityInfo, valueSource);
+                return CreateRootNullabilityInfo(nullabilityInfo, valueSource, includeChildren);
 
             case PreprocessingSymbolInfo preprocessingSymbolInfo:
-                return CreateRootPreprocessingSymbolInfo(preprocessingSymbolInfo, valueSource);
+                return CreateRootPreprocessingSymbolInfo(
+                    preprocessingSymbolInfo,
+                    valueSource,
+                    includeChildren);
 
             case CSharpConversion conversion:
-                return CreateRootConversion(conversion, valueSource);
+                return CreateRootConversion(conversion, valueSource, includeChildren);
 
             case VisualBasicConversion conversion:
-                return CreateRootConversion(conversion, valueSource);
+                return CreateRootConversion(conversion, valueSource, includeChildren);
 
             // internal API to wrap around the lack of abstraction for conversions
             case ConversionUnion conversion:
-                return CreateRootViewNode(conversion.AppliedConversion, valueSource);
+                return CreateRootConversion(conversion, valueSource, includeChildren);
 
             default:
                 break;
@@ -85,155 +88,76 @@ public sealed partial class SemanticModelAnalysisNodeCreator : BaseAnalysisNodeC
         return ParentContainer.SyntaxCreator.CreateRootViewNode(value, valueSource);
     }
 
-    public override AnalysisTreeListNode? CreateRootViewNode(
-        object? value,
-        ComplexDisplayValueSource? valueSource = null)
-    {
-        switch (value)
-        {
-            case SemanticModel semanticModel:
-                return CreateRootSemanticModel(semanticModel, valueSource);
-
-            case TypeInfo typeInfo:
-                return CreateRootTypeInfo(typeInfo, valueSource);
-
-            case SymbolInfo symbolInfo:
-                return CreateRootSymbolInfo(symbolInfo, valueSource);
-
-            case NullabilityInfo nullabilityInfo:
-                return CreateRootNullabilityInfo(nullabilityInfo, valueSource);
-
-            case PreprocessingSymbolInfo preprocessingSymbolInfo:
-                return CreateRootPreprocessingSymbolInfo(preprocessingSymbolInfo, valueSource);
-
-            case CSharpConversion conversion:
-                return CreateRootConversion(conversion, valueSource);
-
-            case VisualBasicConversion conversion:
-                return CreateRootConversion(conversion, valueSource);
-
-            // internal API to wrap around the lack of abstraction for conversions
-            case ConversionUnion conversion:
-                return CreateRootViewNode(conversion.AppliedConversion, valueSource);
-
-            default:
-                break;
-        }
-
-        // fallback
-        return ParentContainer.SyntaxCreator.CreateRootViewNode(value, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootSemanticModel(
+    public AnalysisTreeListNode CreateRootSemanticModel<TDisplayValueSource>(
         SemanticModel semanticModel,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
         return _semanticModelCreator.CreateNode(semanticModel, valueSource);
     }
 
-    public AnalysisTreeListNode CreateRootTypeInfo(
+    public AnalysisTreeListNode CreateRootTypeInfo<TDisplayValueSource>(
         TypeInfo typeInfo,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
         return _typeInfoCreator.CreateNode(typeInfo, valueSource);
     }
 
-    public AnalysisTreeListNode CreateRootSymbolInfo(
+    public AnalysisTreeListNode CreateRootSymbolInfo<TDisplayValueSource>(
         SymbolInfo symbolInfo,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
         return _symbolInfoCreator.CreateNode(symbolInfo, valueSource);
     }
 
-    public AnalysisTreeListNode CreateRootNullabilityInfo(
+    public AnalysisTreeListNode CreateRootNullabilityInfo<TDisplayValueSource>(
         NullabilityInfo nullabilityInfo,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
         return _nullabilityInfoCreator.CreateNode(nullabilityInfo, valueSource);
     }
 
-    public AnalysisTreeListNode CreateRootPreprocessingSymbolInfo(
+    public AnalysisTreeListNode CreateRootPreprocessingSymbolInfo<TDisplayValueSource>(
         PreprocessingSymbolInfo preprocessingSymbolInfo,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
         return _preprocessingSymbolInfoCreator.CreateNode(preprocessingSymbolInfo, valueSource);
     }
 
-    public AnalysisTreeListNode CreateRootConversion(
+    public AnalysisTreeListNode CreateRootConversion<TDisplayValueSource>(
         CSharpConversion conversion,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
         return _cSharpConversionCreator.CreateNode(conversion, valueSource);
     }
 
-    public AnalysisTreeListNode CreateRootConversion(
-        ConversionUnion conversionUnion,
-        DisplayValueSource valueSource)
-    {
-        return CreateRootGeneral(conversionUnion.AppliedConversion, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootConversion(
+    public AnalysisTreeListNode CreateRootConversion<TDisplayValueSource>(
         VisualBasicConversion conversion,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
         return _visualBasicConversionCreator.CreateNode(conversion, valueSource);
     }
 
-    public AnalysisTreeListNode CreateRootSemanticModel(
-        SemanticModel semanticModel,
-        ComplexDisplayValueSource? valueSource)
-    {
-        return _semanticModelCreator.CreateNode(semanticModel, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootTypeInfo(
-        TypeInfo typeInfo,
-        ComplexDisplayValueSource? valueSource)
-    {
-        return _typeInfoCreator.CreateNode(typeInfo, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootSymbolInfo(
-        SymbolInfo symbolInfo,
-        ComplexDisplayValueSource? valueSource)
-    {
-        return _symbolInfoCreator.CreateNode(symbolInfo, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootNullabilityInfo(
-        NullabilityInfo nullabilityInfo,
-        ComplexDisplayValueSource? valueSource)
-    {
-        return _nullabilityInfoCreator.CreateNode(nullabilityInfo, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootPreprocessingSymbolInfo(
-        PreprocessingSymbolInfo preprocessingSymbolInfo,
-        ComplexDisplayValueSource? valueSource)
-    {
-        return _preprocessingSymbolInfoCreator.CreateNode(preprocessingSymbolInfo, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootConversion(
-        CSharpConversion conversion,
-        ComplexDisplayValueSource? valueSource)
-    {
-        return _cSharpConversionCreator.CreateNode(conversion, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootConversion(
+    public AnalysisTreeListNode CreateRootConversion<TDisplayValueSource>(
         ConversionUnion conversionUnion,
-        ComplexDisplayValueSource? valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
         return CreateRootGeneral(conversionUnion.AppliedConversion, valueSource);
-    }
-
-    public AnalysisTreeListNode CreateRootConversion(
-        VisualBasicConversion conversion,
-        ComplexDisplayValueSource? valueSource)
-    {
-        return _visualBasicConversionCreator.CreateNode(conversion, valueSource);
     }
 }
 
@@ -242,26 +166,6 @@ partial class SemanticModelAnalysisNodeCreator
     public abstract class SemanticModelRootViewNodeCreator<TValue>(SemanticModelAnalysisNodeCreator creator)
         : RootViewNodeCreator<TValue, SemanticModelAnalysisNodeCreator>(creator)
     {
-        public sealed override AnalysisTreeListNodeLine CreateNodeLine(
-            TValue value, DisplayValueSource valueSource)
-        {
-            var inlines = new GroupedRunInlineCollection();
-            AppendValueSource(valueSource, inlines);
-            return CreateNodeLine(value, inlines);
-        }
-
-        public sealed override AnalysisTreeListNodeLine CreateNodeLine(
-            TValue value, ComplexDisplayValueSource? valueSource)
-        {
-            var inlines = new GroupedRunInlineCollection();
-            AppendComplexValueSource(valueSource, inlines);
-            return CreateNodeLine(value, inlines);
-        }
-
-        // TODO: This pattern must be used in the refactor
-        protected abstract AnalysisTreeListNodeLine CreateNodeLine(
-            TValue value, GroupedRunInlineCollection inlines);
-
         public override AnalysisNodeKind GetNodeKind(TValue value)
         {
             return AnalysisNodeKind.None;
@@ -281,7 +185,7 @@ partial class SemanticModelAnalysisNodeCreator
     public sealed class SemanticModelRootViewNodeCreator(SemanticModelAnalysisNodeCreator creator)
         : SemanticModelRootViewNodeCreator<SemanticModel>(creator)
     {
-        protected override AnalysisTreeListNodeLine CreateNodeLine(
+        public override AnalysisTreeListNodeLine CreateNodeLine(
             SemanticModel model, GroupedRunInlineCollection inlines)
         {
             var type = model.GetType();
@@ -315,7 +219,7 @@ partial class SemanticModelAnalysisNodeCreator
     public sealed class TypeInfoRootViewNodeCreator(SemanticModelAnalysisNodeCreator creator)
         : SemanticModelRootViewNodeCreator<TypeInfo>(creator)
     {
-        protected override AnalysisTreeListNodeLine CreateNodeLine(
+        public override AnalysisTreeListNodeLine CreateNodeLine(
             TypeInfo type, GroupedRunInlineCollection inlines)
         {
             var inline = NestedTypeDisplayGroupedRun(typeof(TypeInfo));
@@ -357,7 +261,7 @@ partial class SemanticModelAnalysisNodeCreator
     public sealed class SymbolInfoRootViewNodeCreator(SemanticModelAnalysisNodeCreator creator)
         : SemanticModelRootViewNodeCreator<SymbolInfo>(creator)
     {
-        protected override AnalysisTreeListNodeLine CreateNodeLine(
+        public override AnalysisTreeListNodeLine CreateNodeLine(
             SymbolInfo symbol, GroupedRunInlineCollection inlines)
         {
             var inline = NestedTypeDisplayGroupedRun(typeof(SymbolInfo));
@@ -395,7 +299,7 @@ partial class SemanticModelAnalysisNodeCreator
     public sealed class NullabilityInfoRootViewNodeCreator(SemanticModelAnalysisNodeCreator creator)
         : SemanticModelRootViewNodeCreator<NullabilityInfo>(creator)
     {
-        protected override AnalysisTreeListNodeLine CreateNodeLine(
+        public override AnalysisTreeListNodeLine CreateNodeLine(
             NullabilityInfo nullability, GroupedRunInlineCollection inlines)
         {
             var inline = NestedTypeDisplayGroupedRun(typeof(NullabilityInfo));
@@ -429,7 +333,7 @@ partial class SemanticModelAnalysisNodeCreator
     public sealed class PreprocessingSymbolInfoRootViewNodeCreator(SemanticModelAnalysisNodeCreator creator)
         : SemanticModelRootViewNodeCreator<PreprocessingSymbolInfo>(creator)
     {
-        protected override AnalysisTreeListNodeLine CreateNodeLine(
+        public override AnalysisTreeListNodeLine CreateNodeLine(
             PreprocessingSymbolInfo preprocessing, GroupedRunInlineCollection inlines)
         {
             var inline = NestedTypeDisplayGroupedRun(typeof(PreprocessingSymbolInfo));
@@ -463,7 +367,7 @@ partial class SemanticModelAnalysisNodeCreator
     public sealed class CSharpConversionRootViewNodeCreator(SemanticModelAnalysisNodeCreator creator)
         : SemanticModelRootViewNodeCreator<CSharpConversion>(creator)
     {
-        protected override AnalysisTreeListNodeLine CreateNodeLine(
+        public override AnalysisTreeListNodeLine CreateNodeLine(
             CSharpConversion conversion, GroupedRunInlineCollection inlines)
         {
             var inline = NestedTypeDisplayGroupedRun(typeof(CSharpConversion));
@@ -534,7 +438,7 @@ partial class SemanticModelAnalysisNodeCreator
     public sealed class VisualBasicConversionRootViewNodeCreator(SemanticModelAnalysisNodeCreator creator)
         : SemanticModelRootViewNodeCreator<VisualBasicConversion>(creator)
     {
-        protected override AnalysisTreeListNodeLine CreateNodeLine(
+        public override AnalysisTreeListNodeLine CreateNodeLine(
             VisualBasicConversion conversion, GroupedRunInlineCollection inlines)
         {
             var inline = NestedTypeDisplayGroupedRun(typeof(VisualBasicConversion));

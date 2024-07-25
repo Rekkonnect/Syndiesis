@@ -5,6 +5,7 @@ namespace Syndiesis.Core.DisplayAnalysis;
 
 public sealed record class ComplexDisplayValueSource(
     DisplayValueSource Value, ComplexDisplayValueSource? Child)
+    : IDisplayValueSource
 {
     public DisplayValueSource.SymbolKind Modifiers { get; set; }
 
