@@ -37,6 +37,7 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly ILocalSymbolRootViewNodeCreator _localSymbolCreator;
     private readonly IPreprocessingSymbolRootViewNodeCreator _preprocessingSymbolCreator;
     private readonly IRangeVariableSymbolRootViewNodeCreator _rangeVariableSymbolCreator;
+    private readonly IAliasSymbolRootViewNodeCreator _aliasSymbolCreator;
 
     private readonly SymbolListRootViewNodeCreator _symbolListCreator;
     private readonly AttributeDataRootViewNodeCreator _attributeDataCreator;
@@ -62,6 +63,7 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         _localSymbolCreator = new(this);
         _preprocessingSymbolCreator = new(this);
         _rangeVariableSymbolCreator = new(this);
+        _aliasSymbolCreator = new(this);
 
         _symbolListCreator = new(this);
         _attributeDataCreator = new(this);
@@ -140,6 +142,9 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
 
             case IRangeVariableSymbol rangeVariableSymbol:
                 return _rangeVariableSymbolCreator.CreateNodeLine(rangeVariableSymbol, valueSource);
+
+            case IAliasSymbol aliasSymbol:
+                return _aliasSymbolCreator.CreateNodeLine(aliasSymbol, valueSource);
 
             case INamedTypeSymbol namedTypeSymbol:
                 return _namedTypeSymbolCreator.CreateNodeLine(namedTypeSymbol, valueSource);
@@ -849,6 +854,20 @@ partial class SymbolAnalysisNodeCreator
     public sealed class IRangeVariableSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
         : ISymbolRootViewNodeCreator<IRangeVariableSymbol>(creator)
     {
+    }
+
+    public sealed class IAliasSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
+        : ISymbolRootViewNodeCreator<IAliasSymbol>(creator)
+    {
+        protected override void CreateChildren(
+            IAliasSymbol symbol, List<AnalysisTreeListNode> list)
+        {
+            list.Add(
+                Creator.CreateRootSymbol(
+                    symbol.Target,
+                    Property(nameof(IAliasSymbol.Target)))!
+            );
+        }
     }
 
     public sealed class SymbolListRootViewNodeCreator(SymbolAnalysisNodeCreator creator)

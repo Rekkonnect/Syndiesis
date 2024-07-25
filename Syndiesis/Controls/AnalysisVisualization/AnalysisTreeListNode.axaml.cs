@@ -37,7 +37,6 @@ public partial class AnalysisTreeListNode : UserControl
     }
 
     private AnalysisTreeListNodeLine _nodeLine = new();
-    private LoadingTreeListNode? _loadingNode;
 
     public AnalysisTreeListNodeLine NodeLine
     {
@@ -189,8 +188,7 @@ public partial class AnalysisTreeListNode : UserControl
         {
             if (start >= builders.Count)
             {
-                // Remove the loading node which is always the first
-                innerStackPanel.Children.RemoveAt(0);
+                loadingNode.IsVisible = false;
                 return;
             }
 
@@ -222,7 +220,7 @@ public partial class AnalysisTreeListNode : UserControl
                 }
             }
 
-            _loadingNode?.SetProgress(new(start, builders.Count));
+            loadingNode.SetProgress(new(start, builders.Count));
 
             await Task.Delay(40);
             await Dispatcher.UIThread.InvokeAsync(UIUpdate);
@@ -443,8 +441,7 @@ public partial class AnalysisTreeListNode : UserControl
 
     private void SetLoadingNode()
     {
-        _loadingNode = new LoadingTreeListNode();
-        innerStackPanel.Children.ClearSetValue(_loadingNode);
+        loadingNode.IsVisible = true;
     }
 
     public void Expand()
