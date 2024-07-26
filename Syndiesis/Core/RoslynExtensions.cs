@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Diagnostics;
 using System.Threading;
@@ -68,11 +69,122 @@ public static class RoslynExtensions
         }
     }
 
+    public static SyntaxNodeOrToken ChildThatContainsSpan(this SyntaxNode node, TextSpan span)
+    {
+        if (!node.FullSpan.Contains(span))
+            return null;
+
+        var start = span.Start;
+        var end = span.End;
+
+        var startingChild = node.ChildThatContainsPosition(start);
+        if (startingChild == default)
+            return default;
+
+        var endingChild = node.ChildThatContainsPosition(end);
+        if (startingChild != endingChild)
+            return default;
+
+        return startingChild;
+    }
+
+    public static SyntaxNode? DeepestNodeContainingPositionIncludingStructuredTrivia(
+        this SyntaxNode parent, int position)
+    {
+        if (!parent.FullSpan.Contains(position))
+            return null;
+
+        var current = parent;
+
+        while (true)
+        {
+            var child = current.ChildThatContainsPosition(position);
+            if (child == default)
+                return current;
+
+            if (child.IsToken)
+            {
+                if (!current.HasStructuredTrivia)
+                    return current;
+
+                var trivia = current.FindTrivia(position);
+                var structure = trivia.GetStructure();
+                if (structure is null)
+                    return current;
+
+                current = structure;
+                continue;
+            }
+
+            var node = child.AsNode();
+            Debug.Assert(node is not null);
+            current = node;
+        }
+    }
+
     public static SyntaxNode? SyntaxNodeAtPosition(this SyntaxTree tree, int position)
     {
         var root = tree.GetRoot();
         position = Math.Max(0, Math.Min(position, root.FullSpan.End - 1));
         return root.DeepestNodeContainingPosition(position);
+    }
+
+    public static SyntaxNode? SyntaxNodeAtPositionIncludingStructuredTrivia(
+        this SyntaxTree tree, int position)
+    {
+        var root = tree.GetRoot();
+        position = Math.Max(0, Math.Min(position, root.FullSpan.End - 1));
+        return root.DeepestNodeContainingPositionIncludingStructuredTrivia(position);
+    }
+
+    public static SyntaxNode? DeepestNodeContainingSpanIncludingStructuredTrivia(
+        this SyntaxNode parent, TextSpan span)
+    {
+        if (!parent.FullSpan.Contains(span))
+            return null;
+
+        var current = parent;
+
+        while (true)
+        {
+            var child = current.ChildThatContainsSpan(span);
+            if (child == default)
+                return current;
+
+            if (child.IsToken)
+            {
+                if (!current.HasStructuredTrivia)
+                    return current;
+
+                var startTrivia = current.FindTrivia(span.Start);
+                var endTrivia = current.FindTrivia(span.End);
+
+                if (startTrivia != endTrivia)
+                    return current;
+
+                var trivia = startTrivia;
+                var structure = trivia.GetStructure();
+                if (structure is null)
+                    return current;
+
+                current = structure;
+                continue;
+            }
+
+            var node = child.AsNode();
+            Debug.Assert(node is not null);
+            current = node;
+        }
+    }
+
+    public static SyntaxNode? SyntaxNodeAtSpanIncludingStructuredTrivia(
+        this SyntaxTree tree, TextSpan span)
+    {
+        var root = tree.GetRoot();
+        var start = Math.Max(0, Math.Min(span.Start, root.FullSpan.End - 1));
+        var end = Math.Max(0, Math.Min(span.End, root.FullSpan.End - 1));
+        var clampedSpan = TextSpan.FromBounds(start, end);
+        return root.DeepestNodeContainingSpanIncludingStructuredTrivia(clampedSpan);
     }
 
     // We have no publicly exposed common conversion

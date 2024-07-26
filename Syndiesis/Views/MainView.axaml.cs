@@ -227,6 +227,10 @@ public partial class MainView : UserControl
 
     private void LoadDetailsView()
     {
+        var analysisFactory = CreateAnalysisExecutionFactory();
+        var analysisExecution = analysisFactory.CreateAnalysisExecution(AnalysisNodeKind.Syntax);
+        AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
+        AnalysisPipelineHandler.IgnoreInputDelayOnce();
         SetCurrentDetailsView();
     }
 
@@ -234,10 +238,17 @@ public partial class MainView : UserControl
 
     private void SetCurrentDetailsView()
     {
+        var span = SelectionSpan(codeEditor.textEditor);
+        SetCurrentDetailsView(span);
+    }
+
+    private void SetCurrentDetailsView(TextSpan span)
+    {
+        if (AnalysisPipelineHandler.IsWaiting)
+            return;
+
         var currentSource = ViewModel.HybridCompilationSource.CurrentSource;
-        var currentIndex = codeEditor.textEditor.CaretOffset;
-        // TODO: Handle selection to display the entire node covering the selection
-        var node = currentSource.Tree!.SyntaxNodeAtPosition(currentIndex);
+        var node = currentSource.Tree!.SyntaxNodeAtSpanIncludingStructuredTrivia(span);
         if (node is null)
             return;
 
@@ -254,7 +265,7 @@ public partial class MainView : UserControl
 
     private void LoadTreeView(AnalysisNodeKind analysisKind)
     {
-        var analysisFactory = new AnalysisExecutionFactory(ViewModel.HybridCompilationSource);
+        var analysisFactory = CreateAnalysisExecutionFactory();
         var analysisExecution = analysisFactory.CreateAnalysisExecution(analysisKind);
         AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
         AnalysisPipelineHandler.IgnoreInputDelayOnce();
@@ -262,6 +273,11 @@ public partial class MainView : UserControl
         {
             Task.Run(ForceAnalysisResetTreeView);
         }
+    }
+
+    private AnalysisExecutionFactory CreateAnalysisExecutionFactory()
+    {
+        return new AnalysisExecutionFactory(ViewModel.HybridCompilationSource);
     }
 
     private void SetViewVisibility(AnalysisViewKind viewKind)
@@ -365,7 +381,7 @@ public partial class MainView : UserControl
 
     private void ShowCurrentCursorPositionForDetails(TextSpan span)
     {
-        SetCurrentDetailsView();
+        SetCurrentDetailsView(span);
     }
 
     private void HandleHoveredNode(AnalysisTreeListNode? obj)
