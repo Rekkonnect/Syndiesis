@@ -9,27 +9,79 @@
              xmlns:syntax="using:Microsoft.CodeAnalysis.CSharp.Syntax"
              x:Class="Syndiesis.Controls.AnalysisVisualization.NodeDetailsView">
 
-  <StackPanel
-    Orientation="Vertical"
-    Spacing="5"
-    >
+  <Panel
+    Name="backgroundPanel"
+    Background="#001116"
+  >
+    <Grid>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="20"/>
+      </Grid.ColumnDefinitions>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="*"/>
+        <RowDefinition Height="20"/>
+      </Grid.RowDefinitions>
 
-    <local:CurrentNodeDetailsSection
-      Name="currentNodeSection"
-      />
+      <StackPanel
+        Name="contentPanel"
+        Orientation="Vertical"
+        Spacing="5"
+      >
 
-    <local:ParentNodeDetailsSection
-      Name="parentSection"
-      />
+        <local:CurrentNodeDetailsSection
+          Name="currentNodeSection"
+        />
 
-    <local:ChildrenNodeDetailsSection
-      Name="childrenSection"
-      />
+        <local:ParentNodeDetailsSection
+          Name="parentSection"
+        />
 
-    <local:SemanticModelNodeDetailsSection
-      Name="semanticModelSection"
-      />
+        <local:ChildrenNodeDetailsSection
+          Name="childrenSection"
+        />
 
-  </StackPanel>
+        <local:SemanticModelNodeDetailsSection
+          Name="semanticModelSection"
+        />
+
+      </StackPanel>
+        
+      <Panel Name="verticalScrollBarPanel"
+             Background="#003034"
+             Grid.Column="1">
+        <controls:VerticalScrollBar
+          Name="verticalScrollBar"
+          AccentColor="#006066"
+          HoverColor="#009099"
+          SmallStep="50"
+          >
+
+        </controls:VerticalScrollBar>
+
+      </Panel>
+      
+      <Panel Name="horizontalScrollBarPanel"
+             Background="#003034"
+             Grid.Column="0"
+             Grid.Row="1">
+
+        <controls:HorizontalScrollBar
+          Name="horizontalScrollBar"
+          AccentColor="#006066"
+          HoverColor="#009099"
+          SmallStep="50"
+          >
+
+        </controls:HorizontalScrollBar>
+      </Panel>
+      
+      <Panel Name="scrollBarIntersectionPanel"
+             Background="#00545A"
+             Grid.Column="2"
+             Grid.Row="1">
+      </Panel>
+    </Grid>
+  </Panel>
 
 </UserControl>

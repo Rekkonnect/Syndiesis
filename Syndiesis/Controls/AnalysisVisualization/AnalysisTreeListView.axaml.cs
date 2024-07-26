@@ -222,24 +222,15 @@ public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManag
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
-        const double scrollMultiplier = 50;
-
         base.OnPointerWheelChanged(e);
 
-        double steps = -e.Delta.Y * scrollMultiplier;
-        double verticalSteps = steps;
-        double horizontalSteps = -e.Delta.X * scrollMultiplier;
-        if (horizontalSteps is 0)
-        {
-            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-            {
-                horizontalSteps = verticalSteps;
-                verticalSteps = 0;
-            }
-        }
+        const double scrollMultiplier = 50;
+        ScrollingHelpers.ApplyWheelScrolling(
+            e,
+            scrollMultiplier,
+            verticalScrollBar,
+            horizontalScrollBar);
 
-        verticalScrollBar.Step(verticalSteps);
-        horizontalScrollBar.Step(horizontalSteps);
         EvaluateHovering(e);
     }
 

@@ -1,5 +1,9 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
+using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
@@ -9,6 +13,7 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
     {
         InitializeComponent();
         RegisterSections();
+        InitializeEvents();
     }
 
     private void RegisterSections()
@@ -38,6 +43,13 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
             childrenSection,
             semanticModelSection,
         ];
+    }
+
+    private IEnumerable<AnalysisTreeListNode> DetailsNodes()
+    {
+        return DetailsSections()
+            .SelectMany(s => s.Nodes)
+            ;
     }
 
     #region Node hovers
@@ -87,4 +99,177 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
         node.UpdateHovering(true);
     }
     #endregion
+
+    protected override void OnPointerMoved(PointerEventArgs e)
+    {
+        EvaluateSectionHovering();
+    }
+
+    protected override void OnPointerEntered(PointerEventArgs e)
+    {
+        EvaluateSectionHovering();
+    }
+
+    protected override void OnPointerExited(PointerEventArgs e)
+    {
+        EvaluateSectionHovering();
+    }
+
+    private void EvaluateSectionHovering()
+    {
+        foreach (var section in DetailsSections())
+        {
+            section.EvaluateHovering();
+        }
+    }
+
+    #region Scrolls
+    private const double extraScrollHeight = 50;
+    private const double extraScrollWidth = 20;
+
+    private bool _isUpdatingScrollLimits = false;
+
+    private double _topOffset;
+    private double _leftOffset;
+
+    private void UpdateScrollLimits()
+    {
+        // Probably hacked together
+        var maxWidth = RequiredWidth();
+        var childrenHeight = contentPanel.Children.Sum(s => s.Bounds.Height);
+
+        _isUpdatingScrollLimits = true;
+
+        using (verticalScrollBar.BeginUpdateBlock())
+        {
+            var height = childrenHeight;
+            verticalScrollBar.MaxValue = height + extraScrollHeight;
+            verticalScrollBar.StartPosition = _topOffset;
+            verticalScrollBar.EndPosition = contentPanel.Bounds.Height;
+            verticalScrollBar.SetAvailableScrollOnScrollableWindow();
+        }
+
+        using (horizontalScrollBar.BeginUpdateBlock())
+        {
+            horizontalScrollBar.MaxValue = Math.Max(maxWidth - extraScrollWidth, 0);
+            horizontalScrollBar.StartPosition = _leftOffset;
+            horizontalScrollBar.EndPosition = _leftOffset + contentPanel.Bounds.Width;
+            horizontalScrollBar.SetAvailableScrollOnScrollableWindow();
+        }
+
+        _isUpdatingScrollLimits = false;
+    }
+
+    private double RequiredWidth()
+    {
+        var nodes = DetailsNodes();
+        return nodes.Max(s => s.Bounds.Width);
+    }
+
+    private void InitializeEvents()
+    {
+        verticalScrollBar.ScrollChanged += OnVerticalScroll;
+        horizontalScrollBar.ScrollChanged += OnHorizontalScroll;
+
+        foreach (var section in DetailsSections())
+        {
+            section.nodeLinePanelContainer.SizeChanged += HandleContentSizeChanged;
+        }
+    }
+
+    protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
+    {
+        base.OnPointerWheelChanged(e);
+
+        const double scrollMultiplier = 50;
+        ScrollingHelpers.ApplyWheelScrolling(
+            e,
+            scrollMultiplier,
+            verticalScrollBar,
+            horizontalScrollBar);
+    }
+
+    private void HandleContentSizeChanged(object? sender, SizeChangedEventArgs e)
+    {
+        InvalidateMeasure();
+    }
+
+    private void OnVerticalScroll()
+    {
+        if (_isUpdatingScrollLimits)
+            return;
+
+        var top = verticalScrollBar.StartPosition;
+        _topOffset = top;
+        contentPanel.Margin = contentPanel.Margin.WithTop(-top);
+        InvalidateArrange();
+    }
+
+    private void OnHorizontalScroll()
+    {
+        if (_isUpdatingScrollLimits)
+            return;
+
+        var left = horizontalScrollBar.StartPosition;
+        SetLeftOffset(left);
+
+        InvalidateArrange();
+    }
+
+    private void SetLeftOffset(double left)
+    {
+        _leftOffset = left;
+        foreach (var section in DetailsSections())
+        {
+            section.SetLeftOffset(left);
+        }
+    }
+
+    #endregion
+
+    private void CorrectPositionFromHorizontalScroll(Size availableSize)
+    {
+        var offset = _leftOffset;
+        double requiredWidth = RequiredWidth();
+        // ensure that the width has been initialized
+        if (requiredWidth is not > 0)
+            return;
+
+        var availableRight = requiredWidth - offset;
+        var scrollBarWidth = verticalScrollBar.Bounds.Width;
+        var missing = availableSize.Width - availableRight - scrollBarWidth;
+        if (missing > 0)
+        {
+            var reducedOffset = offset - missing;
+            var targetOffset = Math.Max(reducedOffset, 0);
+            SetLeftOffset(targetOffset);
+        }
+    }
+
+    protected override void ArrangeCore(Rect finalRect)
+    {
+        base.ArrangeCore(finalRect);
+        UpdateScrollLimits();
+    }
+
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        CorrectPositionFromHorizontalScroll(finalSize);
+        return base.ArrangeOverride(finalSize);
+    }
+
+    protected override Size MeasureCore(Size availableSize)
+    {
+        double requiredWidth = RequiredWidth();
+        if (requiredWidth is not double.PositiveInfinity)
+        {
+            requiredWidth = Math.Max(availableSize.Width, requiredWidth);
+            foreach (var section in DetailsSections())
+            {
+                section.SetMinWidth(requiredWidth);
+            }
+        }
+        CorrectPositionFromHorizontalScroll(availableSize);
+        return base.MeasureCore(availableSize);
+    }
 }

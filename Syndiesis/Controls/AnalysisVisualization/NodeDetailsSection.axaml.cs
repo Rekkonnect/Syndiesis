@@ -1,7 +1,10 @@
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Media;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,7 +13,7 @@ namespace Syndiesis.Controls.AnalysisVisualization;
 // Do not make this abstract, the designer will not be able to load it
 public partial class NodeDetailsSection : UserControl
 {
-    protected readonly IReadOnlyList<AnalysisTreeListNode> Nodes;
+    public readonly IReadOnlyList<AnalysisTreeListNode> Nodes;
 
     internal IAnalysisNodeHoverManager? HoverManager { get; set; }
 
@@ -56,6 +59,11 @@ public partial class NodeDetailsSection : UserControl
         SetNode(node.Build());
     }
 
+    public void SetLeftOffset(double offset)
+    {
+        nodeLinePanelContainer.Margin = nodeLinePanelContainer.Margin.WithLeft(-offset);
+    }
+
     protected void LoadNodes(IReadOnlyList<UIBuilder.AnalysisTreeListNode> nodes)
     {
         for (int i = 0; i < nodes.Count; i++)
@@ -85,5 +93,21 @@ public partial class NodeDetailsSection : UserControl
     {
         expandToggle.Toggle();
         _ = nodeLinePanelContainer.SetExpansionState(!expandToggle.IsExpandingToggle, default);
+    }
+
+    private static readonly Color _headerGridHoverColor = Color.FromArgb(64, 128, 128, 128);
+    private readonly SolidColorBrush _headerGridHoverBrush = new(Colors.Transparent);
+
+    internal void EvaluateHovering()
+    {
+        var pointerOver = outerDisplayGrid.IsPointerOver;
+        var color = pointerOver ? _headerGridHoverColor : Colors.Transparent;
+        _headerGridHoverBrush.Color = color;
+        outerDisplayGrid.Background = _headerGridHoverBrush;
+    }
+
+    public void SetMinWidth(double width)
+    {
+        nodeLineStackPanel.MinWidth = width;
     }
 }

@@ -82,7 +82,7 @@ public static class UIBuilder
         public SyntaxObjectInfo? AssociatedSyntaxObject { get; }
             = SyntaxObjectInfo.GetInfoForObject(AssociatedSyntaxObjectContent);
 
-        public Task<AnalysisTreeListNode>? NodeLoader { get; set; }
+        public Task<AnalysisTreeListNode?>? NodeLoader { get; set; }
 
         public AnalysisTreeListNode WithAssociatedSyntaxObjectContent(object? content)
         {

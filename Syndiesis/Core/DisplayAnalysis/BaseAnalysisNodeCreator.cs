@@ -151,7 +151,7 @@ public abstract partial class BaseAnalysisNodeCreator
     }
 
     public AnalysisTreeListNode CreateLoadingNode<TDisplayValueSource>(
-        Task<AnalysisTreeListNode>? nodeTask,
+        Task<AnalysisTreeListNode?>? nodeTask,
         TDisplayValueSource? valueSource = default)
         where TDisplayValueSource : IDisplayValueSource
     {

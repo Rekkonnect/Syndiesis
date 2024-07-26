@@ -2,6 +2,7 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Garyon.Extensions;
@@ -471,7 +472,7 @@ public partial class AnalysisTreeListNode : UserControl
 
     public async Task SetLoading(
         UIBuilder.AnalysisTreeListNode loadingAppearance,
-        Task<UIBuilder.AnalysisTreeListNode>? builderTask)
+        Task<UIBuilder.AnalysisTreeListNode?>? builderTask)
     {
         SetLoadingState(loadingAppearance);
         await LoadFromTask(builderTask);
@@ -488,7 +489,7 @@ public partial class AnalysisTreeListNode : UserControl
     /// Always invoke this from the UI thread. The builder task may be a task
     /// executing on any thread.
     /// </remarks>
-    public async Task LoadFromTask(Task<UIBuilder.AnalysisTreeListNode>? builderTask)
+    public async Task LoadFromTask(Task<UIBuilder.AnalysisTreeListNode?>? builderTask)
     {
         if (builderTask is null)
             return;
@@ -500,8 +501,11 @@ public partial class AnalysisTreeListNode : UserControl
     /// <remarks>
     /// Always invoke this from the UI thread.
     /// </remarks>
-    public void ReloadFromBuilder(UIBuilder.AnalysisTreeListNode builder)
+    public void ReloadFromBuilder(UIBuilder.AnalysisTreeListNode? builder)
     {
+        if (builder is null)
+            return;
+
         // for initialization purposes; avoid this hack in the future
         if (NodeLine.Bounds.Height is 0)
         {

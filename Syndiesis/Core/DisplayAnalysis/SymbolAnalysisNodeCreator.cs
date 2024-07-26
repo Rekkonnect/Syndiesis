@@ -144,7 +144,7 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
                 return _rangeVariableSymbolCreator.CreateNodeLine(rangeVariableSymbol, inlines);
 
             case IAliasSymbol aliasSymbol:
-                return _aliasSymbolCreator.CreateNodeLine(aliasSymbol, valueSource);
+                return _aliasSymbolCreator.CreateNodeLine(aliasSymbol, inlines);
 
             case INamedTypeSymbol namedTypeSymbol:
                 return _namedTypeSymbolCreator.CreateNodeLine(namedTypeSymbol, inlines);

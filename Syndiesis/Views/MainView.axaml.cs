@@ -442,7 +442,7 @@ public partial class MainView : UserControl
 
             Public Class Program
 
-                Public Sub Main()
+                Public Shared Sub Main()
                     ' using conditional compilation symbols is fun
         #If SYMVBIOSIS
                     Const greetings As String = "Hello SymVBiosis!"

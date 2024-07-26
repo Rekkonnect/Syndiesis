@@ -9,31 +9,18 @@
              xmlns:ca="using:Microsoft.CodeAnalysis.CSharp"
              xmlns:syntax="using:Microsoft.CodeAnalysis.CSharp.Syntax"
              x:Class="Syndiesis.Controls.AnalysisVisualization.NodeDetailsSection"
-             IsHitTestVisible="True"
              >
 
   <StackPanel
     Orientation="Vertical"
     Spacing="5"
-    IsHitTestVisible="True"
     >
 
     <Grid
       Name="outerDisplayGrid"
       Margin="0 5 0 0"
-      IsHitTestVisible="True"
       PointerPressed="OnOuterDisplayPointerPressed"
       >
-
-      <Grid.Styles>
-        <Style
-          Selector="Grid#outerDisplayGrid:pointerover"
-          >
-          <Style.Setters>
-            <Setter Property="Background" Value="#80404040" />
-          </Style.Setters>
-        </Style>
-      </Grid.Styles>
 
       <Grid
         Name="headerDisplayGrid"
@@ -77,12 +64,14 @@
 
     <ex:VerticallyExpandablePanel
       Name="nodeLinePanelContainer"
-      >
+      HorizontalAlignment="Left"
+    >
       <StackPanel
         Name="nodeLineStackPanel"
         Orientation="Vertical"
+        HorizontalAlignment="Left"
         Margin="15 0 0 0"
-        />
+      />
 
     </ex:VerticallyExpandablePanel>
 

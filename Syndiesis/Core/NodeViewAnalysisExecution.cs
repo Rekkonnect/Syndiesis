@@ -87,13 +87,13 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
             return null;
 
         var childNodes = syntaxCreator.CreateLoadingNode(
-            CreateChildNodesRootNode(),
+            CreateChildNodesRootNode(cancellationToken),
             _childNodesValueSource);
         var childTokens = syntaxCreator.CreateLoadingNode(
-            CreateChildTokensRootNode(),
+            CreateChildTokensRootNode(cancellationToken),
             _childTokensValueSource);
         var childNodesAndTokens = syntaxCreator.CreateLoadingNode(
-            CreateChildNodesAndTokensRootNode(),
+            CreateChildNodesAndTokensRootNode(cancellationToken),
             _childNodesAndTokensValueSource);
 
         if (cancellationToken.IsCancellationRequested)
@@ -112,7 +112,7 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
             CreateAliasInfoRootNode(cancellationToken),
             _getAliasInfoValueSource);
         var preprocessingSymbolInfo = syntaxCreator.CreateLoadingNode(
-            CreatePreprocessingSymbolInfoRootNode(),
+            CreatePreprocessingSymbolInfoRootNode(cancellationToken),
             _getPreprocessingSymbolInfoValueSource);
         var conversion = syntaxCreator.CreateLoadingNode(
             CreateConversionRootNode(cancellationToken),
@@ -201,7 +201,8 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
             );
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreateChildNodesRootNode()
+    private async Task<UIBuilder.AnalysisTreeListNode?> CreateChildNodesRootNode(
+        CancellationToken cancellationToken)
     {
         await BreatheAsync();
         return
@@ -210,7 +211,8 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
                 _childNodesValueSource);
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreateChildTokensRootNode()
+    private async Task<UIBuilder.AnalysisTreeListNode?> CreateChildTokensRootNode(
+        CancellationToken cancellationToken)
     {
         await BreatheAsync();
         return
@@ -219,46 +221,55 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
                 _childTokensValueSource);
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreateChildNodesAndTokensRootNode()
+    private async Task<UIBuilder.AnalysisTreeListNode?> CreateChildNodesAndTokensRootNode(
+        CancellationToken cancellationToken)
     {
         await BreatheAsync();
+        if (cancellationToken.IsCancellationRequested)
+            return null;
         return
             _container.SyntaxCreator.CreateRootChildSyntaxList(
                 _node.ChildNodesAndTokens(),
                 _childNodesAndTokensValueSource);
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreateSymbolInfoRootNode(
+    private async Task<UIBuilder.AnalysisTreeListNode?> CreateSymbolInfoRootNode(
         CancellationToken cancellationToken)
     {
         await BreatheAsync();
+        if (cancellationToken.IsCancellationRequested)
+            return null;
         return
             _container.SemanticCreator.CreateRootSymbolInfo(
                 _semanticModel.GetSymbolInfo(_node, cancellationToken),
                 _getSymbolInfoValueSource);
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreateDeclaredSymbolInfoRootNode(
+    private async Task<UIBuilder.AnalysisTreeListNode?> CreateDeclaredSymbolInfoRootNode(
         CancellationToken cancellationToken)
     {
         await BreatheAsync();
+        if (cancellationToken.IsCancellationRequested)
+            return null;
         return
             _container.SymbolCreator.CreateRootGeneral(
                 _semanticModel.GetDeclaredSymbol(_node, cancellationToken),
                 _getDeclaredSymbolInfoValueSource)!;
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreateTypeInfoRootNode(
+    private async Task<UIBuilder.AnalysisTreeListNode?> CreateTypeInfoRootNode(
         CancellationToken cancellationToken)
     {
         await BreatheAsync();
+        if (cancellationToken.IsCancellationRequested)
+            return null;
         return
             _container.SemanticCreator.CreateRootTypeInfo(
                 _semanticModel.GetTypeInfo(_node, cancellationToken),
                 _getTypeInfoValueSource);
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreateAliasInfoRootNode(
+    private async Task<UIBuilder.AnalysisTreeListNode?> CreateAliasInfoRootNode(
         CancellationToken cancellationToken)
     {
         await BreatheAsync();
@@ -268,29 +279,36 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
                 _getAliasInfoValueSource)!;
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreatePreprocessingSymbolInfoRootNode()
+    private async Task<UIBuilder.AnalysisTreeListNode?> CreatePreprocessingSymbolInfoRootNode(
+        CancellationToken cancellationToken)
     {
         await BreatheAsync();
+        if (cancellationToken.IsCancellationRequested)
+            return null;
         return
             _container.SemanticCreator.CreateRootPreprocessingSymbolInfo(
                 _semanticModel.GetPreprocessingSymbolInfo(_node),
                 _getPreprocessingSymbolInfoValueSource);
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreateConversionRootNode(
+    private async Task<UIBuilder.AnalysisTreeListNode?> CreateConversionRootNode(
         CancellationToken cancellationToken)
     {
         await BreatheAsync();
+        if (cancellationToken.IsCancellationRequested)
+            return null;
         return
             _container.SemanticCreator.CreateRootConversion(
                 _semanticModel.GetConversionUnion(_node, cancellationToken),
                 _getConversionValueSource);
     }
 
-    private async Task<UIBuilder.AnalysisTreeListNode> CreateOperationRootNode(
+    private async Task<UIBuilder.AnalysisTreeListNode?> CreateOperationRootNode(
         CancellationToken cancellationToken)
     {
         await BreatheAsync();
+        if (cancellationToken.IsCancellationRequested)
+            return null;
         return
             _container.OperationCreator.CreateRootGeneral(
                 _semanticModel.GetOperation(_node, cancellationToken),
