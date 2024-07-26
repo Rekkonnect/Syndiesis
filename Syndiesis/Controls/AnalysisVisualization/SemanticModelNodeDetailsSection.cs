@@ -11,7 +11,7 @@ public sealed class SemanticModelNodeDetailsSection : NodeDetailsSection
 
     protected override IReadOnlyList<AnalysisTreeListNode> CreateInitialNodes()
     {
-        return CreateNodes(6);
+        return CreateNodes(7);
     }
 
     public override void LoadData(NodeDetailsViewData data)
@@ -19,6 +19,7 @@ public sealed class SemanticModelNodeDetailsSection : NodeDetailsSection
         var section = data.SemanticModel;
         LoadNodes([
             section.SymbolInfo,
+            section.DeclaredSymbolInfo,
             section.TypeInfo,
             section.AliasInfo,
             section.PreprocessingSymbolInfo,
