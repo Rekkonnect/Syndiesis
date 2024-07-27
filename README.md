@@ -1,11 +1,11 @@
 # Syndiesis
 
-The most revolutionary syntax visualizer for C#
+The most revolutionary syntax visualizer and more for C# and Visual Basic
 
 ## Motivation
 
-The project was inspired by the task for applying into a Roslyn internship position regarding C# syntax highlighting at JetBrains:
-([project](https://internship.jetbrains.com/projects/1442/) / [task](https://internship.jetbrains.com/applications/19433/))
+The project was inspired by the task for applying into a Roslyn internship position regarding C# syntax highlighting at JetBrains
+(possibly dead links: [project](https://internship.jetbrains.com/projects/1442/) / [task](https://internship.jetbrains.com/applications/19433/))
 
 The main design inspiration is [SharpLab](https://sharplab.io/). The syntax view feature of SharpLab is the main design that the app built upon.
 
@@ -40,8 +40,9 @@ https://github.com/Rekkonnect/Syndiesis/assets/8298332/268a2205-d2a4-446b-a145-5
 
 ### Dependencies
 
-- [Roslyn 4.9.2](https://github.com/dotnet/roslyn)
+- [Roslyn 4.10.0](https://github.com/dotnet/roslyn)
 - [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit), for the code editor
+- [jamarino/IntervalTree](https://github.com/jamarino/IntervalTree), for the diagnostics
 
 ## Features
 
@@ -52,20 +53,30 @@ Below is a short list of features:
   - Syntax and semantic colorization
   - Go to definition using F12
   - Custom nagivation to outer syntax nodes based on the current selection
+  - Diagnostics display
+  - Automatic recognition of the snippet's language (C# or VB)
+  - Selection of any available language version
 - Syntax and semantic analysis visualizer
   - Current caret syntax node highlighting
   - Tree view of nodes
   - Display of property names of syntax objects
   - Colorful display of different analysis list view nodes
   - Navigation to code snippet span of selected node
-  - Syntax, symbol and operation analysis
+  - Syntax, symbol, operation and attribute analysis
+  - Node details view
   - Indication of throwing properties per node
   - Loading nodes respects responsiveness of the app
 
 A large portion of the app is built using basic components in Avalonia. The code editor is from [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit).
 Some icons were taken from the free version of [FontAwesome](https://fontawesome.com/).
 
+### Bugs and issues
+
 Any issues regarding the code editor are most likely to be reported in [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit). This includes behavior not specific to Syndiesis. Issues will be closed if they are specific to AvaloniaEdit, and must be reported there.
+
+Syndiesis exposes data retrieved from Roslyn itself with minimal intervention for readability purposes. If you encounter misrepresented data, it is probably a Roslyn bug, but feel free to report it regardless. Examples of known Roslyn bugs include:
+- In `#pragma warning xyz CS0123`, semantic model considers `CS0123` as a preprocessing symbol. ([dotnet/roslyn#72907](https://github.com/dotnet/roslyn/issues/72907))
+- `GetChildTokens()` returning tokens with no parent `SyntaxTree` and their spans beginning at position 0.
 
 ### Desired features
 
@@ -84,3 +95,5 @@ The properties of the nodes are automatically extracted via reflection. Some are
 Each different node type is differently treated to extract the most useful information out of it. If you encounter a node missing critical information, or displaying it weirdly, please file an [issue](https://github.com/Rekkonnect/Syndiesis/issues/new).
 
 With 1.1.0 onwards, the program's direction was shifted more towards explaining and visualizing the expected results by using Roslyn itself. This expands the initial scope of the program into being a handy utility making the usage of Roslyn more predictable, especially when testing analyzers or source generators.
+
+On 1.2.0 the node details view was added, focusing more on giving direct feedback for the specified node. This also helps with troubleshooting issues and discovering potential bugs in Roslyn itself.
