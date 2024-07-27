@@ -49,7 +49,7 @@ public static class RoslynExtensions
 
     public static SyntaxToken DeepestTokenContainingSpan(this SyntaxNode parent, TextSpan span)
     {
-        if (!parent.FullSpan.Contains(span))
+        if (!parent.FullSpan.ContainsStrict(span))
             return default;
 
         var current = parent;
@@ -71,7 +71,7 @@ public static class RoslynExtensions
 
     public static SyntaxTrivia DeepestTriviaContainingSpan(this SyntaxNode parent, TextSpan span)
     {
-        if (!parent.FullSpan.Contains(span))
+        if (!parent.FullSpan.ContainsStrict(span))
             return default;
 
         var current = parent;
@@ -155,17 +155,21 @@ public static class RoslynExtensions
         }
     }
 
+    public static bool ContainsStrict(this TextSpan span, TextSpan other)
+    {
+        return span.Contains(other.Start)
+            && span.Contains(other.End)
+            ;
+    }
+
     public static SyntaxNodeOrToken ChildThatContainsSpan(this SyntaxNode node, TextSpan span)
     {
         var fullSpan = node.FullSpan;
-        if (!fullSpan.Contains(span))
+        if (!fullSpan.ContainsStrict(span))
             return null;
 
         var start = span.Start;
         var end = span.End;
-
-        if (!fullSpan.Contains(start))
-            return null;
 
         var startingChild = node.ChildThatContainsPosition(start);
         if (startingChild == default)
@@ -230,7 +234,7 @@ public static class RoslynExtensions
     public static SyntaxNode? DeepestNodeContainingSpanIncludingStructuredTrivia(
         this SyntaxNode parent, TextSpan span)
     {
-        if (!parent.FullSpan.Contains(span))
+        if (!parent.FullSpan.ContainsStrict(span))
             return null;
 
         var current = parent;
