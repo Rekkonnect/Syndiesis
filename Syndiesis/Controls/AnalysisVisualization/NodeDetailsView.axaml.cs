@@ -1,8 +1,10 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
+using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -11,6 +13,8 @@ namespace Syndiesis.Controls.AnalysisVisualization;
 public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
 {
     public event Action<AnalysisTreeListNode?>? HoveredNode;
+    public event Action<AnalysisTreeListNode>? RequestedPlaceCursorAtNode;
+    public event Action<AnalysisTreeListNode>? RequestedSelectTextAtNode;
     public event Action<AnalysisTreeListNode?>? CaretHoveredNodeSet;
 
     public NodeDetailsView()
@@ -129,6 +133,50 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
         HoveredNode?.Invoke(node);
     }
     #endregion
+
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
+    {
+        base.OnPointerPressed(e);
+
+        var properties = e.GetCurrentPoint(this).Properties;
+        if (properties.IsRightButtonPressed)
+        {
+            var modifiers = e.KeyModifiers.NormalizeByPlatform();
+            switch (modifiers)
+            {
+                case KeyModifiers.Control:
+                {
+                    if (!ShouldHandleNavigationAtNode(_hoveredNode))
+                        break;
+
+                    RequestedPlaceCursorAtNode?.Invoke(_hoveredNode);
+                    break;
+                }
+
+                case KeyModifiers.Control | KeyModifiers.Shift:
+                {
+                    if (!ShouldHandleNavigationAtNode(_hoveredNode))
+                        break;
+
+                    RequestedSelectTextAtNode?.Invoke(_hoveredNode);
+                    break;
+                }
+            }
+        }
+    }
+
+    private bool ShouldHandleNavigationAtNode(
+        [NotNullWhen(true)] AnalysisTreeListNode? node)
+    {
+        if (node is null)
+            return false;
+
+        var section = NodeDetailsSection.ContainingSectionForNode(node);
+        return section == currentNodeSection
+            || section == parentSection
+            || section == childrenSection
+            ;
+    }
 
     protected override void OnPointerMoved(PointerEventArgs e)
     {

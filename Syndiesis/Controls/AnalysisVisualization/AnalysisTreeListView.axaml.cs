@@ -45,6 +45,7 @@ public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManag
     public event Action<AnalysisTreeListNode?>? HoveredNode;
     public event Action<AnalysisTreeListNode>? RequestedPlaceCursorAtNode;
     public event Action<AnalysisTreeListNode>? RequestedSelectTextAtNode;
+    public event Action<AnalysisTreeListNode?>? CaretHoveredNodeSet;
     public event Action? NewRootLoaded;
 
     private void HandleRootNodeSizeAdjusted(object? sender, SizeChangedEventArgs e)
@@ -350,8 +351,6 @@ public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManag
 
     // Initialize to an impossible value to trigger
     private TextSpan _recurringSpanExpansion = new(0, int.MaxValue);
-
-    public event Action<AnalysisTreeListNode?>? CaretHoveredNodeSet;
 
     public async Task EnsureHighlightedPositionRecurring(TextSpan span)
     {

@@ -350,7 +350,7 @@ public partial class CodeEditor : UserControl
         if (node is not { AssociatedSyntaxObject: not null and var syntaxObject })
             return;
 
-        var tree = AssociatedTreeView!.AnalyzedTree;
+        var tree = syntaxObject.SyntaxTree;
         var start = syntaxObject.GetLineSpan(tree).Start;
         _disabledNodeHoverTimes++;
         SetCaretPositionBringToView(start.TextViewPosition());
@@ -361,7 +361,7 @@ public partial class CodeEditor : UserControl
         if (node is not { AssociatedSyntaxObject: not null and var syntaxObject })
             return;
 
-        var tree = AssociatedTreeView!.AnalyzedTree;
+        var tree = syntaxObject.SyntaxTree;
         var lineSpan = syntaxObject.GetLineSpan(tree);
         _disabledNodeHoverTimes++;
 

@@ -160,13 +160,13 @@ public partial class MainView : UserControl
         codeEditor.CaretMoved += HandleCaretPositionChanged;
         codeEditor.SelectionChanged += HandleSelectionChanged;
         coverableView.ListView.HoveredNode += HandleHoveredNode;
-        coverableView.ListView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
-        coverableView.ListView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
+        InitializeNavigationEvents(coverableView.ListView);
         coverableView.ListView.NewRootLoaded += HandleNewRootNodeLoaded;
         coverableView.ListView.CaretHoveredNodeSet += HandleCaretHoveredNode;
 
         coverableView.NodeDetailsView.HoveredNode += HandleDetailsViewHoveredNode;
         coverableView.NodeDetailsView.CaretHoveredNodeSet += HandleDetailsViewCaretHoveredNode;
+        InitializeNavigationEvents(coverableView.NodeDetailsView);
 
         languageVersionDropDown.LanguageVersionChanged += SetLanguageVersion;
 
@@ -176,6 +176,12 @@ public partial class MainView : UserControl
         coverableView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
 
         InitializeButtonEvents();
+    }
+
+    private void InitializeNavigationEvents(IAnalysisNodeHoverManager manager)
+    {
+        manager.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
+        manager.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
     }
 
     private AnalysisTreeListNode? _caretHoveredNode = null;
