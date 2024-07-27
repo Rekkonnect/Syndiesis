@@ -32,8 +32,6 @@ namespace Syndiesis.Controls;
 /// </remarks>
 public partial class CodeEditor : UserControl
 {
-    private const double extraDisplayWidth = 200;
-
     private AnalysisTreeListNode? _hoveredListNode;
 
     private bool _isUpdatingScrollLimits = false;

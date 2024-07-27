@@ -125,4 +125,12 @@ public partial class NodeDetailsSection : UserControl
         var root = node.RootNode();
         return root.NearestAncestorOfType<NodeDetailsSection>();
     }
+
+    public void CollapseRoots()
+    {
+        foreach (var node in Nodes)
+        {
+            node.SetExpansionWithoutAnimation(false);
+        }
+    }
 }

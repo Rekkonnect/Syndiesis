@@ -31,6 +31,8 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
 
     public async Task Load(NodeDetailsViewData viewData)
     {
+        currentNodeSection.CollapseRoots();
+
         var tasks = new List<Task>();
 
         var sections = DetailsSections();

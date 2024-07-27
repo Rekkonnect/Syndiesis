@@ -226,6 +226,7 @@ public partial class MainView : UserControl
 
     private void HandleSelectedAnalysisTab()
     {
+        ResetHandledCaretPositions();
         analysisViewTabs.SetDefaultsInSettings(AppSettings.Instance);
 
         var analysisKind = analysisViewTabs.AnalysisNodeKind;
@@ -363,8 +364,21 @@ public partial class MainView : UserControl
         RefreshCaretPosition();
     }
 
+    private int _caretPosition = -1;
+    private int _selectionLength = -1;
+
     private void RefreshCaretPosition()
     {
+        // Avoid triggering this more than once
+        var position = codeEditor.textEditor.CaretOffset;
+        var selectionLength = codeEditor.textEditor.SelectionLength;
+
+        if (position == _caretPosition && selectionLength == _selectionLength)
+            return;
+
+        _caretPosition = position;
+        _selectionLength = selectionLength;
+
         var span = SelectionSpan(codeEditor.textEditor);
         ShowCurrentCursorPosition(span);
     }
@@ -425,6 +439,13 @@ public partial class MainView : UserControl
     private void HandleCodeChanged(object? sender, EventArgs e)
     {
         TriggerPipeline();
+        ResetHandledCaretPositions();
+    }
+
+    private void ResetHandledCaretPositions()
+    {
+        _caretPosition = -1;
+        _selectionLength = -1;
     }
 
     private void TriggerPipeline()
@@ -567,6 +588,7 @@ public partial class MainView : UserControl
 
     public void ForceRedoAnalysis()
     {
+        ResetHandledCaretPositions();
         var analysisPipelineHandler = AnalysisPipelineHandler;
 
         analysisPipelineHandler.IgnoreInputDelayOnce();
