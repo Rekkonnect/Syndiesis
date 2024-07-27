@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
@@ -14,11 +15,11 @@ public sealed class ParentNodeDetailsSection : NodeDetailsSection
         return CreateNodes(1);
     }
 
-    public override void LoadData(NodeDetailsViewData data)
+    public override async Task LoadData(NodeDetailsViewData data)
     {
         var section = data.ParentNode;
-        LoadNodes([
+        await LoadNodes([
             section.ParentNode
-            ]);
+        ]);
     }
 }

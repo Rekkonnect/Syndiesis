@@ -164,6 +164,9 @@ public partial class MainView : UserControl
         coverableView.ListView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
         coverableView.ListView.NewRootLoaded += HandleNewRootNodeLoaded;
 
+        coverableView.ListView.CaretHoveredNodeSet += HandleCaretHoveredNode;
+        coverableView.NodeDetailsView.CaretHoveredNodeSet += HandleDetailsViewCaretHoveredNode;
+
         languageVersionDropDown.LanguageVersionChanged += SetLanguageVersion;
 
         AnalysisPipelineHandler.AnalysisCompleted += OnAnalysisCompleted;
@@ -172,6 +175,19 @@ public partial class MainView : UserControl
         coverableView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
 
         InitializeButtonEvents();
+    }
+
+    private AnalysisTreeListNode? _caretHoveredNode = null;
+
+    private void HandleDetailsViewCaretHoveredNode(AnalysisTreeListNode? node)
+    {
+        HandleCaretHoveredNode(node);
+        HandleHoveredNode(node);
+    }
+
+    private void HandleCaretHoveredNode(AnalysisTreeListNode? node)
+    {
+        _caretHoveredNode = node;
     }
 
     private void OnAnalysisCompleted(AnalysisResult result)
@@ -260,7 +276,7 @@ public partial class MainView : UserControl
         if (detailsData is null)
             return;
 
-        coverableView.NodeDetailsView.Load(detailsData);
+        _ = coverableView.NodeDetailsView.Load(detailsData);
     }
 
     private void LoadTreeView(AnalysisNodeKind analysisKind)
@@ -384,9 +400,9 @@ public partial class MainView : UserControl
         SetCurrentDetailsView(span);
     }
 
-    private void HandleHoveredNode(AnalysisTreeListNode? obj)
+    private void HandleHoveredNode(AnalysisTreeListNode? node)
     {
-        codeEditor.ShowHoveredSyntaxNode(obj);
+        codeEditor.ShowHoveredSyntaxNode(node ?? _caretHoveredNode);
     }
 
     private void HandleRequestedSelectTextAtNode(AnalysisTreeListNode node)

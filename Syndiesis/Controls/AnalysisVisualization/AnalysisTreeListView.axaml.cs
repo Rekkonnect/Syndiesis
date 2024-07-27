@@ -351,6 +351,8 @@ public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManag
     // Initialize to an impossible value to trigger
     private TextSpan _recurringSpanExpansion = new(0, int.MaxValue);
 
+    public event Action<AnalysisTreeListNode?>? CaretHoveredNodeSet;
+
     public async Task EnsureHighlightedPositionRecurring(TextSpan span)
     {
         _recurringSpanExpansion = span;
@@ -368,6 +370,7 @@ public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManag
 
             OverrideHover(node);
             BringToView(node);
+            CaretHoveredNodeSet?.Invoke(node);
 
             if (node == previousNode)
                 return;

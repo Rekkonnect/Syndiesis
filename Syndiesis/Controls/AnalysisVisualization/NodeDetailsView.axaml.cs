@@ -4,11 +4,14 @@ using Avalonia.Input;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
 public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
 {
+    public event Action<AnalysisTreeListNode?>? CaretHoveredNodeSet;
+
     public NodeDetailsView()
     {
         InitializeComponent();
@@ -25,13 +28,25 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
         }
     }
 
-    public void Load(NodeDetailsViewData viewData)
+    public async Task Load(NodeDetailsViewData viewData)
     {
+        var tasks = new List<Task>();
+
         var sections = DetailsSections();
         foreach (var section in sections)
         {
-            section.LoadData(viewData);
+            var task = section.LoadData(viewData);
+            tasks.Add(task);
         }
+
+        await Task.WhenAll(tasks);
+
+        SetCaretHoveredNode();
+    }
+
+    private void SetCaretHoveredNode()
+    {
+        CaretHoveredNodeSet?.Invoke(currentNodeSection.NodeDisplayNode);
     }
 
     private IReadOnlyList<NodeDetailsSection> DetailsSections()

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
@@ -14,10 +15,10 @@ public sealed class SemanticModelNodeDetailsSection : NodeDetailsSection
         return CreateNodes(7);
     }
 
-    public override void LoadData(NodeDetailsViewData data)
+    public override async Task LoadData(NodeDetailsViewData data)
     {
         var section = data.SemanticModel;
-        LoadNodes([
+        await LoadNodes([
             section.SymbolInfo,
             section.DeclaredSymbolInfo,
             section.TypeInfo,
@@ -25,6 +26,6 @@ public sealed class SemanticModelNodeDetailsSection : NodeDetailsSection
             section.PreprocessingSymbolInfo,
             section.Conversion,
             section.Operation,
-            ]);
+        ]);
     }
 }

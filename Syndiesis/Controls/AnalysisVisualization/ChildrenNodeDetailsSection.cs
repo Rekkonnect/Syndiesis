@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
@@ -14,13 +16,13 @@ public sealed class ChildrenNodeDetailsSection : NodeDetailsSection
         return CreateNodes(3);
     }
 
-    public override void LoadData(NodeDetailsViewData data)
+    public override async Task LoadData(NodeDetailsViewData data)
     {
         var section = data.Children;
-        LoadNodes([
+        await LoadNodes([
             section.ChildNodes,
             section.ChildTokens,
             section.ChildNodesAndTokens,
-            ]);
+        ]);
     }
 }

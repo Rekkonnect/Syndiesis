@@ -352,7 +352,6 @@ public partial class CodeEditor : UserControl
             if (current is not null)
             {
                 var currentLine = current.NodeLine;
-                var tree = AssociatedTreeView!.AnalyzedTree;
                 var span = currentLine.DisplaySpan;
                 var segment = new SimpleSegment(span.Start, span.Length);
                 SetHoverSpan(segment);

@@ -2,11 +2,13 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
+using Garyon.Extensions;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
@@ -36,7 +38,10 @@ public partial class NodeDetailsSection : UserControl
         return [];
     }
 
-    public virtual void LoadData(NodeDetailsViewData data) { }
+    public virtual Task LoadData(NodeDetailsViewData data)
+    {
+        return Task.CompletedTask;
+    }
 
     public void SetNodes(IEnumerable<AnalysisTreeListNode> nodes)
     {
@@ -64,14 +69,17 @@ public partial class NodeDetailsSection : UserControl
         nodeLinePanelContainer.Margin = nodeLinePanelContainer.Margin.WithLeft(-offset);
     }
 
-    protected void LoadNodes(IReadOnlyList<UIBuilder.AnalysisTreeListNode> nodes)
+    protected async Task LoadNodes(IReadOnlyList<UIBuilder.AnalysisTreeListNode> nodes)
     {
+        var tasks = new Task[nodes.Count];
         for (int i = 0; i < nodes.Count; i++)
         {
             var node = nodes[i];
-            _ = Nodes[i].SetLoading(node, node.NodeLoader);
+            var loadingTask = Nodes[i].SetLoading(node, node.NodeLoader);
+            tasks[i] = loadingTask;
             Nodes[i].AnalysisNodeHoverManager = HoverManager;
         }
+        await Task.WhenAll(tasks);
     }
 
     protected static IReadOnlyList<AnalysisTreeListNode> CreateNodes(int count)

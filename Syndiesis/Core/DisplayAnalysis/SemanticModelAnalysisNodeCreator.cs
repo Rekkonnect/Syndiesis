@@ -509,7 +509,7 @@ partial class SemanticModelAnalysisNodeCreator
     [SolidColor("SymbolInfo", 0xFF4DCA85)]
     [SolidColor("NullabilityInfo", 0xFF4DCA85)]
     [SolidColor("PreprocessingSymbolInfo", 0xFF4DCA85)]
-    [SolidColor("Conversion", 0xFF33E5A5)]
+    [SolidColor("Conversion", 0xFF4DCA85)]
     public sealed partial class SemanticModelStyles
     {
         public NodeTypeDisplay SemanticModelDisplay
