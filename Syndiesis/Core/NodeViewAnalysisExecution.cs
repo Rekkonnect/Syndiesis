@@ -253,6 +253,8 @@ public sealed class NodeViewAnalysisExecution(
         CancellationToken cancellationToken)
     {
         await BreatheAsync();
+        if (cancellationToken.IsCancellationRequested)
+            return null;
         return
             _container.SyntaxCreator.CreateRootNodeList(
                 _node.ChildNodes().ToList(),
@@ -263,6 +265,8 @@ public sealed class NodeViewAnalysisExecution(
         CancellationToken cancellationToken)
     {
         await BreatheAsync();
+        if (cancellationToken.IsCancellationRequested)
+            return null;
         return
             _container.SyntaxCreator.CreateRootTokenList(
                 new SyntaxTokenList(_node.ChildTokens()),

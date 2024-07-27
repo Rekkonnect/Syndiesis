@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using Syndiesis.Core.DisplayAnalysis;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
@@ -21,7 +22,8 @@ public class SymbolAnalysisExecution(HybridSingleTreeCompilationSource compilati
         if (token.IsCancellationRequested)
             return Cancelled();
 
-        var rootNode = creator.CreateRootViewNode(assemblySymbol!, default);
+        var rootNode = creator.CreateRootAssemblySymbol(
+            assemblySymbol!, null as IDisplayValueSource, true);
         var result = new SymbolAnalysisResult(rootNode!);
         return Task.FromResult<AnalysisResult>(result);
     }
