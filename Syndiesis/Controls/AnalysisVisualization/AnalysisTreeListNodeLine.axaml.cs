@@ -131,6 +131,31 @@ public partial class AnalysisTreeListNodeLine : UserControl
 
     public AnalysisNodeKind AnalysisNodeKind { get; set; }
 
+    private bool _isLoading;
+
+    public bool IsLoading
+    {
+        get
+        {
+            return _isLoading;
+        }
+        set
+        {
+            if (_isLoading == value)
+                return;
+
+            _isLoading = value;
+
+            if (value)
+            {
+                optionalLoadingNodeContainer.Content ??= new LoadingSpinner();
+            }
+            optionalLoadingNodeContainer.IsVisible = value;
+
+            nodeTypeIconText.IsVisible = !value;
+        }
+    }
+
     public AnalysisTreeListNodeLine()
     {
         InitializeComponent();
@@ -194,5 +219,10 @@ public partial class AnalysisTreeListNodeLine : UserControl
         animation.Duration = TimeSpan.FromMilliseconds(750);
         animation.Easing = Singleton<CubicEaseOut>.Instance;
         _ = animation.RunAsync(this, _pulseLineCancellationTokenFactory.CurrentToken);
+    }
+
+    public void ReloadFromBuilder(UIBuilder.AnalysisTreeListNodeLine builder)
+    {
+        builder.BuildOnto(this);
     }
 }

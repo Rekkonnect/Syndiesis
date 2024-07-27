@@ -21,6 +21,8 @@ public class AnalysisPipelineHandler
 
     public BaseAnalysisExecution? AnalysisExecution { get; set; }
 
+    public bool IsWaiting => _delayer.IsWaiting;
+
     public event Action? AnalysisRequested;
     public event Action? AnalysisBegun;
     public event Action<AnalysisResult>? AnalysisCompleted;

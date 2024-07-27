@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="250"
+             xmlns:local="using:Syndiesis.Controls.AnalysisVisualization"
+             xmlns:controls="using:Syndiesis.Controls"
+             xmlns:ex="using:Syndiesis.Controls.Extensions"
+             xmlns:ca="using:Microsoft.CodeAnalysis.CSharp"
+             xmlns:syntax="using:Microsoft.CodeAnalysis.CSharp.Syntax"
+             x:Class="Syndiesis.Controls.AnalysisVisualization.NodeDetailsSection"
+             >
+
+  <StackPanel
+    Orientation="Vertical"
+    Spacing="5"
+    >
+
+    <Grid
+      Name="outerDisplayGrid"
+      Margin="0 5 0 0"
+      PointerPressed="OnOuterDisplayPointerPressed"
+      >
+
+      <Grid
+        Name="headerDisplayGrid"
+        Margin="15 5 15 5"
+        >
+
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+      
+        <local:VisualExpandToggle
+          Name="expandToggle"
+          Width="15"
+          Height="15"
+          Foreground="#AAAAAA"
+          VerticalAlignment="Center"
+          IsExpandingToggle="False"
+          />
+      
+        <TextBlock
+          Grid.Column="1"
+          Name="headerText"
+          Text="Header"
+          FontFamily="{StaticResource AptosFontFamily}"
+          FontSize="16"
+          VerticalAlignment="Center"
+          Margin="10 0 0 0"
+        />
+
+        <Rectangle
+          Grid.Column="2"
+          Margin="10 0 0 0"
+          HorizontalAlignment="Stretch"
+          Height="1"
+          Fill="#888888"
+          />
+      </Grid>
+    </Grid>
+
+    <ex:VerticallyExpandablePanel
+      Name="nodeLinePanelContainer"
+      HorizontalAlignment="Left"
+    >
+      <StackPanel
+        Name="nodeLineStackPanel"
+        Orientation="Vertical"
+        HorizontalAlignment="Left"
+        Margin="15 0 0 0"
+      />
+
+    </ex:VerticallyExpandablePanel>
+
+  </StackPanel>
+
+</UserControl>

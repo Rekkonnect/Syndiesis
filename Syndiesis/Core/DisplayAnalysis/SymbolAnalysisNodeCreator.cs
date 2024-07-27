@@ -37,6 +37,7 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly ILocalSymbolRootViewNodeCreator _localSymbolCreator;
     private readonly IPreprocessingSymbolRootViewNodeCreator _preprocessingSymbolCreator;
     private readonly IRangeVariableSymbolRootViewNodeCreator _rangeVariableSymbolCreator;
+    private readonly IAliasSymbolRootViewNodeCreator _aliasSymbolCreator;
 
     private readonly SymbolListRootViewNodeCreator _symbolListCreator;
     private readonly AttributeDataRootViewNodeCreator _attributeDataCreator;
@@ -62,6 +63,7 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         _localSymbolCreator = new(this);
         _preprocessingSymbolCreator = new(this);
         _rangeVariableSymbolCreator = new(this);
+        _aliasSymbolCreator = new(this);
 
         _symbolListCreator = new(this);
         _attributeDataCreator = new(this);
@@ -69,26 +71,26 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         _typedConstantCreator = new(this);
     }
 
-    public override AnalysisTreeListNode? CreateRootViewNode(
-        object? value,
-        DisplayValueSource valueSource = default)
+    public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
+        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : default
     {
         switch (value)
         {
             case ISymbol symbol:
-                return CreateRootSymbol(symbol, valueSource);
+                return CreateRootSymbol(symbol, valueSource, includeChildren);
 
             case IReadOnlyList<ISymbol> symbolList:
-                return CreateRootSymbolList(symbolList, valueSource);
+                return CreateRootSymbolList(symbolList, valueSource, includeChildren);
 
             case AttributeData attribute:
-                return CreateRootAttribute(attribute, valueSource);
+                return CreateRootAttribute(attribute, valueSource, includeChildren);
 
             case IReadOnlyList<AttributeData> attributeList:
-                return CreateRootAttributeList(attributeList, valueSource);
+                return CreateRootAttributeList(attributeList, valueSource, includeChildren);
 
             case TypedConstant typedConstant:
-                return CreateRootTypedConstant(typedConstant, valueSource);
+                return CreateRootTypedConstant(typedConstant, valueSource, includeChildren);
 
             default:
                 break;
@@ -101,269 +103,250 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
 
     public AnalysisTreeListNodeLine? CreateRootSymbolNodeLine(
         ISymbol symbol,
-        DisplayValueSource valueSource)
+        GroupedRunInlineCollection inlines)
+    {
+        var creator = CreatorForSymbol(symbol);
+        return creator?.CreateNodeLine(symbol, inlines);
+    }
+
+    public IBaseSymbolRootViewNodeCreator? CreatorForSymbol(ISymbol symbol)
     {
         switch (symbol)
         {
             case IAssemblySymbol assemblySymbol:
-                return _assemblySymbolCreator.CreateNodeLine(assemblySymbol, valueSource);
+                return _assemblySymbolCreator;
 
             case IModuleSymbol moduleSymbol:
-                return _moduleSymbolCreator.CreateNodeLine(moduleSymbol, valueSource);
+                return _moduleSymbolCreator;
 
             case INamespaceSymbol namespaceSymbol:
-                return _namespaceSymbolCreator.CreateNodeLine(namespaceSymbol, valueSource);
+                return _namespaceSymbolCreator;
 
             case IFieldSymbol fieldSymbol:
-                return _fieldSymbolCreator.CreateNodeLine(fieldSymbol, valueSource);
+                return _fieldSymbolCreator;
 
             case IPropertySymbol propertySymbol:
-                return _propertySymbolCreator.CreateNodeLine(propertySymbol, valueSource);
+                return _propertySymbolCreator;
 
             case IEventSymbol eventSymbol:
-                return _eventSymbolCreator.CreateNodeLine(eventSymbol, valueSource);
+                return _eventSymbolCreator;
 
             case IMethodSymbol methodSymbol:
-                return _methodSymbolCreator.CreateNodeLine(methodSymbol, valueSource);
+                return _methodSymbolCreator;
 
             case ITypeParameterSymbol typeParameter:
-                return _typeParameterSymbolCreator.CreateNodeLine(typeParameter, valueSource);
+                return _typeParameterSymbolCreator;
 
             case IParameterSymbol parameter:
-                return _parameterSymbolCreator.CreateNodeLine(parameter, valueSource);
+                return _parameterSymbolCreator;
 
             case ILocalSymbol localSymbol:
-                return _localSymbolCreator.CreateNodeLine(localSymbol, valueSource);
+                return _localSymbolCreator;
 
             case IPreprocessingSymbol preprocessingSymbol:
-                return _preprocessingSymbolCreator.CreateNodeLine(preprocessingSymbol, valueSource);
+                return _preprocessingSymbolCreator;
 
             case IRangeVariableSymbol rangeVariableSymbol:
-                return _rangeVariableSymbolCreator.CreateNodeLine(rangeVariableSymbol, valueSource);
+                return _rangeVariableSymbolCreator;
+
+            case IAliasSymbol aliasSymbol:
+                return _aliasSymbolCreator;
 
             case INamedTypeSymbol namedTypeSymbol:
-                return _namedTypeSymbolCreator.CreateNodeLine(namedTypeSymbol, valueSource);
+                return _namedTypeSymbolCreator;
 
             case ITypeSymbol typeSymbol:
-                return _typeSymbolCreator.CreateNodeLine(typeSymbol, valueSource);
+                return _typeSymbolCreator;
 
             default:
                 return null;
         }
     }
 
-    public AnalysisTreeListNode? CreateRootChildlessSymbol(
+    public AnalysisTreeListNode CreateRootSymbol<TDisplayValueSource>(
         ISymbol symbol,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
         switch (symbol)
         {
             case IAssemblySymbol assemblySymbol:
-                return _assemblySymbolCreator.CreateChildlessNode(assemblySymbol, valueSource);
+                return CreateRootAssemblySymbol(assemblySymbol, valueSource, includeChildren);
 
             case IModuleSymbol moduleSymbol:
-                return _moduleSymbolCreator.CreateChildlessNode(moduleSymbol, valueSource);
+                return CreateRootModuleSymbol(moduleSymbol, valueSource, includeChildren);
 
             case INamespaceSymbol namespaceSymbol:
-                return _namespaceSymbolCreator.CreateChildlessNode(namespaceSymbol, valueSource);
+                return CreateRootNamespaceSymbol(namespaceSymbol, valueSource, includeChildren);
 
             case IFieldSymbol fieldSymbol:
-                return _fieldSymbolCreator.CreateChildlessNode(fieldSymbol, valueSource);
+                return CreateRootFieldSymbol(fieldSymbol, valueSource, includeChildren);
 
             case IPropertySymbol propertySymbol:
-                return _propertySymbolCreator.CreateChildlessNode(propertySymbol, valueSource);
+                return CreateRootPropertySymbol(propertySymbol, valueSource, includeChildren);
 
             case IEventSymbol eventSymbol:
-                return _eventSymbolCreator.CreateChildlessNode(eventSymbol, valueSource);
+                return CreateRootEventSymbol(eventSymbol, valueSource, includeChildren);
 
             case IMethodSymbol methodSymbol:
-                return _methodSymbolCreator.CreateChildlessNode(methodSymbol, valueSource);
+                return CreateRootMethodSymbol(methodSymbol, valueSource, includeChildren);
 
             case ITypeParameterSymbol typeParameter:
-                return _typeParameterSymbolCreator.CreateChildlessNode(typeParameter, valueSource);
+                return CreateRootTypeParameterSymbol(typeParameter, valueSource, includeChildren);
 
             case IParameterSymbol parameter:
-                return _parameterSymbolCreator.CreateChildlessNode(parameter, valueSource);
+                return CreateRootParameterSymbol(parameter, valueSource, includeChildren);
 
             case ILocalSymbol localSymbol:
-                return _localSymbolCreator.CreateChildlessNode(localSymbol, valueSource);
+                return CreateRootLocalSymbol(localSymbol, valueSource, includeChildren);
 
             case IPreprocessingSymbol preprocessingSymbol:
-                return _preprocessingSymbolCreator.CreateChildlessNode(preprocessingSymbol, valueSource);
+                return CreateRootPreprocessingSymbol(preprocessingSymbol, valueSource, includeChildren);
 
             case IRangeVariableSymbol rangeVariableSymbol:
-                return _rangeVariableSymbolCreator.CreateChildlessNode(rangeVariableSymbol, valueSource);
-
-            case INamedTypeSymbol namedTypeSymbol:
-                return _namedTypeSymbolCreator.CreateChildlessNode(namedTypeSymbol, valueSource);
+                return CreateRootRangeVariableSymbol(rangeVariableSymbol, valueSource, includeChildren);
 
             case ITypeSymbol typeSymbol:
-                return _typeSymbolCreator.CreateChildlessNode(typeSymbol, valueSource);
-        }
-
-        return null;
-    }
-
-    public AnalysisTreeListNode CreateRootSymbol(
-        ISymbol symbol,
-        DisplayValueSource valueSource)
-    {
-        switch (symbol)
-        {
-            case IAssemblySymbol assemblySymbol:
-                return CreateRootAssemblySymbol(assemblySymbol, valueSource);
-
-            case IModuleSymbol moduleSymbol:
-                return CreateRootModuleSymbol(moduleSymbol, valueSource);
-
-            case INamespaceSymbol namespaceSymbol:
-                return CreateRootNamespaceSymbol(namespaceSymbol, valueSource);
-
-            case IFieldSymbol fieldSymbol:
-                return CreateRootFieldSymbol(fieldSymbol, valueSource);
-
-            case IPropertySymbol propertySymbol:
-                return CreateRootPropertySymbol(propertySymbol, valueSource);
-
-            case IEventSymbol eventSymbol:
-                return CreateRootEventSymbol(eventSymbol, valueSource);
-
-            case IMethodSymbol methodSymbol:
-                return CreateRootMethodSymbol(methodSymbol, valueSource);
-
-            case ITypeParameterSymbol typeParameter:
-                return CreateRootTypeParameterSymbol(typeParameter, valueSource);
-
-            case IParameterSymbol parameter:
-                return CreateRootParameterSymbol(parameter, valueSource);
-
-            case ILocalSymbol localSymbol:
-                return CreateRootLocalSymbol(localSymbol, valueSource);
-
-            case IPreprocessingSymbol preprocessingSymbol:
-                return CreateRootPreprocessingSymbol(preprocessingSymbol, valueSource);
-
-            case IRangeVariableSymbol rangeVariableSymbol:
-                return CreateRootRangeVariableSymbol(rangeVariableSymbol, valueSource);
-
-            case ITypeSymbol typeSymbol:
-                return CreateRootTypeSymbol(typeSymbol, valueSource);
+                return CreateRootTypeSymbol(typeSymbol, valueSource, includeChildren);
 
             default:
-                return CreateRootSymbolFallback(symbol, valueSource);
+                return CreateRootSymbolFallback(symbol, valueSource, includeChildren);
         }
     }
 
-    public AnalysisTreeListNode CreateRootAssemblySymbol(
-        IAssemblySymbol assemblySymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootAssemblySymbol<TDisplayValueSource>(
+        IAssemblySymbol assemblySymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _assemblySymbolCreator.CreateNode(assemblySymbol, valueSource);
+        return _assemblySymbolCreator.CreateNode(assemblySymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootModuleSymbol(
-        IModuleSymbol moduleSymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootModuleSymbol<TDisplayValueSource>(
+        IModuleSymbol moduleSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _moduleSymbolCreator.CreateNode(moduleSymbol, valueSource);
+        return _moduleSymbolCreator.CreateNode(moduleSymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootNamespaceSymbol(
-        INamespaceSymbol namespaceSymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootNamespaceSymbol<TDisplayValueSource>(
+        INamespaceSymbol namespaceSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _namespaceSymbolCreator.CreateNode(namespaceSymbol, valueSource);
+        return _namespaceSymbolCreator.CreateNode(namespaceSymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootTypeSymbol(
-        ITypeSymbol typeSymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootTypeSymbol<TDisplayValueSource>(
+        ITypeSymbol typeSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _typeSymbolCreator.CreateNode(typeSymbol, valueSource);
+        return _typeSymbolCreator.CreateNode(typeSymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootFieldSymbol(
-        IFieldSymbol fieldSymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootFieldSymbol<TDisplayValueSource>(
+        IFieldSymbol fieldSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _fieldSymbolCreator.CreateNode(fieldSymbol, valueSource);
+        return _fieldSymbolCreator.CreateNode(fieldSymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootPropertySymbol(
-        IPropertySymbol propertySymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootPropertySymbol<TDisplayValueSource>(
+        IPropertySymbol propertySymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _propertySymbolCreator.CreateNode(propertySymbol, valueSource);
+        return _propertySymbolCreator.CreateNode(propertySymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootEventSymbol(
-        IEventSymbol eventSymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootEventSymbol<TDisplayValueSource>(
+        IEventSymbol eventSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _eventSymbolCreator.CreateNode(eventSymbol, valueSource);
+        return _eventSymbolCreator.CreateNode(eventSymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootMethodSymbol(
-        IMethodSymbol methodSymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootMethodSymbol<TDisplayValueSource>(
+        IMethodSymbol methodSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _methodSymbolCreator.CreateNode(methodSymbol, valueSource);
+        return _methodSymbolCreator.CreateNode(methodSymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootTypeParameterSymbol(
-        ITypeParameterSymbol typeParameter, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootTypeParameterSymbol<TDisplayValueSource>(
+        ITypeParameterSymbol typeParameter, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _typeParameterSymbolCreator.CreateNode(typeParameter, valueSource);
+        return _typeParameterSymbolCreator.CreateNode(typeParameter, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootParameterSymbol(
-        IParameterSymbol parameterSymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootParameterSymbol<TDisplayValueSource>(
+        IParameterSymbol parameterSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _parameterSymbolCreator.CreateNode(parameterSymbol, valueSource);
+        return _parameterSymbolCreator.CreateNode(parameterSymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootLocalSymbol(
-        ILocalSymbol localSymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootLocalSymbol<TDisplayValueSource>(
+        ILocalSymbol localSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _localSymbolCreator.CreateNode(localSymbol, valueSource);
+        return _localSymbolCreator.CreateNode(localSymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootPreprocessingSymbol(
-        IPreprocessingSymbol preprocessingSymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootPreprocessingSymbol<TDisplayValueSource>(
+        IPreprocessingSymbol preprocessingSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _preprocessingSymbolCreator.CreateNode(preprocessingSymbol, valueSource);
+        return _preprocessingSymbolCreator.CreateNode(preprocessingSymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootRangeVariableSymbol(
-        IRangeVariableSymbol rangeVariableSymbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootRangeVariableSymbol<TDisplayValueSource>(
+        IRangeVariableSymbol rangeVariableSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _rangeVariableSymbolCreator.CreateNode(rangeVariableSymbol, valueSource);
+        return _rangeVariableSymbolCreator.CreateNode(rangeVariableSymbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootSymbolFallback(
-        ISymbol symbol, DisplayValueSource valueSource)
+    public AnalysisTreeListNode CreateRootSymbolFallback<TDisplayValueSource>(
+        ISymbol symbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _symbolCreator.CreateNode(symbol, valueSource);
+        return _symbolCreator.CreateNode(symbol, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootSymbolList(
+    public AnalysisTreeListNode CreateRootSymbolList<TDisplayValueSource>(
         IReadOnlyList<ISymbol> symbols,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _symbolListCreator.CreateNode(symbols, valueSource);
+        return _symbolListCreator.CreateNode(symbols, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootAttribute(
+    public AnalysisTreeListNode CreateRootAttribute<TDisplayValueSource>(
         AttributeData attribute,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _attributeDataCreator.CreateNode(attribute, valueSource);
+        return _attributeDataCreator.CreateNode(attribute, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootAttributeList(
+    public AnalysisTreeListNode CreateRootAttributeList<TDisplayValueSource>(
         IReadOnlyList<AttributeData> attributeList,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _attributeDataListCreator.CreateNode(attributeList, valueSource);
+        return _attributeDataListCreator.CreateNode(attributeList, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootTypedConstant(
+    public AnalysisTreeListNode CreateRootTypedConstant<TDisplayValueSource>(
         TypedConstant typedConstant,
-        DisplayValueSource valueSource)
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
     {
-        return _typedConstantCreator.CreateNode(typedConstant, valueSource);
+        return _typedConstantCreator.CreateNode(typedConstant, valueSource, includeChildren);
     }
 }
 
@@ -408,15 +391,31 @@ partial class SymbolAnalysisNodeCreator
         }
     }
 
+    public interface IBaseSymbolRootViewNodeCreator
+    {
+        public void AddQuickInfoInlines(
+            ISymbol symbol, GroupedRunInlineCollection inlines);
+
+        public AnalysisTreeListNodeLine CreateNodeLine(
+            ISymbol symbol, GroupedRunInlineCollection inlines);
+    }
+
     public abstract class ISymbolRootViewNodeCreator<TSymbol>(SymbolAnalysisNodeCreator creator)
-        : SymbolRootViewNodeCreator<TSymbol>(creator)
+        : SymbolRootViewNodeCreator<TSymbol>(creator), IBaseSymbolRootViewNodeCreator
         where TSymbol : ISymbol
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            TSymbol symbol, DisplayValueSource valueSource)
+            TSymbol symbol, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
-            AppendValueSource(valueSource, inlines);
+            AddQuickInfoInlines(symbol, inlines);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.SymbolDisplay);
+        }
+
+        public void AddQuickInfoInlines(TSymbol symbol, GroupedRunInlineCollection inlines)
+        {
             var type = MatchingSymbolInterface(symbol.GetType());
             var typeDetailsInline = TypeDetailsInline(type);
             inlines.Add(typeDetailsInline);
@@ -429,10 +428,18 @@ partial class SymbolAnalysisNodeCreator
             inlines.Add(NewValueKindSplitterRun());
             var kindInline = CreateKindInline(symbol);
             inlines.Add(kindInline);
+        }
 
-            return AnalysisTreeListNodeLine(
-                inlines,
-                Styles.SymbolDisplay);
+        AnalysisTreeListNodeLine IBaseSymbolRootViewNodeCreator.CreateNodeLine(
+            ISymbol symbol, GroupedRunInlineCollection inlines)
+        {
+            return CreateNodeLine((TSymbol)symbol, inlines);
+        }
+
+        void IBaseSymbolRootViewNodeCreator.AddQuickInfoInlines(
+            ISymbol symbol, GroupedRunInlineCollection inlines)
+        {
+            AddQuickInfoInlines((TSymbol)symbol, inlines);
         }
 
         protected virtual SingleRunInline? CreateNameInline(TSymbol symbol)
@@ -636,9 +643,10 @@ partial class SymbolAnalysisNodeCreator
                     symbol.RefKind,
                     Property(nameof(IFieldSymbol.RefKind)))!,
 
-                Creator.CreateRootChildlessSymbol(
+                Creator.CreateRootSymbol(
                     symbol.Type,
-                    Property(nameof(IFieldSymbol.Type)))!,
+                    Property(nameof(IFieldSymbol.Type)),
+                    false)!,
 
                 // ConstantValue could be an `Optional<object?>`,
                 // but is kept as originally designed
@@ -667,9 +675,10 @@ partial class SymbolAnalysisNodeCreator
                     symbol.RefKind,
                     Property(nameof(IPropertySymbol.RefKind)))!,
 
-                Creator.CreateRootChildlessSymbol(
+                Creator.CreateRootSymbol(
                     symbol.Type,
-                    Property(nameof(IPropertySymbol.Type)))!,
+                    Property(nameof(IPropertySymbol.Type)),
+                    false)!,
 
                 Creator.CreateRootSymbolList(
                     symbol.Parameters,
@@ -687,9 +696,10 @@ partial class SymbolAnalysisNodeCreator
             IEventSymbol symbol, List<AnalysisTreeListNode> list)
         {
             list.Add(
-                Creator.CreateRootChildlessSymbol(
+                Creator.CreateRootSymbol(
                     symbol.Type,
-                    Property(nameof(IEventSymbol.Type)))!
+                    Property(nameof(IEventSymbol.Type)),
+                    false)!
             );
 
             base.CreateChildren(symbol, list);
@@ -716,9 +726,10 @@ partial class SymbolAnalysisNodeCreator
                     symbol.RefKind,
                     Property(nameof(IMethodSymbol.RefKind)))!,
 
-                Creator.CreateRootChildlessSymbol(
+                Creator.CreateRootSymbol(
                     symbol.ReturnType,
-                    Property(nameof(IMethodSymbol.ReturnType)))!,
+                    Property(nameof(IMethodSymbol.ReturnType)),
+                    false)!,
 
                 Creator.CreateRootSymbolList(
                     symbol.TypeParameters,
@@ -768,9 +779,10 @@ partial class SymbolAnalysisNodeCreator
                     symbol.ScopedKind,
                     Property(nameof(IParameterSymbol.ScopedKind)))!,
 
-                Creator.CreateRootChildlessSymbol(
+                Creator.CreateRootSymbol(
                     symbol.Type,
-                    Property(nameof(IParameterSymbol.Type)))!,
+                    Property(nameof(IParameterSymbol.Type)),
+                    false)!,
 
                 // ExplicitDefaultValue could be an `Optional<object?>`,
                 // but is kept as originally designed
@@ -809,9 +821,10 @@ partial class SymbolAnalysisNodeCreator
                     symbol.ScopedKind,
                     Property(nameof(ILocalSymbol.ScopedKind)))!,
 
-                Creator.CreateRootChildlessSymbol(
+                Creator.CreateRootSymbol(
                     symbol.Type,
-                    Property(nameof(ILocalSymbol.Type)))!,
+                    Property(nameof(ILocalSymbol.Type)),
+                    false)!,
 
                 // ConstantValue could be an `Optional<object?>`,
                 // but is kept as originally designed
@@ -829,6 +842,7 @@ partial class SymbolAnalysisNodeCreator
         }
     }
 
+    // Congratulations, you were proven worthy
     public sealed class IPreprocessingSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
         : ISymbolRootViewNodeCreator<IPreprocessingSymbol>(creator)
     {
@@ -850,14 +864,26 @@ partial class SymbolAnalysisNodeCreator
     {
     }
 
+    public sealed class IAliasSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
+        : ISymbolRootViewNodeCreator<IAliasSymbol>(creator)
+    {
+        protected override void CreateChildren(
+            IAliasSymbol symbol, List<AnalysisTreeListNode> list)
+        {
+            list.Add(
+                Creator.CreateRootSymbol(
+                    symbol.Target,
+                    Property(nameof(IAliasSymbol.Target)))!
+            );
+        }
+    }
+
     public sealed class SymbolListRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
         : SymbolRootViewNodeCreator<IReadOnlyList<ISymbol>>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            IReadOnlyList<ISymbol> symbols, DisplayValueSource valueSource)
+            IReadOnlyList<ISymbol> symbols, GroupedRunInlineCollection inlines)
         {
-            var inlines = new GroupedRunInlineCollection();
-            AppendValueSource(valueSource, inlines);
             var type = symbols.GetType();
             var inline = NestedTypeDisplayGroupedRun(type);
             inlines.Add(inline);
@@ -884,7 +910,7 @@ partial class SymbolAnalysisNodeCreator
             IReadOnlyList<ISymbol> symbols)
         {
             return symbols
-                .Select(symbol => Creator.CreateRootSymbol(symbol, default))
+                .Select(symbol => Creator.CreateRootSymbol<IDisplayValueSource>(symbol, default))
                 .ToList()
                 ;
         }

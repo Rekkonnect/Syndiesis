@@ -5,18 +5,10 @@
              xmlns:controls="using:Syndiesis.Controls"
              xmlns:av="using:Syndiesis.Controls.AnalysisVisualization"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Syndiesis.Controls.AnalysisVisualization.CoverableAnalysisTreeListView">
+             x:Class="Syndiesis.Controls.AnalysisVisualization.CoverableAnalysisView">
 
   <controls:CoverableContent
     Name="coverable"
-    >
-    <controls:CoverableContent.ContainedContent>
-      <av:AnalysisTreeListView
-        Name="listView"
-        >
-        
-      </av:AnalysisTreeListView>
-    </controls:CoverableContent.ContainedContent>
-  </controls:CoverableContent>
+    />
   
 </UserControl>

@@ -47,6 +47,11 @@ public partial class TabEnvelopeRow : UserControl
         InitializeComponent();
     }
 
+    public void SelectIndex(int? index)
+    {
+        SelectIndex(index ?? -1);
+    }
+
     public void SelectIndex(int index)
     {
         var selected = SelectedTab;

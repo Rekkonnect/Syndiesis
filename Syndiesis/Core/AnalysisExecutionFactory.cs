@@ -21,7 +21,8 @@ public sealed class AnalysisExecutionFactory(
             case AnalysisNodeKind.Attribute:
                 return new AttributeAnalysisExecution(_compilationSource);
             default:
-                throw ThrowUnsupportedAnalysisKind();
+                ThrowUnsupportedAnalysisKind();
+                return null!;
         }
     }
 

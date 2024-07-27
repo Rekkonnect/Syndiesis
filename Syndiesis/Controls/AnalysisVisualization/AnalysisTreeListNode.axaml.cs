@@ -5,7 +5,6 @@ using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Garyon.Extensions;
-using Serilog;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
@@ -21,8 +20,6 @@ using NodeChildren = IReadOnlyList<AnalysisTreeListNode>;
 
 public partial class AnalysisTreeListNode : UserControl
 {
-    private static readonly CancellationTokenFactory _expansionAnimationCancellationTokenFactory = new();
-
     public object? AssociatedSyntaxObjectContent
     {
         get => AssociatedSyntaxObject?.SyntaxObject;
@@ -40,7 +37,6 @@ public partial class AnalysisTreeListNode : UserControl
     }
 
     private AnalysisTreeListNodeLine _nodeLine = new();
-    private LoadingTreeListNode? _loadingNode;
 
     public AnalysisTreeListNodeLine NodeLine
     {
@@ -49,7 +45,7 @@ public partial class AnalysisTreeListNode : UserControl
         {
             _nodeLine = value;
             topNodeContent.Content = value;
-            value.HasChildren = _childRetriever is not null;
+            HasChildren = _childRetriever is not null;
             value.PointerEntered += OnPointerEnteredLine;
         }
     }
@@ -60,11 +56,25 @@ public partial class AnalysisTreeListNode : UserControl
         set
         {
             SetChildNodes(value);
-            NodeLine.HasChildren = value.Count > 0;
+            HasChildren = value.Count > 0;
         }
     }
 
-    public bool HasChildren => NodeLine.HasChildren;
+    public bool HasChildren
+    {
+        get
+        {
+            return NodeLine.HasChildren;
+        }
+        set
+        {
+            NodeLine.HasChildren = value;
+            if (!value)
+            {
+                SetExpansionWithoutAnimation(false);
+            }
+        }
+    }
 
     private AdvancedLazy<NodeBuilderChildren>? _childRetriever;
     private Task? _childRetrievalTask;
@@ -86,9 +96,13 @@ public partial class AnalysisTreeListNode : UserControl
                 // if only delegates could be converted more seamlessly
                 _childRetriever = new(new Func<NodeBuilderChildren>(value));
                 SetLoadingNode();
+                if (NodeLine.IsExpanded)
+                {
+                    _ = RequestInitializedChildren();
+                }
             }
 
-            NodeLine.HasChildren = value is not null;
+            HasChildren = value is not null;
         }
     }
 
@@ -102,29 +116,32 @@ public partial class AnalysisTreeListNode : UserControl
 
     public bool HasLoadedChildren => _childRetriever?.IsValueCreated ?? true;
 
-    internal AnalysisTreeListView? ListView { get; set; }
+    internal IAnalysisNodeHoverManager? AnalysisNodeHoverManager { get; set; }
 
     public AnalysisTreeListNode? ParentNode
     {
         get
         {
-            StyledElement? current = this;
-            while (current is not null)
-            {
-                var parent = current.Parent;
-                if (parent is AnalysisTreeListNode node)
-                    return node;
-
-                current = parent;
-            }
-
-            return null;
+            return this.NearestAncestorOfType<AnalysisTreeListNode>();
         }
     }
 
     public AnalysisTreeListNode()
     {
         InitializeComponent();
+    }
+
+    public AnalysisTreeListNode RootNode()
+    {
+        var current = this;
+        while (true)
+        {
+            var next = current.ParentNode;
+            if (next is null)
+                return current;
+
+            current = next;
+        }
     }
 
     private static readonly Color _topLineHoverColor = Color.FromArgb(64, 128, 128, 128);
@@ -174,8 +191,7 @@ public partial class AnalysisTreeListNode : UserControl
         {
             if (start >= builders.Count)
             {
-                // Remove the loading node which is always the first
-                innerStackPanel.Children.RemoveAt(0);
+                loadingNode.IsVisible = false;
                 return;
             }
 
@@ -189,7 +205,7 @@ public partial class AnalysisTreeListNode : UserControl
 
             if (chunk <= 5)
             {
-                Log.Information("Low-end device detected, are you sure this application is running smoothly?");
+                LoggerExtensionsEx.LogLowEndDevice();
             }
 
             var taken = builders.Skip(start).Take(chunk);
@@ -203,11 +219,11 @@ public partial class AnalysisTreeListNode : UserControl
                 innerStackPanel.Children.AddRange(children);
                 foreach (var child in children)
                 {
-                    child.ListView = ListView;
+                    child.AnalysisNodeHoverManager = AnalysisNodeHoverManager;
                 }
             }
 
-            _loadingNode?.SetProgress(new(start, builders.Count));
+            loadingNode.SetProgress(new(start, builders.Count));
 
             await Task.Delay(40);
             await Dispatcher.UIThread.InvokeAsync(UIUpdate);
@@ -228,13 +244,13 @@ public partial class AnalysisTreeListNode : UserControl
 
     protected override void OnPointerExited(PointerEventArgs e)
     {
-        ListView?.RemoveHover(this);
+        AnalysisNodeHoverManager?.RemoveHover(this);
         base.OnPointerExited(e);
     }
 
     private void EvaluateHovering(PointerEventArgs e)
     {
-        var allowedHover = ListView?.RequestHover(this) ?? true;
+        var allowedHover = AnalysisNodeHoverManager?.RequestHover(this) ?? true;
         if (!allowedHover)
         {
             UpdateHovering(false);
@@ -248,31 +264,31 @@ public partial class AnalysisTreeListNode : UserControl
 
         if (isHovered)
         {
-            ListView?.OverrideHover(this);
+            AnalysisNodeHoverManager?.OverrideHover(this);
             _ = RequestInitializedChildren();
         }
         else
         {
-            ListView?.RemoveHover(this);
+            AnalysisNodeHoverManager?.RemoveHover(this);
         }
     }
 
     private void SetAsHovered()
     {
-        var allowedHover = ListView?.RequestHover(this) ?? true;
+        var allowedHover = AnalysisNodeHoverManager?.RequestHover(this) ?? true;
         if (!allowedHover)
         {
             UpdateHovering(false);
             return;
         }
 
-        ListView?.OverrideHover(this);
+        AnalysisNodeHoverManager?.OverrideHover(this);
         _ = RequestInitializedChildren();
     }
 
     internal void SetListViewRecursively(AnalysisTreeListView listView)
     {
-        ListView = listView;
+        AnalysisNodeHoverManager = listView;
 
         foreach (var child in LazyChildren)
         {
@@ -351,7 +367,7 @@ public partial class AnalysisTreeListNode : UserControl
         var properties = e.GetCurrentPoint(this).Properties;
         if (properties.IsLeftButtonPressed)
         {
-            if (ListView?.IsHovered(this) is not true)
+            if (AnalysisNodeHoverManager?.IsHovered(this) is not true)
                 return;
 
             switch (modifiers)
@@ -428,8 +444,7 @@ public partial class AnalysisTreeListNode : UserControl
 
     private void SetLoadingNode()
     {
-        _loadingNode = new LoadingTreeListNode();
-        innerStackPanel.Children.ClearSetValue(_loadingNode);
+        loadingNode.IsVisible = true;
     }
 
     public void Expand()
@@ -453,11 +468,57 @@ public partial class AnalysisTreeListNode : UserControl
 
         nodeLine.IsExpanded = expand;
 
-        // cancel any currently running animation
-        _expansionAnimationCancellationTokenFactory.Cancel();
-
-        var animationToken = _expansionAnimationCancellationTokenFactory.CurrentToken;
         _ = RequestInitializedChildren(expand);
-        _ = expandableCanvas.SetExpansionState(expand, animationToken);
+        _ = expandableCanvas.SetExpansionState(expand, default);
+    }
+
+    public async Task SetLoading(
+        UIBuilder.AnalysisTreeListNode loadingAppearance,
+        Task<UIBuilder.AnalysisTreeListNode?>? builderTask)
+    {
+        SetLoadingState(loadingAppearance);
+        await LoadFromTask(builderTask);
+    }
+
+    public void SetLoadingState(UIBuilder.AnalysisTreeListNode loadingAppearance)
+    {
+        innerStackPanel.Children.Clear();
+        _loadedChildren = null;
+        ReloadFromBuilder(loadingAppearance);
+    }
+
+    /// <remarks>
+    /// Always invoke this from the UI thread. The builder task may be a task
+    /// executing on any thread.
+    /// </remarks>
+    public async Task LoadFromTask(Task<UIBuilder.AnalysisTreeListNode?>? builderTask)
+    {
+        if (builderTask is null)
+            return;
+
+        var builder = await builderTask;
+        ReloadFromBuilder(builder);
+    }
+
+    /// <remarks>
+    /// Always invoke this from the UI thread.
+    /// </remarks>
+    public void ReloadFromBuilder(UIBuilder.AnalysisTreeListNode? builder)
+    {
+        if (builder is null)
+            return;
+
+        // for initialization purposes; avoid this hack in the future
+        if (NodeLine.Bounds.Height is 0)
+        {
+            NodeLine = builder.NodeLine.Build();
+        }
+        else
+        {
+            NodeLine.ReloadFromBuilder(builder.NodeLine);
+        }
+
+        ChildRetriever = builder.ChildRetriever;
+        AssociatedSyntaxObject = builder.AssociatedSyntaxObject;
     }
 }

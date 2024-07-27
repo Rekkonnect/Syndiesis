@@ -1,4 +1,7 @@
-﻿namespace Syndiesis.Core.DisplayAnalysis;
+﻿using Microsoft.CodeAnalysis;
+using System;
+
+namespace Syndiesis.Core.DisplayAnalysis;
 
 public abstract class BaseAnalysisNodeCreatorContainer
 {
@@ -14,5 +17,15 @@ public abstract class BaseAnalysisNodeCreatorContainer
         SymbolCreator = new(this);
         OperationCreator = new(this);
         SemanticCreator = new(this);
+    }
+
+    public static BaseAnalysisNodeCreatorContainer CreateForLanguage(string languageName)
+    {
+        return languageName switch
+        {
+            LanguageNames.CSharp => new CSharpAnalysisNodeCreatorContainer(),
+            LanguageNames.VisualBasic => new VisualBasicAnalysisNodeCreatorContainer(),
+            _ => throw new NotSupportedException("Unsupported language"),
+        };
     }
 }

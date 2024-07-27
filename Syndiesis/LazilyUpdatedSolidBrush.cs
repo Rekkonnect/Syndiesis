@@ -22,4 +22,11 @@ public sealed class LazilyUpdatedSolidBrush : ILazilyUpdatedBrush
     }
 
     IBrush ILazilyUpdatedBrush.Brush => Brush;
+
+    public LazilyUpdatedSolidBrush() { }
+
+    public LazilyUpdatedSolidBrush(Color color)
+    {
+        Color = color;
+    }
 }

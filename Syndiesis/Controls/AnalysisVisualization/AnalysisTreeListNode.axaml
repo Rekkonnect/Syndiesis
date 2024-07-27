@@ -5,6 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="150"
              xmlns:controls="using:Syndiesis.Controls"
              xmlns:ce="using:Syndiesis.Controls.Extensions"
+             xmlns:local="using:Syndiesis.Controls.AnalysisVisualization"
              x:Class="Syndiesis.Controls.AnalysisVisualization.AnalysisTreeListNode">
   <StackPanel
     Name="outerStackPanel"
@@ -20,15 +21,19 @@
     <ce:VerticallyExpandablePanel
       Name="expandableCanvas"
       HorizontalAlignment="Stretch"
-      
       >
       <StackPanel
-        Name="innerStackPanel"
         Margin="15 0 0 0"
         HorizontalAlignment="Stretch"
-        Canvas.Left="0"
-        Canvas.Top="0"
+      >
+        <local:LoadingTreeListNode
+          Name="loadingNode"
+          IsVisible="False"
         />
+        <StackPanel
+          Name="innerStackPanel"
+        />
+      </StackPanel>
     </ce:VerticallyExpandablePanel>
   </StackPanel>
 </UserControl>

@@ -14,13 +14,10 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
-public partial class AnalysisTreeListView : UserControl
+public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManager
 {
     private const double extraScrollHeight = 50;
     private const double extraScrollWidth = 20;
-
-    private bool _allowedHover;
-    private AnalysisTreeListNode? _hoveredNode;
 
     private AnalysisTreeListNode _rootNode = new();
 
@@ -48,6 +45,7 @@ public partial class AnalysisTreeListView : UserControl
     public event Action<AnalysisTreeListNode?>? HoveredNode;
     public event Action<AnalysisTreeListNode>? RequestedPlaceCursorAtNode;
     public event Action<AnalysisTreeListNode>? RequestedSelectTextAtNode;
+    public event Action<AnalysisTreeListNode?>? CaretHoveredNodeSet;
     public event Action? NewRootLoaded;
 
     private void HandleRootNodeSizeAdjusted(object? sender, SizeChangedEventArgs e)
@@ -74,6 +72,8 @@ public partial class AnalysisTreeListView : UserControl
         InitializeComponent();
         InitializeEvents();
     }
+
+    #region Scrolls
 
     private bool _isUpdatingScrollLimits = false;
 
@@ -127,6 +127,8 @@ public partial class AnalysisTreeListView : UserControl
         Canvas.SetLeft(topLevelNodeContent, -left);
         InvalidateArrange();
     }
+
+    #endregion
 
     public void ResetToInitialRootView()
     {
@@ -221,24 +223,15 @@ public partial class AnalysisTreeListView : UserControl
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
-        const double scrollMultiplier = 50;
-
         base.OnPointerWheelChanged(e);
 
-        double steps = -e.Delta.Y * scrollMultiplier;
-        double verticalSteps = steps;
-        double horizontalSteps = -e.Delta.X * scrollMultiplier;
-        if (horizontalSteps is 0)
-        {
-            if (e.KeyModifiers.HasFlag(KeyModifiers.Shift))
-            {
-                horizontalSteps = verticalSteps;
-                verticalSteps = 0;
-            }
-        }
+        const double scrollMultiplier = 50;
+        ScrollingHelpers.ApplyWheelScrolling(
+            e,
+            scrollMultiplier,
+            verticalScrollBar,
+            horizontalScrollBar);
 
-        verticalScrollBar.Step(verticalSteps);
-        horizontalScrollBar.Step(horizontalSteps);
         EvaluateHovering(e);
     }
 
@@ -306,6 +299,9 @@ public partial class AnalysisTreeListView : UserControl
     }
 
     #region Node hovers
+    private bool _allowedHover;
+    private AnalysisTreeListNode? _hoveredNode;
+
     public bool RequestHover(AnalysisTreeListNode node)
     {
         if (!_allowedHover)
@@ -351,6 +347,7 @@ public partial class AnalysisTreeListView : UserControl
         node.UpdateHovering(true);
         HoveredNode?.Invoke(node);
     }
+    #endregion
 
     // Initialize to an impossible value to trigger
     private TextSpan _recurringSpanExpansion = new(0, int.MaxValue);
@@ -372,6 +369,7 @@ public partial class AnalysisTreeListView : UserControl
 
             OverrideHover(node);
             BringToView(node);
+            CaretHoveredNodeSet?.Invoke(node);
 
             if (node == previousNode)
                 return;
@@ -512,7 +510,6 @@ public partial class AnalysisTreeListView : UserControl
         node.SetExpansionWithoutAnimation(true);
         return node.LazyChildren;
     }
-    #endregion
 
     public void BringToView(AnalysisTreeListNode node)
     {

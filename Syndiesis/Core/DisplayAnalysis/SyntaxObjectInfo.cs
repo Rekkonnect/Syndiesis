@@ -79,6 +79,9 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTree tree:
                 return tree;
 
+            case SyntaxNodeOrToken nodeOrToken:
+                return nodeOrToken.SyntaxTree;
+
             case SyntaxNode node:
                 return node.SyntaxTree;
 
@@ -91,11 +94,14 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTriviaList triviaList:
                 return triviaList.FirstOrDefault().SyntaxTree;
 
-            case IReadOnlyList<object?> nodeList:
-                return GetSyntaxTree(nodeList.FirstOrDefault());
-
             case SyntaxTokenList tokenList:
                 return tokenList.FirstOrDefault().SyntaxTree;
+
+            case ChildSyntaxList childSyntaxList:
+                return childSyntaxList.FirstOrDefault().SyntaxTree;
+
+            case IReadOnlyList<object?> nodeList:
+                return GetSyntaxTree(nodeList.FirstOrDefault());
 
             case SyntaxReference reference:
                 return reference.SyntaxTree;
@@ -134,6 +140,9 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTree tree:
                 return tree.GetRoot().Span;
 
+            case SyntaxNodeOrToken nodeOrToken:
+                return nodeOrToken.Span;
+
             case SyntaxNode node:
                 return node.Span;
 
@@ -146,11 +155,14 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTriviaList triviaList:
                 return triviaList.Span;
 
-            case IReadOnlyList<object?> nodeList:
-                return ExtractSpanFromList(nodeList, GetSpan);
-
             case SyntaxTokenList tokenList:
                 return ExtractSpanFromList(tokenList, GetSpan);
+
+            case ChildSyntaxList childSyntaxList:
+                return ExtractSpanFromList(childSyntaxList, GetSpan);
+
+            case IReadOnlyList<object?> nodeList:
+                return ExtractSpanFromList(nodeList, GetSpan);
 
             case SyntaxReference reference:
                 return reference.Span;
@@ -194,6 +206,9 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTree tree:
                 return tree.GetRoot().FullSpan;
 
+            case SyntaxNodeOrToken nodeOrToken:
+                return nodeOrToken.FullSpan;
+
             case SyntaxNode node:
                 return node.FullSpan;
 
@@ -206,11 +221,14 @@ public sealed record SyntaxObjectInfo(
             case SyntaxTriviaList triviaList:
                 return triviaList.FullSpan;
 
-            case IReadOnlyList<object?> nodeList:
-                return ExtractSpanFromList(nodeList, GetFullSpan);
-
             case SyntaxTokenList tokenList:
                 return ExtractSpanFromList(tokenList, GetFullSpan);
+
+            case ChildSyntaxList childSyntaxList:
+                return ExtractSpanFromList(childSyntaxList, GetFullSpan);
+
+            case IReadOnlyList<object?> nodeList:
+                return ExtractSpanFromList(nodeList, GetFullSpan);
 
             case SyntaxReference reference:
                 return reference.GetSyntax().FullSpan;

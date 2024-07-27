@@ -5,11 +5,12 @@ using System;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
-public partial class CoverableAnalysisTreeListView : UserControl
+public partial class CoverableAnalysisView : UserControl
 {
-    public event Action? NewRootNodeLoaded;
+    public AnalysisTreeListView ListView = new();
+    public NodeDetailsView NodeDetailsView = new();
 
-    public CoverableAnalysisTreeListView()
+    public CoverableAnalysisView()
     {
         InitializeComponent();
         InitializeCover();
@@ -19,6 +20,18 @@ public partial class CoverableAnalysisTreeListView : UserControl
     {
         var spinner = new LoadingSpinner();
         coverable.ShowCover(spinner, "Initializing application", TimeSpan.Zero);
+
+        coverable.ContainedContent = ListView;
+    }
+
+    public void SetContent(AnalysisViewKind viewKind)
+    {
+        coverable.ContainedContent = viewKind switch
+        {
+            AnalysisViewKind.Tree => ListView,
+            AnalysisViewKind.Details => NodeDetailsView,
+            _ => throw new ArgumentOutOfRangeException(nameof(viewKind)),
+        };
     }
 
     public void RegisterAnalysisPipelineHandler(
@@ -51,17 +64,8 @@ public partial class CoverableAnalysisTreeListView : UserControl
             var image = App.CurrentResourceManager.SuccessImage?.CopyOfSource();
             coverable.UpdateCoverContent(image, "Analysis complete");
 
-            switch (analysisResult)
-            {
-                case NodeRootAnalysisResult result:
-                    listView.RootNode = result.NodeRoot.Build()!;
-                    listView.TargetAnalysisNodeKind = result.TargetAnalysisNodeKind;
-                    break;
-            }
-
             var hideDuration = TimeSpan.FromMilliseconds(500);
             coverable.HideCover(hideDuration);
-            NewRootNodeLoaded?.Invoke();
         }
 
         Dispatcher.UIThread.Invoke(UIUpdate);

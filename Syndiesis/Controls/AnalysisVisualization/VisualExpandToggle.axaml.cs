@@ -22,4 +22,21 @@ public partial class VisualExpandToggle : UserControl
     {
         InitializeComponent();
     }
+
+    public void Toggle()
+    {
+        IsExpandingToggle = !IsExpandingToggle;
+    }
+
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        switch (change?.Property.Name)
+        {
+            case nameof(Foreground):
+                horizontalLine.Fill = Foreground;
+                verticalLine.Fill = Foreground;
+                break;
+        }
+    }
 }

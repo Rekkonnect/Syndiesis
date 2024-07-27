@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using System;
 
 namespace Syndiesis.Controls.Tabs;
 
@@ -24,6 +25,7 @@ public partial class TabEnvelope : UserControl
 
     public int Index { get; set; }
 
+    [Obsolete($"Use {nameof(Tag)}")]
     public object? TagValue { get; set; }
 
     public TabEnvelope()

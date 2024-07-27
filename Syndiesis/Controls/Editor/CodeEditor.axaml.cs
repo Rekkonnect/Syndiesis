@@ -32,8 +32,6 @@ namespace Syndiesis.Controls;
 /// </remarks>
 public partial class CodeEditor : UserControl
 {
-    private const double extraDisplayWidth = 200;
-
     private AnalysisTreeListNode? _hoveredListNode;
 
     private bool _isUpdatingScrollLimits = false;
@@ -45,6 +43,8 @@ public partial class CodeEditor : UserControl
 
     private HybridSingleTreeCompilationSource? _compilationSource;
     private RoslynColorizer? _effectiveColorizer;
+
+    public AnalysisTreeListNode? HoveredListNode => _hoveredListNode;
 
     public AnalysisTreeListView? AssociatedTreeView { get; set; }
 
@@ -77,8 +77,6 @@ public partial class CodeEditor : UserControl
         get => textEditor.TextArea.Caret.Position;
         set => textEditor.TextArea.Caret.Position = value;
     }
-
-    public SimpleSegment HoveredListNodeSegment { get; private set; }
 
     public TextDocument Document
     {
@@ -155,7 +153,8 @@ public partial class CodeEditor : UserControl
 
         _nodeSpanHoverLayer = new NodeSpanHoverLayer(this)
         {
-            HoverForeground = new SolidColorBrush(0x58909090)
+            FullSpanHoverForeground = new SolidColorBrush(0x58505050),
+            InnerSpanHoverForeground = new SolidColorBrush(0x58909090),
         };
 
         textArea.TextView.InsertLayer(
@@ -239,7 +238,6 @@ public partial class CodeEditor : UserControl
         }
         ColorizerEnabled = false;
 
-        ClearHoverSpan();
         _nodeSpanHoverLayer.InvalidateVisual();
     }
 
@@ -344,21 +342,6 @@ public partial class CodeEditor : UserControl
             return;
         }
 
-        ClearHoverSpan();
-
-        if (_hoveredListNode is not null)
-        {
-            var current = _hoveredListNode;
-            if (current is not null)
-            {
-                var currentLine = current.NodeLine;
-                var tree = AssociatedTreeView!.AnalyzedTree;
-                var span = currentLine.DisplaySpan;
-                var segment = new SimpleSegment(span.Start, span.Length);
-                SetHoverSpan(segment);
-            }
-        }
-
         _nodeSpanHoverLayer.InvalidateVisual();
     }
 
@@ -367,7 +350,7 @@ public partial class CodeEditor : UserControl
         if (node is not { AssociatedSyntaxObject: not null and var syntaxObject })
             return;
 
-        var tree = AssociatedTreeView!.AnalyzedTree;
+        var tree = syntaxObject.SyntaxTree;
         var start = syntaxObject.GetLineSpan(tree).Start;
         _disabledNodeHoverTimes++;
         SetCaretPositionBringToView(start.TextViewPosition());
@@ -378,7 +361,7 @@ public partial class CodeEditor : UserControl
         if (node is not { AssociatedSyntaxObject: not null and var syntaxObject })
             return;
 
-        var tree = AssociatedTreeView!.AnalyzedTree;
+        var tree = syntaxObject.SyntaxTree;
         var lineSpan = syntaxObject.GetLineSpan(tree);
         _disabledNodeHoverTimes++;
 
@@ -398,19 +381,6 @@ public partial class CodeEditor : UserControl
     {
         CaretPosition = position;
         textEditor.TextArea.Caret.BringCaretToView();
-    }
-
-    private void ClearHoverSpan()
-    {
-        HoveredListNodeSegment = default;
-    }
-
-    private void SetHoverSpan(SimpleSegment segment)
-    {
-        var area = textEditor.TextArea;
-        int length = area.TextView.Document.TextLength;
-        segment = segment.ConfineToBounds(length);
-        HoveredListNodeSegment = segment;
     }
 
     private void UpdateScrolls()
@@ -567,13 +537,13 @@ public partial class CodeEditor : UserControl
             return null;
 
         var model = source.SemanticModel!;
-        int position = textEditor.TextArea.Caret.Offset;
-        var node = SyntaxNodeAtPosition(tree, position);
+        int position = textEditor.CaretOffset;
+        var node = tree.SyntaxNodeAtPosition(position);
         var symbol = GetSymbol(node);
         if (symbol is null)
         {
             // Attempt at the left side of the caret
-            var otherNode = SyntaxNodeAtPosition(tree, position - 1);
+            var otherNode = tree.SyntaxNodeAtPosition(position - 1);
             var otherSymbol = GetSymbol(otherNode);
             return otherSymbol;
         }
@@ -590,12 +560,6 @@ public partial class CodeEditor : UserControl
                 ?? symbolInfo.CandidateSymbols.FirstOrDefault()
                 ?? model.GetDeclaredSymbol(node);
         }
-    }
-
-    private SyntaxNode? SyntaxNodeAtPosition(SyntaxTree tree, int position)
-    {
-        var root = tree.GetRoot();
-        return root.DeepestNodeContainingPosition(position);
     }
 
     private void SelectCurrentWord()

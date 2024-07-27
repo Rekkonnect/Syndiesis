@@ -10,4 +10,15 @@ public static class LoggerExtensionsEx
     {
         Log.Information($"{name} invoked");
     }
+
+    private static volatile bool _loggedLowEndDevice;
+
+    public static void LogLowEndDevice()
+    {
+        if (_loggedLowEndDevice)
+            return;
+
+        Log.Warning("Low-end device detected, are you sure this application is running smoothly?");
+        _loggedLowEndDevice = true;
+    }
 }

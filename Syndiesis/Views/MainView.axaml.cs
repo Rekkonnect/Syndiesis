@@ -8,7 +8,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
-using Syndiesis.Controls.Tabs;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
@@ -62,29 +61,11 @@ public partial class MainView : UserControl
         codeEditor.Document = ViewModel.Document;
         codeEditor.SetSource(initializingSource);
         codeEditor.CaretPosition = new(4, 48);
-        codeEditor.AssociatedTreeView = syntaxTreeView.listView;
+        codeEditor.AssociatedTreeView = coverableView.ListView;
 
         codeEditor.CompilationSource = ViewModel.HybridCompilationSource;
 
-        analysisTreeViewTabs.Envelopes =
-        [
-            Envelope("Syntax", AnalysisNodeKind.Syntax),
-            Envelope("Symbols", AnalysisNodeKind.Symbol),
-            Envelope("Operations", AnalysisNodeKind.Operation),
-            Envelope("Attributes", AnalysisNodeKind.Attribute),
-        ];
-
-        analysisTreeViewTabs.TabSelected += HandleSelectedAnalysisTab;
-
-        static TabEnvelope Envelope(string text, AnalysisNodeKind analysisKind)
-        {
-            return new()
-            {
-                Text = text,
-                MinWidth = 100,
-                TagValue = analysisKind,
-            };
-        }
+        analysisViewTabs.TabSelected += HandleSelectedAnalysisTab;
     }
 
     private void PrepareQuickInfoShowing(QuickInfoHandler.PrepareShowingEventArgs e)
@@ -178,27 +159,64 @@ public partial class MainView : UserControl
         codeEditor.TextChanged += HandleCodeChanged;
         codeEditor.CaretMoved += HandleCaretPositionChanged;
         codeEditor.SelectionChanged += HandleSelectionChanged;
-        syntaxTreeView.listView.HoveredNode += HandleHoveredNode;
-        syntaxTreeView.listView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
-        syntaxTreeView.listView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
-        syntaxTreeView.listView.NewRootLoaded += HandleNewRootNodeLoaded;
+        coverableView.ListView.HoveredNode += HandleHoveredNode;
+        InitializeNavigationEvents(coverableView.ListView);
+        coverableView.ListView.NewRootLoaded += HandleNewRootNodeLoaded;
+        coverableView.ListView.CaretHoveredNodeSet += HandleCaretHoveredNode;
+
+        coverableView.NodeDetailsView.HoveredNode += HandleDetailsViewHoveredNode;
+        coverableView.NodeDetailsView.CaretHoveredNodeSet += HandleDetailsViewCaretHoveredNode;
+        InitializeNavigationEvents(coverableView.NodeDetailsView);
 
         languageVersionDropDown.LanguageVersionChanged += SetLanguageVersion;
 
         AnalysisPipelineHandler.AnalysisCompleted += OnAnalysisCompleted;
 
         codeEditor.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
-        syntaxTreeView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
+        coverableView.RegisterAnalysisPipelineHandler(AnalysisPipelineHandler);
 
         InitializeButtonEvents();
     }
 
+    private void InitializeNavigationEvents(IAnalysisNodeHoverManager manager)
+    {
+        manager.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
+        manager.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
+    }
+
+    private AnalysisTreeListNode? _caretHoveredNode = null;
+
+    private void HandleDetailsViewCaretHoveredNode(AnalysisTreeListNode? node)
+    {
+        HandleCaretHoveredNode(node);
+        HandleHoveredNode(node);
+    }
+
+    private void HandleCaretHoveredNode(AnalysisTreeListNode? node)
+    {
+        _caretHoveredNode = node;
+    }
+
     private void OnAnalysisCompleted(AnalysisResult result)
     {
+        _pendingDocumentAnalysis = false;
+
         void UpdateUI()
         {
             var version = ViewModel.HybridCompilationSource.CurrentSource.LanguageVersion;
             languageVersionDropDown.DisplayVersion(version);
+            RefreshCaretPosition();
+
+            if (analysisViewTabs.AnalysisViewKind is AnalysisViewKind.Tree)
+            {
+                switch (result)
+                {
+                    case NodeRootAnalysisResult result:
+                        coverableView.ListView.RootNode = result.NodeRoot.Build()!;
+                        coverableView.ListView.TargetAnalysisNodeKind = result.TargetAnalysisNodeKind;
+                        break;
+                }
+            }
         }
 
         Dispatcher.UIThread.InvokeAsync(UpdateUI);
@@ -215,23 +233,100 @@ public partial class MainView : UserControl
 
     private void InitializeAnalysisView()
     {
-        analysisTreeViewTabs.SelectIndex(0);
+        analysisViewTabs.LoadFromSettings(AppSettings.Instance);
     }
 
-    private void HandleSelectedAnalysisTab(TabEnvelope tab)
+    private void HandleSelectedAnalysisTab()
     {
-        var analysisKind = (AnalysisNodeKind)tab.TagValue!;
-        var analysisFactory = new AnalysisExecutionFactory(ViewModel.HybridCompilationSource);
+        ResetHandledCaretPositions();
+        analysisViewTabs.SetDefaultsInSettings(AppSettings.Instance);
+
+        var analysisKind = analysisViewTabs.AnalysisNodeKind;
+        var analysisView = analysisViewTabs.AnalysisViewKind;
+        SetViewVisibility(analysisView);
+
+        if (analysisView is AnalysisViewKind.Tree)
+        {
+            LoadTreeView(analysisKind);
+        }
+        else
+        {
+            LoadDetailsView();
+        }
+    }
+
+    private void LoadDetailsView()
+    {
+        var analysisFactory = CreateAnalysisExecutionFactory();
+        var analysisExecution = analysisFactory.CreateAnalysisExecution(AnalysisNodeKind.Syntax);
+        AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
+        AnalysisPipelineHandler.IgnoreInputDelayOnce();
+        SetCurrentDetailsView();
+    }
+
+    private readonly CancellationTokenFactory _detailsViewCancellationTokenFactory = new();
+
+    private void SetCurrentDetailsView()
+    {
+        var span = SelectionSpan(codeEditor.textEditor);
+        SetCurrentDetailsView(span);
+    }
+
+    private void SetCurrentDetailsView(TextSpan span)
+    {
+        if (AnalysisPipelineHandler.IsWaiting)
+            return;
+
+        var currentSource = ViewModel.HybridCompilationSource.CurrentSource;
+        var node = currentSource.Tree!.SyntaxNodeAtSpanIncludingStructuredTrivia(span);
+        if (node is null)
+            return;
+
+        _detailsViewCancellationTokenFactory.Cancel();
+        var cancellationToken = _detailsViewCancellationTokenFactory.CurrentToken;
+
+        var analysisRoot = GetNodeViewAnalysisRootForSpan(node, span);
+
+        var execution = new NodeViewAnalysisExecution(currentSource.Compilation, analysisRoot);
+        var detailsData = execution.ExecuteCore(cancellationToken);
+        if (detailsData is null)
+            return;
+
+        _ = coverableView.NodeDetailsView.Load(detailsData);
+    }
+
+    private static NodeViewAnalysisRoot GetNodeViewAnalysisRootForSpan(
+        SyntaxNode rootNode,
+        TextSpan span)
+    {
+        var token = rootNode.DeepestTokenContainingSpan(span);
+        var trivia = rootNode.DeepestTriviaContainingSpan(span);
+        return new(rootNode, token, trivia);
+    }
+
+    private void LoadTreeView(AnalysisNodeKind analysisKind)
+    {
+        var analysisFactory = CreateAnalysisExecutionFactory();
         var analysisExecution = analysisFactory.CreateAnalysisExecution(analysisKind);
         AnalysisPipelineHandler.AnalysisExecution = analysisExecution;
         AnalysisPipelineHandler.IgnoreInputDelayOnce();
         if (IsLoaded)
         {
-            Task.Run(ForceAnalysisResetView);
+            Task.Run(ForceAnalysisResetTreeView);
         }
     }
 
-    private async Task ForceAnalysisResetView()
+    private AnalysisExecutionFactory CreateAnalysisExecutionFactory()
+    {
+        return new AnalysisExecutionFactory(ViewModel.HybridCompilationSource);
+    }
+
+    private void SetViewVisibility(AnalysisViewKind viewKind)
+    {
+        coverableView.SetContent(viewKind);
+    }
+
+    private async Task ForceAnalysisResetTreeView()
     {
         await Task.Run(AnalysisPipelineHandler.ForceAnalysis);
     }
@@ -245,7 +340,7 @@ public partial class MainView : UserControl
 
     private void CollapseAllClick(object? sender, RoutedEventArgs e)
     {
-        syntaxTreeView.listView.ResetToInitialRootView();
+        coverableView.ListView.ResetToInitialRootView();
     }
 
     private void HandleSettingsClick(object? sender, RoutedEventArgs e)
@@ -292,8 +387,26 @@ public partial class MainView : UserControl
         RefreshCaretPosition();
     }
 
+    private int _caretPosition = -1;
+    private int _selectionLength = -1;
+
+    private volatile bool _pendingDocumentAnalysis = false;
+
     private void RefreshCaretPosition()
     {
+        // Avoid triggering this more than once
+        if (_pendingDocumentAnalysis)
+            return;
+
+        var position = codeEditor.textEditor.CaretOffset;
+        var selectionLength = codeEditor.textEditor.SelectionLength;
+
+        if (position == _caretPosition && selectionLength == _selectionLength)
+            return;
+
+        _caretPosition = position;
+        _selectionLength = selectionLength;
+
         var span = SelectionSpan(codeEditor.textEditor);
         ShowCurrentCursorPosition(span);
     }
@@ -307,13 +420,38 @@ public partial class MainView : UserControl
 
     private void ShowCurrentCursorPosition(TextSpan span)
     {
-        Dispatcher.UIThread.InvokeAsync(()
-            => syntaxTreeView.listView.EnsureHighlightedPositionRecurring(span));
+        var analysisView = analysisViewTabs.AnalysisViewKind;
+        switch (analysisView)
+        {
+            case AnalysisViewKind.Tree:
+                ShowCurrentCursorPositionForTree(span);
+                break;
+            case AnalysisViewKind.Details:
+                ShowCurrentCursorPositionForDetails(span);
+                break;
+        }
     }
 
-    private void HandleHoveredNode(AnalysisTreeListNode? obj)
+    private void ShowCurrentCursorPositionForTree(TextSpan span)
     {
-        codeEditor.ShowHoveredSyntaxNode(obj);
+        Dispatcher.UIThread.InvokeAsync(()
+            => coverableView.ListView.EnsureHighlightedPositionRecurring(span));
+    }
+
+    private void ShowCurrentCursorPositionForDetails(TextSpan span)
+    {
+        SetCurrentDetailsView(span);
+    }
+
+    private void HandleHoveredNode(AnalysisTreeListNode? node)
+    {
+        codeEditor.ShowHoveredSyntaxNode(node ?? _caretHoveredNode);
+    }
+
+    private void HandleDetailsViewHoveredNode(AnalysisTreeListNode? node)
+    {
+        var spanNode = coverableView.NodeDetailsView.NodeForShowingHoverSpan(node);
+        HandleHoveredNode(spanNode);
     }
 
     private void HandleRequestedSelectTextAtNode(AnalysisTreeListNode node)
@@ -329,10 +467,18 @@ public partial class MainView : UserControl
     private void HandleCodeChanged(object? sender, EventArgs e)
     {
         TriggerPipeline();
+        ResetHandledCaretPositions();
+    }
+
+    private void ResetHandledCaretPositions()
+    {
+        _caretPosition = -1;
+        _selectionLength = -1;
     }
 
     private void TriggerPipeline()
     {
+        _pendingDocumentAnalysis = true;
         var currentSource = ViewModel.Document;
         AnalysisPipelineHandler.InitiateAnalysis(currentSource);
     }
@@ -385,7 +531,7 @@ public partial class MainView : UserControl
 
             Public Class Program
 
-                Public Sub Main()
+                Public Shared Sub Main()
                     ' using conditional compilation symbols is fun
         #If SYMVBIOSIS
                     Const greetings As String = "Hello SymVBiosis!"
@@ -471,6 +617,7 @@ public partial class MainView : UserControl
 
     public void ForceRedoAnalysis()
     {
+        ResetHandledCaretPositions();
         var analysisPipelineHandler = AnalysisPipelineHandler;
 
         analysisPipelineHandler.IgnoreInputDelayOnce();

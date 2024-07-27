@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
-using Syndiesis.Core.DisplayAnalysis;
+﻿using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
 using System;
 using System.Threading;
@@ -15,12 +14,7 @@ public abstract class BaseAnalysisExecution(HybridSingleTreeCompilationSource co
     protected BaseAnalysisNodeCreatorContainer CreateCreatorContainer()
     {
         var source = CompilationSource.CurrentSource;
-        return source.LanguageName switch
-        {
-            LanguageNames.CSharp => new CSharpAnalysisNodeCreatorContainer(),
-            LanguageNames.VisualBasic => new VisualBasicAnalysisNodeCreatorContainer(),
-            _ => throw new NotSupportedException("Unsupported language"),
-        };
+        return BaseAnalysisNodeCreatorContainer.CreateForLanguage(source.LanguageName);
     }
 
     public Task<AnalysisResult> ExecuteForCurrentCompilation(CancellationToken token)
