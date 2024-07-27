@@ -300,6 +300,7 @@ partial class BaseSyntaxAnalysisNodeCreator
         public const string SyntaxList = "SL";
         public const string Token = "T";
         public const string TokenList = "TL";
+        public const string ChildSyntaxList = "CL";
         public const string DisplayValue = "D";
         public const string TriviaList = "VL";
 
@@ -358,6 +359,9 @@ partial class BaseSyntaxAnalysisNodeCreator
 
         public NodeTypeDisplay TokenListNodeDisplay
             => new(Types.TokenList, TokenListColor);
+
+        public NodeTypeDisplay ChildSyntaxListNodeDisplay
+            => new(Types.ChildSyntaxList, SyntaxListColor);
 
         public NodeTypeDisplay TokenNodeDisplay
             => new(Types.Token, TokenKindColor);

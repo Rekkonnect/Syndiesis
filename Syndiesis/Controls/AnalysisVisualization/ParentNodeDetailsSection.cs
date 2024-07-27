@@ -7,7 +7,7 @@ public sealed class ParentNodeDetailsSection : NodeDetailsSection
 {
     public ParentNodeDetailsSection()
     {
-        HeaderText = "Parent Node";
+        HeaderText = "Parents";
     }
 
     protected override IReadOnlyList<AnalysisTreeListNode> CreateInitialNodes()

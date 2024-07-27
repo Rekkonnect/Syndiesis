@@ -738,7 +738,7 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
 
             return AnalysisTreeListNodeLine(
                 inlines,
-                Styles.TokenListNodeDisplay);
+                Styles.ChildSyntaxListNodeDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(ChildSyntaxList list)

@@ -100,7 +100,7 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
     public void ClearHover()
     {
         _hoveredNode?.UpdateHovering(false);
-        _hoveredNode = null;
+        SetHoveredNode(null);
     }
 
     public void RemoveHover(AnalysisTreeListNode node)
@@ -108,7 +108,7 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
         if (node != _hoveredNode)
             return;
 
-        _hoveredNode = null;
+        SetHoveredNode(null);
         node.UpdateHovering(false);
     }
 
@@ -119,8 +119,13 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
 
         var previousHover = _hoveredNode;
         previousHover?.UpdateHovering(false);
-        _hoveredNode = node;
         node.UpdateHovering(true);
+        SetHoveredNode(node);
+    }
+
+    private void SetHoveredNode(AnalysisTreeListNode? node)
+    {
+        _hoveredNode = node;
         HoveredNode?.Invoke(node);
     }
     #endregion

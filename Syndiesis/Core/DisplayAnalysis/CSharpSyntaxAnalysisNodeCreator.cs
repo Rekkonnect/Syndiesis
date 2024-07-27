@@ -742,7 +742,7 @@ partial class CSharpSyntaxAnalysisNodeCreator
 
             return AnalysisTreeListNodeLine(
                 inlines,
-                Styles.TokenListNodeDisplay);
+                Styles.ChildSyntaxListNodeDisplay);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(ChildSyntaxList list)
