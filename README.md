@@ -27,9 +27,9 @@ To compile this program you will need an IDE like Visual Studio 2022, or JetBrai
 
 ### Demo
 
-> _The video was shot in version 1.1.0_
+> _The video was shot in version 1.2.0_
 
-https://github.com/Rekkonnect/Syndiesis/assets/8298332/268a2205-d2a4-446b-a145-5748f30f85c0
+https://github.com/user-attachments/assets/19821a70-e020-4929-9662-584d1afb6416
 
 ## Stack
 
