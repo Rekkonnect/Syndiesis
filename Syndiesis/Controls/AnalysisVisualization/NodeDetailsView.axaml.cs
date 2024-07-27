@@ -10,6 +10,7 @@ namespace Syndiesis.Controls.AnalysisVisualization;
 
 public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
 {
+    public event Action<AnalysisTreeListNode?>? HoveredNode;
     public event Action<AnalysisTreeListNode?>? CaretHoveredNodeSet;
 
     public NodeDetailsView()
@@ -112,6 +113,7 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
         previousHover?.UpdateHovering(false);
         _hoveredNode = node;
         node.UpdateHovering(true);
+        HoveredNode?.Invoke(node);
     }
     #endregion
 
@@ -136,6 +138,43 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
         {
             section.EvaluateHovering();
         }
+    }
+
+    public AnalysisTreeListNode? NodeForShowingHoverSpan(AnalysisTreeListNode? node)
+    {
+        if (node is null)
+            return null;
+
+        while (true)
+        {
+            if (node is null)
+                return null;
+
+            if (node.NodeLine.AnalysisNodeKind is not AnalysisNodeKind.None)
+            {
+                break;
+            }
+
+            node = node.ParentNode;
+        }
+
+        bool shouldShow = ShouldShowHoverSpan(node);
+        if (!shouldShow)
+            return null;
+
+        return node;
+    }
+
+    public bool ShouldShowHoverSpan(AnalysisTreeListNode? node)
+    {
+        if (node is null)
+            return false;
+
+        var section = NodeDetailsSection.ContainingSectionForNode(node);
+        return section == currentNodeSection
+            || section == parentSection
+            || section == childrenSection
+            ;
     }
 
     #region Scrolls

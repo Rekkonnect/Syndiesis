@@ -9,7 +9,6 @@ using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.AccessControl;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;
@@ -41,6 +40,23 @@ public static partial class CommonAvaloniaExtensions
     {
         var observer = new AnonymousObserver<T>(action);
         observable.Subscribe(observer);
+    }
+
+    public static T? NearestAncestorOfType<T>(this StyledElement element)
+        where T : StyledElement
+    {
+        StyledElement? current = element;
+        while (true)
+        {
+            if (current is null)
+                return null;
+
+            var parent = current.Parent;
+            if (parent is T ancestor)
+                return ancestor;
+
+            current = parent;
+        }
     }
 }
 

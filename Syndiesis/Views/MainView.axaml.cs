@@ -163,8 +163,9 @@ public partial class MainView : UserControl
         coverableView.ListView.RequestedPlaceCursorAtNode += HandleRequestedPlaceCursorAtNode;
         coverableView.ListView.RequestedSelectTextAtNode += HandleRequestedSelectTextAtNode;
         coverableView.ListView.NewRootLoaded += HandleNewRootNodeLoaded;
-
         coverableView.ListView.CaretHoveredNodeSet += HandleCaretHoveredNode;
+
+        coverableView.NodeDetailsView.HoveredNode += HandleDetailsViewHoveredNode;
         coverableView.NodeDetailsView.CaretHoveredNodeSet += HandleDetailsViewCaretHoveredNode;
 
         languageVersionDropDown.LanguageVersionChanged += SetLanguageVersion;
@@ -403,6 +404,12 @@ public partial class MainView : UserControl
     private void HandleHoveredNode(AnalysisTreeListNode? node)
     {
         codeEditor.ShowHoveredSyntaxNode(node ?? _caretHoveredNode);
+    }
+
+    private void HandleDetailsViewHoveredNode(AnalysisTreeListNode? node)
+    {
+        var spanNode = coverableView.NodeDetailsView.NodeForShowingHoverSpan(node);
+        HandleHoveredNode(spanNode);
     }
 
     private void HandleRequestedSelectTextAtNode(AnalysisTreeListNode node)

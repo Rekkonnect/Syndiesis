@@ -2,7 +2,6 @@ using Avalonia;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Garyon.Extensions;
@@ -123,23 +122,26 @@ public partial class AnalysisTreeListNode : UserControl
     {
         get
         {
-            StyledElement? current = this;
-            while (current is not null)
-            {
-                var parent = current.Parent;
-                if (parent is AnalysisTreeListNode node)
-                    return node;
-
-                current = parent;
-            }
-
-            return null;
+            return this.NearestAncestorOfType<AnalysisTreeListNode>();
         }
     }
 
     public AnalysisTreeListNode()
     {
         InitializeComponent();
+    }
+
+    public AnalysisTreeListNode RootNode()
+    {
+        var current = this;
+        while (true)
+        {
+            var next = current.ParentNode;
+            if (next is null)
+                return current;
+
+            current = next;
+        }
     }
 
     private static readonly Color _topLineHoverColor = Color.FromArgb(64, 128, 128, 128);

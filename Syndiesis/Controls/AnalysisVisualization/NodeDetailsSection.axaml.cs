@@ -1,11 +1,9 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
 using Garyon.Extensions;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -117,5 +115,14 @@ public partial class NodeDetailsSection : UserControl
     public void SetMinWidth(double width)
     {
         nodeLineStackPanel.MinWidth = width;
+    }
+
+    public static NodeDetailsSection? ContainingSectionForNode(AnalysisTreeListNode? node)
+    {
+        if (node is null)
+            return null;
+
+        var root = node.RootNode();
+        return root.NearestAncestorOfType<NodeDetailsSection>();
     }
 }
