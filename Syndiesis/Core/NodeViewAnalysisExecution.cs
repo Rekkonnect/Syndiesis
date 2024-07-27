@@ -8,16 +8,38 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 
-public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNode node)
+public record NodeViewAnalysisRoot(
+    SyntaxNode Node,
+    SyntaxToken Token,
+    SyntaxTrivia Trivia)
 {
+    public SyntaxTree SyntaxTree => Node.SyntaxTree;
+}
+
+public sealed class NodeViewAnalysisExecution(
+    Compilation compilation,
+    NodeViewAnalysisRoot root)
+{
+    #region Value Sources
     private const string CurrentNodeName = "Node";
+    private const string CurrentTokenName = "Token";
+    private const string CurrentTriviaName = "Trivia";
 
     // value sources
     private static readonly DisplayValueSource _currentNodeValueSource
         = DisplayValueSource.Property(CurrentNodeName);
 
+    private static readonly DisplayValueSource _currentTokenValueSource
+        = DisplayValueSource.Property(CurrentTokenName);
+
+    private static readonly DisplayValueSource _currentTriviaValueSource
+        = DisplayValueSource.Property(CurrentTriviaName);
+
     private static readonly DisplayValueSource _parentValueSource
         = DisplayValueSource.Property(nameof(SyntaxNode.Parent));
+
+    private static readonly DisplayValueSource _parentTriviaValueSource
+        = DisplayValueSource.Property(nameof(SyntaxNode.ParentTrivia));
 
     private static readonly DisplayValueSource _childNodesValueSource
         = DisplayValueSource.Method(nameof(SyntaxNode.ChildNodes));
@@ -50,11 +72,13 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
 
     private static readonly ComplexDisplayValueSource _getOperationValueSource
         = ConstructSemanticModelValueSource(nameof(SemanticModel.GetOperation));
+    #endregion
 
     private readonly Compilation _compilation = compilation;
-    private readonly SyntaxNode _node = node;
+    private readonly NodeViewAnalysisRoot _root = root;
+    private readonly SyntaxNode _node = root.Node;
 
-    private readonly SemanticModel _semanticModel = compilation.GetSemanticModel(node.SyntaxTree);
+    private readonly SemanticModel _semanticModel = compilation.GetSemanticModel(root.SyntaxTree);
 
     private readonly BaseAnalysisNodeCreatorContainer _container =
         BaseAnalysisNodeCreatorContainer
@@ -80,8 +104,14 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
     {
         var syntaxCreator = _container.SyntaxCreator;
         var currentNode = syntaxCreator.CreateRootNode(_node, _currentNodeValueSource);
+        var currentToken = syntaxCreator.CreateRootToken(_root.Token, _currentTokenValueSource);
+        var currentTrivia = syntaxCreator.CreateRootTrivia(_root.Trivia, _currentTriviaValueSource);
+
         var parentNode = syntaxCreator.CreateRootGeneral(
             _node.Parent, _parentValueSource, false);
+
+        var parentTrivia = syntaxCreator.CreateRootTrivia(
+            _node.ParentTrivia, _parentTriviaValueSource, false);
 
         if (cancellationToken.IsCancellationRequested)
             return null;
@@ -125,9 +155,14 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
             return null;
 
         return new(
-            new(currentNode),
+            new(
+                currentNode,
+                currentToken,
+                currentTrivia),
 
-            new(parentNode),
+            new(
+                parentNode,
+                parentTrivia),
 
             new(
                 childNodes,
@@ -156,8 +191,16 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
 
         var currentNode = syntaxCreator
             .CreateLoadingNode(null, _currentNodeValueSource);
+        var currentToken = syntaxCreator
+            .CreateLoadingNode(null, _currentTokenValueSource);
+        var currentTrivia = syntaxCreator
+            .CreateLoadingNode(null, _currentTriviaValueSource);
+
         var parentNode = syntaxCreator
             .CreateLoadingNode(null, _parentValueSource);
+        var parentTrivia = syntaxCreator
+            .CreateLoadingNode(null, _parentTriviaValueSource);
+
         var childNodes = syntaxCreator
             .CreateLoadingNode(null, _childNodesValueSource);
         var childTokens = syntaxCreator
@@ -181,9 +224,14 @@ public sealed class NodeViewAnalysisExecution(Compilation compilation, SyntaxNod
             .CreateLoadingNode(null, _getOperationValueSource);
 
         return new(
-            new(currentNode),
+            new(
+                currentNode,
+                currentToken,
+                currentTrivia),
 
-            new(parentNode),
+            new(
+                parentNode,
+                parentTrivia),
 
             new(
                 childNodes,

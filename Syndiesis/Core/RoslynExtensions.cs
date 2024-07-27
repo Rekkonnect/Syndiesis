@@ -47,6 +47,92 @@ public static class RoslynExtensions
         }
     }
 
+    public static SyntaxToken DeepestTokenContainingSpan(this SyntaxNode parent, TextSpan span)
+    {
+        if (!parent.FullSpan.Contains(span))
+            return default;
+
+        var current = parent;
+
+        while (true)
+        {
+            var child = current.ChildThatContainsSpan(span);
+            if (child == default)
+                return default;
+
+            if (child.IsToken)
+                return child.AsToken();
+
+            var node = child.AsNode();
+            Debug.Assert(node is not null);
+            current = node;
+        }
+    }
+
+    public static SyntaxTrivia DeepestTriviaContainingSpan(this SyntaxNode parent, TextSpan span)
+    {
+        if (!parent.FullSpan.Contains(span))
+            return default;
+
+        var current = parent;
+
+        while (true)
+        {
+            var child = current.ChildThatContainsSpan(span);
+            if (child == default)
+                return default;
+
+            var trivia = child.FindTrivia(span);
+            if (trivia != default)
+            {
+                return trivia;
+            }
+
+            if (child.IsToken)
+                return default;
+
+            var node = child.AsNode();
+            Debug.Assert(node is not null);
+            current = node;
+        }
+    }
+
+    public static SyntaxTrivia FindTrivia(this SyntaxNodeOrToken child, TextSpan span)
+    {
+        var startingTrivia = FindTrivia(child, span.Start);
+        if (startingTrivia == default)
+            return default;
+
+        var endingTrivia = FindTrivia(child, span.End);
+        if (startingTrivia != endingTrivia)
+            return default;
+
+        return startingTrivia;
+    }
+
+    public static SyntaxTrivia FindTrivia(this SyntaxNodeOrToken child, int position)
+    {
+        var leading = child.GetLeadingTrivia();
+        if (leading.Span.Contains(position))
+        {
+            return AtPosition(leading, position);
+        }
+
+        var trailing = child.GetTrailingTrivia();
+        return AtPosition(trailing, position);
+    }
+
+    private static SyntaxTrivia AtPosition(this SyntaxTriviaList list, int position)
+    {
+        foreach (var trivia in list)
+        {
+            if (trivia.Span.Contains(position))
+                return trivia;
+        }
+
+        return default;
+    }
+
     public static SyntaxNode? DeepestNodeContainingPosition(this SyntaxNode parent, int position)
     {
         if (!parent.FullSpan.Contains(position))
@@ -71,11 +157,15 @@ public static class RoslynExtensions
 
     public static SyntaxNodeOrToken ChildThatContainsSpan(this SyntaxNode node, TextSpan span)
     {
-        if (!node.FullSpan.Contains(span))
+        var fullSpan = node.FullSpan;
+        if (!fullSpan.Contains(span))
             return null;
 
         var start = span.Start;
         var end = span.End;
+
+        if (!fullSpan.Contains(start))
+            return null;
 
         var startingChild = node.ChildThatContainsPosition(start);
         if (startingChild == default)

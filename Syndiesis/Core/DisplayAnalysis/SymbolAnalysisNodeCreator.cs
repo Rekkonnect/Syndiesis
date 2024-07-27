@@ -105,52 +105,58 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         ISymbol symbol,
         GroupedRunInlineCollection inlines)
     {
+        var creator = CreatorForSymbol(symbol);
+        return creator?.CreateNodeLine(symbol, inlines);
+    }
+
+    public IBaseSymbolRootViewNodeCreator? CreatorForSymbol(ISymbol symbol)
+    {
         switch (symbol)
         {
             case IAssemblySymbol assemblySymbol:
-                return _assemblySymbolCreator.CreateNodeLine(assemblySymbol, inlines);
+                return _assemblySymbolCreator;
 
             case IModuleSymbol moduleSymbol:
-                return _moduleSymbolCreator.CreateNodeLine(moduleSymbol, inlines);
+                return _moduleSymbolCreator;
 
             case INamespaceSymbol namespaceSymbol:
-                return _namespaceSymbolCreator.CreateNodeLine(namespaceSymbol, inlines);
+                return _namespaceSymbolCreator;
 
             case IFieldSymbol fieldSymbol:
-                return _fieldSymbolCreator.CreateNodeLine(fieldSymbol, inlines);
+                return _fieldSymbolCreator;
 
             case IPropertySymbol propertySymbol:
-                return _propertySymbolCreator.CreateNodeLine(propertySymbol, inlines);
+                return _propertySymbolCreator;
 
             case IEventSymbol eventSymbol:
-                return _eventSymbolCreator.CreateNodeLine(eventSymbol, inlines);
+                return _eventSymbolCreator;
 
             case IMethodSymbol methodSymbol:
-                return _methodSymbolCreator.CreateNodeLine(methodSymbol, inlines);
+                return _methodSymbolCreator;
 
             case ITypeParameterSymbol typeParameter:
-                return _typeParameterSymbolCreator.CreateNodeLine(typeParameter, inlines);
+                return _typeParameterSymbolCreator;
 
             case IParameterSymbol parameter:
-                return _parameterSymbolCreator.CreateNodeLine(parameter, inlines);
+                return _parameterSymbolCreator;
 
             case ILocalSymbol localSymbol:
-                return _localSymbolCreator.CreateNodeLine(localSymbol, inlines);
+                return _localSymbolCreator;
 
             case IPreprocessingSymbol preprocessingSymbol:
-                return _preprocessingSymbolCreator.CreateNodeLine(preprocessingSymbol, inlines);
+                return _preprocessingSymbolCreator;
 
             case IRangeVariableSymbol rangeVariableSymbol:
-                return _rangeVariableSymbolCreator.CreateNodeLine(rangeVariableSymbol, inlines);
+                return _rangeVariableSymbolCreator;
 
             case IAliasSymbol aliasSymbol:
-                return _aliasSymbolCreator.CreateNodeLine(aliasSymbol, inlines);
+                return _aliasSymbolCreator;
 
             case INamedTypeSymbol namedTypeSymbol:
-                return _namedTypeSymbolCreator.CreateNodeLine(namedTypeSymbol, inlines);
+                return _namedTypeSymbolCreator;
 
             case ITypeSymbol typeSymbol:
-                return _typeSymbolCreator.CreateNodeLine(typeSymbol, inlines);
+                return _typeSymbolCreator;
 
             default:
                 return null;
@@ -385,12 +391,30 @@ partial class SymbolAnalysisNodeCreator
         }
     }
 
+    public interface IBaseSymbolRootViewNodeCreator
+    {
+        public void AddQuickInfoInlines(
+            ISymbol symbol, GroupedRunInlineCollection inlines);
+
+        public AnalysisTreeListNodeLine CreateNodeLine(
+            ISymbol symbol, GroupedRunInlineCollection inlines);
+    }
+
     public abstract class ISymbolRootViewNodeCreator<TSymbol>(SymbolAnalysisNodeCreator creator)
-        : SymbolRootViewNodeCreator<TSymbol>(creator)
+        : SymbolRootViewNodeCreator<TSymbol>(creator), IBaseSymbolRootViewNodeCreator
         where TSymbol : ISymbol
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
             TSymbol symbol, GroupedRunInlineCollection inlines)
+        {
+            AddQuickInfoInlines(symbol, inlines);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.SymbolDisplay);
+        }
+
+        public void AddQuickInfoInlines(TSymbol symbol, GroupedRunInlineCollection inlines)
         {
             var type = MatchingSymbolInterface(symbol.GetType());
             var typeDetailsInline = TypeDetailsInline(type);
@@ -404,10 +428,18 @@ partial class SymbolAnalysisNodeCreator
             inlines.Add(NewValueKindSplitterRun());
             var kindInline = CreateKindInline(symbol);
             inlines.Add(kindInline);
+        }
 
-            return AnalysisTreeListNodeLine(
-                inlines,
-                Styles.SymbolDisplay);
+        AnalysisTreeListNodeLine IBaseSymbolRootViewNodeCreator.CreateNodeLine(
+            ISymbol symbol, GroupedRunInlineCollection inlines)
+        {
+            return CreateNodeLine((TSymbol)symbol, inlines);
+        }
+
+        void IBaseSymbolRootViewNodeCreator.AddQuickInfoInlines(
+            ISymbol symbol, GroupedRunInlineCollection inlines)
+        {
+            AddQuickInfoInlines((TSymbol)symbol, inlines);
         }
 
         protected virtual SingleRunInline? CreateNameInline(TSymbol symbol)

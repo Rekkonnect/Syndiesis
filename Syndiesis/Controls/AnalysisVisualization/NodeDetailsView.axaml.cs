@@ -32,6 +32,7 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
     public async Task Load(NodeDetailsViewData viewData)
     {
         currentNodeSection.CollapseRoots();
+        ScrollToTop();
 
         var tasks = new List<Task>();
 
@@ -45,6 +46,11 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
         await Task.WhenAll(tasks);
 
         SetCaretHoveredNode();
+    }
+
+    private void ScrollToTop()
+    {
+        verticalScrollBar.Step(-_topOffset);
     }
 
     private void SetCaretHoveredNode()

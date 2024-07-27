@@ -799,6 +799,20 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
             var kind = trivia.Kind();
             switch (kind)
             {
+                case SyntaxKind.None:
+                {
+                    const string displayText = "[none]";
+                    var displayTextRun = Run(displayText, CommonStyles.NullValueBrush);
+                    inlines.AddSingle(displayTextRun);
+
+                    AddTriviaKindWithSplitter(
+                        trivia,
+                        Styles.WhitespaceTriviaKindBrush,
+                        inlines);
+
+                    return Styles.WhitespaceTriviaDisplay;
+                }
+
                 case SyntaxKind.WhitespaceTrivia:
                 {
                     var displayText = WhitespaceTriviaText(trivia);

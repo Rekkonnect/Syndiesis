@@ -2,6 +2,7 @@
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,6 +19,7 @@ using GroupedRunInline = GroupedRunInline.IBuilder;
 using SingleRunInline = SingleRunInline.Builder;
 using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
+using static Syndiesis.Core.DisplayAnalysis.BaseAnalysisNodeCreator;
 
 public sealed partial class SemanticModelAnalysisNodeCreator : BaseAnalysisNodeCreator
 {
@@ -264,12 +266,71 @@ partial class SemanticModelAnalysisNodeCreator
         public override AnalysisTreeListNodeLine CreateNodeLine(
             SymbolInfo symbol, GroupedRunInlineCollection inlines)
         {
-            var inline = NestedTypeDisplayGroupedRun(typeof(SymbolInfo));
-            inlines.Add(inline);
+            AddQuickDisplayInlines(symbol, inlines);
 
             return AnalysisTreeListNodeLine(
                 inlines,
                 Styles.SymbolInfoDisplay);
+        }
+
+        private void AddQuickDisplayInlines(SymbolInfo info, GroupedRunInlineCollection inlines)
+        {
+            if (info.Symbol is not null)
+            {
+                AddSymbolInlines(info.Symbol, inlines);
+            }
+            else
+            {
+                AddCandidateSymbolInlines(info, inlines);
+            }
+        }
+
+        private void AddSymbolInlines(ISymbol symbol, GroupedRunInlineCollection inlines)
+        {
+            var creator = Creator.ParentContainer.SymbolCreator.CreatorForSymbol(symbol);
+            creator?.AddQuickInfoInlines(symbol, inlines);
+        }
+
+        private void AddCandidateSymbolInlines(SymbolInfo symbol, GroupedRunInlineCollection inlines)
+        {
+            var rawTextBrush = CommonStyles.RawValueBrush;
+
+            var candidates = symbol.CandidateSymbols;
+            if (candidates.IsDefaultOrEmpty)
+            {
+                var noCandidatesRun = Run("0 candidates", rawTextBrush);
+                inlines.Add(noCandidatesRun);
+                return;
+            }
+
+            int count = candidates.Length;
+            var run = Run(CandidatesString(count), rawTextBrush);
+            inlines.Add(run);
+
+            if (symbol.CandidateReason is not CandidateReason.None)
+            {
+                var viaRun = Run(" due to ", rawTextBrush);
+                inlines.Add(viaRun);
+
+                var reasonRun = Run(
+                    symbol.CandidateReason.ToString(),
+                    CommonStyles.EnumFieldMainBrush);
+                var reasonInline = new SingleRunInline(reasonRun);
+                inlines.Add(reasonInline);
+            }
+        }
+
+        private static string CandidatesString(int count)
+        {
+            return $"{count} {CandidatesFormString(count)}";
+        }
+
+        private static string CandidatesFormString(int count)
+        {
+            if (count is 1)
+                return "candidate";
+
+            return "candidates";
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(SymbolInfo symbol)
@@ -336,12 +397,72 @@ partial class SemanticModelAnalysisNodeCreator
         public override AnalysisTreeListNodeLine CreateNodeLine(
             PreprocessingSymbolInfo preprocessing, GroupedRunInlineCollection inlines)
         {
-            var inline = NestedTypeDisplayGroupedRun(typeof(PreprocessingSymbolInfo));
-            inlines.Add(inline);
+            AddQuickDisplayInlines(preprocessing, inlines);
 
             return AnalysisTreeListNodeLine(
                 inlines,
                 Styles.PreprocessingSymbolInfoDisplay);
+        }
+
+        private void AddQuickDisplayInlines(
+            PreprocessingSymbolInfo info, GroupedRunInlineCollection inlines)
+        {
+            if (info.Symbol is null)
+            {
+                AddNoSymbolInlines(inlines);
+            }
+            else
+            {
+                AddPreprocessingSymbolInlines(info, inlines);
+            }
+        }
+
+        private void AddNoSymbolInlines(GroupedRunInlineCollection inlines)
+        {
+            var noSymbolsRun = Run("[none]", TriviaStyles.WhitespaceTriviaBrush);
+            var noSymbolsInline = new SingleRunInline(noSymbolsRun);
+            inlines.Add(noSymbolsInline);
+        }
+
+        private void AddPreprocessingSymbolInlines(
+            PreprocessingSymbolInfo symbol, GroupedRunInlineCollection inlines)
+        {
+            var name = symbol.Symbol!.Name;
+
+            var preprocessingSymbolRun = Run(
+                name,
+                AppSettings.Instance.ColorizationPreferences.ColorizationStyles!.PreprocessingBrush);
+            var preprocessingSymbolInline = new SingleRunInline(preprocessingSymbolRun);
+            inlines.Add(preprocessingSymbolInline);
+
+            var splitter = NewValueKindSplitterRun();
+            inlines.Add(splitter);
+
+            var definedRun = NewDefinedRun(symbol.IsDefined);
+            inlines.Add(definedRun);
+        }
+
+        private static BaseSyntaxAnalysisNodeCreator.SyntaxStyles TriviaStyles
+            => AppSettings.Instance.NodeColorPreferences.SyntaxStyles!;
+
+        private static SingleRunInline NewDefinedRun(bool defined)
+        {
+            return defined
+                ? NewDefinedRun()
+                : NewUndefinedRun()
+                ;
+        }
+
+        private static SingleRunInline NewUndefinedRun()
+        {
+            var run = Run("[undefined]", TriviaStyles.BasicTriviaNodeTypeBrush);
+            return new SingleRunInline(run);
+        }
+
+        private static SingleRunInline NewDefinedRun()
+        {
+            var run = Run("[defined]", TriviaStyles.WhitespaceTriviaBrush);
+            return new SingleRunInline(run);
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(PreprocessingSymbolInfo preprocessing)

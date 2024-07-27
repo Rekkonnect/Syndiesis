@@ -12,11 +12,14 @@ public sealed record NodeDetailsViewData(
     )
 {
     public sealed record CurrentNodeSection(
-        UIBuilder.AnalysisTreeListNode CurrentNode
+        UIBuilder.AnalysisTreeListNode CurrentNode,
+        UIBuilder.AnalysisTreeListNode CurrentToken,
+        UIBuilder.AnalysisTreeListNode CurrentTrivia
         );
 
     public sealed record ParentNodeSection(
-        UIBuilder.AnalysisTreeListNode ParentNode
+        UIBuilder.AnalysisTreeListNode ParentNode,
+        UIBuilder.AnalysisTreeListNode ParentTrivia
         );
 
     public sealed record ChildrenSection(

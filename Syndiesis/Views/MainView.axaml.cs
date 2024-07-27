@@ -193,17 +193,23 @@ public partial class MainView : UserControl
 
     private void OnAnalysisCompleted(AnalysisResult result)
     {
+        _pendingDocumentAnalysis = false;
+
         void UpdateUI()
         {
             var version = ViewModel.HybridCompilationSource.CurrentSource.LanguageVersion;
             languageVersionDropDown.DisplayVersion(version);
+            RefreshCaretPosition();
 
-            switch (result)
+            if (analysisViewTabs.AnalysisViewKind is AnalysisViewKind.Tree)
             {
-                case NodeRootAnalysisResult result:
-                    coverableView.ListView.RootNode = result.NodeRoot.Build()!;
-                    coverableView.ListView.TargetAnalysisNodeKind = result.TargetAnalysisNodeKind;
-                    break;
+                switch (result)
+                {
+                    case NodeRootAnalysisResult result:
+                        coverableView.ListView.RootNode = result.NodeRoot.Build()!;
+                        coverableView.ListView.TargetAnalysisNodeKind = result.TargetAnalysisNodeKind;
+                        break;
+                }
             }
         }
 
@@ -273,12 +279,23 @@ public partial class MainView : UserControl
         _detailsViewCancellationTokenFactory.Cancel();
         var cancellationToken = _detailsViewCancellationTokenFactory.CurrentToken;
 
-        var execution = new NodeViewAnalysisExecution(currentSource.Compilation, node);
+        var analysisRoot = GetNodeViewAnalysisRootForSpan(node, span);
+
+        var execution = new NodeViewAnalysisExecution(currentSource.Compilation, analysisRoot);
         var detailsData = execution.ExecuteCore(cancellationToken);
         if (detailsData is null)
             return;
 
         _ = coverableView.NodeDetailsView.Load(detailsData);
+    }
+
+    private static NodeViewAnalysisRoot GetNodeViewAnalysisRootForSpan(
+        SyntaxNode rootNode,
+        TextSpan span)
+    {
+        var token = rootNode.DeepestTokenContainingSpan(span);
+        var trivia = rootNode.DeepestTriviaContainingSpan(span);
+        return new(rootNode, token, trivia);
     }
 
     private void LoadTreeView(AnalysisNodeKind analysisKind)
@@ -367,9 +384,14 @@ public partial class MainView : UserControl
     private int _caretPosition = -1;
     private int _selectionLength = -1;
 
+    private volatile bool _pendingDocumentAnalysis = false;
+
     private void RefreshCaretPosition()
     {
         // Avoid triggering this more than once
+        if (_pendingDocumentAnalysis)
+            return;
+
         var position = codeEditor.textEditor.CaretOffset;
         var selectionLength = codeEditor.textEditor.SelectionLength;
 
@@ -450,6 +472,7 @@ public partial class MainView : UserControl
 
     private void TriggerPipeline()
     {
+        _pendingDocumentAnalysis = true;
         var currentSource = ViewModel.Document;
         AnalysisPipelineHandler.InitiateAnalysis(currentSource);
     }
