@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
+using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -9,16 +10,16 @@ using System.Threading.Tasks;
 namespace Syndiesis.Core;
 
 public record NodeViewAnalysisRoot(
-    SyntaxNode Node,
+    SyntaxTree SyntaxTree,
+    SyntaxNode? Node,
     SyntaxToken Token,
     SyntaxTrivia Trivia)
 {
-    public SyntaxTree SyntaxTree => Node.SyntaxTree;
 }
 
 public sealed class NodeViewAnalysisExecution(
-    Compilation compilation,
-    NodeViewAnalysisRoot root)
+    Compilation? compilation,
+    NodeViewAnalysisRoot? root)
 {
     #region Value Sources
     private const string CurrentNodeName = "Node";
@@ -74,15 +75,32 @@ public sealed class NodeViewAnalysisExecution(
         = ConstructSemanticModelValueSource(nameof(SemanticModel.GetOperation));
     #endregion
 
-    private readonly Compilation _compilation = compilation;
-    private readonly NodeViewAnalysisRoot _root = root;
-    private readonly SyntaxNode _node = root.Node;
+    private readonly Compilation? _compilation = compilation;
+    private readonly NodeViewAnalysisRoot? _root = root;
+    private readonly SyntaxNode? _node = root?.Node;
 
-    private readonly SemanticModel _semanticModel = compilation.GetSemanticModel(root.SyntaxTree);
+    private readonly SemanticModel? _semanticModel
+        = SemanticModelForTree(compilation, root?.SyntaxTree);
 
     private readonly BaseAnalysisNodeCreatorContainer _container =
         BaseAnalysisNodeCreatorContainer
-            .CreateForLanguage(compilation.Language);
+            .CreateForLanguage(compilation?.Language ?? LanguageNames.CSharp);
+
+    public static readonly NodeDetailsViewData? InitializingData;
+
+    static NodeViewAnalysisExecution()
+    {
+        var execution = new NodeViewAnalysisExecution(null, null);
+        InitializingData = execution.ExecuteCore(default);
+    }
+
+    private static SemanticModel? SemanticModelForTree(Compilation? compilation, SyntaxTree? tree)
+    {
+        if (tree is null)
+            return null;
+
+        return compilation?.GetSemanticModel(tree);
+    }
 
     private static ComplexDisplayValueSource ConstructSemanticModelValueSource(
         string methodName)
@@ -103,15 +121,17 @@ public sealed class NodeViewAnalysisExecution(
     public NodeDetailsViewData? ExecuteCore(CancellationToken cancellationToken)
     {
         var syntaxCreator = _container.SyntaxCreator;
-        var currentNode = syntaxCreator.CreateRootNode(_node, _currentNodeValueSource);
-        var currentToken = syntaxCreator.CreateRootToken(_root.Token, _currentTokenValueSource);
-        var currentTrivia = syntaxCreator.CreateRootTrivia(_root.Trivia, _currentTriviaValueSource);
+        var currentNode = syntaxCreator.CreateRootGeneral(_node, _currentNodeValueSource);
+        var currentToken = syntaxCreator.CreateRootToken(
+            _root?.Token ?? default, _currentTokenValueSource);
+        var currentTrivia = syntaxCreator.CreateRootTrivia(
+            _root?.Trivia ?? default, _currentTriviaValueSource);
 
         var parentNode = syntaxCreator.CreateRootGeneral(
-            _node.Parent, _parentValueSource, false);
+            _node?.Parent, _parentValueSource, false);
 
         var parentTrivia = syntaxCreator.CreateRootTrivia(
-            _node.ParentTrivia, _parentTriviaValueSource, false);
+            _node?.ParentTrivia ?? default, _parentTriviaValueSource, false);
 
         if (cancellationToken.IsCancellationRequested)
             return null;
@@ -180,75 +200,6 @@ public sealed class NodeViewAnalysisExecution(
             );
     }
 
-    public static readonly NodeDetailsViewData InitializingData = CreateInitializingData();
-
-    private static NodeDetailsViewData CreateInitializingData()
-    {
-        var creatorContainer = BaseAnalysisNodeCreatorContainer
-            .CreateForLanguage(LanguageNames.CSharp);
-
-        var syntaxCreator = creatorContainer.SyntaxCreator;
-
-        var currentNode = syntaxCreator
-            .CreateLoadingNode(null, _currentNodeValueSource);
-        var currentToken = syntaxCreator
-            .CreateLoadingNode(null, _currentTokenValueSource);
-        var currentTrivia = syntaxCreator
-            .CreateLoadingNode(null, _currentTriviaValueSource);
-
-        var parentNode = syntaxCreator
-            .CreateLoadingNode(null, _parentValueSource);
-        var parentTrivia = syntaxCreator
-            .CreateLoadingNode(null, _parentTriviaValueSource);
-
-        var childNodes = syntaxCreator
-            .CreateLoadingNode(null, _childNodesValueSource);
-        var childTokens = syntaxCreator
-            .CreateLoadingNode(null, _childTokensValueSource);
-        var childNodesAndTokens = syntaxCreator
-            .CreateLoadingNode(null, _childNodesAndTokensValueSource);
-
-        var symbolInfo = syntaxCreator
-            .CreateLoadingNode(null, _getSymbolInfoValueSource);
-        var declaredSymbolInfo = syntaxCreator
-            .CreateLoadingNode(null, _getDeclaredSymbolInfoValueSource);
-        var typeInfo = syntaxCreator
-            .CreateLoadingNode(null, _getTypeInfoValueSource);
-        var aliasInfo = syntaxCreator
-            .CreateLoadingNode(null, _getAliasInfoValueSource);
-        var preprocessingSymbolInfo = syntaxCreator
-            .CreateLoadingNode(null, _getPreprocessingSymbolInfoValueSource);
-        var conversion = syntaxCreator
-            .CreateLoadingNode(null, _getConversionValueSource);
-        var operation = syntaxCreator
-            .CreateLoadingNode(null, _getOperationValueSource);
-
-        return new(
-            new(
-                currentNode,
-                currentToken,
-                currentTrivia),
-
-            new(
-                parentNode,
-                parentTrivia),
-
-            new(
-                childNodes,
-                childTokens,
-                childNodesAndTokens),
-
-            new(
-                symbolInfo,
-                declaredSymbolInfo,
-                typeInfo,
-                aliasInfo,
-                preprocessingSymbolInfo,
-                conversion,
-                operation)
-            );
-    }
-
     private async Task<UIBuilder.AnalysisTreeListNode?> CreateChildNodesRootNode(
         CancellationToken cancellationToken)
     {
@@ -257,7 +208,7 @@ public sealed class NodeViewAnalysisExecution(
             return null;
         return
             _container.SyntaxCreator.CreateRootNodeList(
-                _node.ChildNodes().ToList(),
+                _node?.ChildNodes().ToList() ?? [],
                 _childNodesValueSource);
     }
 
@@ -269,7 +220,7 @@ public sealed class NodeViewAnalysisExecution(
             return null;
         return
             _container.SyntaxCreator.CreateRootTokenList(
-                new SyntaxTokenList(_node.ChildTokens()),
+                new SyntaxTokenList(_node?.ChildTokens() ?? []),
                 _childTokensValueSource);
     }
 
@@ -281,7 +232,7 @@ public sealed class NodeViewAnalysisExecution(
             return null;
         return
             _container.SyntaxCreator.CreateRootChildSyntaxList(
-                _node.ChildNodesAndTokens(),
+                _node?.ChildNodesAndTokens() ?? [],
                 _childNodesAndTokensValueSource);
     }
 
@@ -291,9 +242,11 @@ public sealed class NodeViewAnalysisExecution(
         await BreatheAsync();
         if (cancellationToken.IsCancellationRequested)
             return null;
+
+        var symbolInfo = ExecuteQuery(ModelExtensions.GetSymbolInfo, cancellationToken);
         return
             _container.SemanticCreator.CreateRootSymbolInfo(
-                _semanticModel.GetSymbolInfo(_node, cancellationToken),
+                symbolInfo,
                 _getSymbolInfoValueSource);
     }
 
@@ -303,9 +256,11 @@ public sealed class NodeViewAnalysisExecution(
         await BreatheAsync();
         if (cancellationToken.IsCancellationRequested)
             return null;
+
+        var declaredSymbol = ExecuteQuery(ModelExtensions.GetDeclaredSymbol, cancellationToken);
         return
             _container.SymbolCreator.CreateRootGeneral(
-                _semanticModel.GetDeclaredSymbol(_node, cancellationToken),
+                declaredSymbol,
                 _getDeclaredSymbolInfoValueSource)!;
     }
 
@@ -315,9 +270,11 @@ public sealed class NodeViewAnalysisExecution(
         await BreatheAsync();
         if (cancellationToken.IsCancellationRequested)
             return null;
+
+        var typeInfo = ExecuteQuery(ModelExtensions.GetTypeInfo, cancellationToken);
         return
             _container.SemanticCreator.CreateRootTypeInfo(
-                _semanticModel.GetTypeInfo(_node, cancellationToken),
+                typeInfo,
                 _getTypeInfoValueSource);
     }
 
@@ -325,9 +282,11 @@ public sealed class NodeViewAnalysisExecution(
         CancellationToken cancellationToken)
     {
         await BreatheAsync();
+
+        var aliasSymbol = ExecuteQuery(ModelExtensions.GetAliasInfo, cancellationToken);
         return
             _container.SymbolCreator.CreateRootGeneral(
-                _semanticModel.GetAliasInfo(_node, cancellationToken),
+                aliasSymbol,
                 _getAliasInfoValueSource)!;
     }
 
@@ -337,10 +296,18 @@ public sealed class NodeViewAnalysisExecution(
         await BreatheAsync();
         if (cancellationToken.IsCancellationRequested)
             return null;
+
+        var preprocessingInfo = ExecuteQuery(GetPreprocessingSymbolInfo, cancellationToken);
         return
             _container.SemanticCreator.CreateRootPreprocessingSymbolInfo(
-                _semanticModel.GetPreprocessingSymbolInfo(_node),
+                preprocessingInfo,
                 _getPreprocessingSymbolInfoValueSource);
+    }
+
+    private static PreprocessingSymbolInfo GetPreprocessingSymbolInfo(
+        SemanticModel model, SyntaxNode node, CancellationToken cancellationToken)
+    {
+        return model.GetPreprocessingSymbolInfo(node);
     }
 
     private async Task<UIBuilder.AnalysisTreeListNode?> CreateConversionRootNode(
@@ -349,9 +316,13 @@ public sealed class NodeViewAnalysisExecution(
         await BreatheAsync();
         if (cancellationToken.IsCancellationRequested)
             return null;
+
+        var conversion = ExecuteQuery(RoslynExtensions.GetConversionUnion, cancellationToken)
+            ?? ConversionUnion.None
+            ;
         return
             _container.SemanticCreator.CreateRootConversion(
-                _semanticModel.GetConversionUnion(_node, cancellationToken),
+                conversion,
                 _getConversionValueSource);
     }
 
@@ -361,14 +332,40 @@ public sealed class NodeViewAnalysisExecution(
         await BreatheAsync();
         if (cancellationToken.IsCancellationRequested)
             return null;
+
+        var operation = ExecuteQuery(GetOperation, cancellationToken);
         return
             _container.OperationCreator.CreateRootGeneral(
-                _semanticModel.GetOperation(_node, cancellationToken),
+                operation,
                 _getOperationValueSource)!;
+    }
+
+    private static IOperation? GetOperation(
+        SemanticModel model, SyntaxNode node, CancellationToken cancellationToken)
+    {
+        return model.GetOperation(node, cancellationToken);
     }
 
     private static async Task BreatheAsync()
     {
         await Task.Delay(40);
     }
+
+    private TResult? ExecuteQuery<TResult>(
+        SemanticInfoQuery<TResult> query,
+        CancellationToken cancellationToken)
+    {
+        if (_node is null)
+            return default;
+
+        if (_semanticModel is null)
+            return default;
+
+        return query(_semanticModel, _node, cancellationToken);
+    }
+
+    private delegate TResult? SemanticInfoQuery<TResult>(
+        SemanticModel model,
+        SyntaxNode node,
+        CancellationToken cancellationToken);
 }

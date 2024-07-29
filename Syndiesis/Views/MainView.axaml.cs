@@ -50,9 +50,9 @@ public partial class MainView : UserControl
         const string initializingSource = """
             using System;
 
-            namespace Example;
+            using var console = Console.Out;
 
-            Console.WriteLine("Initializing application...");
+            console.WriteLine("Initializing application...");
 
             """;
 
@@ -279,19 +279,18 @@ public partial class MainView : UserControl
 
         var currentSource = ViewModel.HybridCompilationSource.CurrentSource;
         var node = currentSource.Tree!.SyntaxNodeAtSpanIncludingStructuredTrivia(span);
-        if (node is null)
-            return;
+        var detailsData = NodeViewAnalysisExecution.InitializingData;
+        if (node is not null)
+        {
+            _detailsViewCancellationTokenFactory.Cancel();
+            var cancellationToken = _detailsViewCancellationTokenFactory.CurrentToken;
 
-        _detailsViewCancellationTokenFactory.Cancel();
-        var cancellationToken = _detailsViewCancellationTokenFactory.CurrentToken;
+            var analysisRoot = GetNodeViewAnalysisRootForSpan(node, span);
 
-        var analysisRoot = GetNodeViewAnalysisRootForSpan(node, span);
-
-        var execution = new NodeViewAnalysisExecution(currentSource.Compilation, analysisRoot);
-        var detailsData = execution.ExecuteCore(cancellationToken);
-        if (detailsData is null)
-            return;
-
+            var execution = new NodeViewAnalysisExecution(currentSource.Compilation, analysisRoot);
+            detailsData = execution.ExecuteCore(cancellationToken)
+                ?? NodeViewAnalysisExecution.InitializingData;
+        }
         _ = coverableView.NodeDetailsView.Load(detailsData);
     }
 
@@ -301,7 +300,7 @@ public partial class MainView : UserControl
     {
         var token = rootNode.DeepestTokenContainingSpan(span);
         var trivia = rootNode.DeepestTriviaContainingSpan(span);
-        return new(rootNode, token, trivia);
+        return new(rootNode.SyntaxTree, rootNode, token, trivia);
     }
 
     private void LoadTreeView(AnalysisNodeKind analysisKind)
@@ -466,8 +465,8 @@ public partial class MainView : UserControl
 
     private void HandleCodeChanged(object? sender, EventArgs e)
     {
-        TriggerPipeline();
         ResetHandledCaretPositions();
+        TriggerPipeline();
     }
 
     private void ResetHandledCaretPositions()
