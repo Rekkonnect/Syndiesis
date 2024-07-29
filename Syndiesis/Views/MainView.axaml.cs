@@ -74,8 +74,16 @@ public partial class MainView : UserControl
         if (pointerArgs is null)
             return;
 
-        var viewPosition = pointerArgs.GetPosition(this);
-        var editorPosition = pointerArgs.GetPosition(codeEditor.textEditor);
+        var editor = codeEditor.textEditor;
+        var area = editor.TextArea;
+        var areaPosition = pointerArgs.GetPosition(area);
+        if (!area.Bounds.Contains(areaPosition))
+        {
+            e.CancelShowing = true;
+            return;
+        }
+
+        var editorPosition = pointerArgs.GetPosition(editor);
         var diagnostics = GetCurrentHoveredDiagnostics(editorPosition);
 
         if (diagnostics.IsEmpty)
@@ -85,6 +93,8 @@ public partial class MainView : UserControl
         }
 
         quickInfoDisplayPopup.SetDiagnostics(diagnostics);
+
+        var viewPosition = pointerArgs.GetPosition(this);
         quickInfoDisplayPopup.SetPointerOrigin(viewPosition);
     }
 
