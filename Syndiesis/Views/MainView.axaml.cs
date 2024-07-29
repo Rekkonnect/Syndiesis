@@ -569,6 +569,14 @@ public partial class MainView : UserControl
     {
         LoggerExtensionsEx.LogMethodInvocation($"{nameof(ResetToLanguage)}({languageName})");
         var defaultCode = DefaultCode(languageName);
+
+        // Avoid manually changing the language to prevent triggering the language change
+        // when automatic detection is enabled
+        if (!AppSettings.Instance.AutomaticallyDetectLanguage)
+        {
+            ViewModel.HybridCompilationSource.SetLanguage(languageName);
+        }
+
         SetSource(defaultCode);
         codeEditor.DiagnosticsEnabled = AppSettings.Instance.DiagnosticsEnabled;
     }

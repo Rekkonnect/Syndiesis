@@ -78,6 +78,11 @@ public sealed class HybridSingleTreeCompilationSource
         Log.Information($"Set the source within {profiling.SnapshotResults!.Time.TotalMilliseconds}ms");
     }
 
+    public void SetLanguage(string languageName)
+    {
+        CurrentSource = SourceForLanguage(languageName);
+    }
+
     private void SetSourceAutomaticDetection(string source, CancellationToken cancellationToken)
     {
         var profiling = new SimpleProfiling();
