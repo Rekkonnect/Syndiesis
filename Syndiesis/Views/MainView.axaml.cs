@@ -350,6 +350,7 @@ public partial class MainView : UserControl
     private void CollapseAllClick(object? sender, RoutedEventArgs e)
     {
         coverableView.ListView.ResetToInitialRootView();
+        coverableView.NodeDetailsView.CollapseAllNodes();
     }
 
     private void HandleSettingsClick(object? sender, RoutedEventArgs e)

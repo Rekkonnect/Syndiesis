@@ -62,6 +62,14 @@ public partial class NodeDetailsView : UserControl, IAnalysisNodeHoverManager
         CaretHoveredNodeSet?.Invoke(currentNodeSection.NodeDisplayNode);
     }
 
+    public void CollapseAllNodes()
+    {
+        foreach (var node in DetailsNodes())
+        {
+            node.Collapse();
+        }
+    }
+
     private IReadOnlyList<NodeDetailsSection> DetailsSections()
     {
         return
