@@ -16,4 +16,4 @@ jobs:
       uses: actions/checkout@v1
 
     - name: Run Syndiesis.Tests
-      run: dotnet test Syndiesis/Syndiesis.Tests/Syndiesis.Tests.csproj
+      run: dotnet test Syndiesis.Tests/Syndiesis.Tests.csproj
