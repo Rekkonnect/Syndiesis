@@ -33,6 +33,12 @@ public class AnalysisPipelineHandler
         _ignoredInputDelayTimes++;
     }
 
+    public async Task ForceAnalysis(ITextSource source)
+    {
+        _textSource = source;
+        await ForceAnalysis();
+    }
+
     public async Task ForceAnalysis()
     {
         _analysisCancellationTokenFactory.Cancel();
@@ -96,7 +102,7 @@ public class AnalysisPipelineHandler
         }
         catch (Exception ex)
         {
-            App.Current.ExceptionListener.HandleException(ex, "Analysis failed");
+            App.Current?.ExceptionListener.HandleException(ex, "Analysis failed");
             AnalysisFailed?.Invoke(new(ex));
         }
     }
