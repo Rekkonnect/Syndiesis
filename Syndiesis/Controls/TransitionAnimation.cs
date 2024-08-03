@@ -17,10 +17,9 @@ public sealed class TransitionAnimation(Animation animation)
 
         await animationTask;
 
-        if (cancellationToken.IsCancellationRequested)
-        {
-            ApplyFinalKeyFrame(control);
-        }
+        // Sometimes the animation might not finish its final frame correctly, if frames
+        // get skipped due to lag, so we set the final key frame again
+        ApplyFinalKeyFrame(control);
     }
 
     private void ApplyFinalKeyFrame(Animatable control)
