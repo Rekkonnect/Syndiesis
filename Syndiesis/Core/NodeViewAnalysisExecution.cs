@@ -90,12 +90,12 @@ public sealed class NodeViewAnalysisExecution(
         BaseAnalysisNodeCreatorContainer
             .CreateForLanguage(compilation?.Language ?? LanguageNames.CSharp);
 
-    public static readonly NodeDetailsViewData? InitializingData;
+    public static readonly NodeDetailsViewData InitializingData;
 
     static NodeViewAnalysisExecution()
     {
         var execution = new NodeViewAnalysisExecution(null, null);
-        InitializingData = execution.ExecuteCore(default);
+        InitializingData = execution.ExecuteCore(default)!;
     }
 
     private static SemanticModel? SemanticModelForTree(Compilation? compilation, SyntaxTree? tree)

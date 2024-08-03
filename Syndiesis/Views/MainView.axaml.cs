@@ -282,25 +282,37 @@ public partial class MainView : UserControl
         SetCurrentDetailsView(span);
     }
 
+    private NodeViewAnalysisRoot? _nodeViewAnalysisRoot;
+
     private void SetCurrentDetailsView(TextSpan span)
     {
         if (AnalysisPipelineHandler.IsWaiting)
             return;
 
         var currentSource = ViewModel.HybridCompilationSource.CurrentSource;
-        var node = currentSource.Tree!.SyntaxNodeAtSpanIncludingStructuredTrivia(span);
+        if (currentSource.Tree is null)
+            return;
+
+        var node = currentSource.Tree.SyntaxNodeAtSpanIncludingStructuredTrivia(span);
         var detailsData = NodeViewAnalysisExecution.InitializingData;
+        NodeViewAnalysisRoot? analysisRoot = null;
         if (node is not null)
         {
-            _detailsViewCancellationTokenFactory.Cancel();
-            var cancellationToken = _detailsViewCancellationTokenFactory.CurrentToken;
-
-            var analysisRoot = GetNodeViewAnalysisRootForSpan(node, span);
-
-            var execution = new NodeViewAnalysisExecution(currentSource.Compilation, analysisRoot);
-            detailsData = execution.ExecuteCore(cancellationToken)
-                ?? NodeViewAnalysisExecution.InitializingData;
+            analysisRoot = GetNodeViewAnalysisRootForSpan(node, span);
         }
+
+        if (analysisRoot == _nodeViewAnalysisRoot)
+            return;
+
+        _nodeViewAnalysisRoot = analysisRoot;
+
+        _detailsViewCancellationTokenFactory.Cancel();
+        var cancellationToken = _detailsViewCancellationTokenFactory.CurrentToken;
+
+        var execution = new NodeViewAnalysisExecution(currentSource.Compilation, analysisRoot);
+        detailsData = execution.ExecuteCore(cancellationToken)
+            ?? NodeViewAnalysisExecution.InitializingData;
+
         _ = coverableView.NodeDetailsView.Load(detailsData);
     }
 
@@ -484,6 +496,7 @@ public partial class MainView : UserControl
     {
         _caretPosition = -1;
         _selectionLength = -1;
+        _nodeViewAnalysisRoot = null;
     }
 
     private void TriggerPipeline()
