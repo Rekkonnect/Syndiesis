@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
-using System;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
@@ -36,20 +35,25 @@ public sealed class NodeViewAnalysisExecution(
     private static readonly DisplayValueSource _currentTriviaValueSource
         = DisplayValueSource.Property(CurrentTriviaName);
 
-    private static readonly DisplayValueSource _parentValueSource
-        = DisplayValueSource.Property(nameof(SyntaxNode.Parent));
+    private static readonly ComplexDisplayValueSource _parentValueSource
+        = ConstructNodeAccessValueSource(
+            DisplayValueSource.Property(nameof(SyntaxNode.Parent)));
 
-    private static readonly DisplayValueSource _parentTriviaValueSource
-        = DisplayValueSource.Property(nameof(SyntaxNode.ParentTrivia));
+    private static readonly ComplexDisplayValueSource _parentTriviaValueSource
+        = ConstructNodeAccessValueSource(
+            DisplayValueSource.Property(nameof(SyntaxNode.ParentTrivia)));
 
-    private static readonly DisplayValueSource _childNodesValueSource
-        = DisplayValueSource.Method(nameof(SyntaxNode.ChildNodes));
+    private static readonly ComplexDisplayValueSource _childNodesValueSource
+        = ConstructNodeAccessValueSource(
+            DisplayValueSource.Method(nameof(SyntaxNode.ChildNodes)));
 
-    private static readonly DisplayValueSource _childTokensValueSource
-        = DisplayValueSource.Method(nameof(SyntaxNode.ChildTokens));
+    private static readonly ComplexDisplayValueSource _childTokensValueSource
+        = ConstructNodeAccessValueSource(
+            DisplayValueSource.Method(nameof(SyntaxNode.ChildTokens)));
 
-    private static readonly DisplayValueSource _childNodesAndTokensValueSource
-        = DisplayValueSource.Method(nameof(SyntaxNode.ChildNodesAndTokens));
+    private static readonly ComplexDisplayValueSource _childNodesAndTokensValueSource
+        = ConstructNodeAccessValueSource(
+            DisplayValueSource.Method(nameof(SyntaxNode.ChildNodesAndTokens)));
 
     private static readonly ComplexDisplayValueSource _getSymbolInfoValueSource
         = ConstructSemanticModelValueSource(nameof(ModelExtensions.GetSymbolInfo));
@@ -100,6 +104,18 @@ public sealed class NodeViewAnalysisExecution(
             return null;
 
         return compilation?.GetSemanticModel(tree);
+    }
+
+    private static ComplexDisplayValueSource ConstructNodeAccessValueSource(
+        DisplayValueSource valueSource)
+    {
+        var methodSource = new ComplexDisplayValueSource(
+            valueSource,
+            null);
+
+        return new(
+            _currentNodeValueSource,
+            methodSource);
     }
 
     private static ComplexDisplayValueSource ConstructSemanticModelValueSource(
