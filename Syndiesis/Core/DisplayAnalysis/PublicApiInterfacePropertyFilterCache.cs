@@ -32,7 +32,8 @@ public abstract class PublicApiInterfacePropertyFilterCache<TInterface>(Property
         var filteredInterfaces = filteredInterface.GetInterfaces()
             .ConcatSingleValue(filteredInterface);
         var properties = filteredInterfaces.SelectMany(
-            @interface => base.FilterForType(@interface).Properties);
+            @interface => base.FilterForType(@interface).Properties)
+            .DistinctBy(s => s.Name);
 
         return new()
         {
