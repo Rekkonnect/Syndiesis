@@ -2,6 +2,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:inlines="using:Syndiesis.Controls.Inlines"
              d:DesignWidth="220"
              mc:Ignorable="d"
              x:Class="Syndiesis.Controls.Editor.QuickInfoDiagnosticItem">
@@ -22,19 +23,21 @@
       VerticalAlignment="Top"
       Source="avares://Syndiesis/Assets/Icons/diagnostic-error.png"/>
 
-    <TextBlock
+    <inlines:CopyableGroupedRunInlineTextBlock
       Name="diagnosticCodeText"
       Grid.Column="1"
       VerticalAlignment="Top"
       Margin="5 7 0 0"
+      FontSize="14"
       Text="AXAML0001" />
 
-    <TextBlock
+    <inlines:CopyableGroupedRunInlineTextBlock
       Name="diagnosticMessageText"
       Grid.Column="2"
       Margin="10 7 5 0"
       VerticalAlignment="Top"
       TextWrapping="Wrap"
+      FontSize="14"
       Text="Invalid markup with new line" />
 
   </Grid>
