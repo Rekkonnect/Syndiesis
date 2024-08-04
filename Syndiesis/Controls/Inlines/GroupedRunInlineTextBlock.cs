@@ -7,6 +7,7 @@ namespace Syndiesis.Controls.Inlines;
 
 public class GroupedRunInlineTextBlock : TextBlock
 {
+    private int? _textLength;
     private GroupedRunInlineCollection? _groupedInlines;
 
     public GroupedRunInlineCollection? GroupedInlines
@@ -16,6 +17,7 @@ public class GroupedRunInlineTextBlock : TextBlock
         {
             _groupedInlines = value;
             Inlines = _groupedInlines?.AsInlineCollection();
+            _textLength = Inlines?.Text?.Length;
         }
     }
 
@@ -31,7 +33,13 @@ public class GroupedRunInlineTextBlock : TextBlock
 
         var hitTest = TextLayout.HitTestPoint(point);
         if (!hitTest.IsInside)
-            return default;
+        {
+            bool hitsCharacter = hitTest.TextPosition < _textLength;
+            if (!hitsCharacter)
+            {
+                return default;
+            }
+        }
 
         int index = hitTest.TextPosition;
         return GroupedRunForPosition(index);

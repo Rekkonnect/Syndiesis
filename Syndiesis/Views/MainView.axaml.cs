@@ -68,34 +68,43 @@ public partial class MainView : UserControl
         analysisViewTabs.TabSelected += HandleSelectedAnalysisTab;
     }
 
+    private TextViewPosition? _lastHoveredPosition = null;
+
     private void PrepareQuickInfoShowing(QuickInfoHandler.PrepareShowingEventArgs e)
     {
         var pointerArgs = e.LastPointerArgs;
         if (pointerArgs is null)
             return;
 
+        e.CancelShowing = true;
+
         var editor = codeEditor.textEditor;
         var area = editor.TextArea;
         var areaPosition = pointerArgs.GetPosition(area);
         if (!area.Bounds.Contains(areaPosition))
-        {
-            e.CancelShowing = true;
             return;
-        }
 
         var editorPosition = pointerArgs.GetPosition(editor);
-        var diagnostics = GetCurrentHoveredDiagnostics(editorPosition);
+        var documentPosition = codeEditor.textEditor.GetPositionFromPoint(editorPosition);
+
+        if (documentPosition is null)
+            return;
+
+        if (_lastHoveredPosition == documentPosition)
+            return;
+
+        _lastHoveredPosition = documentPosition;
+
+        var diagnostics = GetHoveredDiagnostics(documentPosition.Value);
 
         if (diagnostics.IsEmpty)
-        {
-            e.CancelShowing = true;
             return;
-        }
 
         quickInfoDisplayPopup.SetDiagnostics(diagnostics);
 
         var viewPosition = pointerArgs.GetPosition(this);
         quickInfoDisplayPopup.SetPointerOrigin(viewPosition);
+        e.CancelShowing = false;
     }
 
     private void SetBoundedMargin(Control control, Point origin)
@@ -148,12 +157,8 @@ public partial class MainView : UserControl
         }
     }
 
-    private ImmutableArray<Diagnostic> GetCurrentHoveredDiagnostics(Point point)
+    private ImmutableArray<Diagnostic> GetHoveredDiagnostics(TextViewPosition documentPosition)
     {
-        var documentPosition = codeEditor.textEditor.GetPositionFromPoint(point) ?? default;
-        if (documentPosition == default)
-            return [];
-
         var linePosition = new LinePosition(
             documentPosition.Line - 1,
             documentPosition.Column - 1);
@@ -282,25 +287,37 @@ public partial class MainView : UserControl
         SetCurrentDetailsView(span);
     }
 
+    private NodeViewAnalysisRoot? _nodeViewAnalysisRoot;
+
     private void SetCurrentDetailsView(TextSpan span)
     {
         if (AnalysisPipelineHandler.IsWaiting)
             return;
 
         var currentSource = ViewModel.HybridCompilationSource.CurrentSource;
-        var node = currentSource.Tree!.SyntaxNodeAtSpanIncludingStructuredTrivia(span);
+        if (currentSource.Tree is null)
+            return;
+
+        var node = currentSource.Tree.SyntaxNodeAtSpanIncludingStructuredTrivia(span);
         var detailsData = NodeViewAnalysisExecution.InitializingData;
+        NodeViewAnalysisRoot? analysisRoot = null;
         if (node is not null)
         {
-            _detailsViewCancellationTokenFactory.Cancel();
-            var cancellationToken = _detailsViewCancellationTokenFactory.CurrentToken;
-
-            var analysisRoot = GetNodeViewAnalysisRootForSpan(node, span);
-
-            var execution = new NodeViewAnalysisExecution(currentSource.Compilation, analysisRoot);
-            detailsData = execution.ExecuteCore(cancellationToken)
-                ?? NodeViewAnalysisExecution.InitializingData;
+            analysisRoot = GetNodeViewAnalysisRootForSpan(node, span);
         }
+
+        if (analysisRoot == _nodeViewAnalysisRoot)
+            return;
+
+        _nodeViewAnalysisRoot = analysisRoot;
+
+        _detailsViewCancellationTokenFactory.Cancel();
+        var cancellationToken = _detailsViewCancellationTokenFactory.CurrentToken;
+
+        var execution = new NodeViewAnalysisExecution(currentSource.Compilation, analysisRoot);
+        detailsData = execution.ExecuteCore(cancellationToken)
+            ?? NodeViewAnalysisExecution.InitializingData;
+
         _ = coverableView.NodeDetailsView.Load(detailsData);
     }
 
@@ -477,6 +494,7 @@ public partial class MainView : UserControl
     private void HandleCodeChanged(object? sender, EventArgs e)
     {
         ResetHandledCaretPositions();
+        _quickInfoHandler.Hide();
         TriggerPipeline();
     }
 
@@ -484,6 +502,8 @@ public partial class MainView : UserControl
     {
         _caretPosition = -1;
         _selectionLength = -1;
+        _nodeViewAnalysisRoot = null;
+        _lastHoveredPosition = null;
     }
 
     private void TriggerPipeline()

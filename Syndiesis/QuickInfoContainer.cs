@@ -11,11 +11,10 @@ public sealed class QuickInfoHandler(QuickInfoDisplayPopup popup)
 {
     private readonly QuickInfoDisplayPopup _popup = popup;
 
-    private readonly Delayer _delayer = new();
-    private Task? _delayerWaiter;
-    private readonly CancellationTokenFactory _delayerCancellationTokenFactory = new();
-
     private PointerEventArgs? _lastPointerMoved;
+
+    private readonly DelayerAction _appearanceDelayerAction = new();
+    private readonly DelayerAction _disappearanceDelayerAction = new();
 
     public event Action<PrepareShowingEventArgs>? PrepareShowing;
 
@@ -26,9 +25,7 @@ public sealed class QuickInfoHandler(QuickInfoDisplayPopup popup)
 
     public void ForceDisplay()
     {
-        _delayer.CancelUnblock();
-        _delayerCancellationTokenFactory.Cancel();
-        _delayerWaiter = null;
+        _appearanceDelayerAction.ForceUnblock();
     }
 
     private void HandlePointerMoved(object? sender, PointerEventArgs e)
@@ -37,27 +34,26 @@ public sealed class QuickInfoHandler(QuickInfoDisplayPopup popup)
         var hidden = EvaluateHide();
         if (hidden)
         {
-            _delayer.SetFutureUnblock(AppSettings.Instance.HoverInfoDelay);
-
-            if (_delayerWaiter is null or { IsCompleted: true })
-            {
-                _delayerWaiter = WaitShow(sender as Control);
-            }
+            _appearanceDelayerAction.SetFutureUnblock(
+                AppSettings.Instance.HoverInfoDelay,
+                () => WaitShow(sender as Control));
+        }
+        else
+        {
+            _disappearanceDelayerAction.SetFutureUnblockFirst(
+                TimeSpan.FromMilliseconds(200),
+                () => WaitAdjustOrHide(_popup));
         }
     }
 
     private bool EvaluateHide()
     {
-        if (_popup.IsPointerOver)
-            return false;
-
-        Hide();
-        return true;
+        return !_popup.IsVisible;
     }
 
     private async Task WaitShow(Control? sender)
     {
-        await _delayer.WaitUnblock(_delayerCancellationTokenFactory.CurrentToken);
+        await _appearanceDelayerAction.WaitUnblockAsync();
 
         if (sender?.IsPointerOver is true)
         {
@@ -65,7 +61,20 @@ public sealed class QuickInfoHandler(QuickInfoDisplayPopup popup)
         }
     }
 
-    private void Hide()
+    private async Task WaitAdjustOrHide(Control? sender)
+    {
+        await _disappearanceDelayerAction.WaitUnblockAsync();
+
+        if (sender?.IsPointerOver is false)
+        {
+            Hide();
+
+            // Attempt to show the popup at a new location
+            Show();
+        }
+    }
+
+    public void Hide()
     {
         _popup.IsVisible = false;
     }
@@ -89,5 +98,51 @@ public sealed class QuickInfoHandler(QuickInfoDisplayPopup popup)
         public PointerEventArgs? LastPointerArgs { get; } = lastPointerArgs;
 
         public bool CancelShowing { get; set; }
+    }
+
+    private class DelayerAction
+    {
+        public readonly Delayer Delayer = new();
+        public readonly CancellationTokenFactory CancellationTokenFactory = new();
+        public Task? DelayerWaiter;
+
+        public void ForceUnblock()
+        {
+            Delayer.CancelUnblock();
+            CancellationTokenFactory.Cancel();
+            DelayerWaiter = null;
+        }
+
+        public async Task WaitUnblockAsync()
+        {
+            await Delayer.WaitUnblock(CancellationTokenFactory.CurrentToken);
+        }
+
+        public void SetFutureUnblock(TimeSpan timeSpan, Func<Task> taskFactory)
+        {
+            Delayer.SetFutureUnblock(timeSpan);
+            SetDelayerWaiter(taskFactory);
+        }
+
+        public void SetFutureUnblockFirst(TimeSpan timeSpan, Func<Task> taskFactory)
+        {
+            if (Delayer.IsWaiting)
+                return;
+
+            SetFutureUnblock(timeSpan, taskFactory);
+        }
+
+        private void SetDelayerWaiter(Func<Task> taskFactory)
+        {
+            if (IsTaskOverwritable(DelayerWaiter))
+            {
+                DelayerWaiter = taskFactory();
+            }
+        }
+
+        private static bool IsTaskOverwritable(Task? task)
+        {
+            return task is null or { IsCompleted: true };
+        }
     }
 }

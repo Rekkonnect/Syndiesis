@@ -37,11 +37,37 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
         }
     }
 
+    public string Text
+    {
+        set
+        {
+            SetWholeCopyableText(value);
+        }
+    }
+
+    public TextWrapping TextWrapping
+    {
+        get => containedText.TextWrapping;
+        set => containedText.TextWrapping = value;
+    }
+
     public CopyableGroupedRunInlineTextBlock()
     {
         InitializeComponent();
         ClipToBounds = false;
         containedText.LayoutUpdated += OnContainedTextLayoutUpdated;
+    }
+
+    public void SetWholeCopyableText(string text)
+    {
+        GroupedRunInlines = new GroupedRunInlineCollection
+        {
+            new SingleRunInline(new Run(text)
+            {
+                FontFamily = FontFamily,
+                FontSize = FontSize,
+            }),
+        };
     }
 
     private void OnContainedTextLayoutUpdated(object? sender, EventArgs e)
