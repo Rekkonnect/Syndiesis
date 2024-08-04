@@ -34,7 +34,7 @@
     <inlines:CopyableGroupedRunInlineTextBlock
       Name="diagnosticMessageText"
       Grid.Column="2"
-      Margin="10 7 5 0"
+      Margin="10 7 5 7"
       VerticalAlignment="Top"
       TextWrapping="Wrap"
       FontSize="14"
