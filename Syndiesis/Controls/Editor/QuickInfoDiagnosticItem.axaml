@@ -2,34 +2,41 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" Height="30"
+             d:DesignWidth="220"
+             mc:Ignorable="d"
              x:Class="Syndiesis.Controls.Editor.QuickInfoDiagnosticItem">
 
-  <Panel>
+  <Grid>
 
-    <StackPanel
-      Orientation="Horizontal"
-      Spacing="5"
-      >
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="Auto" />
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
 
-      <Image
-        Name="diagnosticIcon"
-        Margin="4"
-        Source="avares://Syndiesis/Assets/Icons/diagnostic-error.png"/>
+    <Image
+      Name="diagnosticIcon"
+      Grid.Column="0"
+      Margin="4"
+      Height="26"
+      VerticalAlignment="Top"
+      Source="avares://Syndiesis/Assets/Icons/diagnostic-error.png"/>
 
-      <TextBlock
-        Name="diagnosticCodeText"
-        VerticalAlignment="Center"
-        Text="AXAML0001" />
+    <TextBlock
+      Name="diagnosticCodeText"
+      Grid.Column="1"
+      VerticalAlignment="Top"
+      Margin="5 7 0 0"
+      Text="AXAML0001" />
 
-      <TextBlock
-        Name="diagnosticMessageText"
-        Margin="5"
-        VerticalAlignment="Center"
-        Text="Invalid markup" />
+    <TextBlock
+      Name="diagnosticMessageText"
+      Grid.Column="2"
+      Margin="10 7 5 0"
+      VerticalAlignment="Top"
+      TextWrapping="Wrap"
+      Text="Invalid markup with new line" />
 
-    </StackPanel>
+  </Grid>
 
-  </Panel>
-  
 </UserControl>
