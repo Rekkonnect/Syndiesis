@@ -705,7 +705,7 @@ static string Code(string type)
         inlines.Children!.Add(new(single));
     }
 
-    private static Run CreateValueSplitterRun()
+    protected static Run CreateValueSplitterRun()
     {
         return Run(":  ", CommonStyles.SplitterBrush);
     }
@@ -863,7 +863,7 @@ static string Code(string type)
         int count, string propertyName)
     {
         var propertyGroup = new SingleRunInline(Run(propertyName, CommonStyles.PropertyBrush));
-        var separator = Run(":  ", CommonStyles.SplitterBrush);
+        var separator = CreateValueSplitterRun();
         var countRun = Run(count.ToString(), CommonStyles.RawValueBrush);
         return new ComplexGroupedRunInline([
             new(propertyGroup),
@@ -1311,7 +1311,7 @@ partial class BaseAnalysisNodeCreator
 
             return new ComplexGroupedRunInline([
                 new(BasicValueInline(key)),
-                Run(":  ", CommonStyles.SplitterBrush),
+                CreateValueSplitterRun(),
                 new(BasicValueInline(value)),
             ]);
         }

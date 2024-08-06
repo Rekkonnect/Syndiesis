@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Garyon.Functions;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.VisualBasic;
@@ -121,17 +122,21 @@ public abstract class AttributeTree(
                 ImmutableArray<AttributeData> data)
             {
                 return data.Select(FromAttribute)
-                    .ToImmutableArray();
+                    .Where(Predicates.NotNull)
+                    .ToImmutableArray()!;
             }
 
-            AttributeDataView FromAttribute(AttributeData data)
+            AttributeDataView? FromAttribute(AttributeData data)
             {
+                var model = AttributeDataViewModel.Create(data);
+                if (model is null)
+                    return null;
                 var syntax = data.ApplicationSyntaxReference?.GetSyntax(cancellationToken);
                 if (syntax is null)
-                    return new(data, null);
+                    return new(model, null);
 
                 var operation = semanticModel.GetOperation(syntax, cancellationToken);
-                return new AttributeDataView(data, operation as IAttributeOperation);
+                return new AttributeDataView(model, operation as IAttributeOperation);
             }
         }
 
@@ -220,5 +225,5 @@ public abstract class AttributeTree(
         ISymbol Symbol, ImmutableArray<AttributeDataView> Attributes);
 
     public sealed record AttributeDataView(
-        AttributeData Data, IAttributeOperation? AttributeOperation);
+        AttributeDataViewModel Data, IAttributeOperation? AttributeOperation);
 }

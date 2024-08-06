@@ -306,4 +306,11 @@ public static class RoslynExtensions
 
         return ConversionUnion.None;
     }
+
+    public static bool HasNoArguments(this AttributeData attribute)
+    {
+        return attribute.ConstructorArguments is []
+            && attribute.NamedArguments is []
+            ;
+    }
 }

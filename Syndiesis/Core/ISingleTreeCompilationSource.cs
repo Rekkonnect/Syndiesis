@@ -19,3 +19,4 @@ public interface ISingleTreeCompilationSource
 
     public void SetSource(string source, CancellationToken cancellationToken);
 }
+

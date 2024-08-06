@@ -113,6 +113,12 @@ public sealed record SyntaxObjectInfo(
             case AttributeData attribute:
                 return attribute.GetAttributeApplicationSyntax()?.SyntaxTree;
 
+            case AttributeDataViewModel attributeModel:
+                return GetSyntaxTree(attributeModel.NamedArguments);
+
+            case AttributeDataViewModel.LinkedAttributeArgument attributeArgument:
+                return GetSyntaxTree(attributeArgument.ArgumentSyntax);
+
             // Operation
             case IOperation operation:
                 return operation.Syntax.SyntaxTree;
@@ -177,6 +183,12 @@ public sealed record SyntaxObjectInfo(
             case AttributeData attribute:
                 return attribute.ApplicationSyntaxReference
                     ?.Span ?? InvalidTextSpan;
+
+            case AttributeDataViewModel attributeModel:
+                return GetSpan(attributeModel.NamedArguments);
+
+            case AttributeDataViewModel.LinkedAttributeArgument attributeArgument:
+                return GetSpan(attributeArgument.ArgumentSyntax);
 
             // Operation
             case IOperation operation:
@@ -243,6 +255,12 @@ public sealed record SyntaxObjectInfo(
             case AttributeData attribute:
                 return attribute.GetAttributeApplicationSyntax()
                     ?.FullSpan ?? InvalidTextSpan;
+
+            case AttributeDataViewModel attributeModel:
+                return GetFullSpan(attributeModel.NamedArguments);
+
+            case AttributeDataViewModel.LinkedAttributeArgument attributeArgument:
+                return GetFullSpan(attributeArgument.ArgumentSyntax);
 
             // Operation
             case IOperation operation:

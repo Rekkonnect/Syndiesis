@@ -6,6 +6,7 @@ using Syndiesis.InternalGenerators.Core;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
@@ -40,9 +41,6 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly IAliasSymbolRootViewNodeCreator _aliasSymbolCreator;
 
     private readonly SymbolListRootViewNodeCreator _symbolListCreator;
-    private readonly AttributeDataRootViewNodeCreator _attributeDataCreator;
-    private readonly AttributeDataListRootViewNodeCreator _attributeDataListCreator;
-    private readonly TypedConstantRootViewNodeCreator _typedConstantCreator;
 
     public SymbolAnalysisNodeCreator(
         BaseAnalysisNodeCreatorContainer parentContainer)
@@ -66,9 +64,6 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         _aliasSymbolCreator = new(this);
 
         _symbolListCreator = new(this);
-        _attributeDataCreator = new(this);
-        _attributeDataListCreator = new(this);
-        _typedConstantCreator = new(this);
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
@@ -82,15 +77,6 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
 
             case IReadOnlyList<ISymbol> symbolList:
                 return CreateRootSymbolList(symbolList, valueSource, includeChildren);
-
-            case AttributeData attribute:
-                return CreateRootAttribute(attribute, valueSource, includeChildren);
-
-            case IReadOnlyList<AttributeData> attributeList:
-                return CreateRootAttributeList(attributeList, valueSource, includeChildren);
-
-            case TypedConstant typedConstant:
-                return CreateRootTypedConstant(typedConstant, valueSource, includeChildren);
 
             default:
                 break;
@@ -321,33 +307,6 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     {
         return _symbolListCreator.CreateNode(symbols, valueSource, includeChildren);
     }
-
-    public AnalysisTreeListNode CreateRootAttribute<TDisplayValueSource>(
-        AttributeData attribute,
-        TDisplayValueSource? valueSource,
-        bool includeChildren = true)
-        where TDisplayValueSource : IDisplayValueSource
-    {
-        return _attributeDataCreator.CreateNode(attribute, valueSource, includeChildren);
-    }
-
-    public AnalysisTreeListNode CreateRootAttributeList<TDisplayValueSource>(
-        IReadOnlyList<AttributeData> attributeList,
-        TDisplayValueSource? valueSource,
-        bool includeChildren = true)
-        where TDisplayValueSource : IDisplayValueSource
-    {
-        return _attributeDataListCreator.CreateNode(attributeList, valueSource, includeChildren);
-    }
-
-    public AnalysisTreeListNode CreateRootTypedConstant<TDisplayValueSource>(
-        TypedConstant typedConstant,
-        TDisplayValueSource? valueSource,
-        bool includeChildren = true)
-        where TDisplayValueSource : IDisplayValueSource
-    {
-        return _typedConstantCreator.CreateNode(typedConstant, valueSource, includeChildren);
-    }
 }
 
 partial class SymbolAnalysisNodeCreator
@@ -480,7 +439,7 @@ partial class SymbolAnalysisNodeCreator
         {
             list.AddRange(
             [
-                Creator.CreateRootAttributeList(
+                Creator.ParentContainer.AttributeCreator.CreateRootAttributeList(
                     symbol.GetAttributes(),
                     MethodSource(nameof(ISymbol.GetAttributes))),
 
@@ -739,7 +698,7 @@ partial class SymbolAnalysisNodeCreator
                     symbol.Parameters,
                     Property(nameof(IMethodSymbol.Parameters))),
 
-                Creator.CreateRootAttributeList(
+                Creator.ParentContainer.AttributeCreator.CreateRootAttributeList(
                     symbol.GetReturnTypeAttributes(),
                     MethodSource(nameof(IMethodSymbol.GetReturnTypeAttributes))),
             ]);
@@ -913,36 +872,6 @@ partial class SymbolAnalysisNodeCreator
                 .Select(symbol => Creator.CreateRootSymbol<IDisplayValueSource>(symbol, default))
                 .ToList()
                 ;
-        }
-    }
-
-    public sealed class AttributeDataRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
-        : AttributesAnalysisNodeCreator.AttributeDataRootViewNodeCreator(
-            creator.ParentContainer.AttributeCreator)
-    {
-        public override AnalysisNodeKind GetNodeKind(AttributeData value)
-        {
-            return AnalysisNodeKind.Symbol;
-        }
-    }
-
-    public sealed class AttributeDataListRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
-        : AttributesAnalysisNodeCreator.AttributeDataListRootViewNodeCreator(
-            creator.ParentContainer.AttributeCreator)
-    {
-        public override AnalysisNodeKind GetNodeKind(IReadOnlyList<AttributeData> value)
-        {
-            return AnalysisNodeKind.Symbol;
-        }
-    }
-
-    public sealed class TypedConstantRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
-        : AttributesAnalysisNodeCreator.TypedConstantRootViewNodeCreator(
-            creator.ParentContainer.AttributeCreator)
-    {
-        public override AnalysisNodeKind GetNodeKind(TypedConstant value)
-        {
-            return AnalysisNodeKind.Symbol;
         }
     }
 }
