@@ -163,7 +163,7 @@ public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManag
             if (parentNode is null)
                 return current;
 
-            if (current.NodeLine.AnalysisNodeKind != targetKind)
+            if (MatchesNodeKind(current.NodeLine.AnalysisNodeKind, targetKind))
             {
                 goto next;
             }
@@ -180,6 +180,18 @@ public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManag
         next:
             current = parentNode;
         }
+    }
+
+    private static bool MatchesNodeKind(AnalysisNodeKind value, AnalysisNodeKind target)
+    {
+        if (target is AnalysisNodeKind.Symbol)
+        {
+            return value
+                is AnalysisNodeKind.Attribute
+                or AnalysisNodeKind.Symbol;
+        }
+
+        return value == target;
     }
 
     protected override void OnPointerExited(PointerEventArgs e)
@@ -408,7 +420,7 @@ public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManag
             if (current is null)
                 return null;
 
-            if (current.NodeLine.AnalysisNodeKind == TargetAnalysisNodeKind)
+            if (MatchesNodeKind(current.NodeLine.AnalysisNodeKind, TargetAnalysisNodeKind))
             {
                 return current;
             }
@@ -459,7 +471,7 @@ public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManag
                 .Where(s =>
                 {
                     var nodeLine = s.NodeLine;
-                    return nodeLine.AnalysisNodeKind == TargetAnalysisNodeKind
+                    return MatchesNodeKind(nodeLine.AnalysisNodeKind, TargetAnalysisNodeKind)
                         && nodeLine.DisplaySpan.Contains(span);
                 })
                 .ToArray();

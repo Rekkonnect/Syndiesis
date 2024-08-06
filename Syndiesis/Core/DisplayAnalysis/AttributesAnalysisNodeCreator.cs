@@ -1,4 +1,5 @@
 ﻿using Avalonia.Media;
+using Garyon.Functions;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
@@ -6,6 +7,7 @@ using Syndiesis.InternalGenerators.Core;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
@@ -27,7 +29,9 @@ public sealed partial class AttributesAnalysisNodeCreator
     private readonly AttributeDataViewRootViewNodeCreator _attributeDataViewCreator;
     private readonly AttributeDataRootViewNodeCreator _attributeDataCreator;
     private readonly AttributeDataListRootViewNodeCreator _attributeDataListCreator;
-    private readonly TypedConstantRootViewNodeCreator _typedConstantCreator;
+    private readonly LinkedAttributeArgumentRootViewNodeCreator _linkedAttributeArgumentCreator;
+    private readonly RegularLinkedAttributeArgumentListViewNodeCreator _regularLinkedAttributeArgumentListCreator;
+    private readonly NamedLinkedAttributeArgumentListViewNodeCreator _namedLinkedAttributeArgumentListCreator;
     private readonly AttributeTreeSymbolContainerRootViewNodeCreator _symbolContainerCreator;
 
     public AttributesAnalysisNodeCreator(
@@ -38,7 +42,9 @@ public sealed partial class AttributesAnalysisNodeCreator
         _attributeDataViewCreator = new(this);
         _attributeDataCreator = new(this);
         _attributeDataListCreator = new(this);
-        _typedConstantCreator = new(this);
+        _linkedAttributeArgumentCreator = new(this);
+        _regularLinkedAttributeArgumentListCreator = new(this);
+        _namedLinkedAttributeArgumentListCreator = new(this);
         _symbolContainerCreator = new(this);
     }
 
@@ -54,14 +60,16 @@ public sealed partial class AttributesAnalysisNodeCreator
             case AttributeTree.AttributeDataView view:
                 return CreateRootAttributeView(view, valueSource, includeChildren);
 
-            case AttributeData attribute:
-                return CreateRootAttribute(attribute, valueSource, includeChildren);
-
             case IReadOnlyList<AttributeData> attributeList:
                 return CreateRootAttributeList(attributeList, valueSource, includeChildren);
 
-            case TypedConstant typedConstant:
-                return CreateRootTypedConstant(typedConstant, valueSource, includeChildren);
+            case AttributeDataViewModel attributeDataViewModel:
+                return CreateRootAttributeDataViewModel(
+                    attributeDataViewModel, valueSource, includeChildren);
+
+            case AttributeDataViewModel.LinkedAttributeArgument linkedAttributeArgument:
+                return CreateRootLinkedAttributeArgument(
+                    linkedAttributeArgument, valueSource, includeChildren);
 
             case SyntaxNode syntaxNode:
                 return CreateRootSyntaxNode(syntaxNode, valueSource);
@@ -90,15 +98,6 @@ public sealed partial class AttributesAnalysisNodeCreator
         return _attributeDataViewCreator.CreateNode(view, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootAttribute<TDisplayValueSource>(
-        AttributeData attribute,
-        TDisplayValueSource? valueSource,
-        bool includeChildren = true)
-        where TDisplayValueSource : IDisplayValueSource
-    {
-        return _attributeDataCreator.CreateNode(attribute, valueSource, includeChildren);
-    }
-
     public AnalysisTreeListNode CreateRootAttributeList<TDisplayValueSource>(
         IReadOnlyList<AttributeData> attributeList,
         TDisplayValueSource? valueSource,
@@ -108,13 +107,43 @@ public sealed partial class AttributesAnalysisNodeCreator
         return _attributeDataListCreator.CreateNode(attributeList, valueSource, includeChildren);
     }
 
-    public AnalysisTreeListNode CreateRootTypedConstant<TDisplayValueSource>(
-        TypedConstant typedConstant,
+    public AnalysisTreeListNode CreateRootAttributeDataViewModel<TDisplayValueSource>(
+        AttributeDataViewModel attribute,
         TDisplayValueSource? valueSource,
         bool includeChildren = true)
         where TDisplayValueSource : IDisplayValueSource
     {
-        return _typedConstantCreator.CreateNode(typedConstant, valueSource, includeChildren);
+        return _attributeDataCreator.CreateNode(attribute, valueSource, includeChildren);
+    }
+
+    public AnalysisTreeListNode CreateRootLinkedAttributeArgument<TDisplayValueSource>(
+        AttributeDataViewModel.LinkedAttributeArgument linkedAttributeArgument,
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+    {
+        return _linkedAttributeArgumentCreator.CreateNode(
+            linkedAttributeArgument, valueSource, includeChildren);
+    }
+
+    public AnalysisTreeListNode CreateRootRegularLinkedAttributeArgumentList<TDisplayValueSource>(
+        ImmutableArray<AttributeDataViewModel.LinkedAttributeArgument> linkedAttributeArguments,
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+    {
+        return _regularLinkedAttributeArgumentListCreator.CreateNode(
+            linkedAttributeArguments, valueSource, includeChildren);
+    }
+
+    public AnalysisTreeListNode CreateRootNamedLinkedAttributeArgumentList<TDisplayValueSource>(
+        ImmutableArray<AttributeDataViewModel.LinkedAttributeArgument> linkedAttributeArguments,
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+    {
+        return _namedLinkedAttributeArgumentListCreator.CreateNode(
+            linkedAttributeArguments, valueSource, includeChildren);
     }
 
     public AnalysisTreeListNode CreateRootAttributeTreeSymbolContainer<TDisplayValueSource>(
@@ -229,7 +258,7 @@ partial class AttributesAnalysisNodeCreator
     {
         public override object? AssociatedSyntaxObject(AttributeTree.AttributeDataView value)
         {
-            return value.Data;
+            return value.Data.AttributeData;
         }
 
         public override AnalysisTreeListNodeLine CreateNodeLine(
@@ -271,15 +300,20 @@ partial class AttributesAnalysisNodeCreator
     }
 
     public class AttributeDataRootViewNodeCreator(AttributesAnalysisNodeCreator creator)
-        : AttributeRootViewNodeCreator<AttributeData>(creator)
+        : AttributeRootViewNodeCreator<AttributeDataViewModel>(creator)
     {
+        public override object? AssociatedSyntaxObject(AttributeDataViewModel value)
+        {
+            return value.AttributeData;
+        }
+
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            AttributeData attribute, GroupedRunInlineCollection inlines)
+            AttributeDataViewModel attribute, GroupedRunInlineCollection inlines)
         {
             var inline = TypeDisplayGroupedRun(typeof(AttributeData));
             inlines.Add(inline);
             inlines.Add(NewValueKindSplitterRun());
-            var className = attribute.AttributeClass?.Name;
+            var className = attribute.AttributeData.AttributeClass?.Name;
             var nameInline = CreateNameInline(className);
             inlines.Add(nameInline);
 
@@ -312,30 +346,30 @@ partial class AttributesAnalysisNodeCreator
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(
-            AttributeData attribute)
+            AttributeDataViewModel attribute)
         {
             return () => GetChildren(attribute);
         }
 
-        private IReadOnlyList<AnalysisTreeListNode> GetChildren(AttributeData attribute)
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(AttributeDataViewModel attribute)
         {
             return
             [
                 Creator.ParentContainer.SymbolCreator.CreateRootSymbol(
-                    attribute.AttributeClass!,
+                    attribute.AttributeData.AttributeClass!,
                     Property(nameof(AttributeData.AttributeClass)),
                     false)!,
 
-                Creator.CreateRootGeneral(
+                Creator.CreateRootRegularLinkedAttributeArgumentList(
                     attribute.ConstructorArguments,
                     Property(nameof(AttributeData.ConstructorArguments)))!,
 
-                Creator.CreateRootGeneral(
+                Creator.CreateRootNamedLinkedAttributeArgumentList(
                     attribute.NamedArguments,
                     Property(nameof(AttributeData.NamedArguments)))!,
 
                 Creator.CreateRootGeneral(
-                    attribute.ApplicationSyntaxReference,
+                    attribute.AttributeData.ApplicationSyntaxReference,
                     Property(nameof(AttributeData.ApplicationSyntaxReference)))!,
             ];
         }
@@ -373,54 +407,85 @@ partial class AttributesAnalysisNodeCreator
             IReadOnlyList<AttributeData> attributes)
         {
             return attributes
-                .Select(symbol => Creator.CreateRootAttribute<IDisplayValueSource>(symbol, default))
+                .Select(attribute
+                    => AttributeDataViewModel.Create(attribute, default))
+                .Where(Predicates.NotNull)
+                .Select(attribute
+                    => Creator.CreateRootAttributeDataViewModel<IDisplayValueSource>(attribute!, default))
                 .ToList()
                 ;
         }
     }
 
-    public class TypedConstantRootViewNodeCreator(AttributesAnalysisNodeCreator creator)
-        : AttributeRootViewNodeCreator<TypedConstant>(creator)
+    public class LinkedAttributeArgumentRootViewNodeCreator(AttributesAnalysisNodeCreator creator)
+        : AttributeRootViewNodeCreator<AttributeDataViewModel.LinkedAttributeArgument>(creator)
     {
         public override AnalysisTreeListNodeLine CreateNodeLine(
-            TypedConstant constant, GroupedRunInlineCollection inlines)
+            AttributeDataViewModel.LinkedAttributeArgument argument, GroupedRunInlineCollection inlines)
         {
-            var inline = NestedTypeDisplayGroupedRun(typeof(TypedConstant));
-            inlines.Add(inline);
+            var nameBrush = BrushForAttributeArgument(argument.MappingKind);
+            var nameInline = new SingleRunInline(Run(argument.Name, nameBrush));
+            var splitterInline = CreateValueSplitterRun();
+            var valueInline = TypeDisplayGroupedRun(typeof(TypedConstant));
+            inlines.Add(nameInline);
+            inlines.Add(splitterInline);
+            inlines.Add(valueInline);
             inlines.Add(NewValueKindSplitterRun());
-            inlines.Add(CreateKindInline(constant));
+            inlines.Add(CreateKindInline(argument.Value));
 
             return AnalysisTreeListNodeLine(
                 inlines,
                 Styles.TypedConstantDisplay);
         }
 
-        public override AnalysisNodeChildRetriever? GetChildRetriever(
-            TypedConstant constant)
+        private static ILazilyUpdatedBrush BrushForAttributeArgument(
+            AttributeDataViewModel.AttributeArgumentNameMappingKind kind)
         {
-            return () => GetChildren(constant);
+            return kind switch
+            {
+                AttributeDataViewModel.AttributeArgumentNameMappingKind.Named
+                    => CommonStyles.PropertyBrush,
+                AttributeDataViewModel.AttributeArgumentNameMappingKind.Parameter
+                    => CommonStyles.LocalMainBrush,
+
+                _ => CommonStyles.RawValueBrush,
+            };
+        } 
+
+        public override object? AssociatedSyntaxObject(
+            AttributeDataViewModel.LinkedAttributeArgument value)
+        {
+            return value.ArgumentSyntax;
         }
 
-        private IReadOnlyList<AnalysisTreeListNode> GetChildren(TypedConstant constant)
+        public override AnalysisNodeChildRetriever? GetChildRetriever(
+            AttributeDataViewModel.LinkedAttributeArgument argument)
         {
+            return () => GetChildren(argument);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(
+            AttributeDataViewModel.LinkedAttributeArgument argument)
+        {
+            var value = argument.Value;
             return
             [
                 CreateRootTypeOrNull(
-                    constant.Type,
+                    value.Type,
                     Property(nameof(TypedConstant.Type)))!,
 
                 Creator.CreateRootBasic(
-                    constant.IsNull,
+                    value.IsNull,
                     Property(nameof(TypedConstant.IsNull))),
 
                 Creator.CreateGeneralOrThrowsExceptionNode<InvalidOperationException>(
-                    constant.Kind is not TypedConstantKind.Array,
-                    () => constant.Value,
+                    value.Kind is not TypedConstantKind.Array,
+                    () => value.Value,
                     Property(nameof(TypedConstant.Value)))!,
 
                 Creator.CreateGeneralOrThrowsExceptionNode<InvalidOperationException>(
-                    constant.Kind is TypedConstantKind.Array,
-                    () => constant.Values,
+                    value.Kind is TypedConstantKind.Array,
+                    () => value.Values,
                     Property(nameof(TypedConstant.Values)))!,
             ];
         }
@@ -444,6 +509,69 @@ partial class AttributesAnalysisNodeCreator
                 constant.Kind.ToString(),
                 CommonStyles.ConstantMainBrush,
                 FontStyle.Italic));
+        }
+    }
+
+    public abstract class LinkedAttributeArgumentListViewNodeCreator(AttributesAnalysisNodeCreator creator)
+        : AttributeRootViewNodeCreator<
+            ImmutableArray<AttributeDataViewModel.LinkedAttributeArgument>>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            ImmutableArray<AttributeDataViewModel.LinkedAttributeArgument> arguments,
+            GroupedRunInlineCollection inlines)
+        {
+            var type = GetDisplayedType();
+            var inline = TypeDisplayGroupedRun(type);
+            inlines.Add(inline);
+            AppendCountValueDisplay(
+                inlines,
+                arguments.Length,
+                nameof(ImmutableArray<AttributeDataViewModel.LinkedAttributeArgument>.Length));
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                CommonStyles.MemberAccessValueDisplay);
+        }
+
+        protected abstract Type GetDisplayedType();
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(
+            ImmutableArray<AttributeDataViewModel.LinkedAttributeArgument> arguments)
+        {
+            if (arguments.IsEmpty())
+                return null;
+
+            return () => GetChildren(arguments);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(
+            ImmutableArray<AttributeDataViewModel.LinkedAttributeArgument> arguments)
+        {
+            return arguments
+                .Select(argument
+                    => Creator.CreateRootLinkedAttributeArgument<IDisplayValueSource>(argument, default))
+                .ToList()
+                ;
+        }
+    }
+
+    public class RegularLinkedAttributeArgumentListViewNodeCreator(
+        AttributesAnalysisNodeCreator creator)
+        : LinkedAttributeArgumentListViewNodeCreator(creator)
+    {
+        protected override Type GetDisplayedType()
+        {
+            return typeof(ImmutableArray<TypedConstant>);
+        }
+    }
+
+    public class NamedLinkedAttributeArgumentListViewNodeCreator(
+        AttributesAnalysisNodeCreator creator)
+        : LinkedAttributeArgumentListViewNodeCreator(creator)
+    {
+        protected override Type GetDisplayedType()
+        {
+            return typeof(ImmutableArray<KeyValuePair<string, TypedConstant>>);
         }
     }
 }
