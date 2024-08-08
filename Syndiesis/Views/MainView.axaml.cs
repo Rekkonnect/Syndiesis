@@ -294,18 +294,10 @@ public partial class MainView : UserControl
         if (AnalysisPipelineHandler.IsWaiting)
             return;
 
-        var currentSource = ViewModel.HybridCompilationSource.CurrentSource;
-        if (currentSource.Tree is null)
-            return;
+        var execution = NodeViewAnalysisHelpers.GetNodeViewAnalysisExecutionForSpan(
+            ViewModel.HybridCompilationSource, span);
 
-        var node = currentSource.Tree.SyntaxNodeAtSpanIncludingStructuredTrivia(span);
-        var detailsData = NodeViewAnalysisExecution.InitializingData;
-        NodeViewAnalysisRoot? analysisRoot = null;
-        if (node is not null)
-        {
-            analysisRoot = GetNodeViewAnalysisRootForSpan(node, span);
-        }
-
+        var analysisRoot = execution?.Root;
         if (analysisRoot == _nodeViewAnalysisRoot)
             return;
 
@@ -314,20 +306,10 @@ public partial class MainView : UserControl
         _detailsViewCancellationTokenFactory.Cancel();
         var cancellationToken = _detailsViewCancellationTokenFactory.CurrentToken;
 
-        var execution = new NodeViewAnalysisExecution(currentSource.Compilation, analysisRoot);
-        detailsData = execution.ExecuteCore(cancellationToken)
+        var detailsData = execution?.ExecuteCore(cancellationToken)
             ?? NodeViewAnalysisExecution.InitializingData;
 
         _ = coverableView.NodeDetailsView.Load(detailsData);
-    }
-
-    private static NodeViewAnalysisRoot GetNodeViewAnalysisRootForSpan(
-        SyntaxNode rootNode,
-        TextSpan span)
-    {
-        var token = rootNode.DeepestTokenContainingSpan(span);
-        var trivia = rootNode.DeepestTriviaContainingSpan(span);
-        return new(rootNode.SyntaxTree, rootNode, token, trivia);
     }
 
     private void LoadTreeView(AnalysisNodeKind analysisKind)
