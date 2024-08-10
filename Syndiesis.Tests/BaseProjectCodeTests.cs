@@ -17,15 +17,15 @@ public abstract class BaseProjectCodeTests
     {
         Assert.That(FilesToTest, Is.Not.Empty);
 
-        var sourceTests = new List<Task>();
-        foreach (var file in FilesToTest)
-        {
-            var text = await File.ReadAllTextAsync(file.FullName);
-            var testTask = TestSource(text);
-            sourceTests.Add(testTask);
-        }
+        await Parallel.ForEachAsync(
+            FilesToTest,
+            TestFile);
 
-        await Task.WhenAll(sourceTests);
+        async ValueTask TestFile(FileInfo file, CancellationToken cancellationToken)
+        {
+            var text = await File.ReadAllTextAsync(file.FullName, cancellationToken);
+            await TestSource(text);
+        }
     }
 
     protected abstract Task TestSource(string text);
