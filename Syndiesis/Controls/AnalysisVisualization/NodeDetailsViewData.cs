@@ -1,5 +1,6 @@
 ﻿using Garyon.Functions;
 using Syndiesis.Core.DisplayAnalysis;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -40,13 +41,15 @@ public sealed record NodeDetailsViewData(
         ];
     }
 
-    public async Task<bool> AwaitAllLoaded()
+    public async Task<bool> AwaitAllLoaded(TimeSpan expectedDelay = default)
     {
         var nodeLoaders = AllNodes()
             .Select(s => s.NodeLoader)
             .Where(Predicates.NotNull)
             .ToList()
             ;
+
+        await Task.Delay(expectedDelay);
 
         await Task.WhenAll(nodeLoaders!);
         return nodeLoaders.All(l => l!.IsCompletedSuccessfully);

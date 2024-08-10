@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 
 namespace Syndiesis;
 
-public sealed class ProjectSourceProvider(string? callerFilePath)
+public class ProjectSourceProvider(string? callerFilePath)
 {
     private readonly string? _callerFilePath = callerFilePath;
-    
+
     public ImmutableArray<FileInfo> GetFilePaths()
     {
         if (string.IsNullOrEmpty(_callerFilePath))
@@ -21,14 +21,8 @@ public sealed class ProjectSourceProvider(string? callerFilePath)
         return [.. files];
     }
 
-    private static string? ThisPath([CallerFilePath] string? callerFilePath = null)
+    public static string? CallerFilePath([CallerFilePath] string? callerFilePath = null)
     {
         return callerFilePath;
-    }
-
-    public static ProjectSourceProvider Get()
-    {
-        var thisPath = ThisPath();
-        return new(thisPath);
     }
 }

@@ -7,10 +7,22 @@ namespace Syndiesis.Tests;
 public abstract class BaseProjectCodeTests
 {
     protected static readonly ProjectSourceProvider SourceProvider
-        = ProjectSourceProvider.Get();
+        = Syndiesis.ProjectSourceProviderGetter.Get();
 
-    protected static readonly ImmutableArray<FileInfo> FilesToTest
+    protected static readonly ProjectSourceProvider TestSourceProvider
+        = Syndiesis.Tests.ProjectSourceProviderGetter.Get();
+
+    protected static readonly ImmutableArray<FileInfo> MainFilesToTest
         = SourceProvider.GetFilePaths();
+
+    protected static readonly ImmutableArray<FileInfo> TestFilesToTest
+        = TestSourceProvider.GetFilePaths();
+
+    protected static readonly ImmutableArray<FileInfo> FilesToTest =
+    [
+        .. MainFilesToTest,
+        .. TestFilesToTest,
+    ];
 
     [Test]
     public async Task TestAllFilesIndependently()

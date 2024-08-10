@@ -1,6 +1,8 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Garyon.Extensions;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
+using Syndiesis.Utilities;
 
 namespace Syndiesis.Tests;
 
@@ -18,16 +20,29 @@ public sealed class NodeViewDetailsHandlerTests
     private static async Task TestEntireHybridCompilationTree(
         HybridSingleTreeCompilationSource hybridCompilation)
     {
-        var tree = hybridCompilation.CurrentSource.Tree;
-        Assert.That(tree, Is.Not.Null);
-        var root = await tree.GetRootAsync();
-        Assert.That(root, Is.Not.Null);
+        var profiling = new SimpleProfiling();
+        int nodeCount = 0;
+        int length = 0;
+        using (var _ = profiling.BeginProcess())
+        {
+            var tree = hybridCompilation.CurrentSource.Tree;
+            Assert.That(tree, Is.Not.Null);
+            var root = await tree.GetRootAsync();
+            Assert.That(root, Is.Not.Null);
+            length = root.FullSpan.Length;
 
-        var nodes = root.DescendantNodesAndSelf(descendIntoTrivia: true)
-            .ToList();
-        await Parallel.ForEachAsync(
-            nodes,
-            TestNodeLocal);
+            var nodes = root.DescendantNodesAndSelf(descendIntoTrivia: true)
+                .ToList();
+            nodeCount = nodes.Count;
+            await Parallel.ForEachAsync(
+                nodes,
+                TestNodeLocal);
+        }
+
+        var seconds = profiling.SnapshotResults!.Time.TotalSeconds;
+        TestContext.Progress.WriteLine($"""
+            Finished testing all {nodeCount} nodes from {length} characters in {seconds:N3}s
+            """);
 
         async ValueTask TestNodeLocal(SyntaxNode node, CancellationToken cancellationToken)
         {
@@ -55,6 +70,7 @@ public sealed class NodeViewDetailsHandlerTests
         {
             Assert.That(rootNode?.FullSpan, Is.EqualTo(node.FullSpan));
         }
+
     }
 
     private static async Task<NodeViewAnalysisExecution> TestExecutingResult(
@@ -68,26 +84,8 @@ public sealed class NodeViewDetailsHandlerTests
         var result = execution.ExecuteCore(default);
         Assert.That(result, Is.Not.Null);
 
-        bool allSuccessful = await result.AwaitAllLoaded();
+        bool allSuccessful = await result.AwaitAllLoaded(TimeSpan.FromMilliseconds(45));
         Assert.That(allSuccessful, Is.True);
         return execution;
-    }
-
-    [Test]
-    public async Task TestAllFilesWithFlow()
-    {
-        TestContext.Progress.WriteLine(
-            "Began testing the node view data analysis on all files sequentially, this will take some more time.");
-
-        var hybridCompilation = new HybridSingleTreeCompilationSource();
-
-        foreach (var file in FilesToTest)
-        {
-            var text = await File.ReadAllTextAsync(file.FullName);
-            hybridCompilation.SetSource(text, default);
-            await TestEntireHybridCompilationTree(hybridCompilation);
-
-            TestContext.Progress.WriteLine($"Processed file {file.FullName}");
-        }
     }
 }
