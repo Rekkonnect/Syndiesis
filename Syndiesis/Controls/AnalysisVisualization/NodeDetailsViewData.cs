@@ -1,4 +1,9 @@
-﻿using Syndiesis.Core.DisplayAnalysis;
+﻿using Garyon.Functions;
+using Syndiesis.Core.DisplayAnalysis;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
@@ -11,6 +16,45 @@ public sealed record NodeDetailsViewData(
     SemanticModelSection SemanticModel
     )
 {
+    private IList<UIBuilder.AnalysisTreeListNode> AllNodes()
+    {
+        return
+        [
+            CurrentNode.CurrentNode,
+            CurrentNode.CurrentToken,
+            CurrentNode.CurrentTrivia,
+
+            ParentNode.ParentNode,
+            ParentNode.ParentTrivia,
+
+            Children.ChildNodes,
+            Children.ChildTokens,
+            Children.ChildNodesAndTokens,
+
+            SemanticModel.SymbolInfo,
+            SemanticModel.DeclaredSymbolInfo,
+            SemanticModel.TypeInfo,
+            SemanticModel.AliasInfo,
+            SemanticModel.PreprocessingSymbolInfo,
+            SemanticModel.Conversion,
+            SemanticModel.Operation,
+        ];
+    }
+
+    public async Task<bool> AwaitAllLoaded(TimeSpan expectedDelay = default)
+    {
+        var nodeLoaders = AllNodes()
+            .Select(s => s.NodeLoader)
+            .Where(Predicates.NotNull)
+            .ToList()
+            ;
+
+        await Task.Delay(expectedDelay);
+
+        await Task.WhenAll(nodeLoaders!);
+        return nodeLoaders.All(l => l!.IsCompletedSuccessfully);
+    }
+
     public sealed record CurrentNodeSection(
         UIBuilder.AnalysisTreeListNode CurrentNode,
         UIBuilder.AnalysisTreeListNode CurrentToken,

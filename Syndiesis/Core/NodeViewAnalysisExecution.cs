@@ -79,10 +79,10 @@ public sealed class NodeViewAnalysisExecution(
         = ConstructSemanticModelValueSource(nameof(SemanticModel.GetOperation));
     #endregion
 
-    private readonly Compilation? _compilation = compilation;
-    private readonly NodeViewAnalysisRoot? _root = root;
-    private readonly SyntaxNode? _node = root?.Node;
+    public readonly Compilation? Compilation = compilation;
+    public readonly NodeViewAnalysisRoot? Root = root;
 
+    private readonly SyntaxNode? _node = root?.Node;
     private readonly SemanticModel? _semanticModel
         = SemanticModelForTree(compilation, root?.SyntaxTree);
 
@@ -139,9 +139,9 @@ public sealed class NodeViewAnalysisExecution(
         var syntaxCreator = _container.SyntaxCreator;
         var currentNode = syntaxCreator.CreateRootGeneral(_node, _currentNodeValueSource);
         var currentToken = syntaxCreator.CreateRootToken(
-            _root?.Token ?? default, _currentTokenValueSource);
+            Root?.Token ?? default, _currentTokenValueSource);
         var currentTrivia = syntaxCreator.CreateRootTrivia(
-            _root?.Trivia ?? default, _currentTriviaValueSource);
+            Root?.Trivia ?? default, _currentTriviaValueSource);
 
         var parentNode = syntaxCreator.CreateRootGeneral(
             _node?.Parent, _parentValueSource, false);

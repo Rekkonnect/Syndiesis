@@ -103,7 +103,7 @@ public static class RoslynExtensions
         if (startingTrivia == default)
             return default;
 
-        var endingTrivia = FindTrivia(child, span.End);
+        var endingTrivia = FindTrivia(child, span.End - 1);
         if (startingTrivia != endingTrivia)
             return default;
 
@@ -158,7 +158,7 @@ public static class RoslynExtensions
     public static bool ContainsStrict(this TextSpan span, TextSpan other)
     {
         return span.Contains(other.Start)
-            && span.Contains(other.End)
+            && span.Contains(other.End - 1)
             ;
     }
 
@@ -175,7 +175,7 @@ public static class RoslynExtensions
         if (startingChild == default)
             return default;
 
-        var endingChild = node.ChildThatContainsPosition(end);
+        var endingChild = node.ChildThatContainsPosition(end - 1);
         if (startingChild != endingChild)
             return default;
 
@@ -219,7 +219,7 @@ public static class RoslynExtensions
     public static SyntaxNode? SyntaxNodeAtPosition(this SyntaxTree tree, int position)
     {
         var root = tree.GetRoot();
-        position = Math.Max(0, Math.Min(position, root.FullSpan.End - 1));
+        position = Math.Clamp(position, 0, root.FullSpan.End - 1);
         return root.DeepestNodeContainingPosition(position);
     }
 
@@ -227,7 +227,7 @@ public static class RoslynExtensions
         this SyntaxTree tree, int position)
     {
         var root = tree.GetRoot();
-        position = Math.Max(0, Math.Min(position, root.FullSpan.End - 1));
+        position = Math.Clamp(position, 0, root.FullSpan.End - 1);
         return root.DeepestNodeContainingPositionIncludingStructuredTrivia(position);
     }
 
@@ -251,7 +251,7 @@ public static class RoslynExtensions
                     return current;
 
                 var startTrivia = current.FindTrivia(span.Start);
-                var endTrivia = current.FindTrivia(span.End);
+                var endTrivia = current.FindTrivia(span.End - 1);
 
                 if (startTrivia != endTrivia)
                     return current;
@@ -275,8 +275,8 @@ public static class RoslynExtensions
         this SyntaxTree tree, TextSpan span)
     {
         var root = tree.GetRoot();
-        var start = Math.Max(0, Math.Min(span.Start, root.FullSpan.End - 1));
-        var end = Math.Max(0, Math.Min(span.End, root.FullSpan.End - 1));
+        var start = Math.Clamp(span.Start, 0, root.FullSpan.End - 1);
+        var end = Math.Clamp(span.End, 0, root.FullSpan.End);
         var clampedSpan = TextSpan.FromBounds(start, end);
         return root.DeepestNodeContainingSpanIncludingStructuredTrivia(clampedSpan);
     }
@@ -312,5 +312,23 @@ public static class RoslynExtensions
         return attribute.ConstructorArguments is []
             && attribute.NamedArguments is []
             ;
+    }
+
+    public static SyntaxNode OutermostSameSpanParent(this SyntaxNode node)
+    {
+        var span = node.Span;
+
+        var current = node;
+        while (true)
+        {
+            var parent = current.Parent;
+            if (parent is null)
+                return current;
+
+            if (parent.Span != span)
+                return current;
+
+            current = parent;
+        }
     }
 }
