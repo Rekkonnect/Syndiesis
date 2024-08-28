@@ -597,13 +597,19 @@ public partial class MainView : UserControl
 
         var newLanguageName = version.LanguageName;
         var currentLanguageName = ViewModel.HybridCompilationSource.CurrentLanguageName;
-        if (newLanguageName != currentLanguageName)
+        Dispatcher.UIThread.InvokeAsync(() =>
+            SetNewLanguage(newLanguageName, currentLanguageName));
+
+        void SetNewLanguage(string newLanguageName, string currentLanguageName)
         {
-            ResetToLanguage(newLanguageName);
-        }
-        else
-        {
-            ForceRedoAnalysis();
+            if (newLanguageName != currentLanguageName)
+            {
+                ResetToLanguage(newLanguageName);
+            }
+            else
+            {
+                ForceRedoAnalysis();
+            }
         }
     }
 
