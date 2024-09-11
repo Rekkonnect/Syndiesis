@@ -2,7 +2,6 @@
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -10,16 +9,9 @@ namespace Syndiesis.Core.DisplayAnalysis;
 
 using CSharpConversion = Microsoft.CodeAnalysis.CSharp.Conversion;
 using VisualBasicConversion = Microsoft.CodeAnalysis.VisualBasic.Conversion;
-
-using Run = UIBuilder.Run;
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
-
-using GroupedRunInline = GroupedRunInline.IBuilder;
 using SingleRunInline = SingleRunInline.Builder;
-using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
-using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
-using static Syndiesis.Core.DisplayAnalysis.BaseAnalysisNodeCreator;
 
 public sealed partial class SemanticModelAnalysisNodeCreator : BaseAnalysisNodeCreator
 {

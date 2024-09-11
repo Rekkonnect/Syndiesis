@@ -2,7 +2,7 @@ using Avalonia.Animation;
 using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Media;
-using Syndiesis.Utilities;
+using Garyon.Objects;
 using System;
 
 namespace Syndiesis.Controls;

@@ -1,13 +1,12 @@
-﻿using Avalonia.Media;
-using AvaloniaEdit.Document;
+﻿using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
+using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
-using Syndiesis.Utilities;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;

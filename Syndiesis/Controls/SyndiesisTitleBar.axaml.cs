@@ -5,6 +5,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;

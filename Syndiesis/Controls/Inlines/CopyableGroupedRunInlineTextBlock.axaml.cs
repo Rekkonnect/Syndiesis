@@ -4,6 +4,7 @@ using Avalonia.Controls.Documents;
 using Avalonia.Controls.Shapes;
 using Avalonia.Input;
 using Avalonia.Media;
+using Garyon.Objects;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
 using System;

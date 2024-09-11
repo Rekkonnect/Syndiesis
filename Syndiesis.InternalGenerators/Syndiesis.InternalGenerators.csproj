@@ -12,7 +12,7 @@
   <ItemGroup>
     <PackageReference Include="Dentextist" Version="1.0.1" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
-    <PackageReference Include="Garyon" Version="0.3.3" GeneratePathProperty="true" />
+    <PackageReference Include="Garyon" Version="0.4.1" GeneratePathProperty="true" />
     <PackageReference Include="RoseLynn" Version="0.6.4.1" GeneratePathProperty="true" />
     <PackageReference Include="RoseLynn.VS2019" Version="0.6.4.1" GeneratePathProperty="true" />
     <PackageReference Include="RoseLynn.Generators" Version="0.6.4.1" GeneratePathProperty="true" />

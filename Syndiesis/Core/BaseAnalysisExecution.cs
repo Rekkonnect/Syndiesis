@@ -1,5 +1,5 @@
-﻿using Syndiesis.Core.DisplayAnalysis;
-using Syndiesis.Utilities;
+﻿using Garyon.Objects;
+using Syndiesis.Core.DisplayAnalysis;
 using System;
 using System.Threading;
 using System.Threading.Tasks;

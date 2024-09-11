@@ -6,19 +6,15 @@ using Syndiesis.InternalGenerators.Core;
 using Syndiesis.Utilities;
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-using Run = UIBuilder.Run;
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
 
 using GroupedRunInline = GroupedRunInline.IBuilder;
 using SingleRunInline = SingleRunInline.Builder;
-using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
-using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
 
 public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
 {

@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using AvaloniaEdit;
+using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;

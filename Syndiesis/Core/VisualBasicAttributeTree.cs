@@ -1,7 +1,7 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Garyon.Objects;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
-using Syndiesis.Utilities;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading;

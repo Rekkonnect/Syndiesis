@@ -12,7 +12,6 @@ namespace Syndiesis.Core.DisplayAnalysis;
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
 
 using CSharpSyntax = Microsoft.CodeAnalysis.CSharp.Syntax;
-using VisualBasicSyntax = Microsoft.CodeAnalysis.VisualBasic.Syntax;
 
 public sealed class SyntaxNodePropertyFilter : PropertyFilter
 {

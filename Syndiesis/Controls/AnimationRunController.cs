@@ -1,5 +1,5 @@
 ﻿using Avalonia.Animation;
-using Syndiesis.Utilities;
+using Garyon.Objects;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;

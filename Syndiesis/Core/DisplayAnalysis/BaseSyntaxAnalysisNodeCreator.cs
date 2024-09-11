@@ -12,13 +12,11 @@ using System.Reflection;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-using Run = UIBuilder.Run;
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
 
 using GroupedRunInline = GroupedRunInline.IBuilder;
 using SingleRunInline = SingleRunInline.Builder;
-using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
 
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;

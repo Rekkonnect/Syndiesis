@@ -1,7 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Input;
-using Syndiesis.Utilities;
+using Garyon.Objects;
 using Syndiesis.Views;
 using System.Threading;
 using System.Threading.Tasks;

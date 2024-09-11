@@ -1,6 +1,5 @@
 ﻿using AvaloniaEdit;
 using AvaloniaEdit.Document;
-using AvaloniaEdit.Editing;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Syndiesis.Core;

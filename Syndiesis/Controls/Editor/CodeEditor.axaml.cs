@@ -8,6 +8,8 @@ using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Rendering;
+using Garyon.Mechanisms;
+using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -638,11 +640,11 @@ public partial class CodeEditor : UserControl
         base.OnSizeChanged(e);
     }
 
-    private readonly RateLimiter _pasteRateLimiter = new(TimeSpan.FromMilliseconds(400));
+    private readonly ActionTimer _pasteRateLimiter = new(TimeSpan.FromMilliseconds(400));
 
     private async Task PasteDirectAsync()
     {
-        var canPaste = _pasteRateLimiter.Request();
+        var canPaste = _pasteRateLimiter.Request(true);
         if (!canPaste)
             return;
 

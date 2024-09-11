@@ -10,14 +10,11 @@ using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-using Run = UIBuilder.Run;
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
 
 using GroupedRunInline = GroupedRunInline.IBuilder;
 using SingleRunInline = SingleRunInline.Builder;
-using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
-using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
 
 // This also captures IOperation.OperationList
 using OperationList = IReadOnlyCollection<IOperation>;

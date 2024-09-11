@@ -5,11 +5,11 @@ using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
-using Syndiesis.Utilities;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
+using Garyon.Objects;
 
 namespace Syndiesis.Controls.Editor;
 
