@@ -734,7 +734,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         return recordDeclaration.ClassOrStructKeyword.Kind() switch
         {
             SyntaxKind.None or
-            SyntaxKind.ClassConstraint => TypeKind.Class,
+            SyntaxKind.ClassKeyword => TypeKind.Class,
             SyntaxKind.StructKeyword => TypeKind.Struct,
             _ => throw new UnreachableException(),
         };
