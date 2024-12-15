@@ -70,7 +70,6 @@ public sealed class NodeViewDetailsHandlerTests
         {
             Assert.That(rootNode?.FullSpan, Is.EqualTo(node.FullSpan));
         }
-
     }
 
     private static async Task<NodeViewAnalysisExecution> TestExecutingResult(

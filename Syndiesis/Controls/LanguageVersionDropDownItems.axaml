@@ -9,7 +9,7 @@
 
   <Panel
     Width="300"
-    Height="350"
+    Height="375"
     Background="#00332A"
     >
 
@@ -17,7 +17,7 @@
       Name="vbSlide"
       Grid.RowSpan="2"
       Grid.ColumnSpan="2"
-      Points="180,0 400,0 400,350 120,350"
+      Points="180,0 400,0 400,375 120,375"
       Fill="#002A33"
       >
       <Polygon.Transitions>

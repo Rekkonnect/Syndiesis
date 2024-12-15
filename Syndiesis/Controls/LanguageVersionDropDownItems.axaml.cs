@@ -139,6 +139,7 @@ public partial class LanguageVersionDropDownItems : UserControl
 
         ReadOnlySpan<CSharpVersion> csVersionsLeft =
         [
+            CSharpVersion.CSharp13,
             CSharpVersion.CSharp12,
             CSharpVersion.CSharp11,
             CSharpVersion.CSharp10,

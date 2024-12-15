@@ -47,6 +47,7 @@ public readonly record struct RoslynLanguageVersion(string LanguageName, int Raw
             CSharpVersion.CSharp10 => "10.0",
             CSharpVersion.CSharp11 => "11.0",
             CSharpVersion.CSharp12 => "12.0",
+            CSharpVersion.CSharp13 => "13.0",
             CSharpVersion.Preview => "Preview",
 
             _ => "Other",
