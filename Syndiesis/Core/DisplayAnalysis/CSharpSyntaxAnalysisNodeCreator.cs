@@ -947,8 +947,12 @@ partial class CSharpSyntaxAnalysisNodeCreator
 
         private static string DisabledTextTriviaText(SyntaxTrivia trivia)
         {
+            // https://github.com/dotnet/roslyn/issues/76441
+            if (trivia.SyntaxTree is null)
+                return "[Unknown line bounds]";
+
             var span = trivia.Span;
-            var lineSpan = trivia.SyntaxTree!.GetLineSpan(span).Span;
+            var lineSpan = trivia.SyntaxTree.GetLineSpan(span).Span;
             int startLine = lineSpan.Start.Line + 1;
             int endLine = lineSpan.End.Line + 1;
             if (lineSpan.End.Character is 0)
