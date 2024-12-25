@@ -1,8 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 
-using CSharpVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
-using VisualBasicVersion = Microsoft.CodeAnalysis.VisualBasic.LanguageVersion;
-
 namespace Syndiesis.Core;
 
 public readonly record struct RoslynLanguageVersion(string LanguageName, int RawVersionValue)

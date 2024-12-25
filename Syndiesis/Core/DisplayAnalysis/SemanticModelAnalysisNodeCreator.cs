@@ -7,8 +7,6 @@ using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-using CSharpConversion = Microsoft.CodeAnalysis.CSharp.Conversion;
-using VisualBasicConversion = Microsoft.CodeAnalysis.VisualBasic.Conversion;
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
 using SingleRunInline = SingleRunInline.Builder;

@@ -1,9 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
 
-using CSharpConversion = Microsoft.CodeAnalysis.CSharp.Conversion;
-using VisualBasicConversion = Microsoft.CodeAnalysis.VisualBasic.Conversion;
-
 namespace Syndiesis.Core;
 
 public sealed record ConversionUnion(
