@@ -275,7 +275,8 @@ public static class RoslynExtensions
         this SyntaxTree tree, TextSpan span)
     {
         var root = tree.GetRoot();
-        var start = Math.Clamp(span.Start, 0, root.FullSpan.End - 1);
+        int lastIndex = Math.Max(0, root.FullSpan.End - 1);
+        var start = Math.Clamp(span.Start, 0, lastIndex);
         var end = Math.Clamp(span.End, 0, root.FullSpan.End);
         var clampedSpan = TextSpan.FromBounds(start, end);
         return root.DeepestNodeContainingSpanIncludingStructuredTrivia(clampedSpan);

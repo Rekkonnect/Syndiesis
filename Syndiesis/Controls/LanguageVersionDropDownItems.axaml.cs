@@ -9,9 +9,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-using CSharpVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion;
-using VisualBasicVersion = Microsoft.CodeAnalysis.VisualBasic.LanguageVersion;
-
 namespace Syndiesis.Controls;
 
 public partial class LanguageVersionDropDownItems : UserControl

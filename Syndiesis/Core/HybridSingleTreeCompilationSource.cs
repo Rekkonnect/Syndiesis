@@ -7,9 +7,6 @@ using System;
 using System.Linq;
 using System.Threading;
 
-using CSharpSyntaxKind = Microsoft.CodeAnalysis.CSharp.SyntaxKind;
-using VisualBasicSyntaxKind = Microsoft.CodeAnalysis.VisualBasic.SyntaxKind;
-
 namespace Syndiesis.Core;
 
 public sealed class HybridSingleTreeCompilationSource
