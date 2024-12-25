@@ -15,7 +15,7 @@ public sealed class CSharpSingleTreeCompilationSource
     {
         return CSharpParseOptions.Default
             .WithLanguageVersion(
-                Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp12);
+                Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp13);
     }
 
     protected override void AdjustLanguageVersionCore(RoslynLanguageVersion version)
