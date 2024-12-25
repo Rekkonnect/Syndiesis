@@ -236,7 +236,7 @@ public sealed class NodeViewAnalysisExecution(
             return null;
         return
             _container.SyntaxCreator.CreateRootTokenList(
-                new SyntaxTokenList(_node?.ChildTokens() ?? []),
+                _node?.ChildTokens().ToList() ?? [],
                 _childTokensValueSource);
     }
 

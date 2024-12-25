@@ -103,7 +103,7 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
         ;
 
     public abstract AnalysisTreeListNode CreateRootTokenList<TDisplayValueSource>(
-        SyntaxTokenList list, TDisplayValueSource? valueSource, bool includeChildren = true)
+        IReadOnlyList<SyntaxToken> list, TDisplayValueSource? valueSource, bool includeChildren = true)
         where TDisplayValueSource : IDisplayValueSource
         ;
 

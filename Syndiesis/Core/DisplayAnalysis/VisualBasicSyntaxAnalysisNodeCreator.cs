@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Garyon.Reflection;
+using System.Diagnostics.Contracts;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -20,6 +21,7 @@ using SingleRunInline = SingleRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
 
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
+using SyntaxTokenList = IReadOnlyList<SyntaxToken>;
 
 public sealed partial class VisualBasicSyntaxAnalysisNodeCreator : BaseSyntaxAnalysisNodeCreator
 {
@@ -953,9 +955,7 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
 
         private static string DisabledTextTriviaText(SyntaxTrivia trivia)
         {
-            // https://github.com/dotnet/roslyn/issues/76441
-            if (trivia.SyntaxTree is null)
-                return "[Unknown line bounds]";
+            Contract.Assert(trivia.SyntaxTree is not null);
 
             var span = trivia.Span;
             var lineSpan = trivia.SyntaxTree.GetLineSpan(span).Span;
