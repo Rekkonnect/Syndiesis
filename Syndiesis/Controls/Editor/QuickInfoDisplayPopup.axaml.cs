@@ -8,14 +8,13 @@ using CodeAnalysisLocation = Microsoft.CodeAnalysis.Location;
 
 namespace Syndiesis.Controls.Editor;
 
-public partial class QuickInfoDisplayPopup : UserControl
+public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
 {
     private Point _pointerOrigin;
 
     public QuickInfoDisplayPopup()
     {
         InitializeComponent();
-        InitializeDesigner();
     }
 
     private void UpdateSplitterVisibility()
@@ -24,11 +23,8 @@ public partial class QuickInfoDisplayPopup : UserControl
             && diagnosticsPanel.Children.Count > 0;
     }
 
-    private void InitializeDesigner()
+    protected override void InitializeDesignerCore()
     {
-        if (!Design.IsDesignMode)
-            return;
-
         ImmutableArray<Diagnostic> exampleDiagnostics =
         [
             DiagnosticDescriptors.ExampleError,

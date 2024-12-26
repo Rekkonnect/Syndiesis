@@ -7,17 +7,37 @@ public class AppResourceManager(App app)
 {
     private readonly App _app = app;
 
-    public Image? LogoCSImage => _app.FindResource("LogoCSImage") as Image;
-    public Image? LogoVBImage => _app.FindResource("LogoVBImage") as Image;
-    public Image? PenImage => _app.FindResource("PenImage") as Image;
-    public Image? SpinnerImage => _app.FindResource("SpinnerImage") as Image;
-    public Image? SuccessImage => _app.FindResource("SuccessImage") as Image;
-    public Image? FailureImage => _app.FindResource("FailureImage") as Image;
+    public Image? LogoCSImage => ImageResource("LogoCSImage");
+    public Image? LogoVBImage => ImageResource("LogoVBImage");
+    public Image? PenImage => ImageResource("PenImage");
+    public Image? SpinnerImage => ImageResource("SpinnerImage");
+    public Image? SuccessImage => ImageResource("SuccessImage");
+    public Image? FailureImage => ImageResource("FailureImage");
 
-    public Image? DiagnosticErrorImage => _app.FindResource("DiagnosticErrorImage") as Image;
-    public Image? DiagnosticWarningImage => _app.FindResource("DiagnosticWarningImage") as Image;
-    public Image? DiagnosticSuggestionImage => _app.FindResource("DiagnosticSuggestionImage") as Image;
+    public Image? DiagnosticErrorImage => ImageResource("DiagnosticErrorImage");
+    public Image? DiagnosticWarningImage => ImageResource("DiagnosticWarningImage");
+    public Image? DiagnosticSuggestionImage => ImageResource("DiagnosticSuggestionImage");
 
+    // Symbol icons
+    public Image? ClassImage => ImageResource("VisualStudio_Symbol_Class");
+    public Image? ConstantImage => ImageResource("VisualStudio_Symbol_Constant");
+    public Image? DelegateImage => ImageResource("VisualStudio_Symbol_Delegate");
+    public Image? EnumImage => ImageResource("VisualStudio_Symbol_Enum");
+    public Image? EnumFieldImage => ImageResource("VisualStudio_Symbol_EnumField");
+    public Image? EventImage => ImageResource("VisualStudio_Symbol_Event");
+    public Image? InterfaceImage => ImageResource("VisualStudio_Symbol_Interface");
+    public Image? LocalImage => ImageResource("VisualStudio_Symbol_Local");
+    public Image? MethodImage => ImageResource("VisualStudio_Symbol_Method");
+    public Image? ModuleImage => ImageResource("VisualStudio_Symbol_Module");
+    public Image? NamespaceImage => ImageResource("VisualStudio_Symbol_Namespace");
+    public Image? ParamImage => ImageResource("VisualStudio_Symbol_Param");
+    public Image? PropImage => ImageResource("VisualStudio_Symbol_Prop");
+    public Image? StructImage => ImageResource("VisualStudio_Symbol_Struct");
+    public Image? TypeParamImage => ImageResource("VisualStudio_Symbol_TypeParam");
+    public Image? LabelImage => ImageResource("VisualStudio_Symbol_Label");
+    public Image? FieldImage => ImageResource("VisualStudio_Symbol_Field");
+    public Image? AssemblyImage => ImageResource("VisualStudio_Symbol_Assembly");
+    
     // with help from
     // https://github.com/FrankenApps/Avalonia-CustomTitleBarTemplate
     private const string _minimizeIconPathData =
@@ -44,4 +64,9 @@ public class AppResourceManager(App app)
     public Geometry RestoreDownIconGeometry { get; } = Geometry.Parse(_restoreDownIconPathData);
     public Geometry MaximizeIconGeometry { get; } = Geometry.Parse(_maximizeIconPathData);
     public Geometry CloseIconGeometry { get; } = Geometry.Parse(_closeIconPathData);
+
+    private Image? ImageResource(string key)
+    {
+        return _app.FindResource(key) as Image;
+    }
 }

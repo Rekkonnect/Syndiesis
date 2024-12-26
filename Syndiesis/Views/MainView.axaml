@@ -8,7 +8,6 @@
              Focusable="True"
              xmlns:controls="using:Syndiesis.Controls"
              xmlns:av="using:Syndiesis.Controls.AnalysisVisualization"
-             xmlns:previews="using:Syndiesis.Views.DesignerPreviews"
              xmlns:editor="using:Syndiesis.Controls.Editor"
              x:Class="Syndiesis.Views.MainView"
              >
