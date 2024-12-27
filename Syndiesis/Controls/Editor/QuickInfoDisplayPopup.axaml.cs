@@ -19,7 +19,7 @@ public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
 
     private void UpdateSplitterVisibility()
     {
-        splitter.IsVisible = symbolInfoContainer.Content is not null
+        splitter.IsVisible = symbolInfoPanel.Children.Count > 0
             && diagnosticsPanel.Children.Count > 0;
     }
 
@@ -35,6 +35,16 @@ public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
         SetDiagnostics(exampleDiagnostics);
     }
 
+    public void SetSymbols(ImmutableArray<ISymbol> symbols)
+    {
+        var symbolItems = symbols
+            .Select(CreateSymbolItem)
+            .ToArray();
+
+        symbolInfoPanel.Children.ClearSetValues(symbolItems);
+        UpdateSplitterVisibility();
+    }
+
     public void SetDiagnostics(ImmutableArray<Diagnostic> diagnostics)
     {
         var diagnosticItems = diagnostics
@@ -46,6 +56,12 @@ public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
         UpdateSplitterVisibility();
     }
 
+    public bool IsEmpty()
+    {
+        return diagnosticsPanel.Children.Count is 0
+            && symbolInfoPanel.Children.Count is 0;
+    }
+    
     public void SetPointerOrigin(Point point)
     {
         _pointerOrigin = point;
@@ -113,6 +129,13 @@ public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
         }
 
         Margin = targetMargin;
+    }
+
+    private static QuickInfoSymbolItem CreateSymbolItem(ISymbol symbol)
+    {
+        var item = new QuickInfoSymbolItem();
+        item.LoadSymbol(symbol);
+        return item;
     }
 
     private static QuickInfoDiagnosticItem? CreateDiagnosticItem(Diagnostic diagnostic)

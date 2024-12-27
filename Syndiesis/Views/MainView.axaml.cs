@@ -17,6 +17,7 @@ using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Syndiesis.Core.DisplayAnalysis;
 
 namespace Syndiesis.Views;
 
@@ -96,12 +97,16 @@ public partial class MainView : UserControl
 
         _lastHoveredPosition = documentPosition;
 
-        var diagnostics = GetHoveredDiagnostics(documentPosition.Value);
+        var documentPositionValue = documentPosition.Value;
+        int positionOffset = editor.TextArea.TextView.Document.GetOffset(documentPositionValue.Location);
+        var symbols = GetHoveredSymbols(positionOffset);
+        var diagnostics = GetHoveredDiagnostics(documentPositionValue);
 
-        if (diagnostics.IsEmpty)
-            return;
-
+        quickInfoDisplayPopup.SetSymbols(symbols);
         quickInfoDisplayPopup.SetDiagnostics(diagnostics);
+
+        if (quickInfoDisplayPopup.IsEmpty())
+            return;
 
         var viewPosition = pointerArgs.GetPosition(this);
         quickInfoDisplayPopup.SetPointerOrigin(viewPosition);
@@ -156,6 +161,34 @@ public partial class MainView : UserControl
                     ;
             }
         }
+    }
+
+    private ImmutableArray<ISymbol> GetHoveredSymbols(int position)
+    {
+        var source = codeEditor.CompilationSource?.CurrentSource;
+        var semanticModel = source?.SemanticModel;
+        var tree = source?.Tree;
+        if (tree is null)
+            return [];
+        if (semanticModel is null)
+            return [];
+        
+        var node = tree.SyntaxNodeAtPosition(position);
+        if (node is null)
+            return [];
+        
+        var symbolInfo = semanticModel.GetSymbolInfo(node);
+        var declaredSymbol = semanticModel.GetDeclaredSymbol(node);
+        var alias = semanticModel.GetAliasInfo(node);
+        var symbolBuilder = ImmutableArray.CreateBuilder<ISymbol>(
+            symbolInfo.CandidateSymbols.Length + 3);
+
+        symbolBuilder.AddNonNull(declaredSymbol);
+        symbolBuilder.AddNonNull(alias);
+        symbolBuilder.AddNonNull(symbolInfo.Symbol);
+        symbolBuilder.AddRange(symbolInfo.CandidateSymbols);
+        
+        return symbolBuilder.ToImmutable();
     }
 
     private ImmutableArray<Diagnostic> GetHoveredDiagnostics(TextViewPosition documentPosition)
