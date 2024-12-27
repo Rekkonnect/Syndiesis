@@ -2,8 +2,8 @@
 
 public sealed class CSharpAnalysisNodeCreatorContainer : BaseAnalysisNodeCreatorContainer
 {
-    public CSharpAnalysisNodeCreatorContainer()
+    protected override BaseSyntaxAnalysisNodeCreator CreateSyntaxCreator()
     {
-        SyntaxCreator = new CSharpSyntaxAnalysisNodeCreator(this);
+        return new CSharpSyntaxAnalysisNodeCreator(this);
     }
 }

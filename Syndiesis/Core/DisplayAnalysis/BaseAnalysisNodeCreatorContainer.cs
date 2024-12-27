@@ -5,7 +5,7 @@ namespace Syndiesis.Core.DisplayAnalysis;
 
 public abstract class BaseAnalysisNodeCreatorContainer
 {
-    public BaseSyntaxAnalysisNodeCreator SyntaxCreator { get; protected init; }
+    public readonly BaseSyntaxAnalysisNodeCreator SyntaxCreator;
     public readonly AttributesAnalysisNodeCreator AttributeCreator;
     public readonly SymbolAnalysisNodeCreator SymbolCreator;
     public readonly OperationsAnalysisNodeCreator OperationCreator;
@@ -13,12 +13,15 @@ public abstract class BaseAnalysisNodeCreatorContainer
 
     public BaseAnalysisNodeCreatorContainer()
     {
+        SyntaxCreator = CreateSyntaxCreator();
         AttributeCreator = new(this);
         SymbolCreator = new(this);
         OperationCreator = new(this);
         SemanticCreator = new(this);
     }
 
+    protected abstract BaseSyntaxAnalysisNodeCreator CreateSyntaxCreator(); 
+    
     public static BaseAnalysisNodeCreatorContainer CreateForLanguage(string languageName)
     {
         return languageName switch
