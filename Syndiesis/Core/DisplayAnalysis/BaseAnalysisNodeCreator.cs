@@ -162,15 +162,16 @@ public abstract partial class BaseAnalysisNodeCreator
 
     private static bool IsDictionaryType(Type type)
     {
-        if (type is IDictionary)
-            return true;
-
-        return ContainsGenericVariant(type.GetInterfaces(), typeof(IDictionary<,>));
+        var interfaces = type.GetInterfaces();
+        return interfaces.Contains(typeof(IDictionary))
+            || ContainsGenericVariant(interfaces, typeof(IDictionary<,>));
     }
 
     private static bool IsEnumerableType(Type type)
     {
-        return type is IEnumerable;
+        var interfaces = type.GetInterfaces();
+        return interfaces.Contains(typeof(IEnumerable))
+            || ContainsGenericVariant(interfaces, typeof(IEnumerable<>));
     }
 
     private static bool SupportsEnumeration(Type type)
