@@ -38,6 +38,7 @@
     <Image x:Key="VisualStudio_Symbol_Method" Source="avares://Syndiesis/Assets/Icons/vs/symbols/method.png" />
     <Image x:Key="VisualStudio_Symbol_Module" Source="avares://Syndiesis/Assets/Icons/vs/symbols/module.png" />
     <Image x:Key="VisualStudio_Symbol_Namespace" Source="avares://Syndiesis/Assets/Icons/vs/symbols/namespace.png" />
+    <Image x:Key="VisualStudio_Symbol_Operator" Source="avares://Syndiesis/Assets/Icons/vs/symbols/operator.png" />
     <Image x:Key="VisualStudio_Symbol_Param" Source="avares://Syndiesis/Assets/Icons/vs/symbols/param.png" />
     <Image x:Key="VisualStudio_Symbol_Prop" Source="avares://Syndiesis/Assets/Icons/vs/symbols/prop.png" />
     <Image x:Key="VisualStudio_Symbol_Struct" Source="avares://Syndiesis/Assets/Icons/vs/symbols/struct.png" />

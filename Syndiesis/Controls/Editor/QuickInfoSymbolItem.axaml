@@ -1,0 +1,45 @@
+<UserControl
+    xmlns="https://github.com/avaloniaui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:inlines="using:Syndiesis.Controls.Inlines"
+    d:DesignWidth="220"
+    mc:Ignorable="d"
+    x:Class="Syndiesis.Controls.Editor.QuickInfoSymbolItem">
+
+    <StackPanel>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <Image
+                Name="symbolIcon"
+                Grid.Column="0"
+                Margin="4"
+                Height="24"
+                VerticalAlignment="Stretch"
+                Source="avares://Syndiesis/Assets/Icons/vs/symbols/method.png" />
+
+            <inlines:CopyableGroupedRunInlineTextBlock
+                Name="symbolDisplayBlock"
+                Grid.Column="1"
+                VerticalAlignment="Center"
+                TextWrapping="Wrap"
+                FontSize="14"
+                Text="void ExampleSymbol(int a, int b)" />
+        </Grid>
+
+        <inlines:CopyableGroupedRunInlineTextBlock
+            Name="documentationDisplayBlock"
+            VerticalAlignment="Top"
+            TextWrapping="Wrap"
+            FontSize="12"
+            Text="This example symbol comes with custom documentation as can be shown here." />
+
+    </StackPanel>
+
+</UserControl>

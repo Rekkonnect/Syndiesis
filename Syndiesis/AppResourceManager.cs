@@ -30,6 +30,7 @@ public class AppResourceManager(App app)
     public Image? MethodImage => ImageResource("VisualStudio_Symbol_Method");
     public Image? ModuleImage => ImageResource("VisualStudio_Symbol_Module");
     public Image? NamespaceImage => ImageResource("VisualStudio_Symbol_Namespace");
+    public Image? OperatorImage => ImageResource("VisualStudio_Symbol_Operator");
     public Image? ParamImage => ImageResource("VisualStudio_Symbol_Param");
     public Image? PropImage => ImageResource("VisualStudio_Symbol_Prop");
     public Image? StructImage => ImageResource("VisualStudio_Symbol_Struct");
