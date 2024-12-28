@@ -189,6 +189,9 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
             case IRangeVariableSymbol rangeVariableSymbol:
                 return CreateRootRangeVariableSymbol(rangeVariableSymbol, valueSource, includeChildren);
 
+            case INamedTypeSymbol namedTypeSymbol:
+                return CreateRootNamedTypeSymbol(namedTypeSymbol, valueSource, includeChildren);
+
             case ITypeSymbol typeSymbol:
                 return CreateRootTypeSymbol(typeSymbol, valueSource, includeChildren);
 
@@ -223,6 +226,13 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         where TDisplayValueSource : IDisplayValueSource
     {
         return _typeSymbolCreator.CreateNode(typeSymbol, valueSource, includeChildren);
+    }
+
+    public AnalysisTreeListNode CreateRootNamedTypeSymbol<TDisplayValueSource>(
+        INamedTypeSymbol typeSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+    {
+        return _namedTypeSymbolCreator.CreateNode(typeSymbol, valueSource, includeChildren);
     }
 
     public AnalysisTreeListNode CreateRootFieldSymbol<TDisplayValueSource>(
@@ -577,6 +587,10 @@ partial class SymbolAnalysisNodeCreator
                 Creator.CreateRootSymbolList(
                     symbol.TypeParameters,
                     Property(nameof(INamedTypeSymbol.TypeParameters))),
+
+                Creator.CreateRootGeneral(
+                    symbol.IsFileLocal,
+                    Property(nameof(INamedTypeSymbol.IsFileLocal))),
 
                 Creator.CreateRootGeneral(
                     symbol.DelegateInvokeMethod,
