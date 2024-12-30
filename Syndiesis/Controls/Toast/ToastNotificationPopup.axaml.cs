@@ -26,6 +26,8 @@ public partial class ToastNotificationPopup : UserControl
     public ToastNotificationPopup()
     {
         InitializeComponent();
+        // Force set from here to ensure a correct fade
+        BackgroundFill = CommonToastNotifications.FillColors.Main;
     }
 
     public async Task BeginProgressBarAsync(TimeSpan totalDuration, CancellationToken cancellationToken)

@@ -230,15 +230,12 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
         PulseCopiedTextInline();
 
         var toastContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
-        if (toastContainer is not null)
-        {
-            var popup = new ToastNotificationPopup();
-            popup.defaultTextBlock.Text = $"""
-                Copied partial line content:
-                {text}
-                """;
-            var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
-            _ = toastContainer.Show(popup, animation);
-        }
+        _ = CommonToastNotifications.ShowClassicMain(
+            toastContainer,
+            $"""
+             Copied partial line content:
+             {text}
+             """,
+            TimeSpan.FromSeconds(2));
     }
 }

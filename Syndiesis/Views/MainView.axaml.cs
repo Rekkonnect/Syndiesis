@@ -687,13 +687,10 @@ public partial class MainView : UserControl
     private void ShowResetSettingsPopup()
     {
         var notificationContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
-        if (notificationContainer is not null)
-        {
-            var popup = new ToastNotificationPopup();
-            popup.defaultTextBlock.Text = "Reverted settings to current file state";
-            var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
-            _ = notificationContainer.Show(popup, animation);
-        }
+        _ = CommonToastNotifications.ShowClassicMain(
+            notificationContainer,
+            "Reverted settings to current file state",
+            TimeSpan.FromSeconds(2));
     }
 
     protected override void OnKeyDown(KeyEventArgs e)
