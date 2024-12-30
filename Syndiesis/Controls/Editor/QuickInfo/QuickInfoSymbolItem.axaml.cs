@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
 
-namespace Syndiesis.Controls.Editor;
+namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public partial class QuickInfoSymbolItem : UserControl
 {

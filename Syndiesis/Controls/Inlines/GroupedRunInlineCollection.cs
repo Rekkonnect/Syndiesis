@@ -7,27 +7,33 @@ namespace Syndiesis.Controls.Inlines;
 
 public sealed class GroupedRunInlineCollection : AvaloniaList<object>
 {
-    public override void Add(object item)
-    {
-        var run = RunOrGrouped.FromObject(item);
-        Add(run);
-    }
-
-    public override void AddRange(IEnumerable<object> items)
-    {
-        foreach (var item in items)
-        {
-            Add(item);
-        }
-    }
-
     public GroupedRunInlineCollection() { }
     public GroupedRunInlineCollection(IEnumerable<RunOrGrouped> items) 
     {
         AddRange(items);
     }
+    
+    public override void Add(object item)
+    {
+        AddObject(item);
+    }
 
-    public void Add(GroupedRunInline.IBuilder builder)
+    public void AddObject(object item)
+    {
+        var run = RunOrGrouped.FromObject(item);
+        Add(run);
+    }
+    
+    public override void AddRange(IEnumerable<object> items)
+    {
+        foreach (var item in items)
+        {
+            AddObject(item);
+        }
+    }
+
+    public void Add<TBuilder>(TBuilder builder)
+        where TBuilder : GroupedRunInline.IBuilder
     {
         base.Add(new RunOrGrouped(builder));
     }
@@ -73,7 +79,7 @@ public sealed class GroupedRunInlineCollection : AvaloniaList<object>
         var result = new GroupedRunInlineCollection();
         foreach (var obj in this)
         {
-            result.Add(BuildObject(obj));
+            result.AddObject(BuildObject(obj));
         }
         return result;
     }

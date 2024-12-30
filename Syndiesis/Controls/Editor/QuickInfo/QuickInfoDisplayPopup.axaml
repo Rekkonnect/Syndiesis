@@ -6,7 +6,7 @@ xmlns="https://github.com/avaloniaui"
              mc:Ignorable="d"
              VerticalAlignment="Stretch"
              HorizontalAlignment="Stretch"
-             x:Class="Syndiesis.Controls.Editor.QuickInfoDisplayPopup">
+             x:Class="Syndiesis.Controls.Editor.QuickInfo.QuickInfoDisplayPopup">
 
   <Border
     Name="outerBorder"

@@ -1,7 +1,12 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Buffers;
+using System.Collections.Immutable;
+using System.Globalization;
 using System.Threading;
 using System.Xml;
+using Garyon.Extensions;
 using Microsoft.CodeAnalysis;
+using Serilog;
 
 namespace Syndiesis.Core;
 
@@ -39,7 +44,7 @@ public static class SymbolExtensions
     {
         var xml = symbol.GetDocumentationCommentXml(
             preferredCulture, expandIncludes, cancellationToken);
-        if (xml is null)
+        if (string.IsNullOrEmpty(xml))
             return null;
         return CreateXmlDocument(xml);
     }
@@ -47,7 +52,57 @@ public static class SymbolExtensions
     private static XmlDocument CreateXmlDocument(string xml)
     {
         var document = new XmlDocument();
-        document.Load(xml);
+        try
+        {
+            document.Load(xml);
+        }
+        catch (Exception ex)
+        {
+            Log.Error(ex, "Failed to load the XML document");
+        }
         return document;
+    }
+
+    public static bool HasFileAccessibility(this ISymbol symbol)
+    {
+        return symbol
+            is INamedTypeSymbol { IsFileLocal: true };
+    }
+    
+    // known unspeakable characters on compiler-generated names
+    private static readonly SearchValues<char> _unspeakableChars = SearchValues.Create("<>$#");
+
+    public static bool IsUnspeakableName(string name)
+    {
+        return name.AsSpan().ContainsAny(_unspeakableChars);
+    }
+    
+    public static bool HasUnspeakableName(this ISymbol symbol)
+    {
+        return IsUnspeakableName(symbol.Name);
+    }
+
+    // TODO: Evaluate if this is even necessary
+    public static ReadOnlySpan<char> GetNameWithoutGenericSuffix(this ISymbol symbol)
+    {
+        var nameSpan = symbol.Name.AsSpan();
+        nameSpan.SplitOnce('`', out var name, out _);
+        return name;
+    }
+
+    public static ImmutableArray<IFieldSymbol> GetFields(this INamedTypeSymbol type)
+    {
+        return type
+            .GetMembers()
+            .OfType<IFieldSymbol>()
+            .ToImmutableArray();
+    }
+
+    public static ImmutableArray<IPropertySymbol> GetProperties(this INamedTypeSymbol type)
+    {
+        return type
+            .GetMembers()
+            .OfType<IPropertySymbol>()
+            .ToImmutableArray();
     }
 }

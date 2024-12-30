@@ -570,16 +570,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
 
     private static ILazilyUpdatedBrush? BrushForTypeKind(TypeKind kind)
     {
-        return kind switch
-        {
-            TypeKind.Class => Styles.ClassBrush,
-            TypeKind.Struct => Styles.StructBrush,
-            TypeKind.Interface => Styles.InterfaceBrush,
-            TypeKind.Delegate => Styles.DelegateBrush,
-            TypeKind.Enum => Styles.EnumBrush,
-            TypeKind.TypeParameter => Styles.TypeParameterBrush,
-            _ => null,
-        };
+        return RoslynColorizationHelpers.BrushForTypeKind(Styles, kind);
     }
 
     private static bool IsConstDeclaration(SyntaxToken token)

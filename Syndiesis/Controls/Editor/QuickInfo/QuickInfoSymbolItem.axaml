@@ -6,7 +6,7 @@
     xmlns:inlines="using:Syndiesis.Controls.Inlines"
     d:DesignWidth="220"
     mc:Ignorable="d"
-    x:Class="Syndiesis.Controls.Editor.QuickInfoSymbolItem">
+    x:Class="Syndiesis.Controls.Editor.QuickInfo.QuickInfoSymbolItem">
 
     <StackPanel>
 

@@ -44,10 +44,23 @@ public sealed class ComplexGroupedRunInline : GroupedRunInline
         }
     }
 
-    public sealed record Builder(
-        List<RunOrGrouped>? Children = null)
+    public sealed class Builder(
+        List<RunOrGrouped>? children = null)
         : Builder<ComplexGroupedRunInline>()
     {
+        public List<RunOrGrouped>? Children { get; set; } = children;
+
+        public void AddChild(IBuilder builder)
+        {
+            AddChild(new RunOrGrouped(builder));
+        }
+        
+        public void AddChild(RunOrGrouped runOrGrouped)
+        {
+            Children ??= new();
+            Children.Add(runOrGrouped);
+        }
+        
         public override ComplexGroupedRunInline Build()
         {
             if (Children is null)

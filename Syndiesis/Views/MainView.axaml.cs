@@ -14,8 +14,10 @@ using Syndiesis.Core;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 using Syndiesis.Core.DisplayAnalysis;
 
@@ -176,19 +178,30 @@ public partial class MainView : UserControl
         var node = tree.SyntaxNodeAtPosition(position);
         if (node is null)
             return [];
+
+        var symbolSet = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
+        var relatedNodes = node.EnumerateAncestorsWithSameSpanAndThis();
+        foreach (var relatedNode in relatedNodes)
+        {
+            AddRelatedSymbols(symbolSet, semanticModel, relatedNode);
+        }
+        
+        return symbolSet.ToImmutableArray();
+    }
+
+    private static void AddRelatedSymbols(
+        ISet<ISymbol> symbols, SemanticModel semanticModel, SyntaxNode node)
+    {
+        const int maxCandidates = 3;
         
         var symbolInfo = semanticModel.GetSymbolInfo(node);
         var declaredSymbol = semanticModel.GetDeclaredSymbol(node);
         var alias = semanticModel.GetAliasInfo(node);
-        var symbolBuilder = ImmutableArray.CreateBuilder<ISymbol>(
-            symbolInfo.CandidateSymbols.Length + 3);
 
-        symbolBuilder.AddNonNull(declaredSymbol);
-        symbolBuilder.AddNonNull(alias);
-        symbolBuilder.AddNonNull(symbolInfo.Symbol);
-        symbolBuilder.AddRange(symbolInfo.CandidateSymbols);
-        
-        return symbolBuilder.ToImmutable();
+        symbols.AddNonNull(declaredSymbol);
+        symbols.AddNonNull(alias);
+        symbols.AddNonNull(symbolInfo.Symbol);
+        symbols.UnionWith(symbolInfo.CandidateSymbols.Take(maxCandidates));
     }
 
     private ImmutableArray<Diagnostic> GetHoveredDiagnostics(TextViewPosition documentPosition)

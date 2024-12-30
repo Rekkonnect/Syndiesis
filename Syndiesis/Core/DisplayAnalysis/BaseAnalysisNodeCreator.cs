@@ -33,6 +33,7 @@ using KvpList = List<KeyValuePair<object, object?>>;
 public delegate IReadOnlyList<AnalysisTreeListNode> AnalysisNodeChildRetriever();
 
 public abstract partial class BaseAnalysisNodeCreator
+    : BaseInlineCreator
 {
     // node creators
     private readonly GeneralLoadingRootViewNodeCreator _loadingCreator;
@@ -286,6 +287,32 @@ public abstract partial class BaseAnalysisNodeCreator
         return new SingleRunInline(typeNameRun);
     }
 
+    private static bool IsPrimitiveType(Type type)
+    {
+        switch (type.GetTypeCode())
+        {
+            case TypeCode.Byte:
+            case TypeCode.SByte:
+            case TypeCode.Int16:
+            case TypeCode.UInt16:
+            case TypeCode.Int32:
+            case TypeCode.UInt32:
+            case TypeCode.Int64:
+            case TypeCode.UInt64:
+            case TypeCode.Single:
+            case TypeCode.Double:
+            case TypeCode.Decimal:
+            case TypeCode.String:
+            case TypeCode.Char:
+            case TypeCode.Boolean:
+                return true;
+        }
+
+        return type == typeof(object)
+            || type == typeof(void)
+            ;
+    }
+
 #if false // generation of the code below
 using System;
 
@@ -323,32 +350,6 @@ static string Code(string type)
         """;
 }
 #endif
-
-    private static bool IsPrimitiveType(Type type)
-    {
-        switch (type.GetTypeCode())
-        {
-            case TypeCode.Byte:
-            case TypeCode.SByte:
-            case TypeCode.Int16:
-            case TypeCode.UInt16:
-            case TypeCode.Int32:
-            case TypeCode.UInt32:
-            case TypeCode.Int64:
-            case TypeCode.UInt64:
-            case TypeCode.Single:
-            case TypeCode.Double:
-            case TypeCode.Decimal:
-            case TypeCode.String:
-            case TypeCode.Char:
-            case TypeCode.Boolean:
-                return true;
-        }
-
-        return type == typeof(object)
-            || type == typeof(void)
-            ;
-    }
 
     private static string? GetTypeAlias(Type type)
     {
@@ -426,24 +427,6 @@ static string Code(string type)
         throw new UnreachableException("Type kinds should have all been evaluated here");
     }
 
-    private static Run CreateArgumentSeparatorRun()
-    {
-        return Run(", ", CommonStyles.RawValueBrush);
-    }
-
-    private static Run CreateQualifierSeparatorRun()
-    {
-        return Run(".", CommonStyles.RawValueBrush);
-    }
-
-    // known unspeakable characters on compiler-generated names
-    private static readonly SearchValues<char> _unspeakableChars = SearchValues.Create("<>$#");
-
-    private static bool IsUnspeakableName(string name)
-    {
-        return name.AsSpan().ContainsAny(_unspeakableChars);
-    }
-
     private static bool IsSimpleType(Type type)
     {
         switch (type.GetTypeCode())
@@ -500,7 +483,7 @@ static string Code(string type)
 
     private static ComplexGroupedRunInline NewComplexInlineGroup()
     {
-        return new ComplexGroupedRunInline(Children: []);
+        return new ComplexGroupedRunInline([]);
     }
 
     protected static void AppendValueSourceWithoutSplitter(
@@ -786,19 +769,6 @@ static string Code(string type)
     protected static Run CreateInternalRun()
     {
         return Run("internal ", CommonStyles.KeywordBrush);
-    }
-
-    protected static Run Run(string text, ILazilyUpdatedBrush brush)
-    {
-        return new(text, brush);
-    }
-
-    protected static Run Run(string text, ILazilyUpdatedBrush brush, FontStyle fontStyle)
-    {
-        return new(
-            text,
-            brush,
-            fontStyle);
     }
 
     protected static AnalysisTreeListNodeLine AnalysisTreeListNodeLine(
@@ -1596,9 +1566,6 @@ partial class BaseAnalysisNodeCreator
 
 partial class BaseAnalysisNodeCreator
 {
-    public static NodeCommonStyles CommonStyles
-        => AppSettings.Instance.NodeColorPreferences.CommonStyles!;
-
     public abstract class CommonTypes
     {
         public const string MemberAccessValue = ".";

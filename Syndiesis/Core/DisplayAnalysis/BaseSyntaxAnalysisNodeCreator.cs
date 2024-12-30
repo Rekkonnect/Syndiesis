@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
+using Garyon.Reflection;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -174,11 +175,7 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
     {
         if (type.IsGenericType)
         {
-            var originalDefinition = type.GetGenericTypeDefinition();
-            var originalName = originalDefinition.Name;
-            int firstGenericMarkerIndex = originalName.LastIndexOf('`');
-            Debug.Assert(firstGenericMarkerIndex > 0);
-            string name = originalName[..firstGenericMarkerIndex];
+            string name = type.GenericFullNamePrefixOrSame();
             var outerRun = Run($"{name}<", Styles.SyntaxListBrush);
             var closingTag = Run(">", Styles.SyntaxListBrush);
             var argument = type.GenericTypeArguments[0];

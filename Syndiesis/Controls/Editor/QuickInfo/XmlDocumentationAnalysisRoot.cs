@@ -2,7 +2,7 @@
 using Microsoft.CodeAnalysis;
 using Syndiesis.Core;
 
-namespace Syndiesis.Controls.Editor;
+namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public sealed class XmlDocumentationAnalysisRoot(ISymbol symbol, XmlDocument document)
 {

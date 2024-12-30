@@ -60,6 +60,8 @@ public readonly struct RunOrGrouped
     public static implicit operator RunOrGrouped(Run run) => new(run);
     public static implicit operator RunOrGrouped(UIBuilder.Run run) => new(run);
     public static implicit operator RunOrGrouped(GroupedRunInline grouped) => new(grouped);
+    public static implicit operator RunOrGrouped(SimpleGroupedRunInline.Builder grouped) => new(grouped);
+    public static implicit operator RunOrGrouped(ComplexGroupedRunInline.Builder grouped) => new(grouped);
 
     public static RunOrGrouped FromObject(object? @object)
     {

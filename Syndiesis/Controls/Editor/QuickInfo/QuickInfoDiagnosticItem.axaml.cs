@@ -1,7 +1,7 @@
 using Avalonia.Controls;
 using Microsoft.CodeAnalysis;
 
-namespace Syndiesis.Controls.Editor;
+namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public partial class QuickInfoDiagnosticItem : UserControl
 {

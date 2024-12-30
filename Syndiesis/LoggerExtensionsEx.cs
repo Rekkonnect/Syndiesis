@@ -11,6 +11,7 @@ public static class LoggerExtensionsEx
         Log.Information($"{name} invoked");
     }
 
+    // TODO: Show a popup notification indicating the low-spec detection
     private static volatile bool _loggedLowEndDevice;
 
     public static void LogLowEndDevice()

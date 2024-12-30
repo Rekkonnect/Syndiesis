@@ -10,19 +10,23 @@ using ARun = Run;
 using SAnalysisTreeListNode = AnalysisTreeListNode;
 using SAnalysisTreeListNodeLine = AnalysisTreeListNodeLine;
 
-public abstract record UIBuilder<T>
+public abstract class UIBuilder<T>
 {
     public abstract T Build();
 }
 
 public static class UIBuilder
 {
-    public sealed record Run(
-        string Text,
-        ILazilyUpdatedBrush Brush,
-        FontStyle FontStyle = FontStyle.Normal)
+    public sealed class Run(
+        string text,
+        ILazilyUpdatedBrush brush,
+        FontStyle fontStyle = FontStyle.Normal)
         : UIBuilder<ARun>
     {
+        public string Text { get; } = text;
+        public ILazilyUpdatedBrush Brush { get; } = brush;
+        public FontStyle FontStyle { get; } = fontStyle;
+
         public override ARun Build()
         {
             return new(Text)
@@ -33,10 +37,12 @@ public static class UIBuilder
         }
     }
 
-    public sealed record AnalysisTreeListNodeLine(
-        GroupedRunInlineCollection Inlines)
+    public sealed class AnalysisTreeListNodeLine(
+        GroupedRunInlineCollection inlines)
         : UIBuilder<SAnalysisTreeListNodeLine>
     {
+        public GroupedRunInlineCollection Inlines { get; } = inlines;
+        
         public AnalysisNodeKind AnalysisNodeKind { get; set; }
 
         public NodeTypeDisplay NodeTypeDisplay { get; set; }
@@ -71,14 +77,17 @@ public static class UIBuilder
         }
     }
 
-    public sealed record AnalysisTreeListNode(
-        AnalysisTreeListNodeLine NodeLine,
-        AnalysisNodeChildRetriever? ChildRetriever,
-        object? AssociatedSyntaxObjectContent)
+    public sealed class AnalysisTreeListNode(
+        AnalysisTreeListNodeLine nodeLine,
+        AnalysisNodeChildRetriever? childRetriever,
+        object? associatedSyntaxObjectContent)
         : UIBuilder<SAnalysisTreeListNode>
     {
+        public AnalysisTreeListNodeLine NodeLine { get; set; } = nodeLine;
+        public AnalysisNodeChildRetriever? ChildRetriever { get; set; } = childRetriever;
+
         public SyntaxObjectInfo? AssociatedSyntaxObject { get; }
-            = SyntaxObjectInfo.GetInfoForObject(AssociatedSyntaxObjectContent);
+            = SyntaxObjectInfo.GetInfoForObject(associatedSyntaxObjectContent);
 
         public Task<AnalysisTreeListNode?>? NodeLoader { get; set; }
 

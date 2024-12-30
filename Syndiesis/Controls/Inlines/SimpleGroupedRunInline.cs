@@ -42,10 +42,12 @@ public sealed class SimpleGroupedRunInline : GroupedRunInline
         inlines.AddRange(Children);
     }
 
-    public sealed record Builder(
-        List<UIBuilder.Run>? Children = null)
+    public sealed class Builder(
+        List<UIBuilder.Run>? children = null)
         : Builder<SimpleGroupedRunInline>()
     {
+        public List<UIBuilder.Run>? Children { get; set; } = children;
+        
         public override SimpleGroupedRunInline Build()
         {
             if (Children is null)

@@ -103,10 +103,12 @@ public abstract class GroupedRunInline
         public GroupedRunInline Build();
     }
 
-    public abstract record Builder<T>(string? OverrideText = null)
+    public abstract class Builder<T>(string? OverrideText = null)
         : UIBuilder<T>, IBuilder
         where T : GroupedRunInline
     {
+        
+        
         GroupedRunInline IBuilder.Build()
         {
             return Build();

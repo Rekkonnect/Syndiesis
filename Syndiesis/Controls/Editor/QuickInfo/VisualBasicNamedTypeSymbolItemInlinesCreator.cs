@@ -1,0 +1,14 @@
+﻿using Microsoft.CodeAnalysis;
+using Syndiesis.Controls.Inlines;
+
+namespace Syndiesis.Controls.Editor.QuickInfo;
+
+public sealed class VisualBasicNamedTypeSymbolItemInlinesCreator(
+    VisualBasicSymbolItemInlinesCreatorContainer parentContainer)
+    : BaseVisualBasicSymbolItemInlinesCreator<INamedTypeSymbol>(parentContainer)
+{
+    protected override GroupedRunInline.IBuilder CreateSymbolInline(INamedTypeSymbol symbol)
+    {
+        return new SimpleGroupedRunInline.Builder();
+    }
+}

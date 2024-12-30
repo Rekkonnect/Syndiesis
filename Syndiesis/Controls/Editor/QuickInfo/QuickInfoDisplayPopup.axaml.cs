@@ -1,12 +1,12 @@
+using System.Collections.Immutable;
+using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Garyon.Functions;
 using Microsoft.CodeAnalysis;
-using System.Collections.Immutable;
-using System.Linq;
 using CodeAnalysisLocation = Microsoft.CodeAnalysis.Location;
 
-namespace Syndiesis.Controls.Editor;
+namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
 {
@@ -41,7 +41,7 @@ public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
             .Select(CreateSymbolItem)
             .ToArray();
 
-        symbolInfoPanel.Children.ClearSetValues(symbolItems);
+        CommonAvaloniaExtensions.ClearSetValues<Control>(symbolInfoPanel.Children, symbolItems);
         UpdateSplitterVisibility();
     }
 
@@ -52,7 +52,7 @@ public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
             .Where(Predicates.NotNull)
             .ToArray();
 
-        diagnosticsPanel.Children.ClearSetValues(diagnosticItems!);
+        CommonAvaloniaExtensions.ClearSetValues<Control>(diagnosticsPanel.Children, diagnosticItems!);
         UpdateSplitterVisibility();
     }
 

@@ -5,7 +5,7 @@
              xmlns:inlines="using:Syndiesis.Controls.Inlines"
              d:DesignWidth="220"
              mc:Ignorable="d"
-             x:Class="Syndiesis.Controls.Editor.QuickInfoDiagnosticItem">
+             x:Class="Syndiesis.Controls.Editor.QuickInfo.QuickInfoDiagnosticItem">
 
   <Grid>
 
