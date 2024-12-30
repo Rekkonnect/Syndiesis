@@ -39,7 +39,7 @@ public sealed partial class SemanticModelAnalysisNodeCreator : BaseAnalysisNodeC
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
-        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        object? value, TDisplayValueSource? valueSource, bool includeChildren)
         where TDisplayValueSource : default
     {
         switch (value)
@@ -278,7 +278,7 @@ partial class SemanticModelAnalysisNodeCreator
         private void AddSymbolInlines(ISymbol symbol, GroupedRunInlineCollection inlines)
         {
             var creator = Creator.ParentContainer.SymbolCreator.CreatorForSymbol(symbol);
-            creator?.AddQuickInfoInlines(symbol, inlines);
+            creator?.AddSummaryInlines(symbol, inlines);
         }
 
         private void AddCandidateSymbolInlines(SymbolInfo symbol, GroupedRunInlineCollection inlines)

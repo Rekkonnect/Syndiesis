@@ -41,7 +41,7 @@ public sealed partial class OperationsAnalysisNodeCreator
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
-        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        object? value, TDisplayValueSource? valueSource, bool includeChildren)
         where TDisplayValueSource : default
     {
         switch (value)

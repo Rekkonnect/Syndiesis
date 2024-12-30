@@ -63,7 +63,7 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
-        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        object? value, TDisplayValueSource? valueSource, bool includeChildren)
         where TDisplayValueSource : default
     {
         switch (value)
@@ -73,9 +73,6 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
 
             case IReadOnlyList<ISymbol> symbolList:
                 return CreateRootSymbolList(symbolList, valueSource, includeChildren);
-
-            default:
-                break;
         }
 
         // fallback
@@ -358,7 +355,7 @@ partial class SymbolAnalysisNodeCreator
 
     public interface IBaseSymbolRootViewNodeCreator
     {
-        public void AddQuickInfoInlines(
+        public void AddSummaryInlines(
             ISymbol symbol, GroupedRunInlineCollection inlines);
 
         public AnalysisTreeListNodeLine CreateNodeLine(
@@ -372,14 +369,14 @@ partial class SymbolAnalysisNodeCreator
         public override AnalysisTreeListNodeLine CreateNodeLine(
             TSymbol symbol, GroupedRunInlineCollection inlines)
         {
-            AddQuickInfoInlines(symbol, inlines);
+            AddSummaryInlines(symbol, inlines);
 
             return AnalysisTreeListNodeLine(
                 inlines,
                 Styles.SymbolDisplay);
         }
 
-        public void AddQuickInfoInlines(TSymbol symbol, GroupedRunInlineCollection inlines)
+        public void AddSummaryInlines(TSymbol symbol, GroupedRunInlineCollection inlines)
         {
             var type = MatchingSymbolInterface(symbol.GetType());
             var typeDetailsInline = TypeDetailsInline(type);
@@ -401,10 +398,10 @@ partial class SymbolAnalysisNodeCreator
             return CreateNodeLine((TSymbol)symbol, inlines);
         }
 
-        void IBaseSymbolRootViewNodeCreator.AddQuickInfoInlines(
+        void IBaseSymbolRootViewNodeCreator.AddSummaryInlines(
             ISymbol symbol, GroupedRunInlineCollection inlines)
         {
-            AddQuickInfoInlines((TSymbol)symbol, inlines);
+            AddSummaryInlines((TSymbol)symbol, inlines);
         }
 
         protected virtual SingleRunInline? CreateNameInline(TSymbol symbol)

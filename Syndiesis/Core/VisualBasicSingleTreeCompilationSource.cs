@@ -26,7 +26,10 @@ public sealed class VisualBasicSingleTreeCompilationSource
 
     protected override VisualBasicCompilation CreateCompilation()
     {
-        return VisualBasicCompilation.Create("SymVBiosis.UserSource");
+        var options = new VisualBasicCompilationOptions(OutputKind.NetModule);
+        return VisualBasicCompilation
+            .Create("SymVBiosis.UserSource")
+            .WithOptions(options);
     }
 
     protected override SyntaxTree ParseTree(string source, CancellationToken cancellationToken)

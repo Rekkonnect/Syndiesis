@@ -46,13 +46,13 @@ public sealed partial class AttributesAnalysisNodeCreator
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
-        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        object? value, TDisplayValueSource? valueSource, bool includeChildren)
         where TDisplayValueSource : default
     {
         switch (value)
         {
-            case AttributeTree AttributeTree:
-                return CreateRootAttributeTree(AttributeTree, valueSource, includeChildren);
+            case AttributeTree attributeTree:
+                return CreateRootAttributeTree(attributeTree, valueSource, includeChildren);
 
             case AttributeTree.AttributeDataView view:
                 return CreateRootAttributeView(view, valueSource, includeChildren);
@@ -199,9 +199,9 @@ partial class AttributesAnalysisNodeCreator
             return () => GetChildren(tree);
         }
 
-        private IReadOnlyList<AnalysisTreeListNode> GetChildren(AttributeTree AttributeTree)
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(AttributeTree attributeTree)
         {
-            var containers = AttributeTree.Containers;
+            var containers = attributeTree.Containers;
 
             return containers
                 .Select(container => Creator.CreateRootAttributeTreeSymbolContainer<IDisplayValueSource>(

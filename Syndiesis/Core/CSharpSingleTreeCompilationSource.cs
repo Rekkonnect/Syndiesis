@@ -26,7 +26,11 @@ public sealed class CSharpSingleTreeCompilationSource
 
     protected override CSharpCompilation CreateCompilation()
     {
-        return CSharpCompilation.Create("Syndiesis.UserSource");
+        var options = new CSharpCompilationOptions(OutputKind.NetModule)
+            .WithAllowUnsafe(true);
+        return CSharpCompilation
+            .Create("Syndiesis.UserSource")
+            .WithOptions(options);
     }
 
     protected override SyntaxTree ParseTree(string source, CancellationToken cancellationToken)

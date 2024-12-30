@@ -32,7 +32,7 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
     { }
 
     public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
-        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        object? value, TDisplayValueSource? valueSource, bool includeChildren)
         where TDisplayValueSource : default
     {
         switch (value)
