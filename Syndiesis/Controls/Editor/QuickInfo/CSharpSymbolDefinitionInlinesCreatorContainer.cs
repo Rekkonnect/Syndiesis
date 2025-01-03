@@ -3,12 +3,14 @@ using Microsoft.CodeAnalysis;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public sealed class VisualBasicSymbolItemInlinesCreatorContainer
-    : BaseSymbolItemInlinesCreatorContainer
+public sealed class CSharpSymbolDefinitionInlinesCreatorContainer
+    : BaseSymbolDefinitionInlinesCreatorContainer
 {
-    public readonly VisualBasicNamedTypeSymbolItemInlinesCreator NamedTypeCreator;
+    public readonly CSharpNamedTypeSymbolItemInlinesCreator NamedTypeCreator;
 
-    public VisualBasicSymbolItemInlinesCreatorContainer()
+    public CSharpSymbolDefinitionInlinesCreatorContainer(
+        ISymbolInlinesRootCreatorContainer rootContainer)
+        : base(rootContainer)
     {
         NamedTypeCreator = new(this);
     }

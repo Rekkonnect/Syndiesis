@@ -31,4 +31,5 @@ public enum MemberModifiers
     Volatile = 1 << 9,
     FixedSizeBuffer = 1 << 10,
     Const = 1 << 11,
+    Ref = 1 << 12,
 }

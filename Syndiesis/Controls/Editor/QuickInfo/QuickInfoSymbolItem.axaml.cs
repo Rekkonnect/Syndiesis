@@ -20,14 +20,14 @@ public partial class QuickInfoSymbolItem : UserControl
         symbolDisplayBlock.GroupedRunInlines = CreateGroupedRunForSymbol(symbol);
         documentationDisplayBlock.GroupedRunInlines = CreateGroupedRunForSymbolDocumentation(
             documentationRoot);
+        documentationDisplayBlock.IsVisible = documentationDisplayBlock.GroupedRunInlines is not null;
     }
 
-    private GroupedRunInlineCollection CreateGroupedRunForSymbolDocumentation(
+    private GroupedRunInlineCollection? CreateGroupedRunForSymbolDocumentation(
         XmlDocumentationAnalysisRoot? documentationAnalysisRoot)
     {
         // TODO: Pass this through a grouped run creator for the contents of the overview
-        var groupedRun = new GroupedRunInlineCollection();
-        return groupedRun;
+        return null;
     }
 
     private GroupedRunInlineCollection CreateGroupedRunForSymbol(ISymbol symbol)

@@ -28,6 +28,22 @@ public static class SymbolExtensions
             ;
     }
 
+    public static bool IsRef(this ISymbol symbol)
+    {
+        return symbol
+            is IFieldSymbol { RefKind: RefKind.Ref or RefKind.RefReadOnly }
+            or ILocalSymbol { IsRef: true }
+            or IParameterSymbol
+            {
+                RefKind: RefKind.Ref
+                    or RefKind.RefReadOnly
+                    or RefKind.RefReadOnlyParameter
+            }
+            or IMethodSymbol { ReturnsByRef: true }
+            or IPropertySymbol { ReturnsByRef: true }
+            ;
+    }
+
     public static bool IsOperator(this IMethodSymbol method)
     {
         return method.MethodKind

@@ -2,15 +2,19 @@
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public abstract class BaseSymbolItemInlinesCreatorContainer
+public abstract class BaseSymbolDefinitionInlinesCreatorContainer
 {
-    private readonly PreprocessingSymbolItemInlinesCreator _preprocessingCreator;
+    private readonly PreprocessingSymbolDefinitionInlinesCreator _preprocessingCreator;
 
-    protected BaseSymbolItemInlinesCreatorContainer()
+    public readonly ISymbolInlinesRootCreatorContainer RootContainer;
+
+    protected BaseSymbolDefinitionInlinesCreatorContainer(
+        ISymbolInlinesRootCreatorContainer rootContainer)
     {
         _preprocessingCreator = new(this);
+        RootContainer = rootContainer;
     }
-    
+
     public ISymbolItemInlinesCreator CreatorForSymbol<TSymbol>(TSymbol symbol)
         where TSymbol : class, ISymbol
     {
@@ -18,7 +22,7 @@ public abstract class BaseSymbolItemInlinesCreatorContainer
         {
             case IPreprocessingSymbol:
                 return _preprocessingCreator;
-            
+
             default:
                 return FallbackCreatorForSymbol(symbol);
         }

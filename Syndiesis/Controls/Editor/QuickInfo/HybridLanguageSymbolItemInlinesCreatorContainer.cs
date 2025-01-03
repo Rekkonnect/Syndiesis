@@ -5,10 +5,10 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public sealed class HybridLanguageSymbolItemInlinesCreatorContainer
 {
-    private readonly CSharpSymbolItemInlinesCreatorContainer _csharp = new();
-    private readonly VisualBasicSymbolItemInlinesCreatorContainer _vb = new();
+    private readonly CSharpSymbolInlinesRootCreatorContainer _csharp = new();
+    private readonly VisualBasicSymbolInlinesRootCreatorContainer _vb = new();
 
-    public BaseSymbolItemInlinesCreatorContainer ContainerForLanguage(string languageName)
+    public ISymbolInlinesRootCreatorContainer ContainerForLanguage(string languageName)
     {
         return languageName switch
         {

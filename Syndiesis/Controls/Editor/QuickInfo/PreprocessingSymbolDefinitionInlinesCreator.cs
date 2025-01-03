@@ -3,7 +3,7 @@ using Syndiesis.Controls.Inlines;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public sealed class PreprocessingSymbolItemInlinesCreator(BaseSymbolItemInlinesCreatorContainer parentContainer)
+public sealed class PreprocessingSymbolDefinitionInlinesCreator(BaseSymbolDefinitionInlinesCreatorContainer parentContainer)
     : BaseSymbolItemInlinesCreator<IPreprocessingSymbol>(parentContainer)
 {
     protected override void AddModifierInlines(IPreprocessingSymbol symbol, GroupedRunInlineCollection inlines)

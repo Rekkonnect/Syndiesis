@@ -4,7 +4,7 @@ using Syndiesis.Controls.Inlines;
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public abstract class BaseVisualBasicSymbolItemInlinesCreator<TSymbol>(
-    VisualBasicSymbolItemInlinesCreatorContainer parentContainer)
+    VisualBasicSymbolDefinitionInlinesCreatorContainer parentContainer)
     : BaseSymbolItemInlinesCreator<TSymbol>(parentContainer)
     where TSymbol : class, ISymbol
 {
@@ -25,6 +25,7 @@ public abstract class BaseVisualBasicSymbolItemInlinesCreator<TSymbol>(
         AddTargetModifier(MemberModifiers.Abstract, "MustInherit");
         AddTargetModifier(MemberModifiers.Virtual, "Overridable");
         AddTargetModifier(MemberModifiers.New, "Shadows");
+        AddTargetModifier(MemberModifiers.Ref, "ByRef");
         AddTargetModifier(MemberModifiers.ReadOnly, "ReadOnly");
         AddTargetModifier(MemberModifiers.Static, "Shared");
         

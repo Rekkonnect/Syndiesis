@@ -5,29 +5,19 @@ using Syndiesis.Core.DisplayAnalysis;
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public abstract class BaseSymbolItemInlinesCreator<TSymbol>(
-    BaseSymbolItemInlinesCreatorContainer parentContainer)
+    BaseSymbolDefinitionInlinesCreatorContainer parentContainer)
     : BaseInlineCreator, ISymbolItemInlinesCreator
     where TSymbol : class, ISymbol
 {
     public static RoslynColorizer.ColorizationStyles ColorizationStyles
         => AppSettings.Instance.ColorizationPreferences.ColorizationStyles!;
     
-    public BaseSymbolItemInlinesCreatorContainer ParentContainer { get; } = parentContainer;
-
-    GroupedRunInlineCollection ISymbolItemInlinesCreator.Create(ISymbol symbol)
-        => Create((TSymbol)symbol);
+    public BaseSymbolDefinitionInlinesCreatorContainer ParentContainer { get; } = parentContainer;
 
     void ISymbolItemInlinesCreator.Create(
         ISymbol symbol, GroupedRunInlineCollection inlines)
     {
         Create((TSymbol)symbol, inlines);  
-    }
-
-    public GroupedRunInlineCollection Create(TSymbol symbol)
-    {
-        var inlines = new GroupedRunInlineCollection();
-        Create(symbol, inlines);
-        return inlines;
     }
 
     public virtual void Create(TSymbol symbol, GroupedRunInlineCollection inlines)

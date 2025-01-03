@@ -4,7 +4,7 @@ using Syndiesis.Controls.Inlines;
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public abstract class BaseCSharpSymbolItemInlinesCreator<TSymbol>(
-    CSharpSymbolItemInlinesCreatorContainer parentContainer)
+    CSharpSymbolDefinitionInlinesCreatorContainer parentContainer)
     : BaseSymbolItemInlinesCreator<TSymbol>(parentContainer)
     where TSymbol : class, ISymbol
 {
@@ -34,6 +34,8 @@ public abstract class BaseCSharpSymbolItemInlinesCreator<TSymbol>(
         AddTargetModifier(MemberModifiers.Abstract, "abstract");
         AddTargetModifier(MemberModifiers.Virtual, "virtual");
         AddTargetModifier(MemberModifiers.New, "new");
+        AddTargetModifier(MemberModifiers.Const, "const");
+        AddTargetModifier(MemberModifiers.Ref, "ref");
         AddTargetModifier(MemberModifiers.ReadOnly, "readonly");
         AddTargetModifier(MemberModifiers.Static, "static");
         AddTargetModifier(MemberModifiers.Volatile, "volatile");

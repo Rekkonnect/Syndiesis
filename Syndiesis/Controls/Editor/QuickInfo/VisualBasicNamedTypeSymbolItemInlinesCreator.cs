@@ -4,7 +4,7 @@ using Syndiesis.Controls.Inlines;
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public sealed class VisualBasicNamedTypeSymbolItemInlinesCreator(
-    VisualBasicSymbolItemInlinesCreatorContainer parentContainer)
+    VisualBasicSymbolDefinitionInlinesCreatorContainer parentContainer)
     : BaseVisualBasicSymbolItemInlinesCreator<INamedTypeSymbol>(parentContainer)
 {
     protected override GroupedRunInline.IBuilder CreateSymbolInline(INamedTypeSymbol symbol)

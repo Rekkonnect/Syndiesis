@@ -33,6 +33,8 @@ public readonly record struct ModifierInfo(
                   IsFixedSizeBuffer(symbol), MemberModifiers.FixedSizeBuffer)
               | CheckModifierOrNone(
                   symbol.IsConstant(), MemberModifiers.Const)
+              | CheckModifierOrNone(
+                  symbol.IsRef(), MemberModifiers.Ref)
             ;
         
         return new(symbol.DeclaredAccessibility, modifiers);
