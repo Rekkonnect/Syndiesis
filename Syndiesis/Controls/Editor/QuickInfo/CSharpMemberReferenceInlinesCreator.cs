@@ -16,7 +16,7 @@ public sealed class CSharpMemberReferenceInlinesCreator(
 {
     public sealed class TypeSymbolsCreator(
         CSharpSymbolDefinitionInlinesCreatorContainer parentContainer)
-        : BaseCSharpSymbolItemInlinesCreator<ITypeSymbol>(parentContainer)
+        : BaseCSharpSymbolDefinitionInlinesCreator<ITypeSymbol>(parentContainer)
     {
         protected override void AddModifierInlines(ITypeSymbol symbol, GroupedRunInlineCollection inlines)
         {

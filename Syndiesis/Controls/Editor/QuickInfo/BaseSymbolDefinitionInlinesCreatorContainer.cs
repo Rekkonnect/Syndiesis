@@ -3,20 +3,18 @@
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public abstract class BaseSymbolDefinitionInlinesCreatorContainer
+    : BaseSymbolInlinesCreatorContainer
 {
     private readonly PreprocessingSymbolDefinitionInlinesCreator _preprocessingCreator;
 
-    public readonly ISymbolInlinesRootCreatorContainer RootContainer;
-
     protected BaseSymbolDefinitionInlinesCreatorContainer(
         ISymbolInlinesRootCreatorContainer rootContainer)
+        : base(rootContainer)
     {
         _preprocessingCreator = new(this);
-        RootContainer = rootContainer;
     }
 
-    public ISymbolItemInlinesCreator CreatorForSymbol<TSymbol>(TSymbol symbol)
-        where TSymbol : class, ISymbol
+    public sealed override ISymbolItemInlinesCreator CreatorForSymbol<TSymbol>(TSymbol symbol)
     {
         switch (symbol)
         {

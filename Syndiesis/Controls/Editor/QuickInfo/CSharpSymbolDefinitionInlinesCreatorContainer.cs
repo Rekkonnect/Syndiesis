@@ -6,7 +6,7 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 public sealed class CSharpSymbolDefinitionInlinesCreatorContainer
     : BaseSymbolDefinitionInlinesCreatorContainer
 {
-    public readonly CSharpNamedTypeSymbolItemInlinesCreator NamedTypeCreator;
+    public readonly CSharpNamedTypeSymbolDefinitionInlinesCreator NamedTypeCreator;
 
     public CSharpSymbolDefinitionInlinesCreatorContainer(
         ISymbolInlinesRootCreatorContainer rootContainer)

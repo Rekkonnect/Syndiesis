@@ -3,9 +3,9 @@ using Syndiesis.Controls.Inlines;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public abstract class BaseCSharpSymbolItemInlinesCreator<TSymbol>(
+public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
     CSharpSymbolDefinitionInlinesCreatorContainer parentContainer)
-    : BaseSymbolItemInlinesCreator<TSymbol>(parentContainer)
+    : BaseSymbolDefinitionInlinesCreator<TSymbol>(parentContainer)
     where TSymbol : class, ISymbol
 {
     protected override void AddModifierInlines(

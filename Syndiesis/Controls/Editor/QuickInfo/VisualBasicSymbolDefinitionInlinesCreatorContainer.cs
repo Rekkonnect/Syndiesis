@@ -6,7 +6,7 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 public sealed class VisualBasicSymbolDefinitionInlinesCreatorContainer
     : BaseSymbolDefinitionInlinesCreatorContainer
 {
-    public readonly VisualBasicNamedTypeSymbolItemInlinesCreator NamedTypeCreator;
+    public readonly VisualBasicNamedTypeSymbolDefinitionInlinesCreator NamedTypeCreator;
 
     public VisualBasicSymbolDefinitionInlinesCreatorContainer(
         ISymbolInlinesRootCreatorContainer rootContainer)

@@ -4,7 +4,7 @@ using Syndiesis.Core.DisplayAnalysis;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public abstract class BaseSymbolItemInlinesCreator<TSymbol>(
+public abstract class BaseSymbolDefinitionInlinesCreator<TSymbol>(
     BaseSymbolDefinitionInlinesCreatorContainer parentContainer)
     : BaseInlineCreator, ISymbolItemInlinesCreator
     where TSymbol : class, ISymbol

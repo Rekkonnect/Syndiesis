@@ -9,7 +9,7 @@ public sealed class VisualBasicSymbolInlinesRootCreatorContainer
         VisualBasicSymbolDefinitionInlinesCreatorContainer,
         VisualBasicSymbolDefinitionInlinesCreatorContainer>
 {
-    protected override VisualBasicSymbolDefinitionInlinesCreatorContainer CreateCommonsContainer(
+    protected override VisualBasicSymbolDefinitionInlinesCreatorContainer CreateCommonContainer(
         ISymbolInlinesRootCreatorContainer parentContainer)
     {
         return new(parentContainer);
@@ -27,7 +27,7 @@ public sealed class VisualBasicSymbolInlinesRootCreatorContainer
         throw new NotImplementedException();
     }
 
-    protected override VisualBasicSymbolDefinitionInlinesCreatorContainer CreateExtrasContainer(
+    protected override VisualBasicSymbolDefinitionInlinesCreatorContainer CreateExtraContainer(
         ISymbolInlinesRootCreatorContainer parentContainer)
     {
         throw new NotImplementedException();

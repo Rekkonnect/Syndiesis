@@ -14,8 +14,3 @@ public interface ISymbolItemInlinesCreator
 
     public abstract void Create(ISymbol symbol, GroupedRunInlineCollection inlines);
 }
-
-public interface ISymbolItemInfoLanguageContainer
-{
-    
-}

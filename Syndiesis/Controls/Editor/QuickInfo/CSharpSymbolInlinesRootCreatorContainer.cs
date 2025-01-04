@@ -9,7 +9,7 @@ public sealed class CSharpSymbolInlinesRootCreatorContainer
         CSharpSymbolDefinitionInlinesCreatorContainer,
         CSharpSymbolDefinitionInlinesCreatorContainer>
 {
-    protected override CSharpSymbolDefinitionInlinesCreatorContainer CreateCommonsContainer(
+    protected override CSharpSymbolDefinitionInlinesCreatorContainer CreateCommonContainer(
         ISymbolInlinesRootCreatorContainer parentContainer)
     {
         return new(parentContainer);
@@ -27,7 +27,7 @@ public sealed class CSharpSymbolInlinesRootCreatorContainer
         throw new NotImplementedException();
     }
 
-    protected override CSharpSymbolDefinitionInlinesCreatorContainer CreateExtrasContainer(
+    protected override CSharpSymbolDefinitionInlinesCreatorContainer CreateExtraContainer(
         ISymbolInlinesRootCreatorContainer parentContainer)
     {
         throw new NotImplementedException();

@@ -2,32 +2,35 @@
 
 public abstract class BaseSymbolInlinesRootCreatorContainer<
     TDefinitionContainer,
-    TExtrasContainer,
+    TExtraContainer,
     TDocsContainer,
-    TCommonsContainer>
+    TCommonContainer>
     : ISymbolInlinesRootCreatorContainer
 
     where TDefinitionContainer : BaseSymbolDefinitionInlinesCreatorContainer
+    where TExtraContainer : BaseSymbolExtraInlinesCreatorContainer
+    where TDocsContainer : BaseSymbolDocsInlinesCreatorContainer
+    where TCommonContainer : BaseSymbolCommonInlinesCreatorContainer
 {
     public readonly TDefinitionContainer Definitions;
-    public readonly TExtrasContainer Extras;
+    public readonly TExtraContainer Extras;
     public readonly TDocsContainer Docs;
-    public readonly TCommonsContainer Commons;
+    public readonly TCommonContainer Commons;
 
     protected BaseSymbolInlinesRootCreatorContainer()
     {
         Definitions = CreateDefinitionContainer(this);
-        Extras = CreateExtrasContainer(this);
+        Extras = CreateExtraContainer(this);
         Docs = CreateDocsContainer(this);
-        Commons = CreateCommonsContainer(this);
+        Commons = CreateCommonContainer(this);
     }
 
     protected abstract TDefinitionContainer CreateDefinitionContainer(
         ISymbolInlinesRootCreatorContainer parentContainer);
-    protected abstract TExtrasContainer CreateExtrasContainer(
+    protected abstract TExtraContainer CreateExtraContainer(
         ISymbolInlinesRootCreatorContainer parentContainer);
     protected abstract TDocsContainer CreateDocsContainer(
         ISymbolInlinesRootCreatorContainer parentContainer);
-    protected abstract TCommonsContainer CreateCommonsContainer(
+    protected abstract TCommonContainer CreateCommonContainer(
         ISymbolInlinesRootCreatorContainer parentContainer);
 }
