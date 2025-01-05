@@ -7,6 +7,6 @@ public abstract class BaseSymbolInlinesCreatorContainer(
 {
     public readonly ISymbolInlinesRootCreatorContainer RootContainer = rootContainer;
 
-    public abstract ISymbolItemInlinesCreator CreatorForSymbol<TSymbol>(TSymbol symbol)
+    public abstract ISymbolItemInlinesCreator? CreatorForSymbol<TSymbol>(TSymbol symbol)
         where TSymbol : class, ISymbol;
 }

@@ -30,12 +30,12 @@ The planned structure is:
 - Definition
   - One for each symbol
   - Language-agnostic: IPreprocessingSymbol
+    - Include base type / interface list for type symbols
 - Extras
   - Type parameter constraint list
   - Preprocessing symbol definition state
     - '[Un]Defined here' for C#
     - '[Un]Defined here [as XYZ]' for VB
-  - Base type / interface list for type symbols
 - Docs
   - Common for both languages, assuming XML documentation is common for both languages
     Show supported tags like summary, remarks, etc.

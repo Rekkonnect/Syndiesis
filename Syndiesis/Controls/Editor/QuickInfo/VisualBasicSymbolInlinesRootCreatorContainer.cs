@@ -1,35 +1,33 @@
-﻿using System;
-
-namespace Syndiesis.Controls.Editor.QuickInfo;
+﻿namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public sealed class VisualBasicSymbolInlinesRootCreatorContainer
     : BaseSymbolInlinesRootCreatorContainer<
         VisualBasicSymbolDefinitionInlinesCreatorContainer,
-        VisualBasicSymbolDefinitionInlinesCreatorContainer,
-        VisualBasicSymbolDefinitionInlinesCreatorContainer,
-        VisualBasicSymbolDefinitionInlinesCreatorContainer>
+        VisualBasicSymbolExtraInlinesCreatorContainer,
+        CommonSymbolDocsInlinesCreatorContainer,
+        VisualBasicSymbolCommonInlinesCreatorContainer>
 {
-    protected override VisualBasicSymbolDefinitionInlinesCreatorContainer CreateCommonContainer(
+    protected override VisualBasicSymbolDefinitionInlinesCreatorContainer CreateDefinitionContainer(
         ISymbolInlinesRootCreatorContainer parentContainer)
     {
         return new(parentContainer);
     }
 
-    protected override VisualBasicSymbolDefinitionInlinesCreatorContainer CreateDefinitionContainer(
+    protected override VisualBasicSymbolExtraInlinesCreatorContainer CreateExtraContainer(
         ISymbolInlinesRootCreatorContainer parentContainer)
     {
-        throw new NotImplementedException();
+        return new(parentContainer);
     }
 
-    protected override VisualBasicSymbolDefinitionInlinesCreatorContainer CreateDocsContainer(
+    protected override CommonSymbolDocsInlinesCreatorContainer CreateDocsContainer(
         ISymbolInlinesRootCreatorContainer parentContainer)
     {
-        throw new NotImplementedException();
+        return new(parentContainer);
     }
 
-    protected override VisualBasicSymbolDefinitionInlinesCreatorContainer CreateExtraContainer(
+    protected override VisualBasicSymbolCommonInlinesCreatorContainer CreateCommonContainer(
         ISymbolInlinesRootCreatorContainer parentContainer)
     {
-        throw new NotImplementedException();
+        return new(parentContainer);
     }
 }
