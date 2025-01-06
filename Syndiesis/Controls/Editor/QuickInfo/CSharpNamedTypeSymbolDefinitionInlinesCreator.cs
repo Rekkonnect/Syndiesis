@@ -7,31 +7,31 @@ public sealed class CSharpNamedTypeSymbolDefinitionInlinesCreator(
     CSharpSymbolDefinitionInlinesCreatorContainer parentContainer)
     : BaseCSharpSymbolDefinitionInlinesCreator<INamedTypeSymbol>(parentContainer)
 {
-    protected override GroupedRunInline.IBuilder CreateSymbolInline(INamedTypeSymbol symbol)
+    public override GroupedRunInline.IBuilder CreateSymbolInline(INamedTypeSymbol symbol)
     {
         var inlines = new ComplexGroupedRunInline.Builder();
-        
+
         if (symbol.IsRecord)
         {
-            AddKeywordRun("record", inlines);
+            AddKeywordAndSpaceRun("record", inlines);
         }
 
         switch (symbol.TypeKind)
         {
             case TypeKind.Class:
-                AddKeywordRun("class", inlines);
+                AddKeywordAndSpaceRun("class", inlines);
                 break;
             case TypeKind.Struct:
-                AddKeywordRun("struct", inlines);
+                AddKeywordAndSpaceRun("struct", inlines);
                 break;
             case TypeKind.Interface:
-                AddKeywordRun("interface", inlines);
+                AddKeywordAndSpaceRun("interface", inlines);
                 break;
             case TypeKind.Enum:
-                AddKeywordRun("enum", inlines);
+                AddKeywordAndSpaceRun("enum", inlines);
                 break;
             case TypeKind.Delegate:
-                AddKeywordRun("delegate", inlines);
+                AddKeywordAndSpaceRun("delegate", inlines);
                 break;
         }
 

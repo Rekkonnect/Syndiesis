@@ -17,6 +17,11 @@ public abstract class BaseInlineCreator
     public static BaseAnalysisNodeCreator.NodeCommonStyles CommonStyles
         => AppSettings.Instance.NodeColorPreferences.CommonStyles!;
 
+    protected static SingleRunInline SingleRun(string text, ILazilyUpdatedBrush brush)
+    {
+        return new(Run(text, brush));
+    }
+
     protected static Run Run(string text, ILazilyUpdatedBrush brush)
     {
         return new(text, brush);
@@ -43,6 +48,13 @@ public abstract class BaseInlineCreator
     protected static void AddKeywordRun(string text, ComplexGroupedRunInline inlines)
     {
         inlines.AddChild(KeywordRun(text));
+    }
+
+    protected static void AddKeywordAndSpaceRun(string text, ComplexGroupedRunInline inlines)
+    {
+        AddKeywordRun(text, inlines);
+        var space = CreateSpaceSeparatorRun();
+        inlines.AddChild(space);
     }
 
     protected static Run CreateArgumentSeparatorRun()

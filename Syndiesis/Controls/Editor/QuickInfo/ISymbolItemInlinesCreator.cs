@@ -13,4 +13,6 @@ public interface ISymbolItemInlinesCreator
     }
 
     public abstract void Create(ISymbol symbol, GroupedRunInlineCollection inlines);
+
+    public abstract GroupedRunInline.IBuilder CreateSymbolInline(ISymbol symbol);
 }

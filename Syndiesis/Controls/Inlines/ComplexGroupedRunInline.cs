@@ -50,6 +50,14 @@ public sealed class ComplexGroupedRunInline : GroupedRunInline
     {
         public List<RunOrGrouped>? Children { get; set; } = children;
 
+        public void AddNonNullChild(IBuilder? builder)
+        {
+            if (builder is null)
+                return;
+
+            AddChild(builder);
+        }
+
         public void AddChild(IBuilder builder)
         {
             AddChild(new RunOrGrouped(builder));
