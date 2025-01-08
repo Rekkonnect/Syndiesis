@@ -1,19 +1,25 @@
-name: Run Syndiesis.Tests
+name: run-tests-windows
 
-on: [push, pull_request]
+on: pull_request
 
 jobs:
-  build:
+  setup:
     runs-on: windows-latest
-    
     steps:
     - name: Setup .NET 8.0
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
 
+  checkout:
+    runs-on: windows-latest
+    steps:
     - name: Checkout Code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v4
 
+  test:
+    needs: [setup, checkout]
+    runs-on: windows-latest
+    steps:
     - name: Run Syndiesis.Tests
       run: dotnet test Syndiesis.Tests/Syndiesis.Tests.csproj
