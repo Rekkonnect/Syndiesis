@@ -2,8 +2,8 @@
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public sealed class CSharpLabelCommonInlinesCreator(
-    CSharpSymbolCommonInlinesCreatorContainer parentContainer)
+public sealed class CommonLabelCommonInlinesCreator(
+    BaseSymbolCommonInlinesCreatorContainer parentContainer)
     : BaseSimpleNameCommonInlinesCreator<ILabelSymbol>(parentContainer)
 {
     protected override ILazilyUpdatedBrush GetBrush(ILabelSymbol symbol)

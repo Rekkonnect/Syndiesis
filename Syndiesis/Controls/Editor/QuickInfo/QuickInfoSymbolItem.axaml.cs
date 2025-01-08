@@ -2,6 +2,7 @@ using Avalonia.Controls;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
+using System;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
@@ -40,10 +41,10 @@ public partial class QuickInfoSymbolItem : UserControl
     private static Image ImageForSymbol(ISymbol symbol)
     {
         var classification = QuickInfoSymbolClassifier.ClassifySymbol(symbol);
-        return ImageForSymbolClassification(classification);
+        return ImageForSymbolClassification(classification)!;
     }
 
-    private static Image ImageForSymbolClassification(QuickInfoSymbolClassification classification)
+    private static Image? ImageForSymbolClassification(QuickInfoSymbolClassification classification)
     {
         var resources = App.CurrentResourceManager;
         return classification switch
@@ -77,6 +78,8 @@ public partial class QuickInfoSymbolItem : UserControl
             QuickInfoSymbolClassification.TypeParameter => resources.TypeParamImage,
             // TODO: Provide an icon for preprocessing symbols
             QuickInfoSymbolClassification.Preprocessing => resources.LabelImage,
+
+            _ => throw new NotSupportedException("The symbol is not correctly classified"),
         };
     }
 }

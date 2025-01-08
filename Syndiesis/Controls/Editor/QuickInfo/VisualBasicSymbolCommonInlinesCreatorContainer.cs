@@ -1,4 +1,6 @@
-﻿using Microsoft.CodeAnalysis;
+﻿#if ALLOW_DEV_ERRORS
+using Microsoft.CodeAnalysis;
+#endif
 using System;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
@@ -6,27 +8,27 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 public sealed class VisualBasicSymbolCommonInlinesCreatorContainer
     : BaseSymbolCommonInlinesCreatorContainer
 {
+#if ALLOW_DEV_ERRORS
     private readonly VisualBasicNamedTypeCommonInlinesCreator _namedTypes;
-    private readonly VisualBasicPreprocessingCommonInlinesCreator _preprocessing;
+#endif
 
     public VisualBasicSymbolCommonInlinesCreatorContainer(
         ISymbolInlinesRootCreatorContainer rootContainer)
         : base(rootContainer)
     {
+#if ALLOW_DEV_ERRORS
         _namedTypes = new(this);
-        _preprocessing = new(this);
+#endif
     }
 
-    // TODO: More
-    public override ISymbolItemInlinesCreator CreatorForSymbol<TSymbol>(TSymbol symbol)
+    protected override ISymbolItemInlinesCreator FallbackCreatorForSymbol<TSymbol>(TSymbol symbol)
     {
         switch (symbol)
         {
+#if ALLOW_DEV_ERRORS
             case INamedTypeSymbol:
                 return _namedTypes;
-
-            case IPreprocessingSymbol:
-                return _preprocessing;
+#endif
 
             default:
                 throw new ArgumentException("Invalid symbol kind");

@@ -2,8 +2,8 @@
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public sealed class CSharpParameterCommonInlinesCreator(
-    CSharpSymbolCommonInlinesCreatorContainer parentContainer)
+public sealed class CommonParameterCommonInlinesCreator(
+    BaseSymbolCommonInlinesCreatorContainer parentContainer)
     : BaseSimpleNameCommonInlinesCreator<IParameterSymbol>(parentContainer)
 {
     protected override ILazilyUpdatedBrush GetBrush(IParameterSymbol symbol)

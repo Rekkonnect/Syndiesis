@@ -1,42 +1,50 @@
 ﻿using Microsoft.CodeAnalysis;
-using Serilog;
 using Syndiesis.Controls.Inlines;
-using System.Diagnostics;
+using System.Collections.Immutable;
+using System.Diagnostics.Contracts;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public abstract class BaseCSharpMemberCommonInlinesCreator<TSymbol>(
     CSharpSymbolCommonInlinesCreatorContainer parentContainer)
-    : BaseSymbolCommonInlinesCreator<TSymbol>(parentContainer)
+    : BaseCommonMemberCommonInlinesCreator<TSymbol>(parentContainer)
     where TSymbol : class, ISymbol
 {
-    protected virtual ILazilyUpdatedBrush GetBrush(TSymbol symbol)
+    protected GroupedRunInline.IBuilder? CreateParameterListInline(
+        ImmutableArray<IParameterSymbol> parameters)
     {
-        throw new UnreachableException("If not overridden, this method should not be reachable");
-    }
+        int parameterLength = parameters.Length;
+        if (parameterLength is 0)
+            return null;
 
-    protected virtual GroupedRunInline.IBuilder CreateSymbolInlineCore(TSymbol symbol)
-    {
-        return new SingleRunInline.Builder(Run(symbol.Name, GetBrush(symbol)));
-    }
+        var inlines = new ComplexGroupedRunInline.Builder();
 
-    public override GroupedRunInline.IBuilder CreateSymbolInline(TSymbol symbol)
-    {
-        var nameRun = CreateSymbolInlineCore(symbol);
-
-        var containing = symbol.ContainingSymbol;
-        var creator = ParentContainer.CreatorForSymbol(containing);
-        if (creator is null)
+        for (var i = 0; i < parameterLength; i++)
         {
-            Log.Warning(
-                "Received null creator for containing symbol kind {containingKind}",
-                containing?.Kind);
-            return nameRun;
+            var argument = parameters[i];
+            var inner = CreateParameterInline(argument);
+            inlines.AddChild(inner);
+
+            if (i < parameterLength - 1)
+            {
+                var separator = CreateArgumentSeparatorRun();
+                inlines.AddChild(separator);
+            }
         }
 
-        var containerRun = creator.CreateSymbolInline(containing);
-        var qualifierRun = CreateQualifierSeparatorRun();
+        return inlines;
+    }
+
+    private GroupedRunInline.IBuilder CreateParameterInline(IParameterSymbol parameter)
+    {
+        var type = parameter.Type;
+        var typeCreator = ParentContainer.CreatorForSymbol(type);
+        Contract.Assert(typeCreator is not null);
+        var typeInline = typeCreator.CreateSymbolInline(type);
+        var spaceInline = CreateSpaceSeparatorRun();
+        var nameInline = SingleRun(parameter.Name, ColorizationStyles.ParameterBrush);
+
         return new ComplexGroupedRunInline.Builder(
-            [new(containerRun), qualifierRun, new(nameRun)]);
+            [new(typeInline), spaceInline, new(nameInline)]);
     }
 }

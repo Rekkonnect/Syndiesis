@@ -2,9 +2,9 @@
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public sealed class CSharpEventCommonInlinesCreator(
-    CSharpSymbolCommonInlinesCreatorContainer parentContainer)
-    : BaseCSharpMemberCommonInlinesCreator<IEventSymbol>(parentContainer)
+public sealed class CommonEventCommonInlinesCreator(
+    BaseSymbolCommonInlinesCreatorContainer parentContainer)
+    : BaseCommonMemberCommonInlinesCreator<IEventSymbol>(parentContainer)
 {
     protected override ILazilyUpdatedBrush GetBrush(IEventSymbol symbol)
     {

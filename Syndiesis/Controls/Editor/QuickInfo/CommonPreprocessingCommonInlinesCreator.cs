@@ -2,8 +2,8 @@
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public sealed class CSharpPreprocessingCommonInlinesCreator(
-    CSharpSymbolCommonInlinesCreatorContainer parentContainer)
+public sealed class CommonPreprocessingCommonInlinesCreator(
+    BaseSymbolCommonInlinesCreatorContainer parentContainer)
     : BaseSimpleNameCommonInlinesCreator<IPreprocessingSymbol>(parentContainer)
 {
     protected override ILazilyUpdatedBrush GetBrush(IPreprocessingSymbol symbol)

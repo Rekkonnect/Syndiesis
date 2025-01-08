@@ -7,7 +7,7 @@ public sealed class VisualBasicNamedTypeSymbolDefinitionInlinesCreator(
     VisualBasicSymbolDefinitionInlinesCreatorContainer parentContainer)
     : BaseVisualBasicSymbolDefinitionInlinesCreator<INamedTypeSymbol>(parentContainer)
 {
-    protected override GroupedRunInline.IBuilder CreateSymbolInline(INamedTypeSymbol symbol)
+    public override GroupedRunInline.IBuilder CreateSymbolInline(INamedTypeSymbol symbol)
     {
         return new SimpleGroupedRunInline.Builder();
     }

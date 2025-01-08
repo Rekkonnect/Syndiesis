@@ -50,6 +50,8 @@ public sealed class ComplexGroupedRunInline : GroupedRunInline
     {
         public List<RunOrGrouped>? Children { get; set; } = children;
 
+        public bool HasAny => Children is { Count: > 0 };
+
         public void AddNonNullChild(IBuilder? builder)
         {
             if (builder is null)

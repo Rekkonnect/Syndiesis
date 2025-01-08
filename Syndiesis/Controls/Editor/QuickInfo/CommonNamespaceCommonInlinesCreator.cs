@@ -4,8 +4,8 @@ using System.Collections.Generic;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public sealed class CSharpNamespaceCommonInlinesCreator(
-    CSharpSymbolCommonInlinesCreatorContainer parentContainer)
+public sealed class CommonNamespaceCommonInlinesCreator(
+    BaseSymbolCommonInlinesCreatorContainer parentContainer)
     : BaseSymbolCommonInlinesCreator<INamespaceSymbol>(parentContainer)
 {
     public override GroupedRunInline.IBuilder CreateSymbolInline(INamespaceSymbol symbol)

@@ -17,6 +17,15 @@ public abstract class BaseSymbolInlinesRootCreatorContainer<
     public readonly TDocsContainer Docs;
     public readonly TCommonContainer Commons;
 
+    BaseSymbolDefinitionInlinesCreatorContainer ISymbolInlinesRootCreatorContainer.Definitions
+        => Definitions;
+    BaseSymbolExtraInlinesCreatorContainer ISymbolInlinesRootCreatorContainer.Extras
+        => Extras;
+    BaseSymbolDocsInlinesCreatorContainer ISymbolInlinesRootCreatorContainer.Docs
+        => Docs;
+    BaseSymbolCommonInlinesCreatorContainer ISymbolInlinesRootCreatorContainer.Commons
+        => Commons;
+
     protected BaseSymbolInlinesRootCreatorContainer()
     {
         Definitions = CreateDefinitionContainer(this);

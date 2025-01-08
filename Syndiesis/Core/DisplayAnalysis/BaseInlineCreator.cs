@@ -40,6 +40,11 @@ public abstract class BaseInlineCreator
         return new(text, CommonStyles.KeywordBrush);
     }
 
+    protected static SingleRunInline SingleKeywordRun(string text)
+    {
+        return new(KeywordRun(text));
+    }
+
     protected static void AddKeywordRun(string text, GroupedRunInlineCollection inlines)
     {
         inlines.Add(KeywordRun(text));

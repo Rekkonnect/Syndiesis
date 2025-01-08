@@ -6,6 +6,10 @@
     <Nullable>enable</Nullable>
     <TrimMode>link</TrimMode>
     <BuiltInComInteropSupport>true</BuiltInComInteropSupport>
+    <Configurations>Debug;Release;Allow Dev Errors</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup>
   </PropertyGroup>
 
   <PropertyGroup Label="Metadata">
@@ -15,6 +19,10 @@
     <Description>The most revolutionary syntax visualizer for C#</Description>
     <RepositoryUrl>https://github.com/Rekkonnect/Syndiesis</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Allow Dev Errors|AnyCPU'">
+    <DefineConstants>$(DefineConstants);ALLOW_DEV_ERRORS</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>
@@ -35,6 +43,9 @@
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.0.6" />
     <PackageReference Include="Avalonia.Desktop" Version="11.0.10" />
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.0.10" />
+    <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Allow Dev Errors'">
+      <Version>11.0.10</Version>
+    </PackageReference>
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.0.10" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="Garyon" Version="0.4.1" />

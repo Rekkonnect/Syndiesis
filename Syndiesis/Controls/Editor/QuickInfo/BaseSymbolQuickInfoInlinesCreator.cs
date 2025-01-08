@@ -26,17 +26,25 @@ public abstract class BaseSymbolQuickInfoInlinesCreator<TSymbol, TParentContaine
         return CreateSymbolInline((TSymbol)symbol);
     }
 
+    void ISymbolItemInlinesCreator.CreateWithHoverContext(
+        SymbolHoverContext symbol, GroupedRunInlineCollection inlines)
+    {
+        CreateWithHoverContext(symbol, inlines);
+    }
+
     public virtual void Create(TSymbol symbol, GroupedRunInlineCollection inlines)
     {
-        AddModifierInlines(symbol, inlines);
         var symbolInline = CreateSymbolInline(symbol);
         inlines.Add(symbolInline);
     }
 
-    protected abstract void AddModifierInlines(
-        TSymbol symbol, GroupedRunInlineCollection inlines);
-
     public abstract GroupedRunInline.IBuilder CreateSymbolInline(TSymbol symbol);
+
+    protected virtual void CreateWithHoverContext(
+        SymbolHoverContext context, GroupedRunInlineCollection inlines)
+    {
+        Create((TSymbol)context.Symbol, inlines);
+    }
 
     protected void AddModifier(
         GroupedRunInlineCollection inlines,

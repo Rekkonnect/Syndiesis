@@ -32,7 +32,7 @@ The planned structure is:
   - Language-agnostic: IPreprocessingSymbol
     - Include base type / interface list for type symbols
 - Extras
-  - Type parameter constraint list
+  - Type parameter constraint list (only for C#)
   - Preprocessing symbol definition state
     - '[Un]Defined here' for C#
     - '[Un]Defined here [as XYZ]' for VB

@@ -5,27 +5,26 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 public sealed class CSharpSymbolExtraInlinesCreatorContainer
     : BaseSymbolExtraInlinesCreatorContainer
 {
-    private readonly CSharpTypeParameterConstraintListInlinesCreator _typeParameters;
-    private readonly CSharpPreprocessingSymbolInlinesCreator _preprocessing;
+    private readonly CSharpTypeSymbolExtraInlinesCreator _typeSymbolTypeParameters;
+    private readonly CSharpMethodSymbolExtraInlinesCreator _methodSymbolTypeParameters;
 
     public CSharpSymbolExtraInlinesCreatorContainer(
         ISymbolInlinesRootCreatorContainer rootContainer)
         : base(rootContainer)
     {
-        _typeParameters = new(this);
-        _preprocessing = new(this);
+        _typeSymbolTypeParameters = new(this);
+        _methodSymbolTypeParameters = new(this);
     }
 
-    public override ISymbolItemInlinesCreator? CreatorForSymbol<TSymbol>(TSymbol symbol)
+    protected override ISymbolItemInlinesCreator? FallbackCreatorForSymbol<TSymbol>(TSymbol symbol)
     {
         switch (symbol)
         {
             case INamedTypeSymbol { Arity: > 0 }:
-            case IMethodSymbol { Arity: > 0 }:
-                return _typeParameters;
+                return _typeSymbolTypeParameters;
 
-            case IPreprocessingSymbol:
-                return _preprocessing;
+            case IMethodSymbol { Arity: > 0 }:
+                return _methodSymbolTypeParameters;
 
             default:
                 return null;

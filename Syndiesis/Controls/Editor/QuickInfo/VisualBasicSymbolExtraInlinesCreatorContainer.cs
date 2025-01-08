@@ -1,34 +1,15 @@
-﻿using Microsoft.CodeAnalysis;
+﻿namespace Syndiesis.Controls.Editor.QuickInfo;
 
-namespace Syndiesis.Controls.Editor.QuickInfo;
-
-public sealed class VisualBasicSymbolExtraInlinesCreatorContainer
-    : BaseSymbolExtraInlinesCreatorContainer
+public sealed class VisualBasicSymbolExtraInlinesCreatorContainer(
+    ISymbolInlinesRootCreatorContainer rootContainer)
+        : BaseSymbolExtraInlinesCreatorContainer(rootContainer)
 {
-    private readonly VisualBasicTypeParameterConstraintListInlinesCreator _typeParameters;
-    private readonly VisualBasicPreprocessingSymbolInlinesCreator _preprocessing;
-
-    public VisualBasicSymbolExtraInlinesCreatorContainer(
-        ISymbolInlinesRootCreatorContainer rootContainer)
-        : base(rootContainer)
+    protected override ISymbolItemInlinesCreator? FallbackCreatorForSymbol<TSymbol>(TSymbol symbol)
     {
-        _typeParameters = new(this);
-        _preprocessing = new(this);
-    }
-
-    public override ISymbolItemInlinesCreator? CreatorForSymbol<TSymbol>(TSymbol symbol)
-    {
-        switch (symbol)
-        {
-            case INamedTypeSymbol { Arity: > 0 }:
-            case IMethodSymbol { Arity: > 0 }:
-                return _typeParameters;
-
-            case IPreprocessingSymbol:
-                return _preprocessing;
-
-            default:
-                return null;
-        }
+        // No additional creators are provided
+        // Type parameter constraints are placed inline in the definition inlines
+        // Since they are declared in the same place as the names of the type parameters
+        // themselves
+        return null;
     }
 }
