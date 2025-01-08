@@ -165,8 +165,8 @@ public sealed partial class VisualBasicRoslynColorizer(
 
         if (tokenKind is SyntaxKind.XmlNameToken)
         {
-            var nameParent = tokenParent.Parent!;
-            var nameParentKind = nameParent.Kind();
+            var nameParent = tokenParent.Parent;
+            var nameParentKind = nameParent?.Kind();
             switch (nameParentKind)
             {
                 case SyntaxKind.XmlAttribute:
@@ -174,6 +174,7 @@ public sealed partial class VisualBasicRoslynColorizer(
 
                 case SyntaxKind.XmlElementStartTag:
                 case SyntaxKind.XmlElementEndTag:
+                case null:
                     return ColorizerForBrush(Styles.XmlTagBrush);
             }
         }
