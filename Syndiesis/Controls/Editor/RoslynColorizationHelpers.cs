@@ -18,4 +18,14 @@ public static class RoslynColorizationHelpers
             _ => null,
         };
     }
+
+    public static bool IsKnownCallingConventionAttribute(string name)
+    {
+        return name
+            is "Thiscall"
+            or "Fastcall"
+            or "Stdcall"
+            or "Cdecl"
+            ;
+    }
 }

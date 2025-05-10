@@ -97,10 +97,10 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
     {
         if (token.Kind() is SyntaxKind.IdentifierToken)
         {
-            var xmlColorizer = GetXmlTokenColorizer(token);
-            if (xmlColorizer is not null)
+            var miscColorizer = GetMiscTokenColorizer(token);
+            if (miscColorizer is not null)
             {
-                ColorizeSpan(line, token.Span, xmlColorizer);
+                ColorizeSpan(line, token.Span, miscColorizer);
             }
 
             var symbolKind = GetDeclaringSymbolKind(token);
@@ -132,6 +132,30 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         }
     }
 
+    private Action<VisualLineElement>? GetMiscTokenColorizer(SyntaxToken token)
+    {
+        return GetXmlTokenColorizer(token)
+           ?? GetFunctionPointerCallingConventionNameTokenColorizer(token)
+           ;
+    }
+
+    private Action<VisualLineElement>? GetFunctionPointerCallingConventionNameTokenColorizer(SyntaxToken token)
+    {
+        bool isUnmanagedCallingConvention = token.Parent.IsKind(SyntaxKind.FunctionPointerUnmanagedCallingConvention);
+        if (!isUnmanagedCallingConvention)
+        {
+            return null;
+        }
+
+        bool isKnownCallingConvention = RoslynColorizationHelpers.IsKnownCallingConventionAttribute(token.Text);
+        if (!isKnownCallingConvention)
+        {
+            return null;
+        }
+
+        return ColorizerForBrush(Styles.ClassBrush);
+    }
+    
     private Action<VisualLineElement>? GetXmlTokenColorizer(SyntaxToken token)
     {
         var tokenKind = token.Kind();
