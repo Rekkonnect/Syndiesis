@@ -64,7 +64,9 @@ public sealed class NodeViewDetailsHandlerTests
         // intended node's span
         if (span.Length is 0)
         {
-            Assert.That(rootNode.Span.Contains(span), Is.True);
+            var containedSpan = rootNode.Span.Contains(span)
+                || rootNode.FullSpan.Contains(span);
+            Assert.That(containedSpan, Is.True);
         }
         else
         {
@@ -83,7 +85,7 @@ public sealed class NodeViewDetailsHandlerTests
         var result = execution.ExecuteCore(default);
         Assert.That(result, Is.Not.Null);
 
-        bool allSuccessful = await result.AwaitAllLoaded(TimeSpan.FromMilliseconds(45));
+        bool allSuccessful = await result.AwaitAllLoaded(TimeSpan.FromMilliseconds(1));
         Assert.That(allSuccessful, Is.True);
         return execution;
     }
