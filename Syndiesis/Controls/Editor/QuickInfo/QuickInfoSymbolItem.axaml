@@ -8,7 +8,9 @@
     mc:Ignorable="d"
     x:Class="Syndiesis.Controls.Editor.QuickInfo.QuickInfoSymbolItem">
 
-    <Grid>
+    <Grid
+        Margin="4"
+        >
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="Auto" />
             <ColumnDefinition Width="Auto" />
@@ -23,7 +25,7 @@
             Name="symbolIcon"
             Grid.Row="0"
             Grid.Column="0"
-            Margin="4"
+            Margin="0 0 4 0"
             Height="24"
             VerticalAlignment="Stretch"
             Source="avares://Syndiesis/Assets/Icons/vs/symbols/method.png" />
@@ -35,7 +37,6 @@
             VerticalAlignment="Center"
             TextWrapping="Wrap"
             FontSize="14"
-            MaxWidth="950"
             Text="void ExampleSymbol(int a, int b)" />
         
         <inlines:CopyableGroupedRunInlineTextBlock
@@ -43,6 +44,7 @@
             Grid.Row="1"
             Grid.Column="0"
             Grid.ColumnSpan="2"
+            Margin="6 0 0 0"
             VerticalAlignment="Top"
             TextWrapping="Wrap"
             FontSize="12"

@@ -1,17 +1,23 @@
 ﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.VisualBasic.Syntax;
+using RoseLynn.CSharp.Syntax;
 using Serilog;
+using SkiaSharp;
 using Syndiesis.ColorHelpers;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Reflection.Metadata;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public sealed class CSharpTypeCommonInlinesCreator(
     CSharpSymbolCommonInlinesCreatorContainer parentContainer)
-    : BaseSymbolCommonInlinesCreator<ITypeSymbol>(parentContainer)
+    : BaseCSharpMemberCommonInlinesCreator<ITypeSymbol>(parentContainer)
 {
     public override GroupedRunInline.IBuilder CreateSymbolInline(ITypeSymbol symbol)
     {
@@ -49,14 +55,15 @@ public sealed class CSharpTypeCommonInlinesCreator(
             {
                 return CreateNamedTypeInline(named);
             }
+            
+            default:
+            {
+                return CreateFallbackTypeInline(type);
+            }
         }
-
-        // We must never leave any symbol kinds unimplemented
-        Log.Warning("Found unimplemented symbol type kind {typeKind}", type.TypeKind);
-        return new SimpleGroupedRunInline.Builder();
     }
 
-    private GroupedRunInline.IBuilder CreateNamedTypeInline(INamedTypeSymbol type)
+    private GroupedRunInline.IBuilder CreateFallbackTypeInline(ITypeSymbol type)
     {
         if (type.IsTupleType)
         {
@@ -68,7 +75,8 @@ public sealed class CSharpTypeCommonInlinesCreator(
             return CreateAnonymousInline(type);
         }
 
-        return CreateOrdinaryNamedTypeInline(type);
+        Log.Warning("Found unimplemented fallback symbol type kind {typeKind}", type.TypeKind);
+        return new SimpleGroupedRunInline.Builder();
     }
 
     private static GroupedRunInline.IBuilder CreateTypeParameterInline(ITypeParameterSymbol type)
@@ -108,32 +116,31 @@ public sealed class CSharpTypeCommonInlinesCreator(
 
         var asteriskRun = Run("*", CommonStyles.RawValueBrush);
         inlines.AddChild(asteriskRun);
-        if (signature.CallingConvention is SignatureCallingConvention.Unmanaged)
+        if (signature.CallingConvention is not SignatureCallingConvention.Default)
         {
             var unmanagedRun = Run(" unmanaged", CommonStyles.KeywordBrush);
             inlines.AddChild(unmanagedRun);
 
-            var callingConventionTypes = signature.UnmanagedCallingConventionTypes;
-            if (callingConventionTypes.Length > 0)
+            var callingConventionNames = GetConventionNameList(signature);
+            if (callingConventionNames.Length > 0)
             {
                 var callingConventionRuns = new List<RunOrGrouped>([]);
                 var callingConventionListStart = Run("[", CommonStyles.RawValueBrush);
                 callingConventionRuns.Add(callingConventionListStart);
 
-                for (var i = 0; i < callingConventionTypes.Length; i++)
+                for (var i = 0; i < callingConventionNames.Length; i++)
                 {
-                    var convention = callingConventionTypes[i];
-                    var conventionName = DisplayForUnmanagedCallingConventionType(convention);
-                    // Hard-code the class brush since the calling convention types are all classes
-                    var run = Run(conventionName, CommonStyles.ClassMainBrush);
-                    var conventionInline = new SingleRunInline.Builder(run);
-                    callingConventionRuns.Add(new RunOrGrouped(conventionInline));
-
-                    if (i < callingConventionTypes.Length - 1)
+                    if (i > 0)
                     {
                         var separator = CreateArgumentSeparatorRun();
                         callingConventionRuns.Add(separator);
                     }
+                    
+                    var conventionName = callingConventionNames[i];
+                    // Hard-code the class brush since the calling convention types are all classes
+                    var run = Run(conventionName, CommonStyles.ClassMainBrush);
+                    var conventionInline = new SingleRunInline.Builder(run);
+                    callingConventionRuns.Add(new RunOrGrouped(conventionInline));
                 }
 
                 var callingConventionListEnd = Run("]", CommonStyles.RawValueBrush);
@@ -166,16 +173,48 @@ public sealed class CSharpTypeCommonInlinesCreator(
         return inlines;
     }
 
+    private static ImmutableArray<string> GetConventionNameList(IMethodSymbol signature)
+    {
+        if (signature.UnmanagedCallingConventionTypes is not [] and var types)
+        {
+            return types.Select(DisplayForUnmanagedCallingConventionType).ToImmutableArray();
+        }
+        
+        return GetConventionNameList(signature.CallingConvention);
+    }
+
+    private static ImmutableArray<string> GetConventionNameList(SignatureCallingConvention convention)
+    {
+        var conventionName = GetConventionName(convention);
+        if (conventionName is null)
+        {
+            return [];
+        }
+        
+        return [conventionName];
+    }
+
+    private static string? GetConventionName(SignatureCallingConvention convention)
+    {
+        return convention switch
+        {
+            SignatureCallingConvention.ThisCall => "Thiscall",
+            SignatureCallingConvention.FastCall => "Fastcall",
+            SignatureCallingConvention.StdCall => "Stdcall",
+            SignatureCallingConvention.CDecl => "Cdecl",
+            _ => null,
+        };
+    }
+
     private static string DisplayForUnmanagedCallingConventionType(INamedTypeSymbol type)
     {
         // Assuming that the name is CallConvXyz, for example CallConvCdecl
-        // TODO: Test this
         const string prefix = "CallConv";
         int prefixLength = prefix.Length;
         return type.Name[prefixLength..];
     }
 
-    private GroupedRunInline.IBuilder CreateOrdinaryNamedTypeInline(INamedTypeSymbol type)
+    private GroupedRunInline.IBuilder CreateNamedTypeInline(INamedTypeSymbol type)
     {
         var typeBrush = RoslynColorizationHelpers.BrushForTypeKind(ColorizationStyles, type.TypeKind)!;
         var symbolRun = SingleRun(type.Name, typeBrush);
@@ -188,29 +227,11 @@ public sealed class CSharpTypeCommonInlinesCreator(
         var inlines = new ComplexGroupedRunInline.Builder();
 
         inlines.AddChild(symbolRun);
-        var openingTag = Run($"<", CommonStyles.RawValueBrush);
-        inlines.AddChild(openingTag);
-        var arguments = type.TypeArguments;
-        for (var i = 0; i < arguments.Length; i++)
-        {
-            var argument = arguments[i];
-            var inner = CreateTypeInline(argument);
-            inlines.AddChild(inner);
-
-            if (i < arguments.Length - 1)
-            {
-                var separator = CreateArgumentSeparatorRun();
-                inlines.AddChild(separator);
-            }
-        }
-
-        var closingTag = Run(">", CommonStyles.RawValueBrush);
-        inlines.AddChild(closingTag);
-
+        AddTypeArgumentInlines(inlines, type.TypeArguments);
         return inlines;
     }
-
-    private GroupedRunInline.IBuilder CreateTupleInline(INamedTypeSymbol tupleType)
+    
+    private GroupedRunInline.IBuilder CreateTupleInline(ITypeSymbol tupleType)
     {
         var fields = tupleType.GetFields();
 
@@ -256,7 +277,7 @@ public sealed class CSharpTypeCommonInlinesCreator(
         return new ComplexGroupedRunInline.Builder([new(left), suffixGroup]);
     }
 
-    private GroupedRunInline.IBuilder CreateAnonymousInline(INamedTypeSymbol anonymousType)
+    private GroupedRunInline.IBuilder CreateAnonymousInline(ITypeSymbol anonymousType)
     {
         var properties = anonymousType.GetProperties();
         if (properties.Length is 0)

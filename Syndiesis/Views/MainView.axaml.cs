@@ -176,7 +176,7 @@ public partial class MainView : UserControl
         if (semanticModel is null)
             return [];
         
-        var node = tree.SyntaxNodeAtPosition(position);
+        var node = tree.SyntaxNodeAtPositionIncludingStructuredTrivia(position);
         if (node is null)
             return [];
 
@@ -193,15 +193,17 @@ public partial class MainView : UserControl
     private static void AddRelatedSymbols(
         ISet<ISymbol> symbols, SemanticModel semanticModel, SyntaxNode node)
     {
-        const int maxCandidates = 3;
+        const int maxCandidates = 4;
         
         var symbolInfo = semanticModel.GetSymbolInfo(node);
         var declaredSymbol = semanticModel.GetDeclaredSymbol(node);
         var alias = semanticModel.GetAliasInfo(node);
+        var preprocessingSymbol = semanticModel.GetPreprocessingSymbolInfo(node).Symbol;
 
         symbols.AddNonNull(declaredSymbol);
         symbols.AddNonNull(alias);
         symbols.AddNonNull(symbolInfo.Symbol);
+        symbols.AddNonNull(preprocessingSymbol);
         symbols.UnionWith(symbolInfo.CandidateSymbols.Take(maxCandidates));
     }
 

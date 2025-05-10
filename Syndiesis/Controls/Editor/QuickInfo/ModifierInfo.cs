@@ -8,6 +8,11 @@ public readonly record struct ModifierInfo(
     MemberModifiers Modifiers
 )
 {
+    /// <summary>
+    /// Gets the modifier combination that was used to declare the symbol that
+    /// is being evaluated. Unusable and obvious modifiers like <see langword="sealed"/>
+    /// on a <see langword="struct"/> are not returned.
+    /// </summary>
     public static ModifierInfo GetForSymbol(ISymbol symbol)
     {
         var modifiers
@@ -16,15 +21,17 @@ public readonly record struct ModifierInfo(
               | CheckModifierOrNone(
                   IsAsync(symbol), MemberModifiers.Async)
               | CheckModifierOrNone(
-                  symbol.IsSealed, MemberModifiers.Sealed)
+                  IsNotInherentlySealed(symbol), MemberModifiers.Sealed)
               | CheckModifierOrNone(
                   symbol.IsOverride, MemberModifiers.Override)
               | CheckModifierOrNone(
-                  symbol.IsAbstract, MemberModifiers.Abstract)
+                  IsNotInherentlyAbstract(symbol), MemberModifiers.Abstract)
               | CheckModifierOrNone(
                   symbol.IsVirtual, MemberModifiers.Virtual)
               | CheckModifierOrNone(
-                  IsReadOnly(symbol), MemberModifiers.ReadOnly)
+                  IsNotInherentlyReadOnly(symbol), MemberModifiers.ReadOnly)
+              | CheckModifierOrNone(
+                  symbol.IsRequired(), MemberModifiers.Required)
               | CheckModifierOrNone(
                   symbol.IsStatic, MemberModifiers.Static)
               | CheckModifierOrNone(
@@ -35,9 +42,28 @@ public readonly record struct ModifierInfo(
                   symbol.IsConstant(), MemberModifiers.Const)
               | CheckModifierOrNone(
                   symbol.IsRef(), MemberModifiers.Ref)
+              | CheckModifierOrNone(
+                  symbol.IsRefReadOnly(), MemberModifiers.RefReadOnly)
             ;
         
         return new(symbol.DeclaredAccessibility, modifiers);
+    }
+
+    private static bool IsNotInherentlySealed(ISymbol symbol)
+    {
+        return symbol is not ITypeSymbol { IsValueType: true }
+            && symbol is { IsSealed: true, IsStatic: false }
+            ;
+    }
+    
+    private static bool IsNotInherentlyAbstract(ISymbol symbol)
+    {
+        return symbol is { IsAbstract: true, IsStatic: false };
+    }
+    
+    private static bool IsNotInherentlyReadOnly(ISymbol symbol)
+    {
+        return !symbol.IsConstant() && symbol.IsReadOnly();
     }
 
     private static MemberModifiers CheckModifierOrNone(
@@ -49,16 +75,6 @@ public readonly record struct ModifierInfo(
     private static bool IsAsync(ISymbol symbol)
     {
         return symbol is IMethodSymbol { IsAsync: true };
-    }
-
-    private static bool IsReadOnly(ISymbol symbol)
-    {
-        return symbol
-            is ITypeSymbol { IsReadOnly: true }
-            or IFieldSymbol { IsReadOnly: true }
-            or IPropertySymbol { IsReadOnly: true }
-            or IMethodSymbol { IsReadOnly: true }
-            ;
     }
 
     private static bool IsVolatile(ISymbol symbol)

@@ -6,7 +6,7 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 public sealed class CSharpSymbolCommonInlinesCreatorContainer
     : BaseSymbolCommonInlinesCreatorContainer
 {
-    private readonly CSharpTypeCommonInlinesCreator _type;
+    public readonly CSharpTypeCommonInlinesCreator TypeCreator;
 
     private readonly CSharpMethodCommonInlinesCreator _method;
     private readonly CSharpPropertyCommonInlinesCreator _property;
@@ -15,7 +15,7 @@ public sealed class CSharpSymbolCommonInlinesCreatorContainer
         ISymbolInlinesRootCreatorContainer rootContainer)
         : base(rootContainer)
     {
-        _type = new(this);
+        TypeCreator = new(this);
 
         _method = new(this);
         _property = new(this);
@@ -26,7 +26,7 @@ public sealed class CSharpSymbolCommonInlinesCreatorContainer
         switch (symbol)
         {
             case ITypeSymbol:
-                return _type;
+                return TypeCreator;
 
             case IMethodSymbol:
                 return _method;

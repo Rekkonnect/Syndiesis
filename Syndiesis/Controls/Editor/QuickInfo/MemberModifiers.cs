@@ -32,4 +32,6 @@ public enum MemberModifiers
     FixedSizeBuffer = 1 << 10,
     Const = 1 << 11,
     Ref = 1 << 12,
+    RefReadOnly = 1 << 13,
+    Required = 1 << 14,
 }

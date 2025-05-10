@@ -20,7 +20,7 @@ public abstract class BaseInlineCreator
     {
         return new(Run(text, brush));
     }
-
+    
     protected static Run Run(string text, ILazilyUpdatedBrush brush)
     {
         return new(text, brush);

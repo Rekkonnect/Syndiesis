@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Serilog;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Threading;
@@ -20,6 +21,14 @@ public static class SymbolExtensions
         };
     }
 
+    public static bool IsRequired(this ISymbol symbol)
+    {
+        return symbol
+            is IFieldSymbol { IsRequired: true }
+            or IPropertySymbol { IsRequired: true }
+            ;
+    }
+
     public static bool IsConstant(this ISymbol symbol)
     {
         return symbol
@@ -31,16 +40,36 @@ public static class SymbolExtensions
     public static bool IsRef(this ISymbol symbol)
     {
         return symbol
-            is IFieldSymbol { RefKind: RefKind.Ref or RefKind.RefReadOnly }
-            or ILocalSymbol { IsRef: true }
+            is IFieldSymbol { RefKind: RefKind.Ref }
+            or ILocalSymbol { RefKind: RefKind.Ref }
+            or IParameterSymbol { RefKind: RefKind.Ref }
+            or IMethodSymbol { RefKind: RefKind.Ref }
+            or IPropertySymbol { RefKind: RefKind.Ref }
+            ;
+    }
+
+    public static bool IsRefReadOnly(this ISymbol symbol)
+    {
+        return symbol
+            is IFieldSymbol { RefKind: RefKind.RefReadOnly }
+            or ILocalSymbol { RefKind: RefKind.RefReadOnly }
             or IParameterSymbol
             {
-                RefKind: RefKind.Ref
-                    or RefKind.RefReadOnly
+                RefKind: RefKind.RefReadOnly
                     or RefKind.RefReadOnlyParameter
             }
-            or IMethodSymbol { ReturnsByRef: true }
-            or IPropertySymbol { ReturnsByRef: true }
+            or IMethodSymbol { RefKind: RefKind.RefReadOnly }
+            or IPropertySymbol { RefKind: RefKind.RefReadOnly }
+            ;
+    }
+
+    public static bool IsReadOnly(this ISymbol symbol)
+    {
+        return symbol
+            is ITypeSymbol { IsReadOnly: true }
+            or IFieldSymbol { IsReadOnly: true }
+            or IPropertySymbol { IsReadOnly: true }
+            or IMethodSymbol { IsReadOnly: true }
             ;
     }
 
@@ -106,7 +135,7 @@ public static class SymbolExtensions
         return name;
     }
 
-    public static ImmutableArray<IFieldSymbol> GetFields(this INamedTypeSymbol type)
+    public static ImmutableArray<IFieldSymbol> GetFields(this ITypeSymbol type)
     {
         return type
             .GetMembers()
@@ -114,11 +143,26 @@ public static class SymbolExtensions
             .ToImmutableArray();
     }
 
-    public static ImmutableArray<IPropertySymbol> GetProperties(this INamedTypeSymbol type)
+    public static ImmutableArray<IPropertySymbol> GetProperties(this ITypeSymbol type)
     {
         return type
             .GetMembers()
             .OfType<IPropertySymbol>()
             .ToImmutableArray();
+    }
+
+    public static IEnumerable<string> YieldNamespaceIdentifiers(this INamespaceSymbol @namespace)
+    {
+        var current = @namespace;
+        while (true)
+        {
+            if (current.IsGlobalNamespace)
+            {
+                yield break;
+            }
+
+            yield return current.Name;
+            current = current.ContainingNamespace;
+        }
     }
 }

@@ -4,7 +4,7 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public sealed class CommonRangeVariableCommonInlinesCreator(
     BaseSymbolCommonInlinesCreatorContainer parentContainer)
-    : BaseSimpleNameCommonInlinesCreator<IRangeVariableSymbol>(parentContainer)
+    : BaseSimpleTypedNamedCommonInlinesCreator<IRangeVariableSymbol>(parentContainer)
 {
     protected override ILazilyUpdatedBrush GetBrush(IRangeVariableSymbol symbol)
     {

@@ -107,8 +107,6 @@ public abstract class GroupedRunInline
         : UIBuilder<T>, IBuilder
         where T : GroupedRunInline
     {
-        
-        
         GroupedRunInline IBuilder.Build()
         {
             return Build();

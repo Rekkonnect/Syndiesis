@@ -12,7 +12,6 @@ public abstract class BaseSimpleNameCommonInlinesCreator<TSymbol>(
 
     public sealed override GroupedRunInline.IBuilder CreateSymbolInline(TSymbol symbol)
     {
-        var nameRun = Run(symbol.Name, GetBrush(symbol));
-        return new SimpleGroupedRunInline.Builder([nameRun]);
+        return SingleRun(symbol.Name, GetBrush(symbol));
     }
 }

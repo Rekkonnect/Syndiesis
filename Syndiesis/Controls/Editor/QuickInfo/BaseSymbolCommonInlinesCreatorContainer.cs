@@ -14,6 +14,7 @@ public abstract class BaseSymbolCommonInlinesCreatorContainer
     private readonly CommonParameterCommonInlinesCreator _parameter;
     private readonly CommonLabelCommonInlinesCreator _label;
     private readonly CommonPreprocessingCommonInlinesCreator _preprocessing;
+    private readonly CommonAliasCommonInlinesCreator _alias;
 
     protected BaseSymbolCommonInlinesCreatorContainer(
         ISymbolInlinesRootCreatorContainer rootContainer)
@@ -28,6 +29,7 @@ public abstract class BaseSymbolCommonInlinesCreatorContainer
         _parameter = new(this);
         _label = new(this);
         _preprocessing = new(this);
+        _alias = new(this);
     }
 
     public sealed override ISymbolItemInlinesCreator CreatorForSymbol<TSymbol>(TSymbol symbol)
@@ -45,6 +47,9 @@ public abstract class BaseSymbolCommonInlinesCreatorContainer
 
             case IPreprocessingSymbol:
                 return _preprocessing;
+
+            case IAliasSymbol:
+                return _alias;
 
             case IRangeVariableSymbol:
                 return _rangeVariable;

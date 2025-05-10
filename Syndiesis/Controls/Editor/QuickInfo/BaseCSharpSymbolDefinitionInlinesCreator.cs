@@ -35,14 +35,16 @@ public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
         AddTargetModifier(MemberModifiers.Virtual, "virtual");
         AddTargetModifier(MemberModifiers.New, "new");
         AddTargetModifier(MemberModifiers.Const, "const");
-        AddTargetModifier(MemberModifiers.Ref, "ref");
-        AddTargetModifier(MemberModifiers.ReadOnly, "readonly");
         AddTargetModifier(MemberModifiers.Static, "static");
         AddTargetModifier(MemberModifiers.Volatile, "volatile");
         AddTargetModifier(MemberModifiers.FixedSizeBuffer, "fixed");
         
         AddTargetModifier(MemberModifiers.Async, "async");
         AddTargetModifier(MemberModifiers.Const, "const");
+        
+        AddTargetModifier(MemberModifiers.ReadOnly, "readonly");
+        AddTargetModifier(MemberModifiers.Ref, "ref");
+        AddTargetModifier(MemberModifiers.RefReadOnly, "ref readonly");
         return;
 
         void AddTargetModifier(MemberModifiers targetFlag, string word)

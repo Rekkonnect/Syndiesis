@@ -5,7 +5,7 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public sealed class CommonFieldCommonInlinesCreator(
     BaseSymbolCommonInlinesCreatorContainer parentContainer)
-    : BaseCommonMemberCommonInlinesCreator<IFieldSymbol>(parentContainer)
+    : BaseSimpleTypedNamedCommonInlinesCreator<IFieldSymbol>(parentContainer)
 {
     protected override ILazilyUpdatedBrush GetBrush(IFieldSymbol symbol)
     {

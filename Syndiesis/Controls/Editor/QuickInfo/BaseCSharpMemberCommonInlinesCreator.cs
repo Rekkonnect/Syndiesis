@@ -10,6 +10,9 @@ public abstract class BaseCSharpMemberCommonInlinesCreator<TSymbol>(
     : BaseCommonMemberCommonInlinesCreator<TSymbol>(parentContainer)
     where TSymbol : class, ISymbol
 {
+    public new CSharpSymbolCommonInlinesCreatorContainer ParentContainer
+        => (CSharpSymbolCommonInlinesCreatorContainer)base.ParentContainer;
+    
     protected GroupedRunInline.IBuilder? CreateParameterListInline(
         ImmutableArray<IParameterSymbol> parameters)
     {
@@ -46,5 +49,31 @@ public abstract class BaseCSharpMemberCommonInlinesCreator<TSymbol>(
 
         return new ComplexGroupedRunInline.Builder(
             [new(typeInline), spaceInline, new(nameInline)]);
+    }
+    
+    protected void AddTypeArgumentInlines(ComplexGroupedRunInline.Builder inlines, ImmutableArray<ITypeSymbol> arguments)
+    {
+        if (arguments.IsDefaultOrEmpty)
+        {
+            return;
+        }
+        
+        var openingTag = Run($"<", CommonStyles.RawValueBrush);
+        inlines.AddChild(openingTag);
+        for (var i = 0; i < arguments.Length; i++)
+        {
+            var argument = arguments[i];
+            var inner = ParentContainer.TypeCreator.CreateSymbolInline(argument);
+            inlines.AddChild(inner);
+
+            if (i < arguments.Length - 1)
+            {
+                var separator = CreateArgumentSeparatorRun();
+                inlines.AddChild(separator);
+            }
+        }
+
+        var closingTag = Run(">", CommonStyles.RawValueBrush);
+        inlines.AddChild(closingTag);
     }
 }

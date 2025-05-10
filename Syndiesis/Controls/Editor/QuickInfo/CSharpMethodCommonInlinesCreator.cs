@@ -35,25 +35,7 @@ public sealed class CSharpMethodCommonInlinesCreator(
         var inlines = new ComplexGroupedRunInline.Builder();
 
         inlines.AddChild(nameRun);
-        var openingTag = Run($"<", CommonStyles.RawValueBrush);
-        inlines.AddChild(openingTag);
-        var parameters = method.TypeParameters;
-        for (var i = 0; i < parameters.Length; i++)
-        {
-            var parameter = parameters[i];
-            var parameterRun = SingleRun(parameter.Name, ColorizationStyles.TypeParameterBrush);
-            inlines.AddChild(parameterRun);
-
-            if (i < parameters.Length - 1)
-            {
-                var separator = CreateArgumentSeparatorRun();
-                inlines.AddChild(separator);
-            }
-        }
-
-        var closingTag = Run(">", CommonStyles.RawValueBrush);
-        inlines.AddChild(closingTag);
-
+        AddTypeArgumentInlines(inlines, method.TypeArguments);
         return inlines;
     }
 }

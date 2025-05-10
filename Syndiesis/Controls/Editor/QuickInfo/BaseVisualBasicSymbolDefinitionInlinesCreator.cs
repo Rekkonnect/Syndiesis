@@ -25,12 +25,13 @@ public abstract class BaseVisualBasicSymbolDefinitionInlinesCreator<TSymbol>(
         AddTargetModifier(MemberModifiers.Abstract, "MustInherit");
         AddTargetModifier(MemberModifiers.Virtual, "Overridable");
         AddTargetModifier(MemberModifiers.New, "Shadows");
-        AddTargetModifier(MemberModifiers.Ref, "ByRef");
-        AddTargetModifier(MemberModifiers.ReadOnly, "ReadOnly");
         AddTargetModifier(MemberModifiers.Static, "Shared");
         
         AddTargetModifier(MemberModifiers.Async, "Async");
         AddTargetModifier(MemberModifiers.Const, "Const");
+        
+        AddTargetModifier(MemberModifiers.ReadOnly, "ReadOnly");
+        AddTargetModifier(MemberModifiers.Ref, "ByRef");
         return;
 
         void AddTargetModifier(MemberModifiers targetFlag, string word)
