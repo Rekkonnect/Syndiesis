@@ -1,15 +1,15 @@
 ﻿using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
+using Garyon.Objects;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
-using Garyon.Objects;
 
 namespace Syndiesis.Controls.Editor;
 

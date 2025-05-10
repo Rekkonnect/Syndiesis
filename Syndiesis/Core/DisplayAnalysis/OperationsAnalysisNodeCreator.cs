@@ -12,12 +12,10 @@ namespace Syndiesis.Core.DisplayAnalysis;
 
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
-
 using GroupedRunInline = GroupedRunInline.IBuilder;
-using SingleRunInline = SingleRunInline.Builder;
-
 // This also captures IOperation.OperationList
 using OperationList = IReadOnlyCollection<IOperation>;
+using SingleRunInline = SingleRunInline.Builder;
 
 public sealed partial class OperationsAnalysisNodeCreator
     : BaseAnalysisNodeCreator

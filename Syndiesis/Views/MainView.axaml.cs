@@ -11,6 +11,7 @@ using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Core;
+using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
 using System;
@@ -19,7 +20,6 @@ using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using Syndiesis.Core.DisplayAnalysis;
 
 namespace Syndiesis.Views;
 
@@ -45,6 +45,7 @@ public partial class MainView : UserControl
     [MemberNotNull(nameof(_quickInfoHandler))]
     private void InitializeView()
     {
+        quickInfoDisplayPopup.CompilationSource = ViewModel.HybridCompilationSource;
         _quickInfoHandler = new(quickInfoDisplayPopup);
         _quickInfoHandler.RegisterMovementHandling(this);
         _quickInfoHandler.PrepareShowing += PrepareQuickInfoShowing;

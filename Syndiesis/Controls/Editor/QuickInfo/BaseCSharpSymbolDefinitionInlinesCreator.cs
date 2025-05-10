@@ -18,14 +18,14 @@ public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
 
         if (isFilePrivate)
         {
-            AddKeywordRun("file", inlines);
+            AddKeywordAndSpaceRun("file", inlines);
         }
         else
         {
             var keyword = GetAccessibilityKeyword(modifierInfo.Accessibility);
             if (!string.IsNullOrEmpty(keyword))
             {
-                AddKeywordRun(keyword, inlines);
+                AddKeywordAndSpaceRun(keyword, inlines);
             }
         }
         

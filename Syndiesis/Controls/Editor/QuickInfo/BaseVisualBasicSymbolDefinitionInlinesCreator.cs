@@ -16,7 +16,7 @@ public abstract class BaseVisualBasicSymbolDefinitionInlinesCreator<TSymbol>(
         var keyword = GetAccessibilityKeyword(modifierInfo.Accessibility);
         if (!string.IsNullOrEmpty(keyword))
         {
-            AddKeywordRun(keyword, inlines);
+            AddKeywordAndSpaceRun(keyword, inlines);
         }
         
         var modifiers = modifierInfo.Modifiers;

@@ -9,9 +9,8 @@ using System.Reflection;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
-
 using CSharpSyntax = Microsoft.CodeAnalysis.CSharp.Syntax;
+using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
 
 public sealed class SyntaxNodePropertyFilter : PropertyFilter
 {

@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Avalonia.Media;
+using System;
 using System.Threading.Tasks;
-using Avalonia.Media;
 
 namespace Syndiesis.Controls.Toast;
 

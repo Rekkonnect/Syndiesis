@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Garyon.Reflection;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
@@ -9,18 +10,15 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
-using Garyon.Reflection;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
-
-using GroupedRunInline = GroupedRunInline.IBuilder;
-using SingleRunInline = SingleRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
-
+using GroupedRunInline = GroupedRunInline.IBuilder;
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
+using SingleRunInline = SingleRunInline.Builder;
 
 public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
 {

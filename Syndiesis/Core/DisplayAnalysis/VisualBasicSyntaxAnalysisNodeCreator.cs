@@ -1,26 +1,25 @@
 ﻿using Avalonia.Media;
+using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.VisualBasic;
 using Serilog;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using Garyon.Reflection;
 using System.Diagnostics.Contracts;
+using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-using Run = UIBuilder.Run;
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
-using SingleRunInline = SingleRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
-
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
+using Run = UIBuilder.Run;
+using SingleRunInline = SingleRunInline.Builder;
 using SyntaxTokenList = IReadOnlyList<SyntaxToken>;
 
 public sealed partial class VisualBasicSyntaxAnalysisNodeCreator : BaseSyntaxAnalysisNodeCreator

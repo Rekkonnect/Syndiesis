@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Garyon.Extensions;
+using Microsoft.CodeAnalysis;
+using Serilog;
+using System;
 using System.Buffers;
 using System.Collections.Immutable;
 using System.Globalization;
 using System.Threading;
 using System.Xml;
-using Garyon.Extensions;
-using Microsoft.CodeAnalysis;
-using Serilog;
 
 namespace Syndiesis.Core;
 

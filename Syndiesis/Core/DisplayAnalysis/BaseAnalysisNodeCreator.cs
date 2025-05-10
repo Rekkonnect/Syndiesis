@@ -19,16 +19,14 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-using Run = UIBuilder.Run;
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
-
-using GroupedRunInline = GroupedRunInline.IBuilder;
-using SingleRunInline = SingleRunInline.Builder;
-using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
-
+using GroupedRunInline = GroupedRunInline.IBuilder;
 using KvpList = List<KeyValuePair<object, object?>>;
+using Run = UIBuilder.Run;
+using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
+using SingleRunInline = SingleRunInline.Builder;
 
 public delegate IReadOnlyList<AnalysisTreeListNode> AnalysisNodeChildRetriever();
 

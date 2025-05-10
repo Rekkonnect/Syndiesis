@@ -1,9 +1,10 @@
-using System.Collections.Immutable;
-using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Garyon.Functions;
 using Microsoft.CodeAnalysis;
+using Syndiesis.Core;
+using System.Collections.Immutable;
+using System.Linq;
 using CodeAnalysisLocation = Microsoft.CodeAnalysis.Location;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
@@ -11,6 +12,8 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
 {
     private Point _pointerOrigin;
+    
+    public HybridSingleTreeCompilationSource? CompilationSource { get; set; }
 
     public QuickInfoDisplayPopup()
     {
@@ -131,11 +134,9 @@ public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
         Margin = targetMargin;
     }
 
-    private static QuickInfoSymbolItem CreateSymbolItem(ISymbol symbol)
+    private QuickInfoSymbolItem CreateSymbolItem(ISymbol symbol)
     {
-        var item = new QuickInfoSymbolItem();
-        item.LoadSymbol(symbol);
-        return item;
+        return QuickInfoSymbolItem.CreateForSymbolAndCompilation(symbol, CompilationSource);
     }
 
     private static QuickInfoDiagnosticItem? CreateDiagnosticItem(Diagnostic diagnostic)

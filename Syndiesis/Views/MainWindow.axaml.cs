@@ -93,10 +93,7 @@ public partial class MainWindow : Window
     private void UpdateTitleBar()
     {
         var languageName = GetCurrentLanguageName();
-        if (languageName is not null)
-        {
-            SetThemeAndLogo(languageName);
-        }
+        SetThemeAndLogo(languageName);
     }
 
     private string GetCurrentLanguageName()

@@ -16,7 +16,7 @@ public class GroupedRunInlineTextBlock : TextBlock
         set
         {
             _groupedInlines = value;
-            Inlines = _groupedInlines?.AsInlineCollection();
+            Inlines = _groupedInlines?.Build()?.AsInlineCollection();
             _textLength = Inlines?.Text?.Length;
         }
     }

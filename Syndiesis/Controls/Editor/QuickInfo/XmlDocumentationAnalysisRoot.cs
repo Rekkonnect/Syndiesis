@@ -1,6 +1,6 @@
-﻿using System.Xml;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Core;
+using System.Xml;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 

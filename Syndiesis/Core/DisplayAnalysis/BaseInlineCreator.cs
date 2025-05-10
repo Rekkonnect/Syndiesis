@@ -3,14 +3,13 @@ using Syndiesis.Controls.Inlines;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-using Run = UIBuilder.Run;
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
-
-using GroupedRunInline = GroupedRunInline.IBuilder;
-using SingleRunInline = SingleRunInline.Builder;
-using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
+using GroupedRunInline = GroupedRunInline.IBuilder;
+using Run = UIBuilder.Run;
+using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
+using SingleRunInline = SingleRunInline.Builder;
 
 public abstract class BaseInlineCreator
 {
@@ -53,6 +52,13 @@ public abstract class BaseInlineCreator
     protected static void AddKeywordRun(string text, ComplexGroupedRunInline inlines)
     {
         inlines.AddChild(KeywordRun(text));
+    }
+
+    protected static void AddKeywordAndSpaceRun(string text, GroupedRunInlineCollection inlines)
+    {
+        AddKeywordRun(text, inlines);
+        var space = CreateSpaceSeparatorRun();
+        inlines.Add(space);
     }
 
     protected static void AddKeywordAndSpaceRun(string text, ComplexGroupedRunInline inlines)

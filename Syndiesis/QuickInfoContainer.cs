@@ -2,15 +2,15 @@
 using Avalonia.Input;
 using Garyon.Mechanisms;
 using Garyon.Objects;
+using Syndiesis.Controls.Editor.QuickInfo;
 using System;
 using System.Threading.Tasks;
-using Syndiesis.Controls.Editor.QuickInfo;
 
 namespace Syndiesis;
 
 public sealed class QuickInfoHandler(QuickInfoDisplayPopup popup)
 {
-    private readonly QuickInfoDisplayPopup _popup = popup;
+    public readonly QuickInfoDisplayPopup Popup = popup;
 
     private PointerEventArgs? _lastPointerMoved;
 
@@ -43,13 +43,13 @@ public sealed class QuickInfoHandler(QuickInfoDisplayPopup popup)
         {
             _disappearanceDelayerAction.SetFutureUnblockFirst(
                 TimeSpan.FromMilliseconds(200),
-                () => WaitAdjustOrHide(_popup));
+                () => WaitAdjustOrHide(Popup));
         }
     }
 
     private bool EvaluateHide()
     {
-        return !_popup.IsVisible;
+        return !Popup.IsVisible;
     }
 
     private async Task WaitShow(Control? sender)
@@ -77,7 +77,7 @@ public sealed class QuickInfoHandler(QuickInfoDisplayPopup popup)
 
     public void Hide()
     {
-        _popup.IsVisible = false;
+        Popup.IsVisible = false;
     }
 
     private void Show()
@@ -91,7 +91,7 @@ public sealed class QuickInfoHandler(QuickInfoDisplayPopup popup)
             setVisible = !args.CancelShowing;
         }
 
-        _popup.IsVisible = setVisible;
+        Popup.IsVisible = setVisible;
     }
 
     public sealed class PrepareShowingEventArgs(PointerEventArgs? lastPointerArgs)

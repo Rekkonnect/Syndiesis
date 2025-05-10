@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
@@ -8,6 +9,8 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public partial class QuickInfoSymbolItem : UserControl
 {
+    public HybridSingleTreeCompilationSource? CompilationSource { get; set; }
+    
     public QuickInfoSymbolItem()
     {
         InitializeComponent();
@@ -33,8 +36,11 @@ public partial class QuickInfoSymbolItem : UserControl
 
     private GroupedRunInlineCollection CreateGroupedRunForSymbol(ISymbol symbol)
     {
-        // TODO: Pass this through a grouped run creator for the contents of the overview
+        var language = CompilationSource?.CurrentLanguageName ?? LanguageNames.CSharp;
+        var hybridContainer = Singleton<HybridLanguageSymbolItemInlinesCreatorContainer>.Instance;
+        var container = hybridContainer.ContainerForLanguage(language);
         var groupedRun = new GroupedRunInlineCollection();
+        container.Definitions.CreatorForSymbol(symbol).Create(symbol, groupedRun);
         return groupedRun;
     }
 
@@ -81,5 +87,20 @@ public partial class QuickInfoSymbolItem : UserControl
 
             _ => throw new NotSupportedException("The symbol is not correctly classified"),
         };
+    }
+
+    private QuickInfoSymbolItem LoadSymbolWithCompilationSource(
+        ISymbol symbol, HybridSingleTreeCompilationSource? compilationSource)
+    {
+        CompilationSource = compilationSource;
+        LoadSymbol(symbol);
+        return this;
+    }
+
+    public static QuickInfoSymbolItem CreateForSymbolAndCompilation(
+        ISymbol symbol, HybridSingleTreeCompilationSource? compilationSource)
+    {
+        return new QuickInfoSymbolItem()
+            .LoadSymbolWithCompilationSource(symbol, compilationSource);
     }
 }

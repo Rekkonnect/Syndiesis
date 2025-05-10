@@ -8,38 +8,45 @@
     mc:Ignorable="d"
     x:Class="Syndiesis.Controls.Editor.QuickInfo.QuickInfoSymbolItem">
 
-    <StackPanel>
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
 
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
 
-            <Image
-                Name="symbolIcon"
-                Grid.Column="0"
-                Margin="4"
-                Height="24"
-                VerticalAlignment="Stretch"
-                Source="avares://Syndiesis/Assets/Icons/vs/symbols/method.png" />
-
-            <inlines:CopyableGroupedRunInlineTextBlock
-                Name="symbolDisplayBlock"
-                Grid.Column="1"
-                VerticalAlignment="Center"
-                TextWrapping="Wrap"
-                FontSize="14"
-                Text="void ExampleSymbol(int a, int b)" />
-        </Grid>
+        <Image
+            Name="symbolIcon"
+            Grid.Row="0"
+            Grid.Column="0"
+            Margin="4"
+            Height="24"
+            VerticalAlignment="Stretch"
+            Source="avares://Syndiesis/Assets/Icons/vs/symbols/method.png" />
 
         <inlines:CopyableGroupedRunInlineTextBlock
+            Name="symbolDisplayBlock"
+            Grid.Row="0"
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            TextWrapping="Wrap"
+            FontSize="14"
+            MaxWidth="950"
+            Text="void ExampleSymbol(int a, int b)" />
+        
+        <inlines:CopyableGroupedRunInlineTextBlock
             Name="documentationDisplayBlock"
+            Grid.Row="1"
+            Grid.Column="0"
+            Grid.ColumnSpan="2"
             VerticalAlignment="Top"
             TextWrapping="Wrap"
             FontSize="12"
             Text="This example symbol comes with custom documentation as can be shown here." />
-
-    </StackPanel>
+    </Grid>
 
 </UserControl>
