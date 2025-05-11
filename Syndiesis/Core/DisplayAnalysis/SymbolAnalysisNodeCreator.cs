@@ -585,6 +585,10 @@ partial class SymbolAnalysisNodeCreator
                     symbol.TypeParameters,
                     Property(nameof(INamedTypeSymbol.TypeParameters))),
 
+                Creator.CreateRootSymbolList(
+                    symbol.TypeArguments,
+                    Property(nameof(INamedTypeSymbol.TypeArguments))),
+
                 Creator.CreateRootGeneral(
                     symbol.IsFileLocal,
                     Property(nameof(INamedTypeSymbol.IsFileLocal))),
