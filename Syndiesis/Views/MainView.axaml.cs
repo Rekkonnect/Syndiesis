@@ -12,7 +12,6 @@ using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Editor.QuickInfo;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Core;
-using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
 using System;

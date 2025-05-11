@@ -17,40 +17,52 @@ public readonly record struct ModifierInfo(
     {
         var modifiers
             = CheckModifierOrNone(
-                  symbol.HasFileAccessibility(), MemberModifiers.File)
-              | CheckModifierOrNone(
-                  IsAsync(symbol), MemberModifiers.Async)
-              | CheckModifierOrNone(
-                  IsNotInherentlySealed(symbol), MemberModifiers.Sealed)
-              | CheckModifierOrNone(
-                  symbol.IsOverride, MemberModifiers.Override)
-              | CheckModifierOrNone(
-                  IsNotInherentlyAbstract(symbol), MemberModifiers.Abstract)
-              | CheckModifierOrNone(
-                  symbol.IsVirtual, MemberModifiers.Virtual)
-              | CheckModifierOrNone(
-                  IsNotInherentlyReadOnly(symbol), MemberModifiers.ReadOnly)
-              | CheckModifierOrNone(
-                  symbol.IsRequired(), MemberModifiers.Required)
-              | CheckModifierOrNone(
-                  IsNotInherentlyStatic(symbol), MemberModifiers.Static)
-              | CheckModifierOrNone(
-                  IsVolatile(symbol), MemberModifiers.Volatile)
-              | CheckModifierOrNone(
-                  IsFixedSizeBuffer(symbol), MemberModifiers.FixedSizeBuffer)
-              | CheckModifierOrNone(
-                  symbol.IsConstant(), MemberModifiers.Const)
-              | CheckModifierOrNone(
-                  symbol.IsRef(), MemberModifiers.Ref)
-              | CheckModifierOrNone(
-                  symbol.IsRefReadOnly(), MemberModifiers.RefReadOnly)
-              | CheckModifierOrNone(
-                  IsScoped(symbol), MemberModifiers.Scoped)
+                symbol.HasFileAccessibility(), MemberModifiers.File)
+            | CheckModifierOrNone(
+                IsAsync(symbol), MemberModifiers.Async)
+            | CheckModifierOrNone(
+                IsNotInherentlySealed(symbol), MemberModifiers.Sealed)
+            | CheckModifierOrNone(
+                symbol.IsOverride, MemberModifiers.Override)
+            | CheckModifierOrNone(
+                IsNotInherentlyAbstract(symbol), MemberModifiers.Abstract)
+            | CheckModifierOrNone(
+                symbol.IsVirtual, MemberModifiers.Virtual)
+            | CheckModifierOrNone(
+                IsNotInherentlyReadOnly(symbol), MemberModifiers.ReadOnly)
+            | CheckModifierOrNone(
+                symbol.IsRequired(), MemberModifiers.Required)
+            | CheckModifierOrNone(
+                IsNotInherentlyStatic(symbol), MemberModifiers.Static)
+            | CheckModifierOrNone(
+                IsVolatile(symbol), MemberModifiers.Volatile)
+            | CheckModifierOrNone(
+                IsFixedSizeBuffer(symbol), MemberModifiers.FixedSizeBuffer)
+            | CheckModifierOrNone(
+                symbol.IsConstant(), MemberModifiers.Const)
+            | CheckModifierOrNone(
+                symbol.IsRef(), MemberModifiers.Ref)
+            | CheckModifierOrNone(
+                symbol.IsRefReadOnly(), MemberModifiers.RefReadOnly)
+            | CheckModifierOrNone(
+                IsScoped(symbol), MemberModifiers.Scoped)
+            | CheckModifierOrNone(
+                IsExtern(symbol), MemberModifiers.Extern)
             ;
         
-        return new(symbol.DeclaredAccessibility, modifiers);
+        return new(AccessibilityForSymbol(symbol), modifiers);
     }
 
+    private static Accessibility AccessibilityForSymbol(ISymbol symbol)
+    {
+        if (symbol is IMethodSymbol { MethodKind: MethodKind.StaticConstructor })
+        {
+            return Accessibility.NotApplicable;
+        }
+
+        return symbol.DeclaredAccessibility;
+    }
+    
     private static bool IsScoped(ISymbol symbol)
     {
         return symbol is IParameterSymbol { ScopedKind: ScopedKind.ScopedRef or ScopedKind.ScopedValue };
@@ -88,6 +100,11 @@ public readonly record struct ModifierInfo(
     private static bool IsAsync(ISymbol symbol)
     {
         return symbol is IMethodSymbol { IsAsync: true };
+    }
+
+    private static bool IsExtern(ISymbol symbol)
+    {
+        return symbol is IMethodSymbol { IsExtern: true };
     }
 
     private static bool IsVolatile(ISymbol symbol)

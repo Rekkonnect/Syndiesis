@@ -6,11 +6,8 @@ public sealed class CommonLocalCommonInlinesCreator(
     BaseSymbolCommonInlinesCreatorContainer parentContainer)
     : BaseSimpleNameCommonInlinesCreator<ILocalSymbol>(parentContainer)
 {
-    protected override ILazilyUpdatedBrush GetBrush(ILocalSymbol symbol)
+    protected override ILazilyUpdatedBrush GetBrush(ILocalSymbol local)
     {
-        if (symbol.IsConst)
-            return CommonStyles.ConstantMainBrush;
-
-        return ColorizationStyles.LocalBrush;
+        return GetLocalBrush(local);
     }
 }

@@ -11,6 +11,7 @@ public sealed class CSharpSymbolDefinitionInlinesCreatorContainer
     public readonly CSharpFieldSymbolDefinitionInlinesCreator FieldCreator;
     public readonly CSharpPropertySymbolDefinitionInlinesCreator PropertyCreator;
     public readonly CSharpEventSymbolDefinitionInlinesCreator EventCreator;
+    public readonly CSharpRangeVariableSymbolDefinitionInlinesCreator RangeCreator;
     public readonly CSharpParameterSymbolDefinitionInlinesCreator ParameterCreator;
     public readonly CSharpLocalSymbolDefinitionInlinesCreator LocalCreator;
     public readonly CSharpDiscardSymbolDefinitionInlinesCreator DiscardCreator;
@@ -24,6 +25,7 @@ public sealed class CSharpSymbolDefinitionInlinesCreatorContainer
         FieldCreator = new(this);
         PropertyCreator = new(this);
         EventCreator = new(this);
+        RangeCreator = new(this);
         ParameterCreator = new(this);
         LocalCreator = new(this);
         DiscardCreator = new(this);
@@ -47,6 +49,9 @@ public sealed class CSharpSymbolDefinitionInlinesCreatorContainer
 
             case IEventSymbol:
                 return EventCreator;
+
+            case IRangeVariableSymbol:
+                return RangeCreator;
 
             case IParameterSymbol:
                 return ParameterCreator;

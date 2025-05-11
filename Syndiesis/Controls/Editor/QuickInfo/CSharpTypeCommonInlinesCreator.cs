@@ -52,6 +52,11 @@ public class CSharpTypeCommonInlinesCreator(
                 return CreateNamedTypeInline(named);
             }
             
+            case IDynamicTypeSymbol:
+            {
+                return CreateDynamicInline();
+            }
+
             default:
             {
                 return CreateFallbackTypeInline(type);
@@ -91,7 +96,7 @@ public class CSharpTypeCommonInlinesCreator(
         }
 
         var run = SingleRun(type.Name, ColorizationStyles.TypeParameterBrush);
-        inlines.AddChild(run);
+        inlines.Add(run);
         return inlines;
 
         void AddVariance(string keyword)
@@ -213,7 +218,8 @@ public class CSharpTypeCommonInlinesCreator(
 
     private GroupedRunInline.IBuilder CreateNamedTypeInline(INamedTypeSymbol type)
     {
-        var typeBrush = RoslynColorizationHelpers.BrushForTypeKind(ColorizationStyles, type.TypeKind)!;
+        var typeBrush = RoslynColorizationHelpers.BrushForTypeKind(ColorizationStyles, type.TypeKind)
+            ?? CommonStyles.RawValueBrush;
         var symbolRun = SingleRun(type.Name, typeBrush);
 
         if (!type.IsGenericType)
@@ -223,7 +229,7 @@ public class CSharpTypeCommonInlinesCreator(
 
         var inlines = new ComplexGroupedRunInline.Builder();
 
-        inlines.AddChild(symbolRun);
+        inlines.Add(symbolRun);
         AddTypeArgumentInlines(inlines, type.TypeArguments);
         return inlines;
     }

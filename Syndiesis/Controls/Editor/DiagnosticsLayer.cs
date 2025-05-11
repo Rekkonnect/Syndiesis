@@ -1,6 +1,5 @@
 ﻿using Avalonia.Media;
 using Avalonia.Threading;
-using AvaloniaEdit.Rendering;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;

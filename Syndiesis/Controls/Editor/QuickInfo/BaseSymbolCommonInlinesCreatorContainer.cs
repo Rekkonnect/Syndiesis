@@ -15,6 +15,7 @@ public abstract class BaseSymbolCommonInlinesCreatorContainer
     private readonly CommonLabelCommonInlinesCreator _label;
     private readonly CommonPreprocessingCommonInlinesCreator _preprocessing;
     private readonly CommonAliasCommonInlinesCreator _alias;
+    private readonly CommonDiscardCommonInlinesCreator _discard;
 
     protected BaseSymbolCommonInlinesCreatorContainer(
         ISymbolInlinesRootCreatorContainer rootContainer)
@@ -30,6 +31,7 @@ public abstract class BaseSymbolCommonInlinesCreatorContainer
         _label = new(this);
         _preprocessing = new(this);
         _alias = new(this);
+        _discard = new(this);
     }
 
     public sealed override ISymbolItemInlinesCreator CreatorForSymbol<TSymbol>(TSymbol symbol)
@@ -62,6 +64,9 @@ public abstract class BaseSymbolCommonInlinesCreatorContainer
 
             case ILabelSymbol:
                 return _label;
+
+            case IDiscardSymbol:
+                return _discard;
 
             default:
                 return FallbackCreatorForSymbol(symbol);

@@ -6,7 +6,6 @@ using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;

@@ -1,5 +1,4 @@
-﻿using Garyon.Extensions;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
 using Syndiesis.Utilities;

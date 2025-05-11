@@ -90,6 +90,8 @@ public partial class QuickInfoSymbolItem : UserControl
             QuickInfoSymbolClassification.Delegate => resources.DelegateImage,
             // TODO: Provide an icon denoting the erroneous symbol
             QuickInfoSymbolClassification.Error => resources.LabelImage,
+            // TODO: Provide an icon for the dynamic type
+            QuickInfoSymbolClassification.Dynamic => resources.ClassImage,
             
             QuickInfoSymbolClassification.Field => resources.FieldImage,
             QuickInfoSymbolClassification.Property => resources.PropImage,
@@ -98,15 +100,20 @@ public partial class QuickInfoSymbolItem : UserControl
             QuickInfoSymbolClassification.Operator => resources.OperatorImage,
             // TODO: Provide an icon specifically for the conversion
             QuickInfoSymbolClassification.Conversion => resources.OperatorImage,
+            // TODO: Provide an icon specifically for constructors
+            QuickInfoSymbolClassification.Constructor => resources.MethodImage,
             QuickInfoSymbolClassification.EnumField => resources.EnumFieldImage,
             
             QuickInfoSymbolClassification.Label => resources.LabelImage,
             QuickInfoSymbolClassification.Local => resources.LocalImage,
+            QuickInfoSymbolClassification.RangeVariable => resources.LocalImage,
+            QuickInfoSymbolClassification.Discard => resources.LocalImage,
             QuickInfoSymbolClassification.Parameter => resources.ParamImage,
             QuickInfoSymbolClassification.Constant => resources.ConstantImage,
             QuickInfoSymbolClassification.TypeParameter => resources.TypeParamImage,
             // TODO: Provide an icon for preprocessing symbols
             QuickInfoSymbolClassification.Preprocessing => resources.LabelImage,
+            QuickInfoSymbolClassification.FunctionPointer => resources.DelegateImage,
 
             _ => throw new NotSupportedException("The symbol is not correctly classified"),
         };

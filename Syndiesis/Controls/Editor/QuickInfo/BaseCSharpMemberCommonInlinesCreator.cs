@@ -12,32 +12,6 @@ public abstract class BaseCSharpMemberCommonInlinesCreator<TSymbol>(
     public new CSharpSymbolCommonInlinesCreatorContainer ParentContainer
         => (CSharpSymbolCommonInlinesCreatorContainer)base.ParentContainer;
     
-    protected GroupedRunInline.IBuilder? CreateParameterListInline(
-        ImmutableArray<IParameterSymbol> parameters)
-    {
-        int parameterLength = parameters.Length;
-        if (parameterLength is 0)
-            return null;
-
-        var inlines = new ComplexGroupedRunInline.Builder();
-        var definitions = ParentContainer.RootContainer.Definitions;
-        
-        for (var i = 0; i < parameterLength; i++)
-        {
-            var parameter = parameters[i];
-            var inner = definitions.CreatorForSymbol(parameter).CreateSymbolInline(parameter);
-            inlines.AddChild(inner);
-
-            if (i < parameterLength - 1)
-            {
-                var separator = CreateArgumentSeparatorRun();
-                inlines.AddChild(separator);
-            }
-        }
-
-        return inlines;
-    }
-
     protected void AddTypeArgumentInlines(ComplexGroupedRunInline.Builder inlines, ImmutableArray<ITypeSymbol> arguments)
     {
         if (arguments.IsDefaultOrEmpty)

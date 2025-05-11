@@ -27,7 +27,7 @@ public sealed class CommonAliasCommonInlinesCreator(
         var builder = new ComplexGroupedRunInline.Builder();
 
         var inline = SingleRun(alias.Name, brush);
-        builder.AddChild(inline);
+        builder.Add(inline);
         
         return builder;
     }

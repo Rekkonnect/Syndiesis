@@ -101,6 +101,8 @@ public abstract class GroupedRunInline
     public interface IBuilder
     {
         public GroupedRunInline Build();
+
+        public sealed RunOrGrouped AsRunOrGrouped => new(this);
     }
 
     public abstract class Builder<T>(string? OverrideText = null)

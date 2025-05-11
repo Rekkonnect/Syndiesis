@@ -38,6 +38,7 @@ public sealed class CSharpMethodSymbolDefinitionInlinesCreator(
         AddTargetModifier(MemberModifiers.Static, "static");
         
         AddTargetModifier(MemberModifiers.Async, "async");
+        AddTargetModifier(MemberModifiers.Extern, "extern");
         
         AddTargetModifier(MemberModifiers.ReadOnly, "readonly");
         return;

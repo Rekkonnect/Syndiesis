@@ -35,4 +35,5 @@ public enum MemberModifiers
     RefReadOnly = 1 << 13,
     Required = 1 << 14,
     Scoped = 1 << 15,
+    Extern = 1 << 16,
 }

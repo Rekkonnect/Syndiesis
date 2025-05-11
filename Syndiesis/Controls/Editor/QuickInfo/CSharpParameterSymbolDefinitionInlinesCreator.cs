@@ -26,7 +26,7 @@ public sealed class CSharpParameterSymbolDefinitionInlinesCreator(
         builder.AddChild(CreateSpaceSeparatorRun());
         
         var nameInline = SingleRun(parameter.Name, ColorizationStyles.ParameterBrush);
-        builder.AddChild(nameInline);
+        builder.Add(nameInline);
         
         return builder;
     }

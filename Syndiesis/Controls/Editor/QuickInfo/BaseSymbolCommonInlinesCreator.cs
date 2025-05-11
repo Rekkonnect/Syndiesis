@@ -13,4 +13,9 @@ public abstract class BaseSymbolCommonInlinesCreator<TSymbol>(
     {
         return SingleKeywordRun("global");
     }
+    
+    protected static SingleRunInline.Builder CreateDynamicInline()
+    {
+        return SingleKeywordRun("dynamic");
+    }
 }

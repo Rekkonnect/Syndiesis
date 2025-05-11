@@ -6,11 +6,11 @@ public static class QuickInfoSymbolClassifier
 {
     public static QuickInfoSymbolClassification ClassifySymbol(ISymbol symbol)
     {
-        if (symbol.IsConstant())
-            return QuickInfoSymbolClassification.Constant;
-
         if (symbol.IsEnumField())
             return QuickInfoSymbolClassification.EnumField;
+
+        if (symbol.IsConstant())
+            return QuickInfoSymbolClassification.Constant;
 
         switch (symbol)
         {
@@ -22,6 +22,7 @@ public static class QuickInfoSymbolClassifier
                 return QuickInfoSymbolClassification.Assembly;
             case IModuleSymbol:
                 return QuickInfoSymbolClassification.Module;
+            
             
             case INamedTypeSymbol named:
                 switch (named.TypeKind)
@@ -38,6 +39,8 @@ public static class QuickInfoSymbolClassifier
                         return QuickInfoSymbolClassification.Delegate;
                     case TypeKind.Error:
                         return QuickInfoSymbolClassification.Error;
+                    case TypeKind.Dynamic:
+                        return QuickInfoSymbolClassification.Dynamic;
                 }
 
                 break;
@@ -56,18 +59,29 @@ public static class QuickInfoSymbolClassifier
                 if (method.MethodKind is MethodKind.Conversion)
                     return QuickInfoSymbolClassification.Conversion;
                 
+                if (method.MethodKind is MethodKind.Constructor)
+                    return QuickInfoSymbolClassification.Constructor;
+
                 return QuickInfoSymbolClassification.Method;
             
             case ILabelSymbol:
                 return QuickInfoSymbolClassification.Label;
             case ILocalSymbol:
                 return QuickInfoSymbolClassification.Local;
+            case IRangeVariableSymbol:
+                return QuickInfoSymbolClassification.RangeVariable;
+            case IDiscardSymbol:
+                return QuickInfoSymbolClassification.Discard;
+            case IDynamicTypeSymbol:
+                return QuickInfoSymbolClassification.Class;
             case IParameterSymbol:
                 return QuickInfoSymbolClassification.Parameter;
             case ITypeParameterSymbol:
                 return QuickInfoSymbolClassification.TypeParameter;
             case IPreprocessingSymbol:
                 return QuickInfoSymbolClassification.Preprocessing;
+            case IFunctionPointerTypeSymbol:
+                return QuickInfoSymbolClassification.FunctionPointer;
         }
         
         return QuickInfoSymbolClassification.None;

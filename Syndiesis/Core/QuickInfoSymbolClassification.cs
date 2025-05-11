@@ -17,6 +17,7 @@ public enum QuickInfoSymbolClassification
     Delegate,
     Enum,
     Error,
+    Dynamic,
     
     // Members
     Field,
@@ -25,13 +26,17 @@ public enum QuickInfoSymbolClassification
     Method,
     Operator,
     Conversion,
+    Constructor,
     EnumField,
     
     // Others
     Label,
     Local,
+    RangeVariable,
+    Discard,
     Parameter,
     TypeParameter,
     Constant,
     Preprocessing,
+    FunctionPointer,
 }

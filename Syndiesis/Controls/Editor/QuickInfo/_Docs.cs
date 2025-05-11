@@ -21,11 +21,13 @@ The planned structure is:
     - Extras
     - Docs
     - Commons
+	- Member Container
   - VB container
     - Definition
     - Extras
     - Docs
     - Commons
+	- Member Container
 
 - Definition
   - One for each symbol
@@ -34,8 +36,8 @@ The planned structure is:
 - Extras
   - Type parameter constraint list (only for C#)
   - Preprocessing symbol definition state
-    - '[Un]Defined here' for C#
-    - '[Un]Defined here [as XYZ]' for VB
+    - '[Un]Defined here' for both langs (we cannot retrieve the defined value in VB)
+  - Function pointer signature showcase
 - Docs
   - Common for both languages, assuming XML documentation is common for both languages
     Show supported tags like summary, remarks, etc.
@@ -43,5 +45,13 @@ The planned structure is:
   - Simple reference to another symbol, almost equivalent to minimal display string
     This will be used by all the other creators to refer to another symbol without
     expanding on its extras
+	This is most useful for types being described anywhere, and referred symbols in
+	the docs
+- Member Container
+  - Displays information about the containers the member is a part of
+    - Member symbols (modules, namespaces, types, methods, fields, properties and events)
+	  display their containers' information fully
+    - Non-members (locals, parameters, etc.) may contain limited information about their
+	  containing symbol; preferably the method they are contained in
 
 #endif

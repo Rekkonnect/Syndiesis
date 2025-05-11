@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using Serilog;
 using Syndiesis.Controls.Inlines;
 using System.Diagnostics;
 
@@ -26,14 +25,6 @@ public abstract class BaseCommonMemberCommonInlinesCreator<TSymbol>(
 
         var containing = symbol.ContainingSymbol;
         var creator = ParentContainer.CreatorForSymbol(containing);
-        if (creator is null)
-        {
-            Log.Warning(
-                "Received null creator for containing symbol kind {containingKind}",
-                containing?.Kind);
-            return nameRun;
-        }
-
         var containerRun = creator.CreateSymbolInline(containing);
         var qualifierRun = CreateQualifierSeparatorRun();
         return new ComplexGroupedRunInline.Builder(

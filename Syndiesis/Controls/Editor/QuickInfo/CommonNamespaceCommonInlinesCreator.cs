@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
-using Syndiesis.Core.DisplayAnalysis;
 using System.Collections.Generic;
 using System.Linq;
 

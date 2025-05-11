@@ -40,6 +40,7 @@ public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
         AddTargetModifier(MemberModifiers.FixedSizeBuffer, "fixed");
         
         AddTargetModifier(MemberModifiers.Async, "async");
+        AddTargetModifier(MemberModifiers.Extern, "extern");
         
         AddTargetModifier(MemberModifiers.Scoped, "scoped");
         AddTargetModifier(MemberModifiers.ReadOnly, "readonly");

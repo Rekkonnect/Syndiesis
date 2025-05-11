@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core.DisplayAnalysis;
+using System.Collections.Immutable;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
@@ -87,5 +88,31 @@ public abstract class BaseSymbolQuickInfoInlinesCreator<TSymbol, TParentContaine
             return null;
 
         return Run(modifierWord, CommonStyles.KeywordBrush);
+    }
+    
+    protected ComplexGroupedRunInline.Builder? CreateParameterListInline(
+        ImmutableArray<IParameterSymbol> parameters)
+    {
+        int parameterLength = parameters.Length;
+        if (parameterLength is 0)
+            return null;
+
+        var inlines = new ComplexGroupedRunInline.Builder();
+        var definitions = ParentContainer.RootContainer.Definitions;
+        
+        for (var i = 0; i < parameterLength; i++)
+        {
+            var parameter = parameters[i];
+            var inner = definitions.CreatorForSymbol(parameter).CreateSymbolInline(parameter);
+            inlines.AddChild(inner);
+
+            if (i < parameterLength - 1)
+            {
+                var separator = CreateArgumentSeparatorRun();
+                inlines.AddChild(separator);
+            }
+        }
+
+        return inlines;
     }
 }

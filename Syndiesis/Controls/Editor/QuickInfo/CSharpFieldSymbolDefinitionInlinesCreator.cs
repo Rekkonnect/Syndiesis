@@ -31,11 +31,9 @@ public sealed class CSharpFieldSymbolDefinitionInlinesCreator(
     {
         var nameBrush = GetFieldBrush(field);
         var nameInline = SingleRun(field.Name, nameBrush);
-        inlines.AddChild(nameInline);
+        inlines.Add(nameInline);
         
         AddFieldConstantValue(field, inlines);
-
-        inlines.AddChild(nameInline);
     }
 
     private void AddFieldConstantValue(IFieldSymbol field, ComplexGroupedRunInline.Builder inlines)
@@ -97,7 +95,7 @@ public sealed class CSharpFieldSymbolDefinitionInlinesCreator(
         
         var nameBrush = GetFieldBrush(field);
         var nameInline = SingleRun(field.Name, nameBrush);
-        inlines.AddChild(nameInline);
+        inlines.Add(nameInline);
 
         if (field.HasConstantValue)
         {

@@ -1,18 +1,12 @@
 ﻿using Avalonia.Media;
-using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Editor;
 using Syndiesis.Controls.Inlines;
-using System;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
-using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
-using GroupedRunInline = GroupedRunInline.IBuilder;
 using Run = UIBuilder.Run;
-using SimpleGroupedRunInline = SimpleGroupedRunInline.Builder;
 using SingleRunInline = SingleRunInline.Builder;
 
 public abstract class BaseInlineCreator
@@ -97,13 +91,21 @@ public abstract class BaseInlineCreator
         return $"[{commas}]";
     }
 
+    protected static ILazilyUpdatedBrush GetLocalBrush(ILocalSymbol local)
+    {
+        if (local.IsConst)
+            return ColorizationStyles.ConstantBrush;
+
+        return ColorizationStyles.LocalBrush;
+    }
+    
     protected static ILazilyUpdatedBrush GetFieldBrush(IFieldSymbol field)
     {
-        if (field.IsConst)
-            return CommonStyles.ConstantMainBrush;
-
         if (field.IsEnumField())
             return CommonStyles.EnumFieldMainBrush;
+
+        if (field.IsConst)
+            return ColorizationStyles.ConstantBrush;
 
         return ColorizationStyles.FieldBrush;
     }
