@@ -5,12 +5,15 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 
 /// <summary>
 /// Represents a combination of modifiers that can be applied to various
-/// members, including types and type members.
+/// symbols, including types and type members.
 /// </summary>
 /// <remarks>
 /// This enum does not provide modifiers for accessibility other than
 /// <see langword="file"/>. Check out <see cref="Accessibility"/> for
 /// those.
+/// <br/>
+/// This must be renamed to SymbolModifiers, as it has expanded to support
+/// all symbol kinds instead of just members.
 /// </remarks>
 [Flags]
 public enum MemberModifiers
@@ -36,4 +39,6 @@ public enum MemberModifiers
     Required = 1 << 14,
     Scoped = 1 << 15,
     Extern = 1 << 16,
+    In = 1 << 17,
+    Out = 1 << 18,
 }

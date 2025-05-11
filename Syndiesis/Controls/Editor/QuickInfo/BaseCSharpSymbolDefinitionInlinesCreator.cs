@@ -46,6 +46,8 @@ public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
         AddTargetModifier(MemberModifiers.ReadOnly, "readonly");
         AddTargetModifier(MemberModifiers.Ref, "ref");
         AddTargetModifier(MemberModifiers.RefReadOnly, "ref readonly");
+        AddTargetModifier(MemberModifiers.In, "in");
+        AddTargetModifier(MemberModifiers.Out, "out");
         return;
 
         void AddTargetModifier(MemberModifiers targetFlag, string word)

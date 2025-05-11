@@ -15,7 +15,8 @@ public sealed class PreprocessingSymbolDefinitionInlinesCreator(
 
     public override GroupedRunInline.IBuilder CreateSymbolInline(IPreprocessingSymbol symbol)
     {
-        var run = Run(symbol.Name, ColorizationStyles.PreprocessingBrush);
-        return new SingleRunInline.Builder(run);
+        var explanation = Run("(preprocessing) ", CommonStyles.NullValueBrush);
+        var nameRun = SingleRun(symbol.Name, ColorizationStyles.PreprocessingBrush);
+        return new ComplexGroupedRunInline.Builder([explanation, nameRun]);
     }
 }

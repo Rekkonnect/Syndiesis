@@ -48,6 +48,10 @@ public readonly record struct ModifierInfo(
                 IsScoped(symbol), MemberModifiers.Scoped)
             | CheckModifierOrNone(
                 IsExtern(symbol), MemberModifiers.Extern)
+            | CheckModifierOrNone(
+                HasInModifier(symbol), MemberModifiers.In)
+            | CheckModifierOrNone(
+                HasOutModifier(symbol), MemberModifiers.Out)
             ;
         
         return new(AccessibilityForSymbol(symbol), modifiers);
@@ -55,7 +59,15 @@ public readonly record struct ModifierInfo(
 
     private static Accessibility AccessibilityForSymbol(ISymbol symbol)
     {
-        if (symbol is IMethodSymbol { MethodKind: MethodKind.StaticConstructor })
+        // Roslyn returns a private accessibility for these symbols but accessibility is not applicable;
+        // those symbols are local to their own scope, or unavailable for reference
+        bool hasUnapplicableAccessibility = symbol is IMethodSymbol
+        {
+            MethodKind: MethodKind.StaticConstructor
+                or MethodKind.AnonymousFunction
+                or MethodKind.LocalFunction
+        };
+        if (hasUnapplicableAccessibility)
         {
             return Accessibility.NotApplicable;
         }
@@ -65,7 +77,11 @@ public readonly record struct ModifierInfo(
     
     private static bool IsScoped(ISymbol symbol)
     {
-        return symbol is IParameterSymbol { ScopedKind: ScopedKind.ScopedRef or ScopedKind.ScopedValue };
+        return symbol is IParameterSymbol
+        {
+            ScopedKind: ScopedKind.ScopedRef or ScopedKind.ScopedValue,
+            RefKind: not RefKind.Out,
+        };
     }
 
     private static bool IsNotInherentlySealed(ISymbol symbol)
@@ -115,5 +131,21 @@ public readonly record struct ModifierInfo(
     private static bool IsFixedSizeBuffer(ISymbol symbol)
     {
         return symbol is IFieldSymbol { IsFixedSizeBuffer: true };
+    }
+
+    private static bool HasInModifier(ISymbol symbol)
+    {
+        return symbol
+            is IParameterSymbol { RefKind: RefKind.In }
+            or ITypeParameterSymbol { Variance: VarianceKind.In }
+            ;
+    }
+
+    private static bool HasOutModifier(ISymbol symbol)
+    {
+        return symbol
+            is IParameterSymbol { RefKind: RefKind.Out }
+            or ITypeParameterSymbol { Variance: VarianceKind.Out }
+            ;
     }
 }
