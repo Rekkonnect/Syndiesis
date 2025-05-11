@@ -687,6 +687,13 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
                 return DeclarationTypeSymbolKind(constructorParent);
             }
 
+            case DestructorDeclarationSyntax destructorDeclaration
+            when destructorDeclaration.Identifier.Span == token.Span:
+            {
+                var constructorParent = destructorDeclaration.Parent as MemberDeclarationSyntax;
+                return DeclarationTypeSymbolKind(constructorParent);
+            }
+
             case PropertyDeclarationSyntax propertyDeclaration
             when propertyDeclaration.Identifier.Span == token.Span:
                 return SymbolKind.Property;
