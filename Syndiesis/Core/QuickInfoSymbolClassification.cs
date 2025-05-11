@@ -18,6 +18,9 @@ public enum QuickInfoSymbolClassification
     Enum,
     Error,
     Dynamic,
+    Array,
+    Pointer,
+    FunctionPointer,
     
     // Members
     Field,
@@ -38,5 +41,4 @@ public enum QuickInfoSymbolClassification
     TypeParameter,
     Constant,
     Preprocessing,
-    FunctionPointer,
 }

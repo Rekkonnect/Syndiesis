@@ -23,7 +23,6 @@ public static class QuickInfoSymbolClassifier
             case IModuleSymbol:
                 return QuickInfoSymbolClassification.Module;
             
-            
             case INamedTypeSymbol named:
                 switch (named.TypeKind)
                 {
@@ -45,6 +44,13 @@ public static class QuickInfoSymbolClassifier
 
                 break;
             
+            case IArrayTypeSymbol:
+                return QuickInfoSymbolClassification.Array;
+            case IPointerTypeSymbol:
+                return QuickInfoSymbolClassification.Pointer; 
+            case IFunctionPointerTypeSymbol:
+                return QuickInfoSymbolClassification.FunctionPointer;
+
             case IEventSymbol:
                 return QuickInfoSymbolClassification.Event;
             case IFieldSymbol:
@@ -58,8 +64,14 @@ public static class QuickInfoSymbolClassifier
                 
                 if (method.MethodKind is MethodKind.Conversion)
                     return QuickInfoSymbolClassification.Conversion;
+
+                bool isConstructorRelated = method.MethodKind
+                    is MethodKind.Constructor
+                    or MethodKind.StaticConstructor
+                    or MethodKind.Destructor
+                    ;
                 
-                if (method.MethodKind is MethodKind.Constructor)
+                if (isConstructorRelated)
                     return QuickInfoSymbolClassification.Constructor;
 
                 return QuickInfoSymbolClassification.Method;
@@ -80,8 +92,6 @@ public static class QuickInfoSymbolClassifier
                 return QuickInfoSymbolClassification.TypeParameter;
             case IPreprocessingSymbol:
                 return QuickInfoSymbolClassification.Preprocessing;
-            case IFunctionPointerTypeSymbol:
-                return QuickInfoSymbolClassification.FunctionPointer;
         }
         
         return QuickInfoSymbolClassification.None;
