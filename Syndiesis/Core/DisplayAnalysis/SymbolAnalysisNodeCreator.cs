@@ -35,6 +35,8 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly IPreprocessingSymbolRootViewNodeCreator _preprocessingSymbolCreator;
     private readonly IRangeVariableSymbolRootViewNodeCreator _rangeVariableSymbolCreator;
     private readonly IAliasSymbolRootViewNodeCreator _aliasSymbolCreator;
+    private readonly IDiscardSymbolRootViewNodeCreator _discardSymbolCreator;
+    private readonly ILabelSymbolRootViewNodeCreator _labelSymbolCreator;
 
     private readonly SymbolListRootViewNodeCreator _symbolListCreator;
 
@@ -58,6 +60,8 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         _preprocessingSymbolCreator = new(this);
         _rangeVariableSymbolCreator = new(this);
         _aliasSymbolCreator = new(this);
+        _discardSymbolCreator = new(this);
+        _labelSymbolCreator = new(this);
 
         _symbolListCreator = new(this);
     }
@@ -92,50 +96,56 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     {
         switch (symbol)
         {
-            case IAssemblySymbol assemblySymbol:
+            case IAssemblySymbol:
                 return _assemblySymbolCreator;
 
-            case IModuleSymbol moduleSymbol:
+            case IModuleSymbol:
                 return _moduleSymbolCreator;
 
-            case INamespaceSymbol namespaceSymbol:
+            case INamespaceSymbol:
                 return _namespaceSymbolCreator;
 
-            case IFieldSymbol fieldSymbol:
+            case IFieldSymbol:
                 return _fieldSymbolCreator;
 
-            case IPropertySymbol propertySymbol:
+            case IPropertySymbol:
                 return _propertySymbolCreator;
 
-            case IEventSymbol eventSymbol:
+            case IEventSymbol:
                 return _eventSymbolCreator;
 
-            case IMethodSymbol methodSymbol:
+            case IMethodSymbol:
                 return _methodSymbolCreator;
 
-            case ITypeParameterSymbol typeParameter:
+            case ITypeParameterSymbol:
                 return _typeParameterSymbolCreator;
 
-            case IParameterSymbol parameter:
+            case IParameterSymbol:
                 return _parameterSymbolCreator;
 
-            case ILocalSymbol localSymbol:
+            case ILocalSymbol:
                 return _localSymbolCreator;
 
-            case IPreprocessingSymbol preprocessingSymbol:
+            case IPreprocessingSymbol:
                 return _preprocessingSymbolCreator;
 
-            case IRangeVariableSymbol rangeVariableSymbol:
+            case IRangeVariableSymbol:
                 return _rangeVariableSymbolCreator;
 
-            case IAliasSymbol aliasSymbol:
+            case IAliasSymbol:
                 return _aliasSymbolCreator;
 
-            case INamedTypeSymbol namedTypeSymbol:
+            case INamedTypeSymbol:
                 return _namedTypeSymbolCreator;
 
-            case ITypeSymbol typeSymbol:
+            case ITypeSymbol:
                 return _typeSymbolCreator;
+
+            case IDiscardSymbol:
+                return _discardSymbolCreator;
+
+            case ILabelSymbol:
+                return _labelSymbolCreator;
 
             default:
                 return null;
@@ -846,6 +856,16 @@ partial class SymbolAnalysisNodeCreator
                     Property(nameof(IAliasSymbol.Target)))!
             );
         }
+    }
+
+    public sealed class IDiscardSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
+        : ISymbolRootViewNodeCreator<IDiscardSymbol>(creator)
+    {
+    }
+
+    public sealed class ILabelSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
+        : ISymbolRootViewNodeCreator<ILabelSymbol>(creator)
+    {
     }
 
     public sealed class SymbolListRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
