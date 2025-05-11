@@ -721,6 +721,10 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             case QueryContinuationSyntax queryContinuation
             when queryContinuation.Identifier.Span == token.Span:
                 return SymbolKind.RangeVariable;
+            
+            case LabeledStatementSyntax labeledStatement
+            when labeledStatement.Identifier.Span == token.Span:
+                return SymbolKind.Label;
         }
 
         return default;
