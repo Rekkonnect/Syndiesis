@@ -588,6 +588,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             SymbolKind.RangeVariable => Styles.RangeVariableBrush,
             SymbolKind.Preprocessing => Styles.PreprocessingBrush,
             SymbolKind.TypeParameter => Styles.TypeParameterBrush,
+            SymbolKind.DynamicType => Styles.KeywordBrush,
             _ => null,
         };
     }

@@ -15,6 +15,7 @@ public static class RoslynColorizationHelpers
             TypeKind.Delegate => styles.DelegateBrush,
             TypeKind.Enum => styles.EnumBrush,
             TypeKind.TypeParameter => styles.TypeParameterBrush,
+            TypeKind.Dynamic => styles.KeywordBrush,
             _ => null,
         };
     }
