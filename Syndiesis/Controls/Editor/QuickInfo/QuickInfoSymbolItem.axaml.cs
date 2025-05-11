@@ -16,32 +16,55 @@ public partial class QuickInfoSymbolItem : UserControl
         InitializeComponent();
     }
 
-    public void LoadSymbol(ISymbol symbol)
+    public void LoadSymbol(SymbolHoverContext context)
     {
+        var symbol = context.Symbol;
         var image = ImageForSymbol(symbol);
         var documentationRoot = XmlDocumentationAnalysisRoot.CreateForSymbol(symbol);
+        var container = GetSymbolContainer();
         symbolIcon.Source = image.Source;
-        symbolDisplayBlock.GroupedRunInlines = CreateGroupedRunForSymbol(symbol);
-        documentationDisplayBlock.GroupedRunInlines = CreateGroupedRunForSymbolDocumentation(
-            documentationRoot);
+        symbolDisplayBlock.GroupedRunInlines = CreateSymbolDefinitionGroupedRun(container, symbol);
+        documentationDisplayBlock.GroupedRunInlines = CreateSymbolDocumentationGroupedRun(
+            container, documentationRoot);
         documentationDisplayBlock.IsVisible = documentationDisplayBlock.GroupedRunInlines is not null;
     }
 
-    private GroupedRunInlineCollection? CreateGroupedRunForSymbolDocumentation(
-        XmlDocumentationAnalysisRoot? documentationAnalysisRoot)
+    private GroupedRunInlineCollection? CreateSymbolDocumentationGroupedRun(
+        ISymbolInlinesRootCreatorContainer container, XmlDocumentationAnalysisRoot? documentationAnalysisRoot)
     {
-        // TODO: Pass this through a grouped run creator for the contents of the overview
-        return null;
+        if (documentationAnalysisRoot is null)
+        {
+            return null;
+        }
+
+        var symbol = documentationAnalysisRoot.Symbol;
+        var groupedRun = new ComplexGroupedRunInline.Builder();
+        container.Docs.CreatorForSymbol(symbol)?.Create(symbol, groupedRun);
+        return [groupedRun];
     }
 
-    private GroupedRunInlineCollection CreateGroupedRunForSymbol(ISymbol symbol)
+    private GroupedRunInlineCollection? CreateSymbolExtrasGroupedRun(
+        ISymbolInlinesRootCreatorContainer container, SymbolHoverContext context)
+    {
+        var groupedRun = new ComplexGroupedRunInline.Builder();
+        container.Extras.CreatorForSymbol(context.Symbol)
+            ?.CreateWithHoverContext(context, groupedRun);
+        return [groupedRun];
+    }
+
+    private GroupedRunInlineCollection CreateSymbolDefinitionGroupedRun(
+        ISymbolInlinesRootCreatorContainer container, ISymbol symbol)
+    {
+        var groupedRun = new ComplexGroupedRunInline.Builder();
+        container.Definitions.CreatorForSymbol(symbol).Create(symbol, groupedRun);
+        return [groupedRun];
+    }
+
+    private ISymbolInlinesRootCreatorContainer GetSymbolContainer()
     {
         var language = CompilationSource?.CurrentLanguageName ?? LanguageNames.CSharp;
         var hybridContainer = Singleton<HybridLanguageSymbolItemInlinesCreatorContainer>.Instance;
-        var container = hybridContainer.ContainerForLanguage(language);
-        var groupedRun = new GroupedRunInlineCollection();
-        container.Definitions.CreatorForSymbol(symbol).Create(symbol, groupedRun);
-        return groupedRun;
+        return hybridContainer.ContainerForLanguage(language);
     }
 
     private static Image ImageForSymbol(ISymbol symbol)
@@ -90,17 +113,17 @@ public partial class QuickInfoSymbolItem : UserControl
     }
 
     private QuickInfoSymbolItem LoadSymbolWithCompilationSource(
-        ISymbol symbol, HybridSingleTreeCompilationSource? compilationSource)
+        SymbolHoverContext context, HybridSingleTreeCompilationSource? compilationSource)
     {
         CompilationSource = compilationSource;
-        LoadSymbol(symbol);
+        LoadSymbol(context);
         return this;
     }
 
     public static QuickInfoSymbolItem CreateForSymbolAndCompilation(
-        ISymbol symbol, HybridSingleTreeCompilationSource? compilationSource)
+        SymbolHoverContext context, HybridSingleTreeCompilationSource? compilationSource)
     {
         return new QuickInfoSymbolItem()
-            .LoadSymbolWithCompilationSource(symbol, compilationSource);
+            .LoadSymbolWithCompilationSource(context, compilationSource);
     }
 }

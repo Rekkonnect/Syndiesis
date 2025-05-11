@@ -38,7 +38,7 @@ public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
         SetDiagnostics(exampleDiagnostics);
     }
 
-    public void SetSymbols(ImmutableArray<ISymbol> symbols)
+    public void SetSymbols(ImmutableArray<SymbolHoverContext> symbols)
     {
         var symbolItems = symbols
             .Select(CreateSymbolItem)
@@ -134,9 +134,9 @@ public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
         Margin = targetMargin;
     }
 
-    private QuickInfoSymbolItem CreateSymbolItem(ISymbol symbol)
+    private QuickInfoSymbolItem CreateSymbolItem(SymbolHoverContext context)
     {
-        return QuickInfoSymbolItem.CreateForSymbolAndCompilation(symbol, CompilationSource);
+        return QuickInfoSymbolItem.CreateForSymbolAndCompilation(context, CompilationSource);
     }
 
     private static QuickInfoDiagnosticItem? CreateDiagnosticItem(Diagnostic diagnostic)

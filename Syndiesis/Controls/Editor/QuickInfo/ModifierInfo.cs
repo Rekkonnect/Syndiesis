@@ -33,7 +33,7 @@ public readonly record struct ModifierInfo(
               | CheckModifierOrNone(
                   symbol.IsRequired(), MemberModifiers.Required)
               | CheckModifierOrNone(
-                  symbol.IsStatic, MemberModifiers.Static)
+                  IsNotInherentlyStatic(symbol), MemberModifiers.Static)
               | CheckModifierOrNone(
                   IsVolatile(symbol), MemberModifiers.Volatile)
               | CheckModifierOrNone(
@@ -64,6 +64,11 @@ public readonly record struct ModifierInfo(
     private static bool IsNotInherentlyReadOnly(ISymbol symbol)
     {
         return !symbol.IsConstant() && symbol.IsReadOnly();
+    }
+
+    private static bool IsNotInherentlyStatic(ISymbol symbol)
+    {
+        return !symbol.IsConstant() && symbol.IsStatic;
     }
 
     private static MemberModifiers CheckModifierOrNone(

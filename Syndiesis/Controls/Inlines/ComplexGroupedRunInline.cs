@@ -67,10 +67,15 @@ public sealed class ComplexGroupedRunInline : GroupedRunInline
         
         public void AddChild(RunOrGrouped runOrGrouped)
         {
+            Add(runOrGrouped);
+        }
+        
+        public void Add(RunOrGrouped runOrGrouped)
+        {
             Children ??= new();
             Children.Add(runOrGrouped);
         }
-        
+
         public override ComplexGroupedRunInline Build()
         {
             if (Children is null)

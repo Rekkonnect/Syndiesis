@@ -9,7 +9,7 @@ public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
     where TSymbol : class, ISymbol
 {
     protected override void AddModifierInlines(
-        TSymbol symbol, GroupedRunInlineCollection inlines)
+        TSymbol symbol, ComplexGroupedRunInline.Builder inlines)
     {
         var modifierInfo = ModifierInfo.GetForSymbol(symbol);
         
@@ -40,7 +40,6 @@ public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
         AddTargetModifier(MemberModifiers.FixedSizeBuffer, "fixed");
         
         AddTargetModifier(MemberModifiers.Async, "async");
-        AddTargetModifier(MemberModifiers.Const, "const");
         
         AddTargetModifier(MemberModifiers.ReadOnly, "readonly");
         AddTargetModifier(MemberModifiers.Ref, "ref");
@@ -53,7 +52,7 @@ public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
         }
     }
 
-    private static string GetAccessibilityKeyword(Accessibility accessibility)
+    protected static string GetAccessibilityKeyword(Accessibility accessibility)
     {
         return accessibility switch
         {

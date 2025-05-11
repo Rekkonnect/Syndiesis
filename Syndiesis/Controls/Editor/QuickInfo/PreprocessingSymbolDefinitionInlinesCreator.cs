@@ -8,8 +8,9 @@ public sealed class PreprocessingSymbolDefinitionInlinesCreator(
     : BaseSymbolDefinitionInlinesCreator<IPreprocessingSymbol>(parentContainer)
 {
     protected override void AddModifierInlines(
-        IPreprocessingSymbol symbol, GroupedRunInlineCollection inlines)
+        IPreprocessingSymbol symbol, ComplexGroupedRunInline.Builder inlines)
     {
+        // Intentionally empty since these symbols accept no modifiers
     }
 
     public override GroupedRunInline.IBuilder CreateSymbolInline(IPreprocessingSymbol symbol)

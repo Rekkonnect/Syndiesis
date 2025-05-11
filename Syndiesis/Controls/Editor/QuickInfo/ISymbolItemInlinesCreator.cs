@@ -5,30 +5,27 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public interface ISymbolItemInlinesCreator
 {
-    public sealed GroupedRunInlineCollection Create(SymbolHoverContext context)
+    public sealed ComplexGroupedRunInline.Builder Create(SymbolHoverContext context)
     {
-        var inlines = new GroupedRunInlineCollection();
+        var inlines = new ComplexGroupedRunInline.Builder();
         CreateWithHoverContext(context, inlines);
         return inlines;
     }
 
     public abstract void CreateWithHoverContext(
-        SymbolHoverContext context, GroupedRunInlineCollection inlines);
+        SymbolHoverContext context, ComplexGroupedRunInline.Builder inlines);
 
-    public sealed GroupedRunInlineCollection Create(ISymbol symbol)
+    public sealed ComplexGroupedRunInline.Builder Create(ISymbol symbol)
     {
-        var inlines = new GroupedRunInlineCollection();
+        var inlines = new ComplexGroupedRunInline.Builder();
         Create(symbol, inlines);
         return inlines;
     }
 
-    public abstract void Create(ISymbol symbol, GroupedRunInlineCollection inlines);
+    public abstract void Create(ISymbol symbol, ComplexGroupedRunInline.Builder inlines);
 
-    // This is present to prevent creating a new GroupedRunInlineCollection just to create
-    // the inlines of the symbol in this case
-    // The GroupedRunInlineCollection methods should be removed entirely, since they serve
-    // no purpose other than constructing an entire inline group instance from scratch
-    // The building blocks are the grouped run inline builders, and this is the basic method
-    // that should be served
+    // This is present to enable only creating the symbol's inlines and leaving it up to the
+    // caller to use the created builder; either placing it directly in the inlines, or reusing
+    // it afterwards
     public abstract GroupedRunInline.IBuilder CreateSymbolInline(ISymbol symbol);
 }

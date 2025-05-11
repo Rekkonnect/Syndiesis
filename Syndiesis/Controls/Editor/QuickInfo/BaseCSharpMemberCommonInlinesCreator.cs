@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using System.Collections.Immutable;
-using System.Diagnostics.Contracts;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
@@ -21,11 +20,12 @@ public abstract class BaseCSharpMemberCommonInlinesCreator<TSymbol>(
             return null;
 
         var inlines = new ComplexGroupedRunInline.Builder();
-
+        var definitions = ParentContainer.RootContainer.Definitions;
+        
         for (var i = 0; i < parameterLength; i++)
         {
-            var argument = parameters[i];
-            var inner = CreateParameterInline(argument);
+            var parameter = parameters[i];
+            var inner = definitions.CreatorForSymbol(parameter).CreateSymbolInline(parameter);
             inlines.AddChild(inner);
 
             if (i < parameterLength - 1)
@@ -38,19 +38,6 @@ public abstract class BaseCSharpMemberCommonInlinesCreator<TSymbol>(
         return inlines;
     }
 
-    private GroupedRunInline.IBuilder CreateParameterInline(IParameterSymbol parameter)
-    {
-        var type = parameter.Type;
-        var typeCreator = ParentContainer.CreatorForSymbol(type);
-        Contract.Assert(typeCreator is not null);
-        var typeInline = typeCreator.CreateSymbolInline(type);
-        var spaceInline = CreateSpaceSeparatorRun();
-        var nameInline = SingleRun(parameter.Name, ColorizationStyles.ParameterBrush);
-
-        return new ComplexGroupedRunInline.Builder(
-            [new(typeInline), spaceInline, new(nameInline)]);
-    }
-    
     protected void AddTypeArgumentInlines(ComplexGroupedRunInline.Builder inlines, ImmutableArray<ITypeSymbol> arguments)
     {
         if (arguments.IsDefaultOrEmpty)

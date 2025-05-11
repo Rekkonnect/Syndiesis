@@ -9,12 +9,12 @@ public abstract class BaseSymbolDefinitionInlinesCreator<TSymbol>(
         parentContainer)
     where TSymbol : class, ISymbol
 {
-    public override void Create(TSymbol symbol, GroupedRunInlineCollection inlines)
+    public override void Create(TSymbol method, ComplexGroupedRunInline.Builder inlines)
     {
-        AddModifierInlines(symbol, inlines);
-        base.Create(symbol, inlines);
+        AddModifierInlines(method, inlines);
+        base.Create(method, inlines);
     }
 
     protected abstract void AddModifierInlines(
-        TSymbol symbol, GroupedRunInlineCollection inlines);
+        TSymbol symbol, ComplexGroupedRunInline.Builder inlines);
 }

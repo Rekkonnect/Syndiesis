@@ -1,9 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.VisualBasic.Syntax;
-using RoseLynn.CSharp.Syntax;
 using Serilog;
-using SkiaSharp;
 using Syndiesis.ColorHelpers;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
@@ -198,10 +194,10 @@ public sealed class CSharpTypeCommonInlinesCreator(
     {
         return convention switch
         {
-            SignatureCallingConvention.ThisCall => "Thiscall",
-            SignatureCallingConvention.FastCall => "Fastcall",
-            SignatureCallingConvention.StdCall => "Stdcall",
-            SignatureCallingConvention.CDecl => "Cdecl",
+            SignatureCallingConvention.ThisCall => KnownIdentifierHelpers.CallingConventions.ThisCall,
+            SignatureCallingConvention.FastCall => KnownIdentifierHelpers.CallingConventions.FastCall,
+            SignatureCallingConvention.StdCall => KnownIdentifierHelpers.CallingConventions.StdCall,
+            SignatureCallingConvention.CDecl => KnownIdentifierHelpers.CallingConventions.CDecl,
             _ => null,
         };
     }

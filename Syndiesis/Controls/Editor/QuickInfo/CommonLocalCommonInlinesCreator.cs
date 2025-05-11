@@ -4,7 +4,7 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 
 public sealed class CommonLocalCommonInlinesCreator(
     BaseSymbolCommonInlinesCreatorContainer parentContainer)
-    : BaseSimpleTypedNamedCommonInlinesCreator<ILocalSymbol>(parentContainer)
+    : BaseSimpleNameCommonInlinesCreator<ILocalSymbol>(parentContainer)
 {
     protected override ILazilyUpdatedBrush GetBrush(ILocalSymbol symbol)
     {

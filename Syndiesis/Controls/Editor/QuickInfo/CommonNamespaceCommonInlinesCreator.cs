@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
+using Syndiesis.Core.DisplayAnalysis;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,6 +12,15 @@ public sealed class CommonNamespaceCommonInlinesCreator(
     : BaseSymbolCommonInlinesCreator<INamespaceSymbol>(parentContainer)
 {
     public override GroupedRunInline.IBuilder CreateSymbolInline(INamespaceSymbol symbol)
+    {
+        if (symbol.IsGlobalNamespace)
+        {
+            return CreateGlobalNamespaceInline();
+        }
+        return CreateNormalNamespaceInlines(symbol);
+    }
+
+    private static GroupedRunInline.IBuilder CreateNormalNamespaceInlines(INamespaceSymbol symbol)
     {
         var runs = new List<RunOrGrouped>();
         var identifiers = symbol.YieldNamespaceIdentifiers().Reverse().ToArray();

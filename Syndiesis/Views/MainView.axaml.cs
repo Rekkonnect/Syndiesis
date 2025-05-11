@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
+using Syndiesis.Controls.Editor.QuickInfo;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
@@ -166,7 +167,7 @@ public partial class MainView : UserControl
         }
     }
 
-    private ImmutableArray<ISymbol> GetHoveredSymbols(int position)
+    private ImmutableArray<SymbolHoverContext> GetHoveredSymbols(int position)
     {
         var source = codeEditor.CompilationSource?.CurrentSource;
         var semanticModel = source?.SemanticModel;
@@ -187,7 +188,11 @@ public partial class MainView : UserControl
             AddRelatedSymbols(symbolSet, semanticModel, relatedNode);
         }
         
-        return symbolSet.ToImmutableArray();
+        return
+        [
+            ..symbolSet
+                .Select(symbol => new SymbolHoverContext(symbol, semanticModel, position))
+        ];
     }
 
     private static void AddRelatedSymbols(

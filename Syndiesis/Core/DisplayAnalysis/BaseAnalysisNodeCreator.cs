@@ -401,7 +401,7 @@ static string Code(string type)
 
         return null;
     }
-
+    
     private static LazilyUpdatedSolidBrush GetBrushForTypeKind(Type type)
     {
         if (type.IsEnum)

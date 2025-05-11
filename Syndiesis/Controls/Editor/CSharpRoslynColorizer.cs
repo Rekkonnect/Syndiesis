@@ -147,7 +147,7 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             return null;
         }
 
-        bool isKnownCallingConvention = RoslynColorizationHelpers.IsKnownCallingConventionAttribute(token.Text);
+        bool isKnownCallingConvention = KnownIdentifierHelpers.CallingConventions.IsKnownCallingConventionAttributeName(token.Text);
         if (!isKnownCallingConvention)
         {
             return null;

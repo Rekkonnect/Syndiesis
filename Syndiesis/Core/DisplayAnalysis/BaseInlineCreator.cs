@@ -1,5 +1,9 @@
 ﻿using Avalonia.Media;
+using Garyon.Reflection;
+using Microsoft.CodeAnalysis;
+using Syndiesis.Controls.Editor;
 using Syndiesis.Controls.Inlines;
+using System;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -15,6 +19,9 @@ public abstract class BaseInlineCreator
 {
     public static BaseAnalysisNodeCreator.NodeCommonStyles CommonStyles
         => AppSettings.Instance.NodeColorPreferences.CommonStyles!;
+
+    public static RoslynColorizer.ColorizationStyles ColorizationStyles
+        => AppSettings.Instance.ColorizationPreferences.ColorizationStyles!;
 
     protected static SingleRunInline SingleRun(string text, ILazilyUpdatedBrush brush)
     {
@@ -88,5 +95,16 @@ public abstract class BaseInlineCreator
         int repeats = rank - 1;
         var commas = new string(',', repeats);
         return $"[{commas}]";
+    }
+
+    protected static ILazilyUpdatedBrush GetFieldBrush(IFieldSymbol field)
+    {
+        if (field.IsConst)
+            return CommonStyles.ConstantMainBrush;
+
+        if (field.IsEnumField())
+            return CommonStyles.EnumFieldMainBrush;
+
+        return ColorizationStyles.FieldBrush;
     }
 }

@@ -1,9 +1,11 @@
 ﻿using Microsoft.CodeAnalysis;
 using RoseLynn;
 using Syndiesis.Controls.Inlines;
+using System;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
+[Obsolete("Do not use this; we need a different way to display the full definitions of these symbols")]
 public abstract class BaseSimpleTypedNamedCommonInlinesCreator<TSymbol>(
     BaseSymbolCommonInlinesCreatorContainer parentContainer)
     : BaseSymbolCommonInlinesCreator<TSymbol>(parentContainer)

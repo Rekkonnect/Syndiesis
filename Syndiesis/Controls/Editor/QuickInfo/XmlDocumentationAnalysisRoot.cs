@@ -4,11 +4,8 @@ using System.Xml;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public sealed class XmlDocumentationAnalysisRoot(ISymbol symbol, XmlDocument document)
+public sealed record XmlDocumentationAnalysisRoot(ISymbol Symbol, XmlDocument Document)
 {
-    private readonly ISymbol _symbol = symbol;
-    private readonly XmlDocument _document = document;
-
     // TODO: Retrieve an object that contains all the XML analysis contents
 
     public static XmlDocumentationAnalysisRoot? CreateForSymbol(ISymbol symbol)

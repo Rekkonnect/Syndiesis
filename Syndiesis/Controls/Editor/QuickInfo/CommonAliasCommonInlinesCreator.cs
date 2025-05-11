@@ -7,16 +7,27 @@ public sealed class CommonAliasCommonInlinesCreator(
     BaseSymbolCommonInlinesCreatorContainer parentContainer)
     : BaseSymbolCommonInlinesCreator<IAliasSymbol>(parentContainer)
 {
-    public override GroupedRunInline.IBuilder CreateSymbolInline(IAliasSymbol symbol)
+    public override GroupedRunInline.IBuilder CreateSymbolInline(IAliasSymbol alias)
     {
+        var isGlobalNamespaceAlias = alias is
+        {
+            Target: INamespaceSymbol { IsGlobalNamespace: true },
+            Name: "global",
+        };
+        if (isGlobalNamespaceAlias)
+        {
+            return CreateGlobalNamespaceInline();
+        }
+        
         // TODO: Get the appropriate brush
         var brush = CommonStyles.RawValueBrush;
-        var target = symbol.Target;
+        var target = alias.Target;
         var targetInline = ParentContainer.CreatorForSymbol(target).CreateSymbolInline(target);
 
         var builder = new ComplexGroupedRunInline.Builder();
 
-        // TODO: Add children
+        var inline = SingleRun(alias.Name, brush);
+        builder.AddChild(inline);
         
         return builder;
     }

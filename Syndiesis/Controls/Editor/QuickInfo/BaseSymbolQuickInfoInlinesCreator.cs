@@ -10,13 +10,10 @@ public abstract class BaseSymbolQuickInfoInlinesCreator<TSymbol, TParentContaine
     where TSymbol : class, ISymbol
     where TParentContainer : BaseSymbolInlinesCreatorContainer
 {
-    public static RoslynColorizer.ColorizationStyles ColorizationStyles
-        => AppSettings.Instance.ColorizationPreferences.ColorizationStyles!;
-
     public TParentContainer ParentContainer { get; } = parentContainer;
 
     void ISymbolItemInlinesCreator.Create(
-        ISymbol symbol, GroupedRunInlineCollection inlines)
+        ISymbol symbol, ComplexGroupedRunInline.Builder inlines)
     {
         Create((TSymbol)symbol, inlines);
     }
@@ -27,37 +24,51 @@ public abstract class BaseSymbolQuickInfoInlinesCreator<TSymbol, TParentContaine
     }
 
     void ISymbolItemInlinesCreator.CreateWithHoverContext(
-        SymbolHoverContext symbol, GroupedRunInlineCollection inlines)
+        SymbolHoverContext context, ComplexGroupedRunInline.Builder inlines)
     {
-        CreateWithHoverContext(symbol, inlines);
+        CreateWithHoverContext(context, inlines);
     }
 
-    public virtual void Create(TSymbol symbol, GroupedRunInlineCollection inlines)
+    public virtual void Create(TSymbol method, ComplexGroupedRunInline.Builder inlines)
     {
-        var symbolInline = CreateSymbolInline(symbol);
-        inlines.Add(symbolInline);
+        var symbolInline = CreateSymbolInline(method);
+        inlines.AddChild(symbolInline);
     }
 
     public abstract GroupedRunInline.IBuilder CreateSymbolInline(TSymbol symbol);
 
     protected virtual void CreateWithHoverContext(
-        SymbolHoverContext context, GroupedRunInlineCollection inlines)
+        SymbolHoverContext context, ComplexGroupedRunInline.Builder inlines)
     {
         Create((TSymbol)context.Symbol, inlines);
     }
 
     protected void AddModifier(
-        GroupedRunInlineCollection inlines,
+        ComplexGroupedRunInline.Builder inlines,
         MemberModifiers memberModifiers,
         MemberModifiers targetFlag,
         string modifierWord)
     {
         var run = ModifierRun(memberModifiers, targetFlag, modifierWord);
+        AddModifier(inlines, run);
+    }
+
+    protected void AddModifier(
+        ComplexGroupedRunInline.Builder inlines,
+        bool flag,
+        string modifierWord)
+    {
+        var run = ModifierRun(flag, modifierWord);
+        AddModifier(inlines, run);
+    }
+
+    private static void AddModifier(ComplexGroupedRunInline.Builder inlines, UIBuilder.Run? run)
+    {
         if (run is null)
             return;
 
-        inlines.Add(run);
-        inlines.Add(CreateSpaceSeparatorRun());
+        inlines.AddChild(run);
+        inlines.AddChild(CreateSpaceSeparatorRun());
     }
 
     protected UIBuilder.Run? ModifierRun(
@@ -65,7 +76,14 @@ public abstract class BaseSymbolQuickInfoInlinesCreator<TSymbol, TParentContaine
         MemberModifiers targetFlag,
         string modifierWord)
     {
-        if (!memberModifiers.HasFlag(targetFlag))
+        return ModifierRun(memberModifiers.HasFlag(targetFlag), modifierWord);
+    }
+
+    protected UIBuilder.Run? ModifierRun(
+        bool flag,
+        string modifierWord)
+    {
+        if (!flag)
             return null;
 
         return Run(modifierWord, CommonStyles.KeywordBrush);

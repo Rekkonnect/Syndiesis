@@ -9,7 +9,7 @@ public abstract class BaseVisualBasicSymbolDefinitionInlinesCreator<TSymbol>(
     where TSymbol : class, ISymbol
 {
     protected override void AddModifierInlines(
-        TSymbol symbol, GroupedRunInlineCollection inlines)
+        TSymbol symbol, ComplexGroupedRunInline.Builder inlines)
     {
         var modifierInfo = ModifierInfo.GetForSymbol(symbol);
         

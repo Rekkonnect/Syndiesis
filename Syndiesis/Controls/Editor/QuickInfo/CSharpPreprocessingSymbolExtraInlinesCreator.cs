@@ -26,7 +26,7 @@ public sealed class CommonPreprocessingSymbolExtraInlinesCreator(
     }
 
     protected override void CreateWithHoverContext(
-        SymbolHoverContext context, GroupedRunInlineCollection inlines)
+        SymbolHoverContext context, ComplexGroupedRunInline.Builder inlines)
     {
         var tree = context.SemanticModel.SyntaxTree;
         var position = context.TextPosition;

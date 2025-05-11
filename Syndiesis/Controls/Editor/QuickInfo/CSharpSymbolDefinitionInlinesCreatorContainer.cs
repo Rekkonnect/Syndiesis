@@ -7,6 +7,13 @@ public sealed class CSharpSymbolDefinitionInlinesCreatorContainer
 {
     public readonly CSharpNamedTypeSymbolDefinitionInlinesCreator NamedTypeCreator;
     public readonly CSharpMethodSymbolDefinitionInlinesCreator MethodCreator;
+    
+    public readonly CSharpFieldSymbolDefinitionInlinesCreator FieldCreator;
+    public readonly CSharpPropertySymbolDefinitionInlinesCreator PropertyCreator;
+    public readonly CSharpEventSymbolDefinitionInlinesCreator EventCreator;
+    public readonly CSharpParameterSymbolDefinitionInlinesCreator ParameterCreator;
+    public readonly CSharpLocalSymbolDefinitionInlinesCreator LocalCreator;
+    public readonly CSharpDiscardSymbolDefinitionInlinesCreator DiscardCreator;
 
     public CSharpSymbolDefinitionInlinesCreatorContainer(
         ISymbolInlinesRootCreatorContainer rootContainer)
@@ -14,6 +21,12 @@ public sealed class CSharpSymbolDefinitionInlinesCreatorContainer
     {
         NamedTypeCreator = new(this);
         MethodCreator = new(this);
+        FieldCreator = new(this);
+        PropertyCreator = new(this);
+        EventCreator = new(this);
+        ParameterCreator = new(this);
+        LocalCreator = new(this);
+        DiscardCreator = new(this);
     }
 
     protected override ISymbolItemInlinesCreator FallbackCreatorForSymbol<TSymbol>(TSymbol symbol)
@@ -25,6 +38,24 @@ public sealed class CSharpSymbolDefinitionInlinesCreatorContainer
 
             case IMethodSymbol:
                 return MethodCreator;
+
+            case IFieldSymbol:
+                return FieldCreator;
+
+            case IPropertySymbol:
+                return PropertyCreator;
+
+            case IEventSymbol:
+                return EventCreator;
+
+            case IParameterSymbol:
+                return ParameterCreator;
+
+            case ILocalSymbol:
+                return LocalCreator;
+
+            case IDiscardSymbol:
+                return DiscardCreator;
 
             default:
                 return RootContainer.Commons.CreatorForSymbol(symbol);
