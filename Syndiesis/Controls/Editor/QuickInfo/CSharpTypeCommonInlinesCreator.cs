@@ -11,7 +11,7 @@ using System.Reflection.Metadata;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public sealed class CSharpTypeCommonInlinesCreator(
+public class CSharpTypeCommonInlinesCreator(
     CSharpSymbolCommonInlinesCreatorContainer parentContainer)
     : BaseCSharpMemberCommonInlinesCreator<ITypeSymbol>(parentContainer)
 {
@@ -98,6 +98,7 @@ public sealed class CSharpTypeCommonInlinesCreator(
         {
             var varianceRun = Run(keyword, CommonStyles.KeywordBrush);
             inlines.AddChild(varianceRun);
+            inlines.AddChild(CreateSpaceSeparatorRun());
         }
     }
 
@@ -153,14 +154,14 @@ public sealed class CSharpTypeCommonInlinesCreator(
         for (var i = 0; i < parameters.Length; i++)
         {
             var parameter = parameters[i];
-            var inner = CreateTypeInline(parameter.Type);
+            var inner = CreateSymbolInline(parameter.Type);
             inlines.AddChild(inner);
 
             var separator = CreateArgumentSeparatorRun();
             inlines.AddChild(separator);
         }
 
-        var returnTypeInline = CreateTypeInline(signature.ReturnType);
+        var returnTypeInline = CreateSymbolInline(signature.ReturnType);
         inlines.AddChild(returnTypeInline);
 
         var closingTag = Run(">", CommonStyles.RawValueBrush);
@@ -258,7 +259,7 @@ public sealed class CSharpTypeCommonInlinesCreator(
     private GroupedRunInline.IBuilder CreateTupleTypeFieldInline(IFieldSymbol field)
     {
         Contract.Assert(field.ContainingType.IsTupleType);
-        var left = CreateTypeInline(field.Type);
+        var left = CreateSymbolInline(field.Type);
 
         var fieldBrush = ColorizationStyles.FieldBrush;
         ILazilyUpdatedBrush brush = fieldBrush;
@@ -315,7 +316,7 @@ public sealed class CSharpTypeCommonInlinesCreator(
     private GroupedRunInline.IBuilder CreateAnonymousTypePropertyInline(IPropertySymbol property)
     {
         Contract.Assert(property.ContainingType.IsAnonymousType);
-        var left = CreateTypeInline(property.Type);
+        var left = CreateSymbolInline(property.Type);
         var nameRun = Run(property.Name, CommonStyles.PropertyBrush);
         var suffixGroup = new SimpleGroupedRunInline.Builder([nameRun]);
         return new ComplexGroupedRunInline.Builder([new(left), suffixGroup]);
@@ -323,7 +324,7 @@ public sealed class CSharpTypeCommonInlinesCreator(
 
     private GroupedRunInline.IBuilder SuffixedTypeDisplay(ITypeSymbol nestedType, string suffix)
     {
-        var left = CreateTypeInline(nestedType);
+        var left = CreateSymbolInline(nestedType);
         var suffixRun = Run(suffix, CommonStyles.RawValueBrush);
         var suffixGroup = new SimpleGroupedRunInline.Builder([suffixRun]);
         return new ComplexGroupedRunInline.Builder([new(left), suffixGroup]);

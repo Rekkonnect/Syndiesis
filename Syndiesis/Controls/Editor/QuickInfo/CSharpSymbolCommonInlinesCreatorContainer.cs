@@ -7,6 +7,7 @@ public sealed class CSharpSymbolCommonInlinesCreatorContainer
     : BaseSymbolCommonInlinesCreatorContainer
 {
     public readonly CSharpTypeCommonInlinesCreator TypeCreator;
+    public readonly CSharpAliasSimplifiedTypeCommonInlinesCreator AliasSimplifiedTypeCreator;
 
     private readonly CSharpMethodCommonInlinesCreator _method;
     private readonly CSharpPropertyCommonInlinesCreator _property;
@@ -16,6 +17,7 @@ public sealed class CSharpSymbolCommonInlinesCreatorContainer
         : base(rootContainer)
     {
         TypeCreator = new(this);
+        AliasSimplifiedTypeCreator = new(this);
 
         _method = new(this);
         _property = new(this);
@@ -26,7 +28,7 @@ public sealed class CSharpSymbolCommonInlinesCreatorContainer
         switch (symbol)
         {
             case ITypeSymbol:
-                return TypeCreator;
+                return AliasSimplifiedTypeCreator;
 
             case IMethodSymbol:
                 return _method;

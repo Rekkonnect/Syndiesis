@@ -44,9 +44,16 @@ public readonly record struct ModifierInfo(
                   symbol.IsRef(), MemberModifiers.Ref)
               | CheckModifierOrNone(
                   symbol.IsRefReadOnly(), MemberModifiers.RefReadOnly)
+              | CheckModifierOrNone(
+                  IsScoped(symbol), MemberModifiers.Scoped)
             ;
         
         return new(symbol.DeclaredAccessibility, modifiers);
+    }
+
+    private static bool IsScoped(ISymbol symbol)
+    {
+        return symbol is IParameterSymbol { ScopedKind: ScopedKind.ScopedRef or ScopedKind.ScopedValue };
     }
 
     private static bool IsNotInherentlySealed(ISymbol symbol)
@@ -58,7 +65,8 @@ public readonly record struct ModifierInfo(
     
     private static bool IsNotInherentlyAbstract(ISymbol symbol)
     {
-        return symbol is { IsAbstract: true, IsStatic: false };
+        return symbol is { IsAbstract: true, IsStatic: false }
+            and not ITypeSymbol { TypeKind: TypeKind.Interface };
     }
     
     private static bool IsNotInherentlyReadOnly(ISymbol symbol)

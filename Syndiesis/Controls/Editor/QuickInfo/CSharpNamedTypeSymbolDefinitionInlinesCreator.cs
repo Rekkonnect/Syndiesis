@@ -35,8 +35,8 @@ public sealed class CSharpNamedTypeSymbolDefinitionInlinesCreator(
                 break;
         }
 
-        var nameInline = ParentContainer.RootContainer.Commons
-            .CreatorForSymbol(symbol).CreateSymbolInline(symbol);
+        var commonsContainer = (CSharpSymbolCommonInlinesCreatorContainer)ParentContainer.RootContainer.Commons;
+        var nameInline = commonsContainer.TypeCreator.CreateSymbolInline(symbol);
         inlines.AddChild(nameInline);
 
         return inlines;

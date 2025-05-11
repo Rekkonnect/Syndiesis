@@ -34,4 +34,5 @@ public enum MemberModifiers
     Ref = 1 << 12,
     RefReadOnly = 1 << 13,
     Required = 1 << 14,
+    Scoped = 1 << 15,
 }

@@ -50,7 +50,7 @@ public abstract class BaseCSharpMemberCommonInlinesCreator<TSymbol>(
         for (var i = 0; i < arguments.Length; i++)
         {
             var argument = arguments[i];
-            var inner = ParentContainer.TypeCreator.CreateSymbolInline(argument);
+            var inner = ParentContainer.AliasSimplifiedTypeCreator.CreateSymbolInline(argument);
             inlines.AddChild(inner);
 
             if (i < arguments.Length - 1)
