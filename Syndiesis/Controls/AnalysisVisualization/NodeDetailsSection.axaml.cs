@@ -1,7 +1,6 @@
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Media;
-using Garyon.Extensions;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using System.Collections.Generic;

@@ -2,8 +2,8 @@
 
 public sealed class VisualBasicAnalysisNodeCreatorContainer : BaseAnalysisNodeCreatorContainer
 {
-    public VisualBasicAnalysisNodeCreatorContainer()
+    protected override BaseSyntaxAnalysisNodeCreator CreateSyntaxCreator()
     {
-        SyntaxCreator = new VisualBasicSyntaxAnalysisNodeCreator(this);
+        return new VisualBasicSyntaxAnalysisNodeCreator(this);
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace Syndiesis.Core;
@@ -32,5 +33,25 @@ public static class SyntaxExtensions
         CancellationToken cancellationToken = default)
     {
         return tree.GetRoot(cancellationToken)?.Language;
+    }
+
+    public static IEnumerable<SyntaxNode> EnumerateAncestorsWithSameSpanAndThis(this SyntaxNode node)
+    {
+        yield return node;
+
+        var span = node.Span;
+        var current = node;
+        while (true)
+        {
+            var parent = current.Parent;
+            if (parent is null)
+                yield break;
+
+            if (parent.Span != span)
+                yield break;
+            
+            yield return parent;
+            current = parent;
+        }
     }
 }

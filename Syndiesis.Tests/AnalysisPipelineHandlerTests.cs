@@ -41,7 +41,7 @@ public sealed class AnalysisPipelineHandlerTests(AnalysisNodeKind analysisNodeKi
     public async Task TestAllFilesWithFlow()
     {
         TestContext.Progress.WriteLine(
-            $"Began testing the analysis pipeline on all files, this will take some time.");
+            "Began testing the analysis pipeline on all files, this will take some time.");
 
         var pipeline = CreatePipeline();
 

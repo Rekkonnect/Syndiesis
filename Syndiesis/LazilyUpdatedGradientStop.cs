@@ -3,6 +3,7 @@ using Avalonia.Threading;
 
 namespace Syndiesis;
 
+// TODO Move to .Colors
 public sealed class LazilyUpdatedGradientStop(GradientStop stop)
 {
     private readonly GradientStop _stop = stop;

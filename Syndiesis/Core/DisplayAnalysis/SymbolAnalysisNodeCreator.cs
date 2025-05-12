@@ -35,6 +35,8 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly IPreprocessingSymbolRootViewNodeCreator _preprocessingSymbolCreator;
     private readonly IRangeVariableSymbolRootViewNodeCreator _rangeVariableSymbolCreator;
     private readonly IAliasSymbolRootViewNodeCreator _aliasSymbolCreator;
+    private readonly IDiscardSymbolRootViewNodeCreator _discardSymbolCreator;
+    private readonly ILabelSymbolRootViewNodeCreator _labelSymbolCreator;
 
     private readonly SymbolListRootViewNodeCreator _symbolListCreator;
 
@@ -58,12 +60,14 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         _preprocessingSymbolCreator = new(this);
         _rangeVariableSymbolCreator = new(this);
         _aliasSymbolCreator = new(this);
+        _discardSymbolCreator = new(this);
+        _labelSymbolCreator = new(this);
 
         _symbolListCreator = new(this);
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
-        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        object? value, TDisplayValueSource? valueSource, bool includeChildren)
         where TDisplayValueSource : default
     {
         switch (value)
@@ -73,9 +77,6 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
 
             case IReadOnlyList<ISymbol> symbolList:
                 return CreateRootSymbolList(symbolList, valueSource, includeChildren);
-
-            default:
-                break;
         }
 
         // fallback
@@ -95,50 +96,56 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     {
         switch (symbol)
         {
-            case IAssemblySymbol assemblySymbol:
+            case IAssemblySymbol:
                 return _assemblySymbolCreator;
 
-            case IModuleSymbol moduleSymbol:
+            case IModuleSymbol:
                 return _moduleSymbolCreator;
 
-            case INamespaceSymbol namespaceSymbol:
+            case INamespaceSymbol:
                 return _namespaceSymbolCreator;
 
-            case IFieldSymbol fieldSymbol:
+            case IFieldSymbol:
                 return _fieldSymbolCreator;
 
-            case IPropertySymbol propertySymbol:
+            case IPropertySymbol:
                 return _propertySymbolCreator;
 
-            case IEventSymbol eventSymbol:
+            case IEventSymbol:
                 return _eventSymbolCreator;
 
-            case IMethodSymbol methodSymbol:
+            case IMethodSymbol:
                 return _methodSymbolCreator;
 
-            case ITypeParameterSymbol typeParameter:
+            case ITypeParameterSymbol:
                 return _typeParameterSymbolCreator;
 
-            case IParameterSymbol parameter:
+            case IParameterSymbol:
                 return _parameterSymbolCreator;
 
-            case ILocalSymbol localSymbol:
+            case ILocalSymbol:
                 return _localSymbolCreator;
 
-            case IPreprocessingSymbol preprocessingSymbol:
+            case IPreprocessingSymbol:
                 return _preprocessingSymbolCreator;
 
-            case IRangeVariableSymbol rangeVariableSymbol:
+            case IRangeVariableSymbol:
                 return _rangeVariableSymbolCreator;
 
-            case IAliasSymbol aliasSymbol:
+            case IAliasSymbol:
                 return _aliasSymbolCreator;
 
-            case INamedTypeSymbol namedTypeSymbol:
+            case INamedTypeSymbol:
                 return _namedTypeSymbolCreator;
 
-            case ITypeSymbol typeSymbol:
+            case ITypeSymbol:
                 return _typeSymbolCreator;
+
+            case IDiscardSymbol:
+                return _discardSymbolCreator;
+
+            case ILabelSymbol:
+                return _labelSymbolCreator;
 
             default:
                 return null;
@@ -189,6 +196,9 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
             case IRangeVariableSymbol rangeVariableSymbol:
                 return CreateRootRangeVariableSymbol(rangeVariableSymbol, valueSource, includeChildren);
 
+            case INamedTypeSymbol namedTypeSymbol:
+                return CreateRootNamedTypeSymbol(namedTypeSymbol, valueSource, includeChildren);
+
             case ITypeSymbol typeSymbol:
                 return CreateRootTypeSymbol(typeSymbol, valueSource, includeChildren);
 
@@ -223,6 +233,13 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         where TDisplayValueSource : IDisplayValueSource
     {
         return _typeSymbolCreator.CreateNode(typeSymbol, valueSource, includeChildren);
+    }
+
+    public AnalysisTreeListNode CreateRootNamedTypeSymbol<TDisplayValueSource>(
+        INamedTypeSymbol typeSymbol, TDisplayValueSource? valueSource, bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+    {
+        return _namedTypeSymbolCreator.CreateNode(typeSymbol, valueSource, includeChildren);
     }
 
     public AnalysisTreeListNode CreateRootFieldSymbol<TDisplayValueSource>(
@@ -348,7 +365,7 @@ partial class SymbolAnalysisNodeCreator
 
     public interface IBaseSymbolRootViewNodeCreator
     {
-        public void AddQuickInfoInlines(
+        public void AddSummaryInlines(
             ISymbol symbol, GroupedRunInlineCollection inlines);
 
         public AnalysisTreeListNodeLine CreateNodeLine(
@@ -362,14 +379,14 @@ partial class SymbolAnalysisNodeCreator
         public override AnalysisTreeListNodeLine CreateNodeLine(
             TSymbol symbol, GroupedRunInlineCollection inlines)
         {
-            AddQuickInfoInlines(symbol, inlines);
+            AddSummaryInlines(symbol, inlines);
 
             return AnalysisTreeListNodeLine(
                 inlines,
                 Styles.SymbolDisplay);
         }
 
-        public void AddQuickInfoInlines(TSymbol symbol, GroupedRunInlineCollection inlines)
+        public void AddSummaryInlines(TSymbol symbol, GroupedRunInlineCollection inlines)
         {
             var type = MatchingSymbolInterface(symbol.GetType());
             var typeDetailsInline = TypeDetailsInline(type);
@@ -391,10 +408,10 @@ partial class SymbolAnalysisNodeCreator
             return CreateNodeLine((TSymbol)symbol, inlines);
         }
 
-        void IBaseSymbolRootViewNodeCreator.AddQuickInfoInlines(
+        void IBaseSymbolRootViewNodeCreator.AddSummaryInlines(
             ISymbol symbol, GroupedRunInlineCollection inlines)
         {
-            AddQuickInfoInlines((TSymbol)symbol, inlines);
+            AddSummaryInlines((TSymbol)symbol, inlines);
         }
 
         protected virtual SingleRunInline? CreateNameInline(TSymbol symbol)
@@ -577,6 +594,14 @@ partial class SymbolAnalysisNodeCreator
                 Creator.CreateRootSymbolList(
                     symbol.TypeParameters,
                     Property(nameof(INamedTypeSymbol.TypeParameters))),
+
+                Creator.CreateRootSymbolList(
+                    symbol.TypeArguments,
+                    Property(nameof(INamedTypeSymbol.TypeArguments))),
+
+                Creator.CreateRootGeneral(
+                    symbol.IsFileLocal,
+                    Property(nameof(INamedTypeSymbol.IsFileLocal))),
 
                 Creator.CreateRootGeneral(
                     symbol.DelegateInvokeMethod,
@@ -831,6 +856,16 @@ partial class SymbolAnalysisNodeCreator
                     Property(nameof(IAliasSymbol.Target)))!
             );
         }
+    }
+
+    public sealed class IDiscardSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
+        : ISymbolRootViewNodeCreator<IDiscardSymbol>(creator)
+    {
+    }
+
+    public sealed class ILabelSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
+        : ISymbolRootViewNodeCreator<ILabelSymbol>(creator)
+    {
     }
 
     public sealed class SymbolListRootViewNodeCreator(SymbolAnalysisNodeCreator creator)

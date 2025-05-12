@@ -2,33 +2,32 @@ using Avalonia;
 using Avalonia.Controls;
 using Garyon.Functions;
 using Microsoft.CodeAnalysis;
+using Syndiesis.Core;
 using System.Collections.Immutable;
 using System.Linq;
 using CodeAnalysisLocation = Microsoft.CodeAnalysis.Location;
 
-namespace Syndiesis.Controls.Editor;
+namespace Syndiesis.Controls.Editor.QuickInfo;
 
-public partial class QuickInfoDisplayPopup : UserControl
+public partial class QuickInfoDisplayPopup : DesignerInitializableUserControl
 {
     private Point _pointerOrigin;
+    
+    public HybridSingleTreeCompilationSource? CompilationSource { get; set; }
 
     public QuickInfoDisplayPopup()
     {
         InitializeComponent();
-        InitializeDesigner();
     }
 
     private void UpdateSplitterVisibility()
     {
-        splitter.IsVisible = symbolInfoContainer.Content is not null
+        splitter.IsVisible = symbolInfoPanel.Children.Count > 0
             && diagnosticsPanel.Children.Count > 0;
     }
 
-    private void InitializeDesigner()
+    protected override void InitializeDesignerCore()
     {
-        if (!Design.IsDesignMode)
-            return;
-
         ImmutableArray<Diagnostic> exampleDiagnostics =
         [
             DiagnosticDescriptors.ExampleError,
@@ -39,6 +38,16 @@ public partial class QuickInfoDisplayPopup : UserControl
         SetDiagnostics(exampleDiagnostics);
     }
 
+    public void SetSymbols(ImmutableArray<SymbolHoverContext> symbols)
+    {
+        var symbolItems = symbols
+            .Select(CreateSymbolItem)
+            .ToArray();
+
+        CommonAvaloniaExtensions.ClearSetValues<Control>(symbolInfoPanel.Children, symbolItems);
+        UpdateSplitterVisibility();
+    }
+
     public void SetDiagnostics(ImmutableArray<Diagnostic> diagnostics)
     {
         var diagnosticItems = diagnostics
@@ -46,10 +55,16 @@ public partial class QuickInfoDisplayPopup : UserControl
             .Where(Predicates.NotNull)
             .ToArray();
 
-        diagnosticsPanel.Children.ClearSetValues(diagnosticItems!);
+        CommonAvaloniaExtensions.ClearSetValues<Control>(diagnosticsPanel.Children, diagnosticItems!);
         UpdateSplitterVisibility();
     }
 
+    public bool IsEmpty()
+    {
+        return diagnosticsPanel.Children.Count is 0
+            && symbolInfoPanel.Children.Count is 0;
+    }
+    
     public void SetPointerOrigin(Point point)
     {
         _pointerOrigin = point;
@@ -117,6 +132,11 @@ public partial class QuickInfoDisplayPopup : UserControl
         }
 
         Margin = targetMargin;
+    }
+
+    private QuickInfoSymbolItem CreateSymbolItem(SymbolHoverContext context)
+    {
+        return QuickInfoSymbolItem.CreateForSymbolAndCompilation(context, CompilationSource);
     }
 
     private static QuickInfoDiagnosticItem? CreateDiagnosticItem(Diagnostic diagnostic)

@@ -101,9 +101,11 @@ public abstract class GroupedRunInline
     public interface IBuilder
     {
         public GroupedRunInline Build();
+
+        public sealed RunOrGrouped AsRunOrGrouped => new(this);
     }
 
-    public abstract record Builder<T>(string? OverrideText = null)
+    public abstract class Builder<T>(string? OverrideText = null)
         : UIBuilder<T>, IBuilder
         where T : GroupedRunInline
     {

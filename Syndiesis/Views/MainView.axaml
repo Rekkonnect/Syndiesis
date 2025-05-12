@@ -8,8 +8,8 @@
              Focusable="True"
              xmlns:controls="using:Syndiesis.Controls"
              xmlns:av="using:Syndiesis.Controls.AnalysisVisualization"
-             xmlns:previews="using:Syndiesis.Views.DesignerPreviews"
              xmlns:editor="using:Syndiesis.Controls.Editor"
+             xmlns:quickInfo="clr-namespace:Syndiesis.Controls.Editor.QuickInfo"
              x:Class="Syndiesis.Views.MainView"
              >
   <Panel>
@@ -183,7 +183,7 @@
       </Grid>
     </Grid>
 
-    <editor:QuickInfoDisplayPopup
+    <quickInfo:QuickInfoDisplayPopup
       Name="quickInfoDisplayPopup"
       VerticalAlignment="Top"
       HorizontalAlignment="Left"

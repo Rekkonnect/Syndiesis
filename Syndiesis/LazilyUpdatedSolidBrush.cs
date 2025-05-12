@@ -1,8 +1,10 @@
 ﻿using Avalonia.Media;
 using Avalonia.Threading;
+using Syndiesis.ColorHelpers;
 
 namespace Syndiesis;
 
+// TODO Move to .Colors
 public sealed class LazilyUpdatedSolidBrush : ILazilyUpdatedBrush
 {
     private readonly SolidColorBrush _brush = new();
@@ -17,16 +19,24 @@ public sealed class LazilyUpdatedSolidBrush : ILazilyUpdatedBrush
             {
                 _brush.Color = Color;
             }
+
             return _brush;
         }
     }
 
     IBrush ILazilyUpdatedBrush.Brush => Brush;
 
-    public LazilyUpdatedSolidBrush() { }
+    public LazilyUpdatedSolidBrush()
+    {
+    }
 
     public LazilyUpdatedSolidBrush(Color color)
     {
         Color = color;
+    }
+
+    public LazilyUpdatedHsvTransformedSolidBrush WithHsvTransformation(HsvTransformation transformation)
+    {
+        return new(this, transformation);
     }
 }

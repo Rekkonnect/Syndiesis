@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace Syndiesis;
 
+// TODO Move to .Colors
 public sealed class LazilyUpdatedGradientBrush : ILazilyUpdatedBrush
 {
     private readonly LinearGradientBrush _brush;

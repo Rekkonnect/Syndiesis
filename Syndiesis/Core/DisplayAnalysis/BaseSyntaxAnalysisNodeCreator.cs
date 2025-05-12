@@ -1,11 +1,11 @@
-﻿using Microsoft.CodeAnalysis;
+﻿using Garyon.Reflection;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
@@ -14,12 +14,10 @@ namespace Syndiesis.Core.DisplayAnalysis;
 
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
-
-using GroupedRunInline = GroupedRunInline.IBuilder;
-using SingleRunInline = SingleRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
-
+using GroupedRunInline = GroupedRunInline.IBuilder;
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
+using SingleRunInline = SingleRunInline.Builder;
 
 public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCreator
 {
@@ -32,7 +30,7 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
     { }
 
     public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
-        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        object? value, TDisplayValueSource? valueSource, bool includeChildren)
         where TDisplayValueSource : default
     {
         switch (value)
@@ -174,11 +172,7 @@ public abstract partial class BaseSyntaxAnalysisNodeCreator : BaseAnalysisNodeCr
     {
         if (type.IsGenericType)
         {
-            var originalDefinition = type.GetGenericTypeDefinition();
-            var originalName = originalDefinition.Name;
-            int firstGenericMarkerIndex = originalName.LastIndexOf('`');
-            Debug.Assert(firstGenericMarkerIndex > 0);
-            string name = originalName[..firstGenericMarkerIndex];
+            string name = type.GenericFullNamePrefixOrSame();
             var outerRun = Run($"{name}<", Styles.SyntaxListBrush);
             var closingTag = Run(">", Styles.SyntaxListBrush);
             var argument = type.GenericTypeArguments[0];

@@ -2,6 +2,13 @@
 
 The most revolutionary syntax visualizer and more for C# and Visual Basic
 
+## Legal Dislcaimers
+
+This project is not endorsed by any third-party and does not intend to violate any rights of their respective holders.
+The software distributes other third-party software as follows:
+- Icons from Microsoft's **Visual Studio 2022 Image Library**
+- Software libraries mentioned below, with compatible distribution policies
+
 ## Motivation
 
 The project was inspired by the task for applying into a Roslyn internship position regarding C# syntax highlighting at JetBrains
@@ -23,7 +30,8 @@ View the [wiki](https://github.com/Rekkonnect/Syndiesis/wiki) for detailed docum
 
 ### Compiling
 
-To compile this program you will need an IDE like Visual Studio 2022, or JetBrains Rider 2024.1. Load the solution file (`Syndiesis.sln`) from the IDE of your choice and build the project (recommended to switch to *Release mode*).
+To compile this program you will need an IDE like Visual Studio 2022, or JetBrains Rider 2024.3+.
+Load the solution file (`Syndiesis.sln`) from the IDE of your choice and build the project (recommended to switch to *Release mode*).
 
 ### Demo
 
@@ -34,13 +42,13 @@ https://github.com/user-attachments/assets/19821a70-e020-4929-9662-584d1afb6416
 ## Stack
 
 - Visual Studio 2022
-- .NET 8.0
-- C# 12.0
+- .NET 9.0
+- C# 13.0
 - [Avalonia 11.0](https://github.com/AvaloniaUI/Avalonia)
 
 ### Dependencies
 
-- [Roslyn 4.10.0](https://github.com/dotnet/roslyn)
+- [Roslyn 4.12.0](https://github.com/dotnet/roslyn)
 - [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit), for the code editor
 - [jamarino/IntervalTree](https://github.com/jamarino/IntervalTree), for the diagnostics
 
@@ -75,16 +83,11 @@ Some icons were taken from the free version of [FontAwesome](https://fontawesome
 Any issues regarding the code editor are most likely to be reported in [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit). This includes behavior not specific to Syndiesis. Issues will be closed if they are specific to AvaloniaEdit, and must be reported there.
 
 Syndiesis exposes data retrieved from Roslyn itself with minimal intervention for readability purposes. If you encounter misrepresented data, it is probably a Roslyn bug, but feel free to report it regardless. Examples of known Roslyn bugs include:
-- In `#pragma warning xyz CS0123`, semantic model considers `CS0123` as a preprocessing symbol. ([dotnet/roslyn#72907](https://github.com/dotnet/roslyn/issues/72907))
-- `GetChildTokens()` returning tokens with no parent `SyntaxTree` and their spans beginning at position 0.
+- Fixed buffer size expression has no symbol info ([dotnet/roslyn#75113](https://github.com/dotnet/roslyn/issues/75113))
 
 ### Desired features
 
 Desired features among other issues are listed in the [issues](https://github.com/Rekkonnect/Syndiesis/issues).
-
-### Ruled-out features
-
-- Auto-complete on text
 
 ## Design philosophy
 

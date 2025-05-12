@@ -97,10 +97,10 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
     {
         if (token.Kind() is SyntaxKind.IdentifierToken)
         {
-            var xmlColorizer = GetXmlTokenColorizer(token);
-            if (xmlColorizer is not null)
+            var miscColorizer = GetMiscTokenColorizer(token);
+            if (miscColorizer is not null)
             {
-                ColorizeSpan(line, token.Span, xmlColorizer);
+                ColorizeSpan(line, token.Span, miscColorizer);
             }
 
             var symbolKind = GetDeclaringSymbolKind(token);
@@ -132,6 +132,30 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         }
     }
 
+    private Action<VisualLineElement>? GetMiscTokenColorizer(SyntaxToken token)
+    {
+        return GetXmlTokenColorizer(token)
+           ?? GetFunctionPointerCallingConventionNameTokenColorizer(token)
+           ;
+    }
+
+    private Action<VisualLineElement>? GetFunctionPointerCallingConventionNameTokenColorizer(SyntaxToken token)
+    {
+        bool isUnmanagedCallingConvention = token.Parent.IsKind(SyntaxKind.FunctionPointerUnmanagedCallingConvention);
+        if (!isUnmanagedCallingConvention)
+        {
+            return null;
+        }
+
+        bool isKnownCallingConvention = KnownIdentifierHelpers.CallingConventions.IsKnownCallingConventionAttributeName(token.Text);
+        if (!isKnownCallingConvention)
+        {
+            return null;
+        }
+
+        return ColorizerForBrush(Styles.ClassBrush);
+    }
+    
     private Action<VisualLineElement>? GetXmlTokenColorizer(SyntaxToken token)
     {
         var tokenKind = token.Kind();
@@ -564,22 +588,14 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             SymbolKind.RangeVariable => Styles.RangeVariableBrush,
             SymbolKind.Preprocessing => Styles.PreprocessingBrush,
             SymbolKind.TypeParameter => Styles.TypeParameterBrush,
+            SymbolKind.DynamicType => Styles.KeywordBrush,
             _ => null,
         };
     }
 
     private static ILazilyUpdatedBrush? BrushForTypeKind(TypeKind kind)
     {
-        return kind switch
-        {
-            TypeKind.Class => Styles.ClassBrush,
-            TypeKind.Struct => Styles.StructBrush,
-            TypeKind.Interface => Styles.InterfaceBrush,
-            TypeKind.Delegate => Styles.DelegateBrush,
-            TypeKind.Enum => Styles.EnumBrush,
-            TypeKind.TypeParameter => Styles.TypeParameterBrush,
-            _ => null,
-        };
+        return RoslynColorizationHelpers.BrushForTypeKind(Styles, kind);
     }
 
     private static bool IsConstDeclaration(SyntaxToken token)
@@ -671,6 +687,13 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
                 return DeclarationTypeSymbolKind(constructorParent);
             }
 
+            case DestructorDeclarationSyntax destructorDeclaration
+            when destructorDeclaration.Identifier.Span == token.Span:
+            {
+                var constructorParent = destructorDeclaration.Parent as MemberDeclarationSyntax;
+                return DeclarationTypeSymbolKind(constructorParent);
+            }
+
             case PropertyDeclarationSyntax propertyDeclaration
             when propertyDeclaration.Identifier.Span == token.Span:
                 return SymbolKind.Property;
@@ -698,6 +721,10 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             case QueryContinuationSyntax queryContinuation
             when queryContinuation.Identifier.Span == token.Span:
                 return SymbolKind.RangeVariable;
+            
+            case LabeledStatementSyntax labeledStatement
+            when labeledStatement.Identifier.Span == token.Span:
+                return SymbolKind.Label;
         }
 
         return default;

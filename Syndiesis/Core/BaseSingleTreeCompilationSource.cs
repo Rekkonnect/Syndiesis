@@ -70,6 +70,11 @@ public abstract class BaseSingleTreeCompilationSource<TCompilation, TParseOption
     protected abstract TCompilation CreateCompilation();
     protected abstract SyntaxTree ParseTree(string source, CancellationToken cancellationToken);
 
+    public void AdjustOutputKindCore(OutputKind outputKind)
+    {
+        Compilation = Compilation.ModifyOptions(options => options.WithOutputKind(outputKind));
+    }
+
     private DiagnosticsCollection RediscoverDiagnostics()
     {
         if (_diagnostics is not null)

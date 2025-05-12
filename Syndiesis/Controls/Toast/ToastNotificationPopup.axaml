@@ -17,7 +17,6 @@
 
     <Rectangle
       Name="backgroundFill"
-      Fill="#004044"
       RadiusX="4"
       RadiusY="4"
       />

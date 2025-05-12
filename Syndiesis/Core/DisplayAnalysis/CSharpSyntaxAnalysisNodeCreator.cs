@@ -14,13 +14,12 @@ using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
-using Run = UIBuilder.Run;
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
-using SingleRunInline = SingleRunInline.Builder;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
-
 using ReadOnlySyntaxNodeList = IReadOnlyList<SyntaxNode>;
+using Run = UIBuilder.Run;
+using SingleRunInline = SingleRunInline.Builder;
 using SyntaxTokenList = IReadOnlyList<SyntaxToken>;
 
 public sealed partial class CSharpSyntaxAnalysisNodeCreator : BaseSyntaxAnalysisNodeCreator

@@ -11,7 +11,6 @@ using AvaloniaEdit.Rendering;
 using Garyon.Mechanisms;
 using Garyon.Objects;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Editor;

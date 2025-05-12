@@ -12,12 +12,10 @@ namespace Syndiesis.Core.DisplayAnalysis;
 
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
-
 using GroupedRunInline = GroupedRunInline.IBuilder;
-using SingleRunInline = SingleRunInline.Builder;
-
 // This also captures IOperation.OperationList
 using OperationList = IReadOnlyCollection<IOperation>;
+using SingleRunInline = SingleRunInline.Builder;
 
 public sealed partial class OperationsAnalysisNodeCreator
     : BaseAnalysisNodeCreator
@@ -41,7 +39,7 @@ public sealed partial class OperationsAnalysisNodeCreator
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
-        object? value, TDisplayValueSource? valueSource, bool includeChildren = true)
+        object? value, TDisplayValueSource? valueSource, bool includeChildren)
         where TDisplayValueSource : default
     {
         switch (value)

@@ -201,16 +201,13 @@ public partial class AnalysisTreeListNodeLine : UserControl
         PulseCopiedLine();
 
         var toastContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
-        if (toastContainer is not null)
-        {
-            var popup = new ToastNotificationPopup();
-            popup.defaultTextBlock.Text = $"""
-                Copied entire line content:
-                {text}
-                """;
-            var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
-            _ = toastContainer.Show(popup, animation);
-        }
+        _ = CommonToastNotifications.ShowClassicMain(
+            toastContainer,
+            $"""
+             Copied entire line content:
+             {text}
+             """,
+            TimeSpan.FromSeconds(2));
     }
 
     private void PulseCopiedLine()

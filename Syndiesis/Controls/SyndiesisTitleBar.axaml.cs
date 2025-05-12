@@ -109,13 +109,14 @@ public partial class SyndiesisTitleBar : UserControl
         var toastContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
         if (toastContainer is not null)
         {
-            var popup = new ToastNotificationPopup();
-            popup.defaultTextBlock.Text = $"""
+            var popupContent = $"""
                 Copied entire line content:
                 {text}
                 """;
-            var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
-            _ = toastContainer.Show(popup, animation);
+            _ = CommonToastNotifications.ShowClassicMain(
+                toastContainer,
+                popupContent,
+                TimeSpan.FromSeconds(2));
         }
     }
 

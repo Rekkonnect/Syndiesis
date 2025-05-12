@@ -2,7 +2,6 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
-using Avalonia.Media;
 using Syndiesis.Controls;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
@@ -83,6 +82,7 @@ public partial class SettingsView : UserControl
                     ResetSettings();
                     e.Handled = true;
                 }
+
                 break;
 
             case Key.S:
@@ -91,6 +91,7 @@ public partial class SettingsView : UserControl
                     SaveSettings();
                     e.Handled = true;
                 }
+
                 break;
         }
     }
@@ -144,25 +145,18 @@ public partial class SettingsView : UserControl
         if (success)
         {
             LoadFromSettings();
-            if (notificationContainer is not null)
-            {
-                var popup = new ToastNotificationPopup();
-                popup.defaultTextBlock.Text = "Reverted settings to current file state";
-                var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
-                _ = notificationContainer.Show(popup, animation);
-            }
+            _ = CommonToastNotifications.ShowClassicMain(
+                notificationContainer,
+                "Reverted settings to current file state",
+                TimeSpan.FromSeconds(2));
             SettingsReset?.Invoke();
         }
         else
         {
-            if (notificationContainer is not null)
-            {
-                var popup = new ToastNotificationPopup();
-                popup.BackgroundFill = Color.FromUInt32(0xFF660030);
-                popup.defaultTextBlock.Text = "Failed to reset settings. Please check the logs for details.";
-                var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(4));
-                _ = notificationContainer.Show(popup, animation);
-            }
+            _ = CommonToastNotifications.ShowClassicFailure(
+                notificationContainer,
+                "Failed to reset settings. Please check the logs for details.",
+                TimeSpan.FromSeconds(4));
         }
     }
 
@@ -175,30 +169,24 @@ public partial class SettingsView : UserControl
         var notificationContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
         if (success)
         {
-            if (notificationContainer is not null)
-            {
-                var popup = new ToastNotificationPopup();
-                popup.defaultTextBlock.Text = "Settings saved successfully";
-                var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
-                _ = notificationContainer.Show(popup, animation);
-            }
+            _ = CommonToastNotifications.ShowClassicMain(
+                notificationContainer,
+                "Settings saved successfully",
+                TimeSpan.FromSeconds(2));
             SettingsSaved?.Invoke();
         }
         else
         {
-            if (notificationContainer is not null)
-            {
-                var fileInfo = new FileInfo(path);
-                var popup = new ToastNotificationPopup();
-                popup.BackgroundFill = Color.FromUInt32(0xFF660030);
-                popup.defaultTextBlock.Text = $"""
-                    Failed to save settings to path:
-                    '{fileInfo.FullName}'
-                    Please check the logs for details.
-                    """;
-                var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(4));
-                _ = notificationContainer.Show(popup, animation);
-            }
+            var fileInfo = new FileInfo(path);
+
+            _ = CommonToastNotifications.ShowClassicFailure(
+                notificationContainer,
+                $"""
+                 Failed to save settings to path:
+                 '{fileInfo.FullName}'
+                 Please check the logs for details.
+                 """,
+                TimeSpan.FromSeconds(4));
         }
     }
 

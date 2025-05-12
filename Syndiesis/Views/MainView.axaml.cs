@@ -9,13 +9,16 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
+using Syndiesis.Controls.Editor.QuickInfo;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Views;
@@ -42,6 +45,7 @@ public partial class MainView : UserControl
     [MemberNotNull(nameof(_quickInfoHandler))]
     private void InitializeView()
     {
+        quickInfoDisplayPopup.CompilationSource = ViewModel.HybridCompilationSource;
         _quickInfoHandler = new(quickInfoDisplayPopup);
         _quickInfoHandler.RegisterMovementHandling(this);
         _quickInfoHandler.PrepareShowing += PrepareQuickInfoShowing;
@@ -96,12 +100,16 @@ public partial class MainView : UserControl
 
         _lastHoveredPosition = documentPosition;
 
-        var diagnostics = GetHoveredDiagnostics(documentPosition.Value);
+        var documentPositionValue = documentPosition.Value;
+        int positionOffset = editor.TextArea.TextView.Document.GetOffset(documentPositionValue.Location);
+        var symbols = GetHoveredSymbols(positionOffset);
+        var diagnostics = GetHoveredDiagnostics(documentPositionValue);
 
-        if (diagnostics.IsEmpty)
-            return;
-
+        quickInfoDisplayPopup.SetSymbols(symbols);
         quickInfoDisplayPopup.SetDiagnostics(diagnostics);
+
+        if (quickInfoDisplayPopup.IsEmpty())
+            return;
 
         var viewPosition = pointerArgs.GetPosition(this);
         quickInfoDisplayPopup.SetPointerOrigin(viewPosition);
@@ -156,6 +164,51 @@ public partial class MainView : UserControl
                     ;
             }
         }
+    }
+
+    private ImmutableArray<SymbolHoverContext> GetHoveredSymbols(int position)
+    {
+        var source = codeEditor.CompilationSource?.CurrentSource;
+        var semanticModel = source?.SemanticModel;
+        var tree = source?.Tree;
+        if (tree is null)
+            return [];
+        if (semanticModel is null)
+            return [];
+        
+        var node = tree.SyntaxNodeAtPositionIncludingStructuredTrivia(position);
+        if (node is null)
+            return [];
+
+        var symbolSet = new HashSet<ISymbol>(SymbolEqualityComparer.Default);
+        var relatedNodes = node.EnumerateAncestorsWithSameSpanAndThis();
+        foreach (var relatedNode in relatedNodes)
+        {
+            AddRelatedSymbols(symbolSet, semanticModel, relatedNode);
+        }
+        
+        return
+        [
+            ..symbolSet
+                .Select(symbol => new SymbolHoverContext(symbol, semanticModel, position))
+        ];
+    }
+
+    private static void AddRelatedSymbols(
+        ISet<ISymbol> symbols, SemanticModel semanticModel, SyntaxNode node)
+    {
+        const int maxCandidates = 4;
+        
+        var symbolInfo = semanticModel.GetSymbolInfo(node);
+        var declaredSymbol = semanticModel.GetDeclaredSymbol(node);
+        var alias = semanticModel.GetAliasInfo(node);
+        var preprocessingSymbol = semanticModel.GetPreprocessingSymbolInfo(node).Symbol;
+
+        symbols.AddNonNull(declaredSymbol);
+        symbols.AddNonNull(alias);
+        symbols.AddNonNull(symbolInfo.Symbol);
+        symbols.AddNonNull(preprocessingSymbol);
+        symbols.UnionWith(symbolInfo.CandidateSymbols.Take(maxCandidates));
     }
 
     private ImmutableArray<Diagnostic> GetHoveredDiagnostics(TextViewPosition documentPosition)
@@ -654,13 +707,10 @@ public partial class MainView : UserControl
     private void ShowResetSettingsPopup()
     {
         var notificationContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
-        if (notificationContainer is not null)
-        {
-            var popup = new ToastNotificationPopup();
-            popup.defaultTextBlock.Text = "Reverted settings to current file state";
-            var animation = new BlurOpenDropCloseToastAnimation(TimeSpan.FromSeconds(2));
-            _ = notificationContainer.Show(popup, animation);
-        }
+        _ = CommonToastNotifications.ShowClassicMain(
+            notificationContainer,
+            "Reverted settings to current file state",
+            TimeSpan.FromSeconds(2));
     }
 
     protected override void OnKeyDown(KeyEventArgs e)

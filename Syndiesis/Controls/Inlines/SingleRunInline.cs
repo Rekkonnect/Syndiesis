@@ -32,11 +32,14 @@ public sealed class SingleRunInline : GroupedRunInline
         builder.Append(Run.Text);
     }
 
-    public sealed record Builder(
-        UIBuilder.Run Run,
-        string? OverrideText = null)
-        : Builder<SingleRunInline>(OverrideText)
+    public sealed class Builder(
+        UIBuilder.Run run,
+        string? overrideText = null)
+        : Builder<SingleRunInline>(overrideText)
     {
+        public UIBuilder.Run Run { get; } = run;
+        public string? OverrideText { get; } = overrideText;
+
         public override SingleRunInline Build()
         {
             return new(Run.Build(), OverrideText);

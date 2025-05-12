@@ -8,6 +8,6 @@ public static class RoslynExceptions
     {
         throw new ArgumentException(
             $"Invalid language name {languageName}",
-            nameof(parameterName));
+            parameterName);
     }
 }

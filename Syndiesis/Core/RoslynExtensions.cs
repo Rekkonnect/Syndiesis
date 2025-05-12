@@ -332,4 +332,11 @@ public static class RoslynExtensions
             current = parent;
         }
     }
+
+    public static LinePosition GetLinePosition(
+        this SyntaxTree tree, int position)
+    {
+        var span = new TextSpan(position, 0);
+        return tree.GetLineSpan(span).Span.Start;
+    }
 }
