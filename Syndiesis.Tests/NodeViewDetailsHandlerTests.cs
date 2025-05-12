@@ -2,22 +2,26 @@
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
+using TUnit.Core.Logging;
 
 namespace Syndiesis.Tests;
 
-[Parallelizable(ParallelScope.Children)]
 public sealed class NodeViewDetailsHandlerTests
-    : BaseProjectCodeTests
 {
-    protected override async Task TestSource(string text)
+    [Test]
+    [MethodDataSource(nameof(FilesToTestSource))]
+    public async Task TestAllFilesWithFlow(FileInfo file, CancellationToken cancellationToken)
     {
+        var fileContent = CacheableFileContentContainer<CacheableFileText>.Shared.Get(file);
+        var text = await fileContent.GetTextAsync(cancellationToken);
         var hybridCompilation = new HybridSingleTreeCompilationSource();
-        hybridCompilation.SetSource(text, default);
-        await TestEntireHybridCompilationTree(hybridCompilation);
+        hybridCompilation.SetSource(text, cancellationToken);
+        await TestEntireHybridCompilationTree(hybridCompilation, cancellationToken);
     }
 
     private static async Task TestEntireHybridCompilationTree(
-        HybridSingleTreeCompilationSource hybridCompilation)
+        HybridSingleTreeCompilationSource hybridCompilation,
+        CancellationToken cancellationToken)
     {
         var profiling = new SimpleProfiling();
         int nodeCount = 0;
@@ -25,9 +29,9 @@ public sealed class NodeViewDetailsHandlerTests
         using (var _ = profiling.BeginProcess())
         {
             var tree = hybridCompilation.CurrentSource.Tree;
-            Assert.That(tree, Is.Not.Null);
-            var root = await tree.GetRootAsync();
-            Assert.That(root, Is.Not.Null);
+            await Assert.That(tree).IsNotNull();
+            var root = await tree!.GetRootAsync(cancellationToken);
+            await Assert.That(root).IsNotNull();
             length = root.FullSpan.Length;
 
             var nodes = root.DescendantNodesAndSelf(descendIntoTrivia: true)
@@ -35,57 +39,66 @@ public sealed class NodeViewDetailsHandlerTests
             nodeCount = nodes.Count;
             await Parallel.ForEachAsync(
                 nodes,
+                cancellationToken,
                 TestNodeLocal);
         }
 
         var seconds = profiling.SnapshotResults!.Time.TotalSeconds;
-        TestContext.Progress.WriteLine($"""
+        TestContext.Current!.GetDefaultLogger().LogInformation($"""
             Finished testing all {nodeCount} nodes from {length} characters in {seconds:N3}s
             """);
 
         async ValueTask TestNodeLocal(SyntaxNode node, CancellationToken cancellationToken)
         {
-            await TestNode(hybridCompilation, node);
+            await TestNode(hybridCompilation, node, cancellationToken);
         }
     }
 
     private static async Task TestNode(
         HybridSingleTreeCompilationSource hybridCompilation,
-        SyntaxNode node)
+        SyntaxNode node,
+        CancellationToken cancellationToken)
     {
         var span = node.Span;
-        var result = await TestExecutingResult(hybridCompilation, span);
+        var result = await TestExecutingResult(
+            hybridCompilation, span, cancellationToken);
         var rootNode = result.Root!.Node;
-        Assert.That(rootNode, Is.Not.Null);
+        await Assert.That(rootNode).IsNotNull();
 
         // For nodes with zero length, this is the equivalent of hovering the caret
         // over the node that will be selected, and thus we care about containing the
         // intended node's span
         if (span.Length is 0)
         {
-            var containedSpan = rootNode.Span.Contains(span)
+            var containedSpan = rootNode!.Span.Contains(span)
                 || rootNode.FullSpan.Contains(span);
-            Assert.That(containedSpan, Is.True);
+            await Assert.That(containedSpan).IsTrue();
         }
         else
         {
-            Assert.That(rootNode?.FullSpan, Is.EqualTo(node.FullSpan));
+            await Assert.That(rootNode?.FullSpan).IsEqualTo(node.FullSpan);
         }
     }
 
     private static async Task<NodeViewAnalysisExecution> TestExecutingResult(
         HybridSingleTreeCompilationSource hybridCompilation,
-        TextSpan span)
+        TextSpan span,
+        CancellationToken cancellationToken)
     {
         var execution = NodeViewAnalysisHelpers
             .GetNodeViewAnalysisExecutionForSpan(hybridCompilation, span);
-        Assert.That(execution, Is.Not.Null);
+        await Assert.That(execution).IsNotNull();
 
-        var result = execution.ExecuteCore(default);
-        Assert.That(result, Is.Not.Null);
+        var result = execution!.ExecuteCore(cancellationToken);
+        await Assert.That(result).IsNotNull();
 
-        bool allSuccessful = await result.AwaitAllLoaded(TimeSpan.FromMilliseconds(1));
-        Assert.That(allSuccessful, Is.True);
+        bool allSuccessful = await result!.AwaitAllLoaded(TimeSpan.FromMilliseconds(1));
+        await Assert.That(allSuccessful).IsTrue();
         return execution;
+    }
+
+    public static IReadOnlyList<FileInfo> FilesToTestSource()
+    {
+        return TestSources.FilesToTest;
     }
 }
