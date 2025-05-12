@@ -25,14 +25,41 @@
         <RowDefinition Height="20"/>
       </Grid.RowDefinitions>
 
-      <controls:SyndiesisTextEditor
-        Name="textEditor"
-        Text="Hello AvaloniaEdit from Syndiesis!"
-        ShowLineNumbers="True"
-        HorizontalScrollBarVisibility="Hidden"
-        VerticalScrollBarVisibility="Hidden"
-        FontFamily="{StaticResource FiraCodeFontFamily}"
-      />
+      <Grid>
+        <controls:SyndiesisTextEditor
+          Name="textEditor"
+          Text="Hello AvaloniaEdit from Syndiesis!"
+          ShowLineNumbers="True"
+          HorizontalScrollBarVisibility="Hidden"
+          VerticalScrollBarVisibility="Hidden"
+          FontFamily="{StaticResource FiraCodeFontFamily}"
+        />
+
+        <StackPanel
+          Name="diagnosticsUnavailableDisplay"
+          IsVisible="false"
+          HorizontalAlignment="Right"
+          VerticalAlignment="Bottom">
+          <TextBlock
+            Margin="0 0 5 -3"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            FontSize="22"
+            Foreground="#AAAA4444"
+            FontFamily="{StaticResource AptosFontFamily}"
+            Text="DIAGNOSTICS UNAVAILABLE">
+          </TextBlock>
+          <TextBlock
+            Margin="0 0 5 3"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            FontSize="14"
+            Foreground="#80AA4444"
+            FontFamily="{StaticResource AptosFontFamily}"
+            Text="due to a compiler exception">
+          </TextBlock>
+        </StackPanel>
+      </Grid>
 
       <Panel
         Background="#003034"

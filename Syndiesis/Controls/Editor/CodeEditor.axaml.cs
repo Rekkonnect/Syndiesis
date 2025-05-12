@@ -110,6 +110,15 @@ public partial class CodeEditor : UserControl
         }
     }
 
+    public bool DiagnosticsUnavailable
+    {
+        get => diagnosticsUnavailableDisplay.IsVisible;
+        set
+        {
+            diagnosticsUnavailableDisplay.IsVisible = value;
+        }
+    }
+
     public event EventHandler? TextChanged
     {
         add => textEditor.Document.TextChanged += value;
