@@ -4,19 +4,32 @@ using Syndiesis.Core;
 
 namespace Syndiesis.Tests;
 
-[TestFixtureSource(nameof(AnalysisNodeKindSource))]
-public sealed class AnalysisPipelineHandlerTests(AnalysisNodeKind analysisNodeKind)
-    : BaseProjectCodeTests
+public sealed class AnalysisPipelineHandlerTests
 {
-    public AnalysisNodeKind AnalysisNodeKind { get; } = analysisNodeKind;
-
-    protected override async Task TestSource(string text)
+    [Test]
+    [MethodDataSource(nameof(PipelineTestArgumentsSource))]
+    public async Task TestFilePipelineExecution(PipelineTestArguments arguments)
     {
-        var pipeline = CreatePipeline();
-        await pipeline.ForceAnalysis(new StringTextSource(text));
+        var (analysisNodeKind, file) = arguments;
+        var pipeline = CreatePipeline(analysisNodeKind);
+
+        var fileContent = CacheableFileContentContainer<CacheableFileText>.Shared.Get(file);
+        var text = await fileContent.GetTextAsync();
+        var textSource = new StringTextSource(text);
+        await pipeline.ForceAnalysis(textSource);
     }
 
-    private AnalysisPipelineHandler CreatePipeline()
+    private void HandleAnalysisFailed(FailedAnalysisResult result)
+    {
+        throw result.Exception
+            ?? new Exception("An analysis failed without an exception");
+    }
+
+    private void HandleAnalysisCompleted(AnalysisResult result)
+    {
+    }
+
+    private AnalysisPipelineHandler CreatePipeline(AnalysisNodeKind analysisNodeKind)
     {
         var pipeline = new AnalysisPipelineHandler();
         pipeline.AnalysisCompleted += HandleAnalysisCompleted;
@@ -24,38 +37,22 @@ public sealed class AnalysisPipelineHandlerTests(AnalysisNodeKind analysisNodeKi
         var hybridCompilation = new HybridSingleTreeCompilationSource();
         var executionFactory = new AnalysisExecutionFactory(hybridCompilation);
         pipeline.AnalysisExecution = executionFactory
-            .CreateAnalysisExecution(AnalysisNodeKind);
+            .CreateAnalysisExecution(analysisNodeKind);
         return pipeline;
     }
 
-    private void HandleAnalysisFailed(FailedAnalysisResult result)
+    public static IEnumerable<PipelineTestArguments> PipelineTestArgumentsSource()
     {
-        Assert.Fail("An analysis failed");
-    }
-
-    private void HandleAnalysisCompleted(AnalysisResult result)
-    {
-    }
-
-    [Test]
-    public async Task TestAllFilesWithFlow()
-    {
-        TestContext.Progress.WriteLine(
-            "Began testing the analysis pipeline on all files, this will take some time.");
-
-        var pipeline = CreatePipeline();
-
-        foreach (var file in FilesToTest)
+        foreach (var nodeKind in AnalysisNodeKindSource())
         {
-            var text = await File.ReadAllTextAsync(file.FullName);
-            var textSource = new StringTextSource(text);
-            await pipeline.ForceAnalysis(textSource);
-
-            TestContext.Progress.WriteLine($"Processed file {file.FullName}");
+            foreach (var file in TestSources.FilesToTest)
+            {
+                yield return new(nodeKind, file);
+            }
         }
     }
 
-    private static IEnumerable<AnalysisNodeKind> AnalysisNodeKindSource()
+    public static IReadOnlyList<AnalysisNodeKind> AnalysisNodeKindSource()
     {
         return
         [
@@ -65,4 +62,8 @@ public sealed class AnalysisPipelineHandlerTests(AnalysisNodeKind analysisNodeKi
             AnalysisNodeKind.Attribute,
         ];
     }
+
+    public sealed record PipelineTestArguments(
+        AnalysisNodeKind NodeKind,
+        FileInfo File);
 }
