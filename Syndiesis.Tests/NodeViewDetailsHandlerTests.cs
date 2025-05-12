@@ -99,6 +99,6 @@ public sealed class NodeViewDetailsHandlerTests
 
     public static IReadOnlyList<FileInfo> FilesToTestSource()
     {
-        return TestSources.FilesToTest;
+        return TestSources.MainFilesToTest;
     }
 }

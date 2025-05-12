@@ -19,7 +19,6 @@ public sealed class CacheableFileText(FileInfo source)
     public FileInfo Source { get; } = source;
 
     private string? _cachedText = null;
-    private readonly Lock _lock = new();
 
     private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1);
 
