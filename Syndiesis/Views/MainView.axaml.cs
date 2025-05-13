@@ -216,7 +216,8 @@ public partial class MainView : UserControl
         var linePosition = new LinePosition(
             documentPosition.Line - 1,
             documentPosition.Column - 1);
-        var diagnostics = codeEditor.CompilationSource?.CurrentSource.Diagnostics
+        var diagnostics = codeEditor.CompilationSource?.CurrentSource
+            .GetDiagnostics()
             .DiagnosticsAtPosition(linePosition)
             .ToImmutableArray()
             ?? [];

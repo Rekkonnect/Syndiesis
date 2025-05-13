@@ -30,9 +30,18 @@ public sealed partial class DiagnosticsLayer : SyndiesisTextEditorLayer
         if (!Enabled)
             return;
 
-        var diagnostics = CodeEditor.CompilationSource?.CurrentSource.Diagnostics;
-        if (diagnostics is null)
+        var currentSource = CodeEditor.CompilationSource?.CurrentSource;
+        if (currentSource is null)
+        {
             return;
+        }
+
+        var diagnostics = currentSource.GetDiagnostics();
+
+        Dispatcher.UIThread.InvokeAsync(() =>
+        {
+            CodeEditor.DiagnosticsUnavailable = currentSource.DiagnosticsUnavailable;
+        });
 
         var firstLineIndex = Math.Max(TextView.GetFirstVisibleLine() - 1, 0);
         var lastLineIndex = TextView.GetLastVisibleLine();

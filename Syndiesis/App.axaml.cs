@@ -121,7 +121,9 @@ public partial class App : Application
             .WriteTo.File(
                 "logs/syndiesis-main.txt",
                 rollingInterval: RollingInterval.Day,
-                outputTemplate: LoggerExtensionsEx.DefaultOutputTemplate)
+                outputTemplate: LoggerExtensionsEx.DefaultOutputTemplate,
+                buffered: true,
+                flushToDiskInterval: TimeSpan.FromSeconds(2))
             .CreateLogger()
             ;
 

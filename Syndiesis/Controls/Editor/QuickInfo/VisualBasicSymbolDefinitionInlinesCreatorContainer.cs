@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using System;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
@@ -7,12 +6,14 @@ public sealed class VisualBasicSymbolDefinitionInlinesCreatorContainer
     : BaseSymbolDefinitionInlinesCreatorContainer
 {
     public readonly VisualBasicNamedTypeSymbolDefinitionInlinesCreator NamedTypeCreator;
+    private readonly VisualBasicFallbackSymbolDefinitionInlinesCreator _fallback;
 
     public VisualBasicSymbolDefinitionInlinesCreatorContainer(
         ISymbolInlinesRootCreatorContainer rootContainer)
         : base(rootContainer)
     {
         NamedTypeCreator = new(this);
+        _fallback = new(this);
     }
 
     protected override ISymbolItemInlinesCreator FallbackCreatorForSymbol<TSymbol>(TSymbol symbol)
@@ -23,7 +24,7 @@ public sealed class VisualBasicSymbolDefinitionInlinesCreatorContainer
                 return NamedTypeCreator;
 
             default:
-                throw new ArgumentException("The symbol type is not supported.", nameof(symbol));
+                return _fallback;
         }
     }
 }

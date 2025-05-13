@@ -27,7 +27,15 @@ public sealed partial class VisualBasicRoslynColorizer(
 
         cancellationTokenFactory.Cancel();
 
-        PerformColorization(line, cancellationTokenFactory.CurrentToken);
+        try
+        {
+            PerformColorization(line, cancellationTokenFactory.CurrentToken);
+        }
+        catch (Exception ex)
+        when (ex is not OperationCanceledException)
+        {
+            App.Current.ExceptionListener.HandleException(ex, "Colorization failed");
+        }
     }
 
     private void PerformColorization(

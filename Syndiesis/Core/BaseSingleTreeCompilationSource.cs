@@ -1,5 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using System;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
@@ -11,6 +13,8 @@ public abstract class BaseSingleTreeCompilationSource<TCompilation, TParseOption
     where TParseOptions : ParseOptions
 {
     private DiagnosticsCollection? _diagnostics = null;
+
+    public bool DiagnosticsUnavailable { get; private set; } = false;
 
     public abstract string LanguageName { get; }
 
@@ -29,8 +33,6 @@ public abstract class BaseSingleTreeCompilationSource<TCompilation, TParseOption
             return Compilation.GetSemanticModel(Tree);
         }
     }
-
-    public DiagnosticsCollection Diagnostics => RediscoverDiagnostics();
 
     public TParseOptions ParseOptions { get; set; }
 
@@ -75,14 +77,30 @@ public abstract class BaseSingleTreeCompilationSource<TCompilation, TParseOption
         Compilation = Compilation.ModifyOptions(options => options.WithOutputKind(outputKind));
     }
 
-    private DiagnosticsCollection RediscoverDiagnostics()
+    public DiagnosticsCollection GetDiagnostics()
     {
         if (_diagnostics is not null)
             return _diagnostics;
 
-        var diagnostics = Compilation.GetDiagnostics();
+        var diagnostics = TryGetDiagnostics();
         _diagnostics = DiagnosticsCollection.CreateForDiagnostics(diagnostics);
         return _diagnostics;
+    }
+
+    private ImmutableArray<Diagnostic> TryGetDiagnostics()
+    {
+        try
+        {
+            DiagnosticsUnavailable = false;
+            return Compilation.GetDiagnostics();
+        }
+        catch (Exception ex)
+        {
+            DiagnosticsUnavailable = true;
+            App.Current.ExceptionListener.HandleException(
+                ex, "An exception occurred while trying to get the diagnostics");
+            return [];
+        }
     }
 
     public void ReParseCurrent(CancellationToken token)
