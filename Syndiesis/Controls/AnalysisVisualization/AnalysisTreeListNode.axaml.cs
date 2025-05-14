@@ -160,10 +160,13 @@ public partial class AnalysisTreeListNode : UserControl
 
     public async Task RequestInitializedChildren()
     {
-        if (_childRetriever is null)
+        if (_childRetrievalTask is not null)
+        {
+            await _childRetrievalTask;
             return;
+        }
 
-        if (_childRetriever.IsValueCreated)
+        if (HasLoadedChildren)
             return;
 
         _childRetrievalTask = ChildRetrievalTaskWorker();
@@ -394,7 +397,7 @@ public partial class AnalysisTreeListNode : UserControl
         if (depth <= 0)
             return;
 
-        Dispatcher.UIThread.Invoke(Expand);
+        await Dispatcher.UIThread.InvokeAsync(Expand);
         await RequestInitializedChildren();
         var taskList = new List<Task>();
         foreach (var node in LazyChildren)
