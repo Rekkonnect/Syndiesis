@@ -27,7 +27,6 @@ public partial class VerticalScrollBar : BaseScrollBar
         var position = e.GetPosition(draggableRectangle);
         var dimension = position.Y;
         var dimensionLength = draggableRectangleCanvas.Bounds.Height;
-        var top = Canvas.GetTop(draggableRectangle);
         var height = draggableRectangle.Height;
         var centerOffset = height / 2;
         var end = height;

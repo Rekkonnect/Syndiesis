@@ -55,6 +55,11 @@ public static class ConvenienceExtensions
         return (int)Math.Round(value);
     }
 
+    public static double ZeroOnNaN(this double value)
+    {
+        return value is double.NaN ? 0 : value;
+    }
+
     public static bool IsEmpty<T>(this IReadOnlyList<T> source)
     {
         var genericDefinition = source.GetType().GetGenericTypeDefinitionOrSame();

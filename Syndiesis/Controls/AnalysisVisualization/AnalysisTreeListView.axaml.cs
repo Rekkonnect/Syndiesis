@@ -85,7 +85,7 @@ public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManag
         using (verticalScrollBar.BeginUpdateBlock())
         {
             verticalScrollBar.MaxValue = node.Bounds.Height + extraScrollHeight;
-            verticalScrollBar.StartPosition = -Canvas.GetTop(topLevelNodeContent);
+            verticalScrollBar.StartPosition = -Canvas.GetTop(topLevelNodeContent).ZeroOnNaN();
             verticalScrollBar.EndPosition = verticalScrollBar.StartPosition + contentCanvas.Bounds.Height;
             verticalScrollBar.SetAvailableScrollOnScrollableWindow();
         }
@@ -93,7 +93,7 @@ public partial class AnalysisTreeListView : UserControl, IAnalysisNodeHoverManag
         using (horizontalScrollBar.BeginUpdateBlock())
         {
             horizontalScrollBar.MaxValue = Math.Max(node.Bounds.Width - extraScrollWidth, 0);
-            horizontalScrollBar.StartPosition = -Canvas.GetLeft(topLevelNodeContent);
+            horizontalScrollBar.StartPosition = -Canvas.GetLeft(topLevelNodeContent).ZeroOnNaN();
             horizontalScrollBar.EndPosition = horizontalScrollBar.StartPosition + contentCanvas.Bounds.Width;
             horizontalScrollBar.SetAvailableScrollOnScrollableWindow();
         }
