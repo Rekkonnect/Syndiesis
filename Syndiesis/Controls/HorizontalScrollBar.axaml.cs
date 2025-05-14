@@ -27,10 +27,8 @@ public partial class HorizontalScrollBar : BaseScrollBar
         var position = e.GetPosition(draggableRectangle);
         var dimension = position.X;
         var dimensionLength = draggableRectangleCanvas.Bounds.Width;
-        var left = Canvas.GetLeft(draggableRectangle);
         var width = draggableRectangle.Width;
         var centerOffset = width / 2;
-        var offset = left;
         var end = width;
         HandleDraggable(e, dimension, dimensionLength, centerOffset, end);
     }
