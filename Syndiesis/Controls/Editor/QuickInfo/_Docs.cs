@@ -21,13 +21,13 @@ The planned structure is:
     - Extras
     - Docs
     - Commons
-	- Member Container
+    - Member Container
   - VB container
     - Definition
     - Extras
     - Docs
     - Commons
-	- Member Container
+    - Member Container
 
 - Definition
   - One for each symbol
@@ -45,13 +45,13 @@ The planned structure is:
   - Simple reference to another symbol, almost equivalent to minimal display string
     This will be used by all the other creators to refer to another symbol without
     expanding on its extras
-	This is most useful for types being described anywhere, and referred symbols in
-	the docs
+    This is most useful for types being described anywhere, and referred symbols in
+    the docs
 - Member Container
   - Displays information about the containers the member is a part of
     - Member symbols (modules, namespaces, types, methods, fields, properties and events)
-	  display their containers' information fully
+      display their containers' information fully
     - Non-members (locals, parameters, etc.) may contain limited information about their
-	  containing symbol; preferably the method they are contained in
+      containing symbol; preferably the method they are contained in
 
 #endif
