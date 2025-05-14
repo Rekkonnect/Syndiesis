@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
+using Syndiesis.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -723,15 +724,15 @@ static string Code(string type)
         var inlines = new GroupedRunInlineCollection();
 
         AppendValueSource(valueSource, inlines);
-        var valueRun = RunForSimpleObjectValue(value);
-        inlines.Add(valueRun);
+        var valueRuns = RunForSimpleObjectValue(value);
+        inlines.AddOneOrMany(valueRuns);
 
         return AnalysisTreeListNodeLine(
             inlines,
             CommonStyles.MemberAccessValueDisplay);
     }
 
-    protected SingleRunInline RunForSimpleObjectValue(object? value)
+    protected OneOrMany<SingleRunInline> RunForSimpleObjectValue(object? value)
     {
         if (value is null)
             return new SingleRunInline(CreateNullValueRun());
@@ -1194,7 +1195,7 @@ partial class BaseAnalysisNodeCreator
             object value, GroupedRunInlineCollection inlines)
         {
             var basicValueInline = BasicValueInline(value);
-            inlines.Add(basicValueInline);
+            inlines.AddOneOrMany(basicValueInline);
 
             return AnalysisTreeListNodeLine(
                 inlines,
@@ -1213,7 +1214,7 @@ partial class BaseAnalysisNodeCreator
             return () => GetChildren(value);
         }
 
-        private GroupedRunInline BasicValueInline(object? value)
+        private OneOrMany<GroupedRunInline> BasicValueInline(object? value)
         {
             if (value is null)
                 return new SingleRunInline(CreateNullValueRun());
@@ -1249,13 +1250,13 @@ partial class BaseAnalysisNodeCreator
                     break;
 
                 default:
-                    return Creator.RunForSimpleObjectValue(value);
+                    return OneOrMany<GroupedRunInline>.From(Creator.RunForSimpleObjectValue(value));
             }
 
-            return NestedTypeDisplayGroupedRun(type);
+            return new(NestedTypeDisplayGroupedRun(type));
         }
 
-        private GroupedRunInline OptionalValueInline(object optional)
+        private OneOrMany<GroupedRunInline> OptionalValueInline(object optional)
         {
             var type = optional.GetType();
             var hasValue = (bool)type.GetProperty(nameof(Optional<object>.HasValue))
@@ -1277,9 +1278,9 @@ partial class BaseAnalysisNodeCreator
             var value = kvp.Value;
 
             return new ComplexGroupedRunInline([
-                new(BasicValueInline(key)),
+                .. BasicValueInline(key).Enumerable.Select(s => new RunOrGrouped(s)),
                 CreateValueSplitterRun(),
-                new(BasicValueInline(value)),
+                .. BasicValueInline(value).Enumerable.Select(s => new RunOrGrouped(s)),
             ]);
         }
 
@@ -1323,7 +1324,7 @@ partial class BaseAnalysisNodeCreator
             object? value, GroupedRunInlineCollection inlines)
         {
             var run = Creator.RunForSimpleObjectValue(value);
-            inlines.Add(run);
+            inlines.AddOneOrMany(run);
 
             return AnalysisTreeListNodeLine(
                 inlines,

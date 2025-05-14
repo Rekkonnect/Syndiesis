@@ -77,4 +77,29 @@ public static class ConvenienceExtensions
     {
         return array.IsDefaultOrEmpty;
     }
+
+    public static void AddRange<TCollection, TElement>(
+        this ICollection<TCollection> collection, IEnumerable<TElement> values)
+        where TElement : TCollection
+    {
+        foreach (var value in values)
+        {
+            collection.Add(value);
+        }
+    }
+
+    public static void AddOneOrMany<TCollectionElement, TAdded>(
+        this ICollection<TCollectionElement> collection, OneOrMany<TAdded> oneOrMany)
+        where TAdded : TCollectionElement
+    {
+        switch (oneOrMany.CollectionMode)
+        {
+            case OneOrMany<TAdded>.Mode.One:
+                collection.Add(oneOrMany.Single);
+                break;
+            case OneOrMany<TAdded>.Mode.Many:
+                collection.AddRange(oneOrMany.Enumerable);
+                break;
+        }
+    }
 }
