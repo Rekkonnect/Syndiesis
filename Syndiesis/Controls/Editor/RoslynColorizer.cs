@@ -3,6 +3,7 @@ using Avalonia.Media;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 using Microsoft.CodeAnalysis;
+using Syndiesis.ColorHelpers;
 using Syndiesis.Core;
 using Syndiesis.InternalGenerators.Core;
 using System.Text.Json.Serialization;
@@ -228,6 +229,9 @@ partial class RoslynColorizer
         [JsonIgnore]
         public readonly LazilyUpdatedGradientBrush ConflictMarkerBrush;
 
+        [JsonIgnore]
+        public readonly LazilyUpdatedHsvTransformedSolidBrush FadedNumericLiteralBrush;
+
         public ColorizationStyles()
         {
             RangeVariableBrush = DoubleColorGradientBrush(
@@ -236,6 +240,9 @@ partial class RoslynColorizer
                 PreprocessingStartStop, PreprocessingEndStop);
             ConflictMarkerBrush = DoubleColorGradientBrush(
                 ConflictMarkerStartStop, ConflictMarkerEndStop);
+
+            FadedNumericLiteralBrush = NumericLiteralBrush
+                .WithHsvTransformation(new HsvTransformation(Saturation: 0.2, Value: -0.2));
         }
 
         private static LazilyUpdatedGradientBrush DoubleColorGradientBrush(

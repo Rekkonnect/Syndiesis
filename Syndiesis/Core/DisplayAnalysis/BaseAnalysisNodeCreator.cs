@@ -2,6 +2,7 @@
 using Garyon.Extensions;
 using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
+using Syndiesis.ColorHelpers;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
@@ -18,6 +19,7 @@ using System.Threading.Tasks;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
+using static System.Net.Mime.MediaTypeNames;
 using AnalysisTreeListNode = UIBuilder.AnalysisTreeListNode;
 using AnalysisTreeListNodeLine = UIBuilder.AnalysisTreeListNodeLine;
 using ComplexGroupedRunInline = ComplexGroupedRunInline.Builder;
@@ -732,30 +734,101 @@ static string Code(string type)
             CommonStyles.MemberAccessValueDisplay);
     }
 
-    protected OneOrMany<SingleRunInline> RunForSimpleObjectValue(object? value)
+    protected OneOrMany<RunOrGrouped> RunForSimpleObjectValue(object? value)
     {
         if (value is null)
-            return new SingleRunInline(CreateNullValueRun());
+            return new(CreateNullValueSingleRun());
+
+        if (IsInteger(value))
+        {
+            return new(IntegerValueRuns(value));
+        }
 
         var fullValue = value;
 
         if (value is string stringValue)
         {
             if (stringValue.Length is 0)
-                return new SingleRunInline(CreateEmptyValueRun());
+                return new(CreateEmptyValueSingleRun());
 
             value = SimplifyWhitespace(stringValue);
         }
 
-        return RunForSimpleObjectValue(value, fullValue);
+        return new(RunForSimpleObjectValue(value, fullValue));
     }
 
-    protected SingleRunInline RunForSimpleObjectValue(object value, object fullValue)
+    protected static SingleRunInline RunForSimpleObjectValue(object value, object fullValue)
     {
         var text = value.ToString()!;
         var fullText = fullValue!.ToString()!;
         var run = Run(text, CommonStyles.RawValueBrush);
         return new SingleRunInline(run, fullText);
+    }
+
+    private static bool IsInteger(object value)
+    {
+        switch (value.GetType().GetTypeCode())
+        {
+            case TypeCode.SByte:
+            case TypeCode.Int16:
+            case TypeCode.Int32:
+            case TypeCode.Int64:
+
+            case TypeCode.Byte:
+            case TypeCode.UInt16:
+            case TypeCode.UInt32:
+            case TypeCode.UInt64:
+                return true;
+        }
+
+        return false;
+    }
+
+    protected ImmutableArray<RunOrGrouped> IntegerValueRuns(object value)
+    {
+        var info = IntegerInfo.Create(value);
+
+        var text = value.ToString()!;
+        var textRun = Run(text, CommonStyles.RawValueBrush);
+        var hexInline = CreateHexRunGroup(ref info);
+        var binaryInline = CreateBinaryRunGroup(ref info);
+        return
+        [
+            new SingleRunInline(textRun),
+            CreateLargeSplitterRun(),
+            hexInline,
+            CreateLargeSplitterRun(),
+            binaryInline,
+        ];
+    }
+
+    private static ComplexGroupedRunInline CreateHexRunGroup(
+        ref readonly IntegerInfo info)
+    {
+        var value = info.ValueBits;
+        var size = info.ByteSize;
+
+        // TODO: Create the value strings
+        return CreateAlternativeNumericGroup("0x", "3412431");
+    }
+
+    private static ComplexGroupedRunInline CreateBinaryRunGroup(
+        ref readonly IntegerInfo info)
+    {
+        var value = info.ValueBits;
+        var size = info.ByteSize;
+
+        // TODO: Create the value strings
+        return CreateAlternativeNumericGroup("0b", "3412431");
+    }
+
+    private static ComplexGroupedRunInline CreateAlternativeNumericGroup(
+        string prefix, string representation)
+    {
+        var prefixRun = Run(prefix, ColorizationStyles.FadedNumericLiteralBrush);
+        var display = SingleRun(representation, ColorizationStyles.NumericLiteralBrush);
+
+        return new([prefixRun, display]);
     }
 
     protected static Run CreateAwaitRun()
@@ -845,12 +918,17 @@ static string Code(string type)
         int count,
         string propertyName)
     {
-        var splitter = NewValueKindSplitterRun();
+        var splitter = CreateLargeSplitterRun();
         var display = CountValueDisplay(count, propertyName);
         inlines.AddRange([
             splitter,
             display,
         ]);
+    }
+
+    protected static SingleRunInline CreateEmptyValueSingleRun()
+    {
+        return new(CreateEmptyValueRun());
     }
 
     protected static Run CreateEmptyValueRun()
@@ -952,7 +1030,7 @@ static string Code(string type)
         return text;
     }
 
-    protected static Run NewValueKindSplitterRun()
+    protected static Run CreateLargeSplitterRun()
     {
         return Run("      ", CommonStyles.RawValueBrush);
     }
@@ -1214,10 +1292,10 @@ partial class BaseAnalysisNodeCreator
             return () => GetChildren(value);
         }
 
-        private OneOrMany<GroupedRunInline> BasicValueInline(object? value)
+        private OneOrMany<RunOrGrouped> BasicValueInline(object? value)
         {
             if (value is null)
-                return new SingleRunInline(CreateNullValueRun());
+                return new(CreateNullValueSingleRun());
 
             var type = value.GetType();
             var genericDeclaration = type.GetGenericTypeDefinitionOrSame();
@@ -1250,13 +1328,13 @@ partial class BaseAnalysisNodeCreator
                     break;
 
                 default:
-                    return OneOrMany<GroupedRunInline>.From(Creator.RunForSimpleObjectValue(value));
+                    return Creator.RunForSimpleObjectValue(value);
             }
 
-            return new(NestedTypeDisplayGroupedRun(type));
+            return new(NestedTypeDisplayGroupedRun(type).AsRunOrGrouped);
         }
 
-        private OneOrMany<GroupedRunInline> OptionalValueInline(object optional)
+        private OneOrMany<RunOrGrouped> OptionalValueInline(object optional)
         {
             var type = optional.GetType();
             var hasValue = (bool)type.GetProperty(nameof(Optional<object>.HasValue))
@@ -1264,7 +1342,7 @@ partial class BaseAnalysisNodeCreator
             if (!hasValue)
             {
                 var displayRun = CreateFadeNullLikeStateRun("[unspecified]");
-                return new SingleRunInline(displayRun);
+                return new(new SingleRunInline(displayRun));
             }
 
             var value = type.GetProperty(nameof(Optional<object>.Value))
@@ -1278,9 +1356,9 @@ partial class BaseAnalysisNodeCreator
             var value = kvp.Value;
 
             return new ComplexGroupedRunInline([
-                .. BasicValueInline(key).Enumerable.Select(s => new RunOrGrouped(s)),
+                .. BasicValueInline(key).Enumerable,
                 CreateValueSplitterRun(),
-                .. BasicValueInline(value).Enumerable.Select(s => new RunOrGrouped(s)),
+                .. BasicValueInline(value).Enumerable,
             ]);
         }
 
@@ -1554,7 +1632,7 @@ partial class BaseAnalysisNodeCreator
             var countDisplayRun = CountDisplayRunGroup(value);
             if (countDisplayRun is not null)
             {
-                inlines.Add(NewValueKindSplitterRun());
+                inlines.Add(CreateLargeSplitterRun());
                 inlines.Add(countDisplayRun);
             }
         }
@@ -1604,4 +1682,89 @@ partial class BaseAnalysisNodeCreator
         public NodeTypeDisplay ThrowsExceptionDisplay
             => new(CommonTypes.ThrowsException, ThrowsColor);
     }
+}
+
+/// <summary>
+/// Contains information about an integer value that was derived from an object.
+/// </summary>
+/// <param name="Value">The original value as an object as it was retrieved.</param>
+/// <param name="ValueBits">The bits of the integer value in a 64-bit integer.</param>
+/// <param name="ByteSize">The number of bytes the integer has.</param>
+/// <remarks>
+/// This only supports up to <see cref="UInt64"/>. Larger integers are not
+/// natively implemented and are thus ignored.
+/// </remarks>
+internal readonly record struct IntegerInfo(
+    object Value,
+    ulong ValueBits,
+    int ByteSize)
+{
+    public TypeCode TypeCode => Value.GetType().GetTypeCode();
+
+    public static IntegerInfo Create(object value)
+    {
+        switch (value.GetType().GetTypeCode())
+        {
+            case TypeCode.SByte:
+            {
+                var @sbyte = (sbyte)value;
+                var @byte = unchecked((byte)@sbyte);
+                ulong bits = @byte;
+                return new IntegerInfo(value, bits, sizeof(sbyte));
+            }
+            case TypeCode.Byte:
+            {
+                var @byte = (byte)value;
+                ulong bits = @byte;
+                return new IntegerInfo(value, bits, sizeof(byte));
+            }
+
+            case TypeCode.Int16:
+            {
+                var @short = (short)value;
+                var @ushort = unchecked((ushort)@short);
+                ulong bits = @ushort;
+                return new IntegerInfo(value, bits, sizeof(short));
+            }
+            case TypeCode.UInt16:
+            {
+                var @ushort = (ushort)value;
+                ulong bits = @ushort;
+                return new IntegerInfo(value, bits, sizeof(ushort));
+            }
+
+            case TypeCode.Int32:
+            {
+                var @int = (int)value;
+                var @uint = unchecked((uint)@int);
+                ulong bits = @uint;
+                return new IntegerInfo(value, bits, sizeof(int));
+            }
+            case TypeCode.UInt32:
+            {
+                var @uint = (uint)value;
+                ulong bits = @uint;
+                return new IntegerInfo(value, bits, sizeof(uint));
+            }
+
+            case TypeCode.Int64:
+            {
+                var @long = (long)value;
+                var @ulong = unchecked((ulong)@long);
+                ulong bits = @ulong;
+                return new IntegerInfo(value, bits, sizeof(long));
+            }
+            case TypeCode.UInt64:
+            {
+                var @ulong = (ulong)value;
+                ulong bits = @ulong;
+                return new IntegerInfo(value, bits, sizeof(ulong));
+            }
+        }
+
+        throw new NotSupportedException("The object type is not supported.");
+    }
+
+    // TODO: Create hex representation
+    // TODO: Create binary representation
 }

@@ -394,10 +394,10 @@ partial class SymbolAnalysisNodeCreator
             var nameInline = CreateNameInline(symbol);
             if (nameInline is not null)
             {
-                inlines.Add(NewValueKindSplitterRun());
+                inlines.Add(CreateLargeSplitterRun());
                 inlines.Add(nameInline);
             }
-            inlines.Add(NewValueKindSplitterRun());
+            inlines.Add(CreateLargeSplitterRun());
             var kindInline = CreateKindInline(symbol);
             inlines.Add(kindInline);
         }

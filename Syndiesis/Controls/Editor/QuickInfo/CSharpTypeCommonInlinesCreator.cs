@@ -271,7 +271,7 @@ public class CSharpTypeCommonInlinesCreator(
         ILazilyUpdatedBrush brush = fieldBrush;
         if (!field.IsExplicitlyNamedTupleElement)
         {
-            var fadeTransformation = new HsvTransformation(0, 0, 0, 0.4);
+            var fadeTransformation = new HsvTransformation(Value: -0.4);
             brush = fieldBrush.WithHsvTransformation(fadeTransformation);
         }
 
