@@ -425,7 +425,7 @@ partial class SemanticModelAnalysisNodeCreator
             var preprocessingSymbolInline = new SingleRunInline(preprocessingSymbolRun);
             inlines.Add(preprocessingSymbolInline);
 
-            var splitter = NewValueKindSplitterRun();
+            var splitter = CreateLargeSplitterRun();
             inlines.Add(splitter);
 
             var definedRun = NewDefinedRun(symbol.IsDefined);

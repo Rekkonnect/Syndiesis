@@ -19,6 +19,7 @@
     <Description>The most revolutionary syntax visualizer for C#</Description>
     <RepositoryUrl>https://github.com/Rekkonnect/Syndiesis</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Allow Dev Errors|AnyCPU'">

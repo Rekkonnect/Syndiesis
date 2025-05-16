@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
+using Syndiesis.Utilities;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -723,38 +724,96 @@ static string Code(string type)
         var inlines = new GroupedRunInlineCollection();
 
         AppendValueSource(valueSource, inlines);
-        var valueRun = RunForSimpleObjectValue(value);
-        inlines.Add(valueRun);
+        var valueRuns = RunForSimpleObjectValue(value);
+        inlines.AddOneOrMany(valueRuns);
 
         return AnalysisTreeListNodeLine(
             inlines,
             CommonStyles.MemberAccessValueDisplay);
     }
 
-    protected SingleRunInline RunForSimpleObjectValue(object? value)
+    protected OneOrMany<RunOrGrouped> RunForSimpleObjectValue(object? value)
     {
         if (value is null)
-            return new SingleRunInline(CreateNullValueRun());
+            return new(CreateNullValueSingleRun());
+
+        if (IsInteger(value))
+        {
+            return new(IntegerValueRuns(value));
+        }
 
         var fullValue = value;
 
         if (value is string stringValue)
         {
             if (stringValue.Length is 0)
-                return new SingleRunInline(CreateEmptyValueRun());
+                return new(CreateEmptyValueSingleRun());
 
             value = SimplifyWhitespace(stringValue);
         }
 
-        return RunForSimpleObjectValue(value, fullValue);
+        return new(RunForSimpleObjectValue(value, fullValue));
     }
 
-    protected SingleRunInline RunForSimpleObjectValue(object value, object fullValue)
+    protected static SingleRunInline RunForSimpleObjectValue(object value, object fullValue)
     {
         var text = value.ToString()!;
         var fullText = fullValue!.ToString()!;
         var run = Run(text, CommonStyles.RawValueBrush);
         return new SingleRunInline(run, fullText);
+    }
+
+    private static bool IsInteger(object value)
+    {
+        switch (value.GetType().GetTypeCode())
+        {
+            case TypeCode.SByte:
+            case TypeCode.Int16:
+            case TypeCode.Int32:
+            case TypeCode.Int64:
+
+            case TypeCode.Byte:
+            case TypeCode.UInt16:
+            case TypeCode.UInt32:
+            case TypeCode.UInt64:
+                return true;
+        }
+
+        return false;
+    }
+
+    protected ImmutableArray<RunOrGrouped> IntegerValueRuns(object value)
+    {
+        var info = IntegerInfo.Create(value);
+        return
+        [
+            SingleRun(value.ToString()!, ColorizationStyles.NumericLiteralBrush),
+            CreateLargeSplitterRun(),
+            CreateHexRunGroup(ref info),
+            CreateLargeSplitterRun(),
+            CreateBinaryRunGroup(ref info),
+        ];
+    }
+
+    private static ComplexGroupedRunInline CreateHexRunGroup(
+        ref readonly IntegerInfo info)
+    {
+        return CreateAlternativeNumericGroup("0x", HexIntegerWriter.Write(info, 4));
+    }
+
+    private static ComplexGroupedRunInline CreateBinaryRunGroup(
+        ref readonly IntegerInfo info)
+    {
+        return CreateAlternativeNumericGroup("0b", BinaryIntegerWriter.Write(info, 4));
+    }
+
+    private static ComplexGroupedRunInline CreateAlternativeNumericGroup(
+        string prefix, string representation)
+    {
+        var prefixRun = Run(prefix, ColorizationStyles.FadedNumericLiteralBrush);
+        var display = SingleRun(representation, ColorizationStyles.NumericLiteralBrush);
+
+        return new([prefixRun, display]);
     }
 
     protected static Run CreateAwaitRun()
@@ -844,12 +903,17 @@ static string Code(string type)
         int count,
         string propertyName)
     {
-        var splitter = NewValueKindSplitterRun();
+        var splitter = CreateLargeSplitterRun();
         var display = CountValueDisplay(count, propertyName);
         inlines.AddRange([
             splitter,
             display,
         ]);
+    }
+
+    protected static SingleRunInline CreateEmptyValueSingleRun()
+    {
+        return new(CreateEmptyValueRun());
     }
 
     protected static Run CreateEmptyValueRun()
@@ -951,7 +1015,7 @@ static string Code(string type)
         return text;
     }
 
-    protected static Run NewValueKindSplitterRun()
+    protected static Run CreateLargeSplitterRun()
     {
         return Run("      ", CommonStyles.RawValueBrush);
     }
@@ -1194,7 +1258,7 @@ partial class BaseAnalysisNodeCreator
             object value, GroupedRunInlineCollection inlines)
         {
             var basicValueInline = BasicValueInline(value);
-            inlines.Add(basicValueInline);
+            inlines.AddOneOrMany(basicValueInline);
 
             return AnalysisTreeListNodeLine(
                 inlines,
@@ -1213,10 +1277,10 @@ partial class BaseAnalysisNodeCreator
             return () => GetChildren(value);
         }
 
-        private GroupedRunInline BasicValueInline(object? value)
+        private OneOrMany<RunOrGrouped> BasicValueInline(object? value)
         {
             if (value is null)
-                return new SingleRunInline(CreateNullValueRun());
+                return new(CreateNullValueSingleRun());
 
             var type = value.GetType();
             var genericDeclaration = type.GetGenericTypeDefinitionOrSame();
@@ -1252,10 +1316,10 @@ partial class BaseAnalysisNodeCreator
                     return Creator.RunForSimpleObjectValue(value);
             }
 
-            return NestedTypeDisplayGroupedRun(type);
+            return new(NestedTypeDisplayGroupedRun(type).AsRunOrGrouped);
         }
 
-        private GroupedRunInline OptionalValueInline(object optional)
+        private OneOrMany<RunOrGrouped> OptionalValueInline(object optional)
         {
             var type = optional.GetType();
             var hasValue = (bool)type.GetProperty(nameof(Optional<object>.HasValue))
@@ -1263,7 +1327,7 @@ partial class BaseAnalysisNodeCreator
             if (!hasValue)
             {
                 var displayRun = CreateFadeNullLikeStateRun("[unspecified]");
-                return new SingleRunInline(displayRun);
+                return new(new SingleRunInline(displayRun));
             }
 
             var value = type.GetProperty(nameof(Optional<object>.Value))
@@ -1277,9 +1341,9 @@ partial class BaseAnalysisNodeCreator
             var value = kvp.Value;
 
             return new ComplexGroupedRunInline([
-                new(BasicValueInline(key)),
+                .. BasicValueInline(key).Enumerable,
                 CreateValueSplitterRun(),
-                new(BasicValueInline(value)),
+                .. BasicValueInline(value).Enumerable,
             ]);
         }
 
@@ -1323,7 +1387,7 @@ partial class BaseAnalysisNodeCreator
             object? value, GroupedRunInlineCollection inlines)
         {
             var run = Creator.RunForSimpleObjectValue(value);
-            inlines.Add(run);
+            inlines.AddOneOrMany(run);
 
             return AnalysisTreeListNodeLine(
                 inlines,
@@ -1553,7 +1617,7 @@ partial class BaseAnalysisNodeCreator
             var countDisplayRun = CountDisplayRunGroup(value);
             if (countDisplayRun is not null)
             {
-                inlines.Add(NewValueKindSplitterRun());
+                inlines.Add(CreateLargeSplitterRun());
                 inlines.Add(countDisplayRun);
             }
         }

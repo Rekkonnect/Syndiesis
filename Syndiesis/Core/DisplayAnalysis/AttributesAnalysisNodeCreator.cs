@@ -309,7 +309,7 @@ partial class AttributesAnalysisNodeCreator
         {
             var inline = TypeDisplayGroupedRun(typeof(AttributeData));
             inlines.Add(inline);
-            inlines.Add(NewValueKindSplitterRun());
+            inlines.Add(CreateLargeSplitterRun());
             var className = attribute.AttributeData.AttributeClass?.Name;
             var nameInline = CreateNameInline(className);
             inlines.Add(nameInline);
@@ -427,7 +427,7 @@ partial class AttributesAnalysisNodeCreator
             inlines.Add(nameInline);
             inlines.Add(splitterInline);
             inlines.Add(valueInline);
-            inlines.Add(NewValueKindSplitterRun());
+            inlines.Add(CreateLargeSplitterRun());
             inlines.Add(CreateKindInline(argument.Value));
 
             return AnalysisTreeListNodeLine(

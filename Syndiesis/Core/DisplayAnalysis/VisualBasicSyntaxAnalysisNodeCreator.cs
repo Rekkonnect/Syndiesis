@@ -192,7 +192,7 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
         {
             var typeDisplay = TypeDisplayGroupedRun(annotations.GetType());
             inlines.Add(typeDisplay);
-            inlines.Add(NewValueKindSplitterRun());
+            inlines.Add(CreateLargeSplitterRun());
             var countDisplayRun = CountDisplayRunGroup(annotations)!;
             inlines.Add(countDisplayRun);
 
@@ -232,7 +232,7 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
 
             if (annotation.IsElastic())
             {
-                inlines.Add(NewValueKindSplitterRun());
+                inlines.Add(CreateLargeSplitterRun());
                 inlines.Add(CreateElasticAnnotationRun());
             }
 
@@ -424,7 +424,7 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
             var kindRun = Run(kindName, kindBrush, FontStyle.Italic);
 
             inlines.Add(displayTextRun);
-            inlines.Add(NewValueKindSplitterRun());
+            inlines.Add(CreateLargeSplitterRun());
             inlines.AddSingle(kindRun);
         }
 
@@ -1037,7 +1037,7 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
             ILazilyUpdatedBrush brush,
             GroupedRunInlineCollection inlines)
         {
-            inlines.Add(NewValueKindSplitterRun());
+            inlines.Add(CreateLargeSplitterRun());
 
             var triviaKindText = trivia.Kind().ToString();
             var triviaKindRun = Run(triviaKindText, brush, FontStyle.Italic);
@@ -1138,7 +1138,7 @@ partial class VisualBasicSyntaxAnalysisNodeCreator
         {
             var inline = NestedTypeDisplayGroupedRun(typeof(TextSpan));
             inlines.Add(inline);
-            inlines.Add(NewValueKindSplitterRun());
+            inlines.Add(CreateLargeSplitterRun());
             var spanView = CreateSpanViewRun(span);
             inlines.Add(spanView);
 

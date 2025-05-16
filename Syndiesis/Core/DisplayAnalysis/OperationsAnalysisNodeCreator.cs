@@ -130,7 +130,7 @@ partial class OperationsAnalysisNodeCreator
             var preferredType = _propertyCache.FilterForType(type).PreferredType ?? type;
             var typeDetailsInline = TypeDetailsInline(preferredType);
             inlines.Add(typeDetailsInline);
-            inlines.Add(NewValueKindSplitterRun());
+            inlines.Add(CreateLargeSplitterRun());
             var kindInline = CreateKindInline(operation.Kind);
             inlines.Add(kindInline);
 
