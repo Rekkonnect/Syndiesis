@@ -85,8 +85,10 @@ public partial class MainView : UserControl
 
         var editor = codeEditor.textEditor;
         var area = editor.TextArea;
-        var areaPosition = pointerArgs.GetPosition(area);
-        if (!area.Bounds.Contains(areaPosition))
+        if (!area.ContainsPointer(pointerArgs))
+            return;
+
+        if (codeEditor.LineNumberPanel.ContainsPointer(pointerArgs))
             return;
 
         var editorPosition = pointerArgs.GetPosition(editor);
