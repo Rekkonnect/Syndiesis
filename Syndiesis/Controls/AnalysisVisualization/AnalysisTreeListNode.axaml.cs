@@ -331,7 +331,6 @@ public partial class AnalysisTreeListNode : UserControl
         if (index < 0)
             return;
 
-        var children = LazyChildren;
         var child = LazyChildren[index];
         child.EvaluateHoveringRecursivelyBinary(e);
     }
@@ -346,7 +345,7 @@ public partial class AnalysisTreeListNode : UserControl
         while (low <= high)
         {
             int mid = (low + high) / 2;
-            var child = LazyChildren[mid];
+            var child = children[mid];
             var childBounds = child.Bounds;
             if (childBounds.Top <= height && height <= childBounds.Bottom)
                 return mid;

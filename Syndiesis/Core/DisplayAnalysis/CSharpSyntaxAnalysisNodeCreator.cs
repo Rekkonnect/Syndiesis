@@ -1051,7 +1051,10 @@ partial class CSharpSyntaxAnalysisNodeCreator
         public override AnalysisTreeListNodeLine CreateNodeLine(
             SyntaxTriviaList list, GroupedRunInlineCollection inlines)
         {
-            Creator.AppendSyntaxDetails(list, inlines);
+            Creator.AppendSyntaxTypeDetails(typeof(SyntaxTriviaList), inlines);
+            inlines.Add(CreateLargeSplitterRun());
+            var countDisplayRun = CountDisplayRunGroup(list)!;
+            inlines.Add(countDisplayRun);
 
             return AnalysisTreeListNodeLine(
                 inlines,

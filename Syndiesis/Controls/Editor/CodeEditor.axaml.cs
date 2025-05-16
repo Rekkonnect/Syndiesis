@@ -119,6 +119,8 @@ public partial class CodeEditor : UserControl
         }
     }
 
+    public BackgroundLineNumberPanel LineNumberPanel { get; private set; }
+
     public event EventHandler? TextChanged
     {
         add => textEditor.Document.TextChanged += value;
@@ -146,6 +148,7 @@ public partial class CodeEditor : UserControl
 
     [MemberNotNull(nameof(_nodeSpanHoverLayer))]
     [MemberNotNull(nameof(_diagnosticsLayer))]
+    [MemberNotNull(nameof(LineNumberPanel))]
     private void InitializeTextEditor()
     {
         var textArea = textEditor.TextArea;
@@ -179,7 +182,8 @@ public partial class CodeEditor : UserControl
             KnownLayer.Text,
             LayerInsertionPosition.Above);
 
-        textArea.LeftMargins[0] = new BackgroundLineNumberPanel(textArea.TextView);
+        LineNumberPanel = new BackgroundLineNumberPanel(textArea.TextView);
+        textArea.LeftMargins[0] = LineNumberPanel;
     }
 
     private void InitializeEvents()

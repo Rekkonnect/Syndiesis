@@ -230,6 +230,12 @@ public static partial class CommonAvaloniaExtensions
             controls.Add(control);
         }
     }
+
+    public static bool ContainsPointer(this Control control, PointerEventArgs pointer)
+    {
+        var position = pointer.GetPosition(control);
+        return control.Bounds.Contains(position);
+    }
 }
 
 // Dispatcher

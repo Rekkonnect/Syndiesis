@@ -856,7 +856,8 @@ static string Code(string type)
         return new(DisplayValueSource.SymbolKind.Method, name);
     }
 
-    protected static GroupedRunInline? CountDisplayRunGroup(object value)
+    protected static GroupedRunInline? CountDisplayRunGroup<T>(T value)
+        where T : notnull
     {
         switch (value)
         {
@@ -871,7 +872,8 @@ static string Code(string type)
             ?? CountDisplayRunGroup(value, nameof(Array.Length));
     }
 
-    protected static GroupedRunInline? CountDisplayRunGroup(object value, string propertyName)
+    protected static GroupedRunInline? CountDisplayRunGroup<T>(T value, string propertyName)
+        where T : notnull
     {
         var type = value.GetType();
         var property = type.GetProperty(propertyName);
