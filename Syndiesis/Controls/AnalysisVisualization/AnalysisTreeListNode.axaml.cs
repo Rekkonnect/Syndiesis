@@ -504,7 +504,10 @@ public partial class AnalysisTreeListNode : UserControl
         try
         {
             var builder = await builderTask;
-            builder?.NodeLine.ContentState = AnalysisNodeLineContentState.Loaded;
+            if (builder is not null)
+            {
+                builder.NodeLine.ContentState = AnalysisNodeLineContentState.Loaded;
+            }
             ReloadFromBuilder(builder);
         }
         catch (Exception ex)
