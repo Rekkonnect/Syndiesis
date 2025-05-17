@@ -332,7 +332,6 @@ public class CSharpTypeCommonInlinesCreator(
     {
         var left = CreateSymbolInline(nestedType);
         var suffixRun = Run(suffix, CommonStyles.RawValueBrush);
-        var suffixGroup = new SimpleGroupedRunInline.Builder([suffixRun]);
-        return new ComplexGroupedRunInline.Builder([new(left), suffixGroup]);
+        return new ComplexGroupedRunInline.Builder([new(left), suffixRun]);
     }
 }
