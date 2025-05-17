@@ -476,10 +476,11 @@ public partial class AnalysisTreeListNode : UserControl
 
     public async Task SetLoading(
         UIBuilder.AnalysisTreeListNode loadingAppearance,
-        Task<UIBuilder.AnalysisTreeListNode?>? builderTask)
+        Task<UIBuilder.AnalysisTreeListNode?>? builderTask,
+        UIBuilder.AnalysisTreeListNode? loadingFailedBuilder)
     {
         SetLoadingState(loadingAppearance);
-        await LoadFromTask(builderTask);
+        await LoadFromTask(builderTask, loadingFailedBuilder);
     }
 
     public void SetLoadingState(UIBuilder.AnalysisTreeListNode loadingAppearance)
@@ -493,13 +494,27 @@ public partial class AnalysisTreeListNode : UserControl
     /// Always invoke this from the UI thread. The builder task may be a task
     /// executing on any thread.
     /// </remarks>
-    public async Task LoadFromTask(Task<UIBuilder.AnalysisTreeListNode?>? builderTask)
+    public async Task LoadFromTask(
+        Task<UIBuilder.AnalysisTreeListNode?>? builderTask,
+        UIBuilder.AnalysisTreeListNode? loadingFailedBuilder)
     {
         if (builderTask is null)
             return;
 
-        var builder = await builderTask;
-        ReloadFromBuilder(builder);
+        try
+        {
+            var builder = await builderTask;
+            if (builder is not null)
+            {
+                builder.NodeLine.ContentState = AnalysisNodeLineContentState.Loaded;
+            }
+            ReloadFromBuilder(builder);
+        }
+        catch (Exception ex)
+        {
+            App.Current.ExceptionListener.HandleException(ex, "Failed to load node");
+            ReloadFromBuilder(loadingFailedBuilder);
+        }
     }
 
     /// <remarks>

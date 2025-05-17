@@ -2,6 +2,7 @@
 using Avalonia.Media;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
+using System;
 using System.Threading.Tasks;
 
 namespace Syndiesis.Core.DisplayAnalysis;
@@ -50,7 +51,7 @@ public static class UIBuilder
         public TextSpanSource DisplaySpanSource { get; set; }
             = TextSpanSource.FullSpan;
 
-        public bool IsLoading { get; set; }
+        public AnalysisNodeLineContentState ContentState { get; set; }
 
         public AnalysisTreeListNodeLine(
             GroupedRunInlineCollection inlines,
@@ -73,7 +74,7 @@ public static class UIBuilder
             line.NodeTypeDisplay = NodeTypeDisplay;
             line.AnalysisNodeKind = AnalysisNodeKind;
             line.DisplaySpanSource = DisplaySpanSource;
-            line.IsLoading = IsLoading;
+            line.ContentState = ContentState;
         }
     }
 
@@ -90,6 +91,7 @@ public static class UIBuilder
             = SyntaxObjectInfo.GetInfoForObject(associatedSyntaxObjectContent);
 
         public Task<AnalysisTreeListNode?>? NodeLoader { get; set; }
+        public AnalysisTreeListNode? LoadingFailedNodeBuilder { get; set; }
 
         public AnalysisTreeListNode WithAssociatedSyntaxObjectContent(object? content)
         {
@@ -107,10 +109,15 @@ public static class UIBuilder
 
             if (NodeLoader is not null)
             {
-                _ = node.LoadFromTask(NodeLoader);
+                _ = LoadNodeFromTask(node);
             }
 
             return node;
+        }
+
+        private async Task LoadNodeFromTask(SAnalysisTreeListNode node)
+        {
+            await node.LoadFromTask(NodeLoader, LoadingFailedNodeBuilder);
         }
     }
 }

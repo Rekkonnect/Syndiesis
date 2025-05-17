@@ -3,7 +3,7 @@
 namespace Syndiesis.ColorHelpers;
 
 public sealed class LazilyUpdatedHsvTransformedSolidBrush(
-    LazilyUpdatedSolidBrush mainSolid,
+    ILazilyUpdatedSolidBrush mainSolid,
     HsvTransformation transformation)
     : LazilyUpdatedTransformedSolidBrush<HsvTransformation, HsvColor>(mainSolid, transformation)
 {

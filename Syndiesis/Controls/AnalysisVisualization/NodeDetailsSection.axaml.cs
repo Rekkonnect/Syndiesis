@@ -72,7 +72,8 @@ public partial class NodeDetailsSection : UserControl
         for (int i = 0; i < nodes.Count; i++)
         {
             var node = nodes[i];
-            var loadingTask = Nodes[i].SetLoading(node, node.NodeLoader);
+            var loadingTask = Nodes[i].SetLoading(
+                node, node.NodeLoader, node.LoadingFailedNodeBuilder);
             tasks[i] = loadingTask;
             Nodes[i].AnalysisNodeHoverManager = HoverManager;
         }

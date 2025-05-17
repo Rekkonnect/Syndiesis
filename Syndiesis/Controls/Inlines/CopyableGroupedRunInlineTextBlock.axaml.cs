@@ -233,9 +233,9 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
         _ = CommonToastNotifications.ShowClassicMain(
             toastContainer,
             $"""
-             Copied partial line content:
-             {text}
-             """,
+            Copied partial line content:
+            {text}
+            """,
             TimeSpan.FromSeconds(2));
     }
 }
