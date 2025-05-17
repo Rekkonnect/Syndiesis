@@ -16,17 +16,17 @@ The project was inspired by the task for applying into a Roslyn internship posit
 
 The main design inspiration is [SharpLab](https://sharplab.io/). The syntax view feature of SharpLab is the main design that the app built upon.
 
-Despite not applying for the internship, I wanted to finish the project and release it into a usable state without entering the depths of feature creep.
+Despite not applying for the internship, I wanted to finish the project and release it into a usable state without entering the depths of feature creep. Feature creep inevitably occurred.
 
 ## Usage
 
-For Windows, download from the [Releases](https://github.com/Rekkonnect/Syndiesis/releases) page. For macOS and Linux, you have to manually compile the program (refer to the section below).
+For Windows, Linux and macOS on x64 and arm64 architectures, download from the [Releases](https://github.com/Rekkonnect/Syndiesis/releases) page. You may still manually compile the program on your machine with the instructions written below.
 
-The program is designed to be cross-platform for desktop (including Windows, Linux and macOS). It's heavily tested to run on Windows 10, and it's moderately tested on Windows 11 and macOS. Please file an issue if platform-specific problems occur.
+The program is designed to be cross-platform on desktop machines (including Windows, Linux and macOS). It's heavily tested to run on Windows 10, and it's moderately tested on Windows 11 and macOS. Please file an issue if platform-specific problems occur.
 
 Check the change log [here](/docs/changelog/README.md).
 
-View the [wiki](https://github.com/Rekkonnect/Syndiesis/wiki) for detailed documentation.
+View the [wiki](https://github.com/Rekkonnect/Syndiesis/wiki) for detailed documentation, including a list of keybinds.
 
 ### Compiling
 
@@ -44,13 +44,13 @@ https://github.com/user-attachments/assets/19821a70-e020-4929-9662-584d1afb6416
 - Visual Studio 2022
 - .NET 9.0
 - C# 13.0
-- [Avalonia 11.0](https://github.com/AvaloniaUI/Avalonia)
+- [Avalonia 11.3](https://github.com/AvaloniaUI/Avalonia)
 
 ### Dependencies
 
-- [Roslyn 4.12.0](https://github.com/dotnet/roslyn)
-- [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit), for the code editor
-- [jamarino/IntervalTree](https://github.com/jamarino/IntervalTree), for the diagnostics
+- [Roslyn 4.14.0](https://github.com/dotnet/roslyn)
+- [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit) for the code editor
+- [jamarino/IntervalTree](https://github.com/jamarino/IntervalTree) for the diagnostics
 
 ## Features
 
@@ -64,6 +64,7 @@ Below is a short list of features:
   - Diagnostics display
   - Automatic recognition of the snippet's language (C# or VB)
   - Selection of any available language version
+  - Quick symbol info
 - Syntax and semantic analysis visualizer
   - Current caret syntax node highlighting
   - Tree view of nodes
@@ -78,18 +79,18 @@ Below is a short list of features:
 A large portion of the app is built using basic components in Avalonia. The code editor is from [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit).
 Some icons were taken from the free version of [FontAwesome](https://fontawesome.com/).
 
-### Bugs and issues
+### Bugs and Issues
 
 Any issues regarding the code editor are most likely to be reported in [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit). This includes behavior not specific to Syndiesis. Issues will be closed if they are specific to AvaloniaEdit, and must be reported there.
 
 Syndiesis exposes data retrieved from Roslyn itself with minimal intervention for readability purposes. If you encounter misrepresented data, it is probably a Roslyn bug, but feel free to report it regardless. Examples of known Roslyn bugs include:
 - Fixed buffer size expression has no symbol info ([dotnet/roslyn#75113](https://github.com/dotnet/roslyn/issues/75113))
 
-### Desired features
+### Desired Features
 
 Desired features among other issues are listed in the [issues](https://github.com/Rekkonnect/Syndiesis/issues).
 
-## Design philosophy
+## Design Philosophy
 
 The syntax visualizer should provide detailed information about how Roslyn parses the given C# code snippet, and in a pretty and user-friendly format. SharpLab lacks in readability of the tree, and it also doesn't paint the entire picture as intended.
 

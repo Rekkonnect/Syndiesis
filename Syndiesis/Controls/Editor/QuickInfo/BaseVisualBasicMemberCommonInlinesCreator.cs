@@ -10,7 +10,7 @@ public abstract class BaseVisualBasicMemberCommonInlinesCreator<TSymbol>(
     : BaseCommonMemberCommonInlinesCreator<TSymbol>(parentContainer)
     where TSymbol : class, ISymbol
 {
-    protected GroupedRunInline.IBuilder? CreateParameterListInline(
+    protected new GroupedRunInline.IBuilder? CreateParameterListInline(
         ImmutableArray<IParameterSymbol> parameters)
     {
         int parameterLength = parameters.Length;
