@@ -480,6 +480,14 @@ public partial class CodeEditor : UserControl
                     e.Handled = true;
                 }
                 break;
+
+            case Key.Z:
+                if (modifiers is (KeyModifiers.Control | KeyModifiers.Shift))
+                {
+                    textEditor.Redo();
+                    e.Handled = true;
+                }
+                break;
         }
 
         if (e.Handled)
