@@ -94,6 +94,7 @@ public partial class QuickInfoSymbolItem : UserControl
             QuickInfoSymbolClassification.Array => resources.ClassImage,
             QuickInfoSymbolClassification.Pointer => resources.StructImage,
             QuickInfoSymbolClassification.FunctionPointer => resources.DelegateImage,
+            QuickInfoSymbolClassification.Extension => resources.ClassImage,
             
             QuickInfoSymbolClassification.Field => resources.FieldImage,
             QuickInfoSymbolClassification.Property => resources.PropImage,

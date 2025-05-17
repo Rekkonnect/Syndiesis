@@ -3,13 +3,13 @@
 public enum QuickInfoSymbolClassification
 {
     None,
-    
+
     // Containers
     Namespace,
     Alias,
     Module,
     Assembly,
-    
+
     // Types
     Class,
     Struct,
@@ -21,7 +21,8 @@ public enum QuickInfoSymbolClassification
     Array,
     Pointer,
     FunctionPointer,
-    
+    Extension,
+
     // Members
     Field,
     Property,
@@ -31,7 +32,7 @@ public enum QuickInfoSymbolClassification
     Conversion,
     Constructor,
     EnumField,
-    
+
     // Others
     Label,
     Local,

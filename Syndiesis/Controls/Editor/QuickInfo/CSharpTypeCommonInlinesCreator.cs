@@ -76,7 +76,12 @@ public class CSharpTypeCommonInlinesCreator(
             return CreateAnonymousInline(type);
         }
 
-        Log.Warning("Found unimplemented fallback symbol type kind {typeKind}", type.TypeKind);
+        if (type.IsExtension)
+        {
+            return CreateExtensionTypeInline(type);
+        }
+
+        Log.Error("Found unimplemented fallback symbol type kind {typeKind}", type.TypeKind);
         return new SimpleGroupedRunInline.Builder();
     }
 
@@ -113,21 +118,23 @@ public class CSharpTypeCommonInlinesCreator(
 
         var inlines = new ComplexGroupedRunInline.Builder();
 
-        var delegateRun = Run("delegate", CommonStyles.KeywordBrush);
+        var delegateRun = KeywordRun("delegate");
         inlines.AddChild(delegateRun);
 
-        var asteriskRun = Run("*", CommonStyles.RawValueBrush);
+        var rawBrush = CommonStyles.RawValueBrush;
+
+        var asteriskRun = Run("*", rawBrush);
         inlines.AddChild(asteriskRun);
         if (signature.CallingConvention is not SignatureCallingConvention.Default)
         {
-            var unmanagedRun = Run(" unmanaged", CommonStyles.KeywordBrush);
+            var unmanagedRun = KeywordRun(" unmanaged");
             inlines.AddChild(unmanagedRun);
 
             var callingConventionNames = GetConventionNameList(signature);
             if (callingConventionNames.Length > 0)
             {
-                var callingConventionRuns = new List<RunOrGrouped>([]);
-                var callingConventionListStart = Run("[", CommonStyles.RawValueBrush);
+                var callingConventionRuns = new List<RunOrGrouped>();
+                var callingConventionListStart = Run("[", rawBrush);
                 callingConventionRuns.Add(callingConventionListStart);
 
                 for (var i = 0; i < callingConventionNames.Length; i++)
@@ -142,18 +149,18 @@ public class CSharpTypeCommonInlinesCreator(
                     // Hard-code the class brush since the calling convention types are all classes
                     var run = Run(conventionName, CommonStyles.ClassMainBrush);
                     var conventionInline = new SingleRunInline.Builder(run);
-                    callingConventionRuns.Add(new RunOrGrouped(conventionInline));
+                    callingConventionRuns.Add(conventionInline);
                 }
 
-                var callingConventionListEnd = Run("]", CommonStyles.RawValueBrush);
+                var callingConventionListEnd = Run("]", rawBrush);
                 callingConventionRuns.Add(callingConventionListEnd);
 
                 var callingConventionInline = new ComplexGroupedRunInline.Builder(callingConventionRuns);
-                inlines.AddChild((GroupedRunInline.IBuilder)callingConventionInline);
+                inlines.Add(callingConventionInline);
             }
         }
 
-        var openingTag = Run("<", CommonStyles.RawValueBrush);
+        var openingTag = Run("<", rawBrush);
         inlines.AddChild(openingTag);
         var parameters = signature.Parameters;
         for (var i = 0; i < parameters.Length; i++)
@@ -169,7 +176,7 @@ public class CSharpTypeCommonInlinesCreator(
         var returnTypeInline = CreateSymbolInline(signature.ReturnType);
         inlines.AddChild(returnTypeInline);
 
-        var closingTag = Run(">", CommonStyles.RawValueBrush);
+        var closingTag = Run(">", rawBrush);
         inlines.AddChild(closingTag);
 
         return inlines;
@@ -218,6 +225,46 @@ public class CSharpTypeCommonInlinesCreator(
 
     private GroupedRunInline.IBuilder CreateNamedTypeInline(INamedTypeSymbol type)
     {
+        if (type.IsExtension)
+        {
+            return CreateExtensionTypeInline(type);
+        }
+
+        return CreateOrdinaryNamedTypeInline(type);
+    }
+
+    // Due to the extensions feature being in preview, the core logic is defined
+    // assuming that ITypeSymbol could theoretically represent an extension type
+    // despite the chances of the API changing are minimal
+    private ComplexGroupedRunInline.Builder CreateExtensionTypeInline(ITypeSymbol type)
+    {
+        var inlines = new ComplexGroupedRunInline.Builder();
+        AddKeywordRun("extension", inlines);
+        var container = (CSharpSymbolCommonInlinesCreatorContainer)ParentContainer.RootContainer.Commons;
+        if (type is INamedTypeSymbol named)
+        {
+            container.AliasSimplifiedTypeCreator.AddTypeArgumentInlines(inlines, named.TypeArguments);
+        }
+
+        var rawBrush = CommonStyles.RawValueBrush;
+        inlines.Add(Run("(", rawBrush));
+
+        var parameter = type.ExtensionParameter;
+        if (parameter is not null)
+        {
+            var parameterType = parameter.Type;
+            var parameterInline = ParentContainer.CreatorForSymbol(parameterType)
+                .CreateSymbolInline(parameterType);
+            inlines.Add(parameterInline.AsRunOrGrouped);
+        }
+
+        inlines.Add(Run(")", rawBrush));
+
+        return inlines;
+    }
+
+    private GroupedRunInline.IBuilder CreateOrdinaryNamedTypeInline(INamedTypeSymbol type)
+    {
         var typeBrush = RoslynColorizationHelpers.BrushForTypeKind(ColorizationStyles, type.TypeKind)
             ?? CommonStyles.RawValueBrush;
         var symbolRun = SingleRun(type.Name, typeBrush);
@@ -233,7 +280,7 @@ public class CSharpTypeCommonInlinesCreator(
         AddTypeArgumentInlines(inlines, type.TypeArguments);
         return inlines;
     }
-    
+
     private GroupedRunInline.IBuilder CreateTupleInline(ITypeSymbol tupleType)
     {
         var fields = tupleType.GetFields();

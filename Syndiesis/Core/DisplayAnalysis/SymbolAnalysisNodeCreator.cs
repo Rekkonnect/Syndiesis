@@ -577,6 +577,22 @@ partial class SymbolAnalysisNodeCreator
         {
             return CreateKindInlineForText(symbol.TypeKind.ToString());
         }
+
+        protected override void CreateChildren(
+            TSymbol symbol, List<AnalysisTreeListNode> list)
+        {
+            list.AddRange([
+                Creator.CreateRootGeneral(
+                    symbol.IsExtension,
+                    Property(nameof(ITypeSymbol.IsExtension))),
+
+                Creator.CreateRootGeneral(
+                    symbol.ExtensionParameter,
+                    Property(nameof(ITypeSymbol.ExtensionParameter))),
+            ]);
+
+            base.CreateChildren(symbol, list);
+        }
     }
 
     public sealed class ITypeSymbolRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
