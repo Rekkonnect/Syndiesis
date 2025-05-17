@@ -4,12 +4,12 @@ using Avalonia.Threading;
 namespace Syndiesis.ColorHelpers;
 
 public abstract class LazilyUpdatedTransformedSolidBrush<TColorTransformation, TColor>(
-    LazilyUpdatedSolidBrush mainSolid,
+    ILazilyUpdatedSolidBrush mainSolid,
     TColorTransformation transformation)
     : ILazilyUpdatedBrush
     where TColorTransformation : IColorTransformation<TColor> 
 {
-    private readonly LazilyUpdatedSolidBrush _mainSolid = mainSolid;
+    private readonly ILazilyUpdatedSolidBrush _mainSolid = mainSolid;
     private readonly SolidColorBrush _brush = new();
 
     public TColorTransformation Transformation = transformation;

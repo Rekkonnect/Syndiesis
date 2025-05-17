@@ -20,6 +20,7 @@
     <RepositoryUrl>https://github.com/Rekkonnect/Syndiesis</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Allow Dev Errors|AnyCPU'">

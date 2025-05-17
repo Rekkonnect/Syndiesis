@@ -5,7 +5,7 @@ using Syndiesis.ColorHelpers;
 namespace Syndiesis;
 
 // TODO Move to .Colors
-public sealed class LazilyUpdatedSolidBrush : ILazilyUpdatedBrush
+public sealed class LazilyUpdatedSolidBrush : ILazilyUpdatedSolidBrush
 {
     private readonly SolidColorBrush _brush = new();
 
@@ -25,6 +25,7 @@ public sealed class LazilyUpdatedSolidBrush : ILazilyUpdatedBrush
     }
 
     IBrush ILazilyUpdatedBrush.Brush => Brush;
+    Color ILazilyUpdatedSolidBrush.Color => Color;
 
     public LazilyUpdatedSolidBrush()
     {

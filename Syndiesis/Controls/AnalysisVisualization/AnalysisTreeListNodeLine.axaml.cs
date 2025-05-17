@@ -133,28 +133,37 @@ public partial class AnalysisTreeListNodeLine : UserControl
 
     public AnalysisNodeKind AnalysisNodeKind { get; set; }
 
-    private bool _isLoading;
+    private AnalysisNodeLineContentState _contentState;
 
-    public bool IsLoading
+    public AnalysisNodeLineContentState ContentState
     {
         get
         {
-            return _isLoading;
+            return _contentState;
         }
         set
         {
-            if (_isLoading == value)
+            if (_contentState == value)
                 return;
 
-            _isLoading = value;
+            _contentState = value;
 
-            if (value)
+            bool isLoading = value is AnalysisNodeLineContentState.Loading;
+            if (isLoading)
             {
                 optionalLoadingNodeContainer.Content ??= new LoadingSpinner();
             }
-            optionalLoadingNodeContainer.IsVisible = value;
+            optionalLoadingNodeContainer.IsVisible = isLoading;
 
-            nodeTypeIconText.IsVisible = !value;
+            bool isFailed = value is AnalysisNodeLineContentState.Failed;
+            if (isFailed)
+            {
+                errorNodeContainer.Content ??=
+                    App.CurrentResourceManager.FailureImage?.CopyOfSource();
+            }
+            errorNodeContainer.IsVisible = isFailed;
+
+            nodeTypeIconText.IsVisible = value is AnalysisNodeLineContentState.Loaded;
         }
     }
 
@@ -204,9 +213,9 @@ public partial class AnalysisTreeListNodeLine : UserControl
         _ = CommonToastNotifications.ShowClassicMain(
             toastContainer,
             $"""
-             Copied entire line content:
-             {text}
-             """,
+            Copied entire line content:
+            {text}
+            """,
             TimeSpan.FromSeconds(2));
     }
 

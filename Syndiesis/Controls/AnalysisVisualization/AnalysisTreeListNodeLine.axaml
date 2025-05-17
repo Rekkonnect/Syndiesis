@@ -46,6 +46,13 @@
         VerticalAlignment="Stretch"
         HorizontalAlignment="Stretch"
         />
+
+      <ContentControl
+        Name="errorNodeContainer"
+        VerticalAlignment="Stretch"
+        HorizontalAlignment="Stretch"
+        Padding="4"
+        />
     </Panel>
 
     <inlines:CopyableGroupedRunInlineTextBlock

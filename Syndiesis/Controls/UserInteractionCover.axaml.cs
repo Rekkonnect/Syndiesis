@@ -35,5 +35,7 @@ public partial class UserInteractionCover : UserControl
 
         public static readonly SolidColorBrush GoodTextBrush = new(GoodTextColor);
         public static readonly SolidColorBrush BadTextBrush = new(BadTextColor);
+
+        public static readonly FixedUpdatedSolidBrush BadTextUpdatedBrush = new(BadTextBrush);
     }
 }

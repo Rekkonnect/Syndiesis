@@ -2,6 +2,7 @@
 using Garyon.Extensions;
 using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
+using Syndiesis.Controls;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
@@ -34,6 +35,7 @@ public abstract partial class BaseAnalysisNodeCreator
 {
     // node creators
     private readonly GeneralLoadingRootViewNodeCreator _loadingCreator;
+    private readonly GeneralLoadingFailedRootViewNodeCreator _loadingFailedCreator;
     private readonly GeneralRootViewNodeCreator _generalCreator;
     private readonly PrimitiveRootViewNodeCreator _primitiveCreator;
     private readonly NullValueRootAnalysisNodeCreator _nullValueCreator;
@@ -53,6 +55,7 @@ public abstract partial class BaseAnalysisNodeCreator
         ParentContainer = parentContainer;
 
         _loadingCreator = new(this);
+        _loadingFailedCreator = new(this);
         _generalCreator = new(this);
         _primitiveCreator = new(this);
         _nullValueCreator = new(this);
@@ -155,6 +158,7 @@ public abstract partial class BaseAnalysisNodeCreator
     {
         var node = _loadingCreator.CreateNode(valueSource);
         node.NodeLoader = nodeTask;
+        node.LoadingFailedNodeBuilder = _loadingFailedCreator.CreateNode(valueSource);
         return node;
     }
 
@@ -1228,7 +1232,7 @@ partial class BaseAnalysisNodeCreator
                 inlines,
                 default);
 
-            line.IsLoading = true;
+            line.ContentState = AnalysisNodeLineContentState.Loading;
 
             return line;
         }
@@ -1236,6 +1240,43 @@ partial class BaseAnalysisNodeCreator
         private static SingleRunInline NewLoadingInline()
         {
             return new(new Run("Loading...", NodeCommonStyles.LoadingColorBrush));
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
+        {
+            return null;
+        }
+    }
+
+    public sealed class GeneralLoadingFailedRootViewNodeCreator(BaseAnalysisNodeCreator creator)
+        : GeneralValueRootViewNodeCreator<object?>(creator)
+    {
+        public AnalysisTreeListNode CreateNode<TDisplayValueSource>(
+            TDisplayValueSource? valueSource)
+            where TDisplayValueSource : IDisplayValueSource
+        {
+            return CreateNode(null, valueSource);
+        }
+
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            object? value, GroupedRunInlineCollection inlines)
+        {
+            var loadingInline = NewLoadingInline();
+            inlines.Add(loadingInline);
+
+            var line = AnalysisTreeListNodeLine(
+                inlines,
+                default);
+
+            line.ContentState = AnalysisNodeLineContentState.Failed;
+
+            return line;
+        }
+
+        private static SingleRunInline NewLoadingInline()
+        {
+            // TODO: Move this brush into another place for consistency
+            return new(new Run("Loading failed", UserInteractionCover.Styling.BadTextUpdatedBrush));
         }
 
         public override AnalysisNodeChildRetriever? GetChildRetriever(object? value)
