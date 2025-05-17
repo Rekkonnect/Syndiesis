@@ -35,7 +35,7 @@ public sealed class SingleRunInline : GroupedRunInline
     public sealed class Builder(
         UIBuilder.Run run,
         string? overrideText = null)
-        : Builder<SingleRunInline>(overrideText)
+        : Builder<SingleRunInline>
     {
         public UIBuilder.Run Run { get; } = run;
         public string? OverrideText { get; } = overrideText;

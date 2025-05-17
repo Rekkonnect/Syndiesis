@@ -46,7 +46,7 @@ public sealed class ComplexGroupedRunInline : GroupedRunInline
 
     public sealed class Builder(
         List<RunOrGrouped>? children = null)
-        : Builder<ComplexGroupedRunInline>()
+        : Builder<ComplexGroupedRunInline>
     {
         public List<RunOrGrouped>? Children { get; set; } = children;
 

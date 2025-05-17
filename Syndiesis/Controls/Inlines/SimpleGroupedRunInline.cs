@@ -44,7 +44,7 @@ public sealed class SimpleGroupedRunInline : GroupedRunInline
 
     public sealed class Builder(
         List<UIBuilder.Run>? children = null)
-        : Builder<SimpleGroupedRunInline>()
+        : Builder<SimpleGroupedRunInline>
     {
         public List<UIBuilder.Run>? Children { get; set; } = children;
         
