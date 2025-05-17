@@ -722,6 +722,10 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             when fromClause.Identifier.Span == token.Span:
                 return SymbolKind.RangeVariable;
 
+            case JoinClauseSyntax joinClause
+            when joinClause.Identifier.Span == token.Span:
+                return SymbolKind.RangeVariable;
+
             case LetClauseSyntax letClause
             when letClause.Identifier.Span == token.Span:
                 return SymbolKind.RangeVariable;

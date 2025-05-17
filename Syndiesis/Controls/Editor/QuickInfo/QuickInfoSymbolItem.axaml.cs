@@ -23,7 +23,7 @@ public partial class QuickInfoSymbolItem : UserControl
         var documentationRoot = XmlDocumentationAnalysisRoot.CreateForSymbol(symbol);
         var container = GetSymbolContainer();
         symbolIcon.Source = image.Source;
-        symbolDisplayBlock.GroupedRunInlines = CreateSymbolDefinitionGroupedRun(container, symbol);
+        symbolDisplayBlock.GroupedRunInlines = CreateSymbolDefinitionGroupedRun(container, context);
         documentationDisplayBlock.GroupedRunInlines = CreateSymbolDocumentationGroupedRun(
             container, documentationRoot);
         documentationDisplayBlock.IsVisible = documentationDisplayBlock.GroupedRunInlines is not null;
@@ -53,10 +53,11 @@ public partial class QuickInfoSymbolItem : UserControl
     }
 
     private GroupedRunInlineCollection CreateSymbolDefinitionGroupedRun(
-        ISymbolInlinesRootCreatorContainer container, ISymbol symbol)
+        ISymbolInlinesRootCreatorContainer container, SymbolHoverContext context)
     {
         var groupedRun = new ComplexGroupedRunInline.Builder();
-        container.Definitions.CreatorForSymbol(symbol).Create(symbol, groupedRun);
+        container.Definitions.CreatorForSymbol(context.Symbol)
+            .CreateWithHoverContext(context, groupedRun);
         return [groupedRun];
     }
 
