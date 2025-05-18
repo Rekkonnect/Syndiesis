@@ -1,13 +1,16 @@
 using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Serilog;
 using Serilog.Events;
+using Syndiesis.Updating;
 using Syndiesis.Utilities;
 using Syndiesis.Views;
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Syndiesis;
 
@@ -42,6 +45,9 @@ public partial class App : Application
         ResourceManager = new(this);
         AppInfo = CreateAppInfo();
         SetupGeneral();
+
+        // TODO: Move this into the main view to handle animations there
+        Task.Run(Singleton<UpdateManager>.Instance.CheckForUpdates);
     }
 
     private AppInfo CreateAppInfo()
