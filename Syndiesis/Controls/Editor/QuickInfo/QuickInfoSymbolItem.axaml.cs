@@ -10,7 +10,7 @@ namespace Syndiesis.Controls.Editor.QuickInfo;
 public partial class QuickInfoSymbolItem : UserControl
 {
     public HybridSingleTreeCompilationSource? CompilationSource { get; set; }
-    
+
     public QuickInfoSymbolItem()
     {
         InitializeComponent();
@@ -20,14 +20,32 @@ public partial class QuickInfoSymbolItem : UserControl
     {
         var symbol = context.Symbol;
         var image = ImageForSymbol(symbol);
-        var documentationRoot = XmlDocumentationAnalysisRoot.CreateForSymbol(symbol);
         var container = GetSymbolContainer();
         symbolIcon.Source = image.Source;
         symbolDisplayBlock.GroupedRunInlines = CreateSymbolDefinitionGroupedRun(container, context);
-        extrasDisplayBlock.GroupedRunInlines = CreateSymbolExtrasGroupedRun(container, context);
-        documentationDisplayBlock.GroupedRunInlines = CreateSymbolDocumentationGroupedRun(
-            container, documentationRoot);
-        documentationDisplayBlock.IsVisible = documentationDisplayBlock.GroupedRunInlines is not null;
+
+        SetContent(
+            extrasDisplayBlock,
+            CreateSymbolExtrasGroupedRun(container, context));
+
+        var documentationRoot = XmlDocumentationAnalysisRoot.CreateForSymbol(symbol);
+        SetContent(
+            documentationDisplayBlock,
+            CreateSymbolDocumentationGroupedRun(container, documentationRoot));
+    }
+
+    private static void SetContent(
+        CopyableGroupedRunInlineTextBlock block,
+        GroupedRunInlineCollection? inlines)
+    {
+        block.GroupedRunInlines = inlines;
+        SetVisibleOnNonEmptyContent(block);
+    }
+
+    private static void SetVisibleOnNonEmptyContent(CopyableGroupedRunInlineTextBlock block)
+    {
+        bool isEmpty = block.GroupedRunInlines is null or [];
+        block.IsVisible = !isEmpty;
     }
 
     private GroupedRunInlineCollection? CreateSymbolDocumentationGroupedRun(
@@ -47,10 +65,16 @@ public partial class QuickInfoSymbolItem : UserControl
     private GroupedRunInlineCollection? CreateSymbolExtrasGroupedRun(
         ISymbolInlinesRootCreatorContainer container, SymbolHoverContext context)
     {
-        var groupedRun = new ComplexGroupedRunInline.Builder();
-        container.Extras.CreatorForSymbol(context.Symbol)
-            ?.CreateWithHoverContext(context, groupedRun);
-        return [groupedRun];
+        var inlines = container.Extras.CreatorForSymbol(context.Symbol)
+            ?.Create(context);
+
+        // TODO: This could be approached more generically by recursively
+        // iterating all the inlines and groups until a non-empty one is found
+        var hasEmptyContent = inlines is null or { HasAny: false };
+        if (hasEmptyContent)
+            return null;
+
+        return [inlines];
     }
 
     private GroupedRunInlineCollection CreateSymbolDefinitionGroupedRun(
@@ -97,7 +121,7 @@ public partial class QuickInfoSymbolItem : UserControl
             QuickInfoSymbolClassification.Pointer => resources.StructImage,
             QuickInfoSymbolClassification.FunctionPointer => resources.DelegateImage,
             QuickInfoSymbolClassification.Extension => resources.ClassImage,
-            
+
             QuickInfoSymbolClassification.Field => resources.FieldImage,
             QuickInfoSymbolClassification.Property => resources.PropImage,
             QuickInfoSymbolClassification.Event => resources.EventImage,
@@ -108,7 +132,7 @@ public partial class QuickInfoSymbolItem : UserControl
             // TODO: Provide an icon specifically for constructors
             QuickInfoSymbolClassification.Constructor => resources.MethodImage,
             QuickInfoSymbolClassification.EnumField => resources.EnumFieldImage,
-            
+
             QuickInfoSymbolClassification.Label => resources.LabelImage,
             QuickInfoSymbolClassification.Local => resources.LocalImage,
             QuickInfoSymbolClassification.RangeVariable => resources.LocalImage,

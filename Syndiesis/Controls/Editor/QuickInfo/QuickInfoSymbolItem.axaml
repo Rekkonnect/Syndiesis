@@ -44,7 +44,7 @@
             Name="extrasDisplayBlock"
             Grid.Row="1"
             Grid.Column="1"
-            Margin="6 0 0 0"
+            Margin="12 0 0 0"
             VerticalAlignment="Top"
             TextWrapping="Wrap"
             FontSize="12"

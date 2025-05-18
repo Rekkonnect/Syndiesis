@@ -1,7 +1,10 @@
 ﻿using Microsoft.CodeAnalysis;
 using RoseLynn;
 using Syndiesis.Controls.Inlines;
+using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
+using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
@@ -10,25 +13,43 @@ public abstract class BaseCSharpTypeParameterSymbolExtraInlinesCreator<TSymbol>(
     : BaseSymbolExtraInlinesCreator<TSymbol>(parentContainer)
     where TSymbol : class, ISymbol
 {
-    public override GroupedRunInline.IBuilder CreateSymbolInline(TSymbol symbol)
+    public override void Create(TSymbol symbol, ComplexGroupedRunInline.Builder inlines)
     {
-        var inlines = new ComplexGroupedRunInline.Builder();
-
-        var typeParameters = symbol.GetTypeParameters();
+        var typeParameters = GetTypeParameters(symbol);
 
         foreach (var parameter in typeParameters)
         {
             var inline = CreateTypeParameterInline(parameter);
-            inlines.AddNonNullChild(inline);
-        }
+            if (inline is null)
+                continue;
 
-        return inlines;
+            if (inlines.HasAny)
+            {
+                inlines.Add(NewlineRun());
+            }
+            inlines.AddChild(inline);
+        }
+    }
+
+    public override GroupedRunInline.IBuilder CreateSymbolInline(TSymbol symbol)
+    {
+        throw new UnreachableException(ExceptionReasons.Liskov);
+    }
+
+    protected virtual ImmutableArray<ITypeParameterSymbol> GetTypeParameters(TSymbol symbol)
+    {
+        return symbol.GetTypeParameters();
+    }
+
+    private static UIBuilder.Run NewlineRun()
+    {
+        return Run("\n", CommonStyles.RawValueBrush);
     }
 
     private GroupedRunInline.IBuilder? CreateTypeParameterInline(ITypeParameterSymbol typeParameter)
     {
         // The inline will be structured as
-        // \n  where TName : {constraints}
+        // where TName : {constraints}
 
         var builder = new ComplexGroupedRunInline.Builder();
 
@@ -85,12 +106,11 @@ public abstract class BaseCSharpTypeParameterSymbolExtraInlinesCreator<TSymbol>(
         if (!builder.HasAny)
             return null;
 
-        var whitespaceRun = Run("  ", CommonStyles.RawValueBrush);
         var whereRun = KeywordRun("where ");
         var nameRun = SingleRun(typeParameter.Name, ColorizationStyles.TypeParameterBrush);
         var whereSplitterRun = Run(" : ", CommonStyles.RawValueBrush);
 
-        builder.Children!.InsertRange(0, [whitespaceRun, whereRun, nameRun, whereSplitterRun]);
+        builder.Children!.InsertRange(0, [whereRun, nameRun, whereSplitterRun]);
         return builder;
 
         void AddKeywordConstraint(string text)

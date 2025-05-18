@@ -21,8 +21,7 @@ public sealed class CommonPreprocessingSymbolExtraInlinesCreator(
 {
     public override GroupedRunInline.IBuilder CreateSymbolInline(IPreprocessingSymbol symbol)
     {
-        throw new UnreachableException(
-            @"<seealso href=""https://en.wikipedia.org/wiki/Liskov_substitution_principle"" />");
+        throw new UnreachableException(ExceptionReasons.Liskov);
     }
 
     protected override void CreateWithHoverContext(

@@ -30,9 +30,9 @@ public abstract class BaseSymbolQuickInfoInlinesCreator<TSymbol, TParentContaine
         CreateWithHoverContext(context, inlines);
     }
 
-    public virtual void Create(TSymbol method, ComplexGroupedRunInline.Builder inlines)
+    public virtual void Create(TSymbol symbol, ComplexGroupedRunInline.Builder inlines)
     {
-        var symbolInline = CreateSymbolInline(method);
+        var symbolInline = CreateSymbolInline(symbol);
         inlines.AddChild(symbolInline);
     }
 
