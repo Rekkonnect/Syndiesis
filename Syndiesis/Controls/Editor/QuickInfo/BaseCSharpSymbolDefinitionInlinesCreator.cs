@@ -1,5 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
+using System.Diagnostics.Contracts;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
@@ -11,7 +12,7 @@ public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
     protected override void AddModifierInlines(
         TSymbol symbol, ComplexGroupedRunInline.Builder inlines)
     {
-        var modifierInfo = ModifierInfo.GetForSymbol(symbol);
+        var modifierInfo = GetModifierInfo(symbol);
         
         var modifiers = modifierInfo.Modifiers;
         bool isFilePrivate = modifiers.HasFlag(MemberModifiers.File);
@@ -37,6 +38,7 @@ public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
         AddTargetModifier(MemberModifiers.Const, "const");
         AddTargetModifier(MemberModifiers.Static, "static");
         AddTargetModifier(MemberModifiers.Volatile, "volatile");
+        AddTargetModifier(MemberModifiers.Required, "required");
         AddTargetModifier(MemberModifiers.FixedSizeBuffer, "fixed");
         
         AddTargetModifier(MemberModifiers.Async, "async");
@@ -56,6 +58,11 @@ public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
         }
     }
 
+    protected virtual ModifierInfo GetModifierInfo(TSymbol symbol)
+    {
+        return ModifierInfo.GetForSymbol(symbol);
+    }
+
     protected static string GetAccessibilityKeyword(Accessibility accessibility)
     {
         return accessibility switch
@@ -68,5 +75,28 @@ public abstract class BaseCSharpSymbolDefinitionInlinesCreator<TSymbol>(
             Accessibility.ProtectedAndInternal => "private protected",
             _ => string.Empty,
         };
+    }
+
+    protected void AddAccessorInlines(IMethodSymbol? accessor, ComplexGroupedRunInline.Builder inlines)
+    {
+        if (accessor is null)
+            return;
+
+        var accessorAccessibility = accessor.DeclaredAccessibility;
+        var associated = accessor.AssociatedSymbol;
+        Contract.Assert(associated is not null);
+        var associatedAccessibility = associated.DeclaredAccessibility;
+        if (accessorAccessibility != associatedAccessibility)
+        {
+            var accessibilityKeyword = GetAccessibilityKeyword(accessorAccessibility);
+            AddModifier(inlines, true, accessibilityKeyword);
+        }
+
+        var accessorKeyword = SymbolHelpers.CSharp.KeywordForAccessor(accessor);
+        Contract.Assert(accessorKeyword is not null);
+        var accessorKeywordRun = SingleKeywordRun(accessorKeyword);
+        inlines.Add(accessorKeywordRun);
+
+        inlines.Add(Run("; ", CommonStyles.RawValueBrush));
     }
 }

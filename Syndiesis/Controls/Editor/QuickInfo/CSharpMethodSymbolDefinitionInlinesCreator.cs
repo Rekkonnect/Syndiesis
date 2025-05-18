@@ -7,46 +7,25 @@ public sealed class CSharpMethodSymbolDefinitionInlinesCreator(
     CSharpSymbolDefinitionInlinesCreatorContainer parentContainer)
     : BaseCSharpSymbolDefinitionInlinesCreator<IMethodSymbol>(parentContainer)
 {
-    // Manually implement this to avoid adding duplicate identifiers for the return type
-    // whose ref-like semantics are included in the common inlines creator
-    protected override void AddModifierInlines(
-        IMethodSymbol symbol, ComplexGroupedRunInline.Builder inlines)
+    protected override ModifierInfo GetModifierInfo(IMethodSymbol symbol)
     {
-        var modifierInfo = ModifierInfo.GetForSymbol(symbol);
-        
-        var modifiers = modifierInfo.Modifiers;
-        bool isFilePrivate = modifiers.HasFlag(MemberModifiers.File);
+        var info = base.GetModifierInfo(symbol);
 
-        if (isFilePrivate)
-        {
-            AddKeywordAndSpaceRun("file", inlines);
-        }
-        else
-        {
-            var keyword = GetAccessibilityKeyword(modifierInfo.Accessibility);
-            if (!string.IsNullOrEmpty(keyword))
-            {
-                AddKeywordAndSpaceRun(keyword, inlines);
-            }
-        }
-        
-        AddTargetModifier(MemberModifiers.Sealed, "sealed");
-        AddTargetModifier(MemberModifiers.Override, "override");
-        AddTargetModifier(MemberModifiers.Abstract, "abstract");
-        AddTargetModifier(MemberModifiers.Virtual, "virtual");
-        AddTargetModifier(MemberModifiers.New, "new");
-        AddTargetModifier(MemberModifiers.Static, "static");
-        
-        AddTargetModifier(MemberModifiers.Async, "async");
-        AddTargetModifier(MemberModifiers.Extern, "extern");
-        
-        AddTargetModifier(MemberModifiers.ReadOnly, "readonly");
-        return;
+        const MemberModifiers removedModifiers
+            = MemberModifiers.Const
+            | MemberModifiers.Volatile
+            | MemberModifiers.FixedSizeBuffer
+            | MemberModifiers.Scoped
+            | MemberModifiers.Ref
+            | MemberModifiers.RefReadOnly
+            | MemberModifiers.In
+            | MemberModifiers.Out
+            ;
 
-        void AddTargetModifier(MemberModifiers targetFlag, string word)
+        return info with
         {
-            AddModifier(inlines, modifiers, targetFlag, word);
-        }
+            Modifiers = info.Modifiers & ~removedModifiers
+        };
     }
 
     public override void Create(IMethodSymbol method, ComplexGroupedRunInline.Builder inlines)
