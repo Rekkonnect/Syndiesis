@@ -85,14 +85,12 @@ public abstract class BaseCSharpTypeParameterSymbolExtraInlinesCreator<TSymbol>(
         if (!builder.HasAny)
             return null;
 
-        var whitespaceRun = Run("\n  ", CommonStyles.RawValueBrush);
-        var whereRun = KeywordRun("where");
+        var whitespaceRun = Run("  ", CommonStyles.RawValueBrush);
+        var whereRun = KeywordRun("where ");
+        var nameRun = SingleRun(typeParameter.Name, ColorizationStyles.TypeParameterBrush);
         var whereSplitterRun = Run(" : ", CommonStyles.RawValueBrush);
 
-        var headerRun = new ComplexGroupedRunInline.Builder(
-            [whitespaceRun, whereRun, whereSplitterRun]);
-
-        builder.Children!.Insert(0, headerRun);
+        builder.Children!.InsertRange(0, [whitespaceRun, whereRun, nameRun, whereSplitterRun]);
         return builder;
 
         void AddKeywordConstraint(string text)

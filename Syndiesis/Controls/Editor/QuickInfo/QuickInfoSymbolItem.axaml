@@ -19,6 +19,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <Image
@@ -40,8 +41,18 @@
             Text="void ExampleSymbol(int a, int b)" />
         
         <inlines:CopyableGroupedRunInlineTextBlock
-            Name="documentationDisplayBlock"
+            Name="extrasDisplayBlock"
             Grid.Row="1"
+            Grid.Column="1"
+            Margin="6 0 0 0"
+            VerticalAlignment="Top"
+            TextWrapping="Wrap"
+            FontSize="12"
+            Text="    where _ : (true, 1)" />
+
+        <inlines:CopyableGroupedRunInlineTextBlock
+            Name="documentationDisplayBlock"
+            Grid.Row="2"
             Grid.Column="0"
             Grid.ColumnSpan="2"
             Margin="6 0 0 0"

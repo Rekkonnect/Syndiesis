@@ -24,6 +24,7 @@ public partial class QuickInfoSymbolItem : UserControl
         var container = GetSymbolContainer();
         symbolIcon.Source = image.Source;
         symbolDisplayBlock.GroupedRunInlines = CreateSymbolDefinitionGroupedRun(container, context);
+        extrasDisplayBlock.GroupedRunInlines = CreateSymbolExtrasGroupedRun(container, context);
         documentationDisplayBlock.GroupedRunInlines = CreateSymbolDocumentationGroupedRun(
             container, documentationRoot);
         documentationDisplayBlock.IsVisible = documentationDisplayBlock.GroupedRunInlines is not null;
