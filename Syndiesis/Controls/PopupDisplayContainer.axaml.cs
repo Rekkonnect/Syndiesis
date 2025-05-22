@@ -1,5 +1,8 @@
+using Avalonia;
 using Avalonia.Controls;
+using Avalonia.VisualTree;
 using Garyon.Objects;
+using Syndiesis.Views;
 
 namespace Syndiesis.Controls;
 
@@ -8,7 +11,7 @@ public partial class PopupDisplayContainer : UserControl, IShowHideControl
     public ControlShowHideHandler ShowHideHandler { get; set; }
         = Singleton<DefaultControlShowHideHandler>.Instance;
 
-    public double BackgroundOpacity { get; set; } = 0.2;
+    public double BackgroundOpacity { get; set; } = 0.35;
 
     public Control? Popup
     {
@@ -23,17 +26,22 @@ public partial class PopupDisplayContainer : UserControl, IShowHideControl
 
     public async Task Show()
     {
-        outerGrid.IsHitTestVisible = true;
-        outerGrid.Opacity = BackgroundOpacity;
+        backgroundBorder.IsHitTestVisible = true;
+        backgroundBorder.Opacity = BackgroundOpacity;
         
         await ShowHideHandler.Show(Popup);
     }
 
     public async Task Hide()
     {
-        outerGrid.IsHitTestVisible = false;
-        outerGrid.Opacity = 0;
+        backgroundBorder.IsHitTestVisible = false;
+        backgroundBorder.Opacity = 0;
 
         await ShowHideHandler.Hide(Popup);
+    }
+
+    public static PopupDisplayContainer? GetFromOuterMainViewContainer(Visual visual)
+    {
+        return visual.FindAncestorOfType<MainViewContainer>()?.popupContainer;
     }
 }

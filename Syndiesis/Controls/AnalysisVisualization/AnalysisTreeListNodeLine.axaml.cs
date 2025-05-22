@@ -209,7 +209,7 @@ public partial class AnalysisTreeListNodeLine : UserControl
             .ConfigureAwait(false);
         PulseCopiedLine();
 
-        var toastContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
+        var toastContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
         _ = CommonToastNotifications.ShowClassicMain(
             toastContainer,
             $"""

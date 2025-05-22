@@ -712,7 +712,7 @@ public partial class MainView : UserControl
 
     private void ShowResetSettingsPopup()
     {
-        var notificationContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
+        var notificationContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
         _ = CommonToastNotifications.ShowClassicMain(
             notificationContainer,
             "Reverted settings to current file state",

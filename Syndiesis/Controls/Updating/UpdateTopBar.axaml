@@ -57,6 +57,8 @@
           Name="linePulseRectangle"
           IsHitTestVisible="False"
           />
+        
+        <!-- TODO: Add the remaining elements -->
 
         <StackPanel
           Orientation="Horizontal"
@@ -64,12 +66,6 @@
           Margin="15 0 0 0"
           Name="contentStackPanel"
           >
-          <Image
-            Name="logoImage"
-            Height="35"
-            Source="/Assets/Icons/logo.png"
-            />
-
           <inlines:CopyableGroupedRunInlineTextBlock
             Name="headerText"
             FontFamily="{StaticResource AptosDisplayFontFamily}"

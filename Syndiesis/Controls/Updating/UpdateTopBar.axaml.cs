@@ -4,7 +4,6 @@ using Avalonia.Controls.Documents;
 using Avalonia.Input;
 using Avalonia.Media;
 using Garyon.Objects;
-using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
@@ -19,13 +18,6 @@ public partial class UpdateTopBar : UserControl
     private Run _commitRun;
 
     private CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
-    private Run _titleRun;
-
-    public event EventHandler<PointerPressedEventArgs> LogoClicked
-    {
-        add => logoImage.PointerPressed += value;
-        remove => logoImage.PointerPressed -= value;
-    }
 
     public UpdateTopBar()
     {
@@ -66,7 +58,7 @@ public partial class UpdateTopBar : UserControl
             .ConfigureAwait(false);
         PulseCopiedLine();
 
-        var toastContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
+        var toastContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
         if (toastContainer is not null)
         {
             var popupContent = $"""
@@ -89,7 +81,6 @@ public partial class UpdateTopBar : UserControl
         _ = animation.RunAsync(linePulseRectangle, _pulseLineCancellationTokenFactory.CurrentToken);
     }
 
-    [MemberNotNull(nameof(_titleRun))]
     [MemberNotNull(nameof(_versionRun))]
     [MemberNotNull(nameof(_commitRun))]
     private void InitializeRuns()
@@ -100,15 +91,6 @@ public partial class UpdateTopBar : UserControl
 
         var groups = new RunOrGrouped[]
         {
-            new SingleRunInline(
-                _titleRun = new Run("Syndiesis")
-                {
-                    FontSize = 20,
-                }
-            ),
-
-            new Run("  "),
-
             new ComplexGroupedRunInline(
             [
                 new Run("v")
@@ -163,28 +145,5 @@ public partial class UpdateTopBar : UserControl
         }
 
         headerText.GroupedRunInlines = new(groups);
-    }
-
-    private static readonly Color _csBackground = Color.FromUInt32(0xFF004044);
-    private static readonly Color _vbBackground = Color.FromUInt32(0xFF104565);
-
-    public void SetThemeForLanguage(string languageName)
-    {
-        switch (languageName)
-        {
-            case LanguageNames.CSharp:
-                lineBackground.Fill = new SolidColorBrush(_csBackground);
-                _titleRun.Text = "Syndiesis";
-                logoImage.Source = App.CurrentResourceManager.LogoCSImage!.Source;
-                break;
-
-            case LanguageNames.VisualBasic:
-                lineBackground.Fill = new SolidColorBrush(_vbBackground);
-                _titleRun.Text = "SymVBiosis";
-                logoImage.Source = App.CurrentResourceManager.LogoVBImage!.Source;
-                break;
-        }
-
-        headerText.Redraw();
     }
 }

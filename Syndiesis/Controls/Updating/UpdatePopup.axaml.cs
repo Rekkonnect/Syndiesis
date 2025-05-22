@@ -1,5 +1,4 @@
 using Avalonia;
-using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
@@ -12,6 +11,9 @@ namespace Syndiesis.Controls.Updating;
 
 public partial class UpdatePopup : UserControl
 {
+    // TODO: This is a temporary solution to preserve the state of the button
+    private bool _needsDownloading = false;
+
     public UpdatePopup()
     {
         InitializeComponent();
@@ -22,7 +24,7 @@ public partial class UpdatePopup : UserControl
     {
         var manager = Singleton<UpdateManager>.Instance;
         manager.UpdaterPropertyChanged += HandlePropertyChanged;
-        installButton.Click += OnUpdateInformationButtonClicked;
+        mainButton.Click += OnUpdateInformationButtonClicked;
     }
 
     private void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -64,11 +66,19 @@ public partial class UpdatePopup : UserControl
 
     private void OnUpdateInformationButtonClicked(object? sender, RoutedEventArgs e)
     {
-        Dispatcher.UIThread.InvokeAsync(ShowUpdateInformationPopup);
+        Dispatcher.UIThread.InvokeAsync(HandleMainButtonClick);
     }
 
-    private void ShowUpdateInformationPopup()
+    private void HandleMainButtonClick()
     {
-        // TODO: Show the popup
+        var manager = Singleton<UpdateManager>.Instance;
+        if (_needsDownloading)
+        {
+            Task.Run(manager.EnsureUpdateDownloaded);
+        }
+        else
+        {
+            Task.Run(manager.InstallDownloadedUpdate);
+        }
     }
 }

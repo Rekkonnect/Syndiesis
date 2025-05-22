@@ -9,19 +9,25 @@
 
   <Grid
     Name="outerGrid"
-    IsHitTestVisible="true"
-    Background="Black"
-    Opacity="0"
     >
     <Grid.Transitions>
       <Transitions>
-        <ThicknessTransition
+        <DoubleTransition
           Property="Opacity"
           Duration="0:0:0.200"
           />
       </Transitions>
     </Grid.Transitions>
 
+    <Border
+      Name="backgroundBorder"
+      IsHitTestVisible="false"
+      Background="Black"
+      Opacity="0"
+      VerticalAlignment="Stretch"
+      HorizontalAlignment="Stretch"
+      />
+    
     <ContentControl
       Name="popupContainer"
       VerticalAlignment="Center"

@@ -4,8 +4,11 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d"
-  Height="25"
-  x:Class="Syndiesis.Controls.Updating.UpdatePopup">
+  Width="620"
+  Height="420"
+  xmlns:updating="using:Syndiesis.Controls.Updating"
+  x:Class="Syndiesis.Controls.Updating.UpdatePopup"
+  >
 
   <UserControl.Transitions>
     <Transitions>
@@ -23,45 +26,106 @@
     </Transitions>
   </UserControl.Transitions>
 
-  <Grid>
-    <Button
-      Padding="5"
-      Background="Transparent"
-      Name="installButton">
-
-      <TextBlock
-        ClipToBounds="false"
-        FontSize="14"
-        Foreground="#80FFFFFF"
-        VerticalAlignment="Center"
-        Text="No updates are currently available"
-        Name="buttonText"
-      />
-    </Button>
+  <Border
+    CornerRadius="6"
+    ClipToBounds="true"
+    >
     
-    <Button
-      Padding="5"
-      Background="Transparent"
-      Name="button">
+    <Grid
+      VerticalAlignment="Stretch"
+      HorizontalAlignment="Stretch"
+      >
 
-      <Button.Transitions>
-        <Transitions>
-          <DoubleTransition
-            Duration="0:0:0.250"
-            Property="Opacity"
-          />
-        </Transitions>
-      </Button.Transitions>
+      <Grid.Background>
+        <LinearGradientBrush StartPoint="0,0" EndPoint="100%,100%">
+          <LinearGradientBrush.GradientStops>
+            <GradientStop Color="#001D1F" Offset="0" />
+            <GradientStop Color="#002B2E" Offset="1" />
+          </LinearGradientBrush.GradientStops>
+        </LinearGradientBrush>
+      </Grid.Background>
 
-      <TextBlock
-        ClipToBounds="false"
-        FontSize="14"
-        Foreground="#80FFFFFF"
-        VerticalAlignment="Center"
-        Text="No updates are currently available"
-        Name="buttonText1"
-      />
-    </Button>
+      <updating:UpdateTopBar
+        VerticalAlignment="Top"
+        HorizontalAlignment="Stretch"
+        />
+
+      <Grid
+        VerticalAlignment="Bottom"
+        HorizontalAlignment="Stretch"
+        >
+
+        <Border
+          CornerRadius="20 0 0 0"
+          ClipToBounds="True"
+          Height="50"
+          Width="420"
+          VerticalAlignment="Bottom"
+          HorizontalAlignment="Right"
+          BorderThickness="0"
+          >
+
+          <Button
+            CornerRadius="0"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            Background="#475859"
+            Name="mainButton"
+            >
+
+            <TextBlock
+              ClipToBounds="false"
+              FontSize="18"
+              Foreground="#80FFFFFF"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              Text="Downloading update..."
+              Name="buttonText"
+              />
+          </Button>
+        </Border>
+
+        <Border
+          CornerRadius="20 0 0 0"
+          ClipToBounds="True"
+          Height="30"
+          Width="130"
+          Margin="0 0 420 0"
+          VerticalAlignment="Bottom"
+          HorizontalAlignment="Right"
+          BorderThickness="0"
+          >
+
+          <Button
+            CornerRadius="0"
+            VerticalAlignment="Stretch"
+            HorizontalAlignment="Stretch"
+            Background="#80B02010"
+            Name="cancelButton"
+            >
+
+            <Button.Transitions>
+              <Transitions>
+                <DoubleTransition
+                  Duration="0:0:0.250"
+                  Property="Opacity"
+              />
+              </Transitions>
+            </Button.Transitions>
+
+            <TextBlock
+              ClipToBounds="false"
+              FontSize="16"
+              Foreground="#F2C6C2"
+              VerticalAlignment="Center"
+              HorizontalAlignment="Center"
+              Text="Cancel"
+              />
+          </Button>
+
+        </Border>
+      </Grid>
   </Grid>
+  </Border>
 
 </UserControl>

@@ -50,14 +50,14 @@
 
         <toast:ToastNotificationContainer
           Name="ToastNotificationContainer"
-      />
+        />
+
+        <controls:PopupDisplayContainer
+          Name="popupContainer"
+        />
       </Panel>
 
     </DockPanel>
 
-    <updating:UpdatePopup
-      Name="updatePopup"
-      />
-    
   </Panel>
 </UserControl>
