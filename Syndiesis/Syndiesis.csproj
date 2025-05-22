@@ -74,4 +74,13 @@
     <ProjectReference Include="..\Syndiesis.InternalGenerators\Syndiesis.InternalGenerators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Controls\Updating\UpdateTopBar.axaml.cs">
+      <DependentUpon>UpdateTopBar.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Controls\Updating\UpdatePopup.axaml.cs">
+      <DependentUpon>UpdatePopup.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+
 </Project>

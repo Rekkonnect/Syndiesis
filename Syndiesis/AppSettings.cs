@@ -4,6 +4,7 @@ using Syndiesis.Core.DisplayAnalysis;
 using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Syndiesis;
 
@@ -39,11 +40,11 @@ public sealed class AppSettings
     #endregion
 
     #region Persistence
-    public static bool TryLoad(string path = DefaultPath)
+    public static async Task<bool> TryLoad(string path = DefaultPath)
     {
         try
         {
-            var json = File.ReadAllText(path);
+            var json = await File.ReadAllTextAsync(path);
             var returned = JsonSerializer.Deserialize<AppSettings>(
                 json, AppSettingsSerialization.DefaultOptions);
             if (returned is null)
@@ -60,13 +61,13 @@ public sealed class AppSettings
         }
     }
 
-    public static bool TrySave(string path = DefaultPath)
+    public static async Task<bool> TrySave(string path = DefaultPath)
     {
         try
         {
             var json = JsonSerializer.Serialize(
                 Instance, AppSettingsSerialization.DefaultOptions);
-            File.WriteAllText(path, json);
+            await File.WriteAllTextAsync(path, json);
             Log.Information($"Settings saved to '{path}'");
             return true;
         }

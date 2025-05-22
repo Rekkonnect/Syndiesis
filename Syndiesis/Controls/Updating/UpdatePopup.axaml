@@ -1,0 +1,67 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d"
+  Height="25"
+  x:Class="Syndiesis.Controls.Updating.UpdatePopup">
+
+  <UserControl.Transitions>
+    <Transitions>
+      <DoubleTransition
+        Duration="0:0:0.250"
+        Property="Opacity"
+        Easing="ExponentialEaseOut"
+        />
+      
+      <ThicknessTransition
+        Duration="0:0:0.250"
+        Property="Margin"
+        Easing="ExponentialEaseOut"
+        />
+    </Transitions>
+  </UserControl.Transitions>
+
+  <Grid>
+    <Button
+      Padding="5"
+      Background="Transparent"
+      Name="installButton">
+
+      <TextBlock
+        ClipToBounds="false"
+        FontSize="14"
+        Foreground="#80FFFFFF"
+        VerticalAlignment="Center"
+        Text="No updates are currently available"
+        Name="buttonText"
+      />
+    </Button>
+    
+    <Button
+      Padding="5"
+      Background="Transparent"
+      Name="button">
+
+      <Button.Transitions>
+        <Transitions>
+          <DoubleTransition
+            Duration="0:0:0.250"
+            Property="Opacity"
+          />
+        </Transitions>
+      </Button.Transitions>
+
+      <TextBlock
+        ClipToBounds="false"
+        FontSize="14"
+        Foreground="#80FFFFFF"
+        VerticalAlignment="Center"
+        Text="No updates are currently available"
+        Name="buttonText"
+      />
+    </Button>
+  </Grid>
+
+</UserControl>

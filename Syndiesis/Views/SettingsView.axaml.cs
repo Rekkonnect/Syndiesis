@@ -2,12 +2,14 @@ using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
+using Avalonia.Threading;
 using Syndiesis.Controls;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
 using System;
 using System.IO;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Views;
 
@@ -140,7 +142,12 @@ public partial class SettingsView : UserControl
 
     private void ResetSettings()
     {
-        bool success = AppSettings.TryLoad();
+        Dispatcher.UIThread.Invoke(ResetSettingsAsync);
+    }
+
+    private async Task ResetSettingsAsync()
+    {
+        bool success = await AppSettings.TryLoad();
         var notificationContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
         if (success)
         {
@@ -162,10 +169,16 @@ public partial class SettingsView : UserControl
 
     private void SaveSettings()
     {
+        Dispatcher.UIThread.InvokeAsync(SaveSettingsAsync);
+    }
+
+    private async Task SaveSettingsAsync()
+    {
         var settings = AppSettings.Instance;
         SetSettingsValues(settings);
+
         var path = AppSettings.DefaultPath;
-        bool success = AppSettings.TrySave(path);
+        bool success = await AppSettings.TrySave(path);
         var notificationContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
         if (success)
         {

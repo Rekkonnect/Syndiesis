@@ -1,11 +1,12 @@
 ﻿#if DEBUG
 #define FORCE_UPDATE_CHECK
-#define FORCE_DOWNLOAD
-#define FORCE_INSTALL
+#undef FORCE_DOWNLOAD
+#undef FORCE_INSTALL
 #endif
 
 using Serilog;
 using System;
+using System.ComponentModel;
 using System.Threading.Tasks;
 using Updatum;
 
@@ -36,12 +37,18 @@ public sealed class UpdateManager
         }
     }
 
-    public UpdatumState UpdatumState => _updater.State;
+    public UpdatumState UpdateState => _updater.State;
+
+    public bool HasPendingUpdate => _downloadedAsset is not null || _updater.IsUpdateAvailable;
+
+    public event PropertyChangedEventHandler? UpdaterPropertyChanged;
 
     public async Task CheckForUpdates()
     {
         try
         {
+            _updater.PropertyChanged += UpdaterPropertyChanged;
+
             Log.Information($"Checking for updates (triggering on version {_updater.CurrentVersion})");
             var updateFound = await _updater.CheckForUpdatesAsync();
 

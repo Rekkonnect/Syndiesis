@@ -45,9 +45,6 @@ public partial class App : Application
         ResourceManager = new(this);
         AppInfo = CreateAppInfo();
         SetupGeneral();
-
-        // TODO: Move this into the main view to handle animations there
-        Task.Run(Singleton<UpdateManager>.Instance.CheckForUpdates);
     }
 
     private AppInfo CreateAppInfo()

@@ -9,7 +9,7 @@
   xmlns:inlines="using:Syndiesis.Controls.Inlines"
   xmlns:updating="using:Syndiesis.Controls.Updating"
   DockPanel.Dock="Top"
-  x:Class="Syndiesis.Controls.SyndiesisTitleBar"
+  x:Class="Syndiesis.Controls.Updating.UpdateTopBar"
   >
 
   <Panel>
@@ -77,16 +77,6 @@
             IsHitTestVisible="False"
             />
         </StackPanel>
-
-        <updating:UpdateInformationButton
-          Margin="0 0 15 0"
-          HorizontalAlignment="Right"
-          >
-        </updating:UpdateInformationButton>
-
-        <controls:SyndiesisTitleBarButtonPanel
-          Grid.Column="1"
-          />
       </Grid>
     </Border>
 

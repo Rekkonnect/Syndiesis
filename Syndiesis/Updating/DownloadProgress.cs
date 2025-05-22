@@ -5,5 +5,5 @@ namespace Syndiesis.Updating;
 public readonly record struct DownloadProgress(
     long DownloadedBytes, long TotalBytes)
 {
-    public double Progress => DownloadedBytes / TotalBytes.OneOrGreater();
+    public double Progress => (double)DownloadedBytes / TotalBytes.OneOrGreater();
 }

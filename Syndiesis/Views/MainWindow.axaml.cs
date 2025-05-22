@@ -4,8 +4,12 @@ using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
+using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Core;
+using Syndiesis.Updating;
+using System;
+using System.Threading.Tasks;
 
 namespace Syndiesis.Views;
 
@@ -27,6 +31,13 @@ public partial class MainWindow : Window
         SetCurrentTitle();
 
         InitializeTransitions();
+
+        InitializeUpdateCheck();
+    }
+
+    private void InitializeUpdateCheck()
+    {
+        Task.Run(Singleton<UpdateManager>.Instance.CheckForUpdates);
     }
 
     private void InitializeTransitions()
