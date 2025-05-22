@@ -32,6 +32,7 @@ public partial class MainView : UserControl
     public readonly MainWindowViewModel ViewModel = new();
 
     public event Action? SettingsRequested;
+    public event Action? LanguageChanged;
 
     public MainView()
     {
@@ -620,7 +621,7 @@ public partial class MainView : UserControl
     public void Reset()
     {
         LoggerExtensionsEx.LogMethodInvocation(nameof(Reset));
-        var name = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        var name = ViewModel.CurrentLanguage;
         ResetToLanguage(name);
     }
 
@@ -638,11 +639,13 @@ public partial class MainView : UserControl
 
         SetSource(defaultCode);
         codeEditor.DiagnosticsEnabled = AppSettings.Instance.DiagnosticsEnabled;
+
+        LanguageChanged?.Invoke();
     }
 
     public string ToggleLanguage()
     {
-        var current = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        var current = ViewModel.CurrentLanguage;
         var toggled = ToggleLanguageName(current);
         ResetToLanguage(toggled);
         return toggled;
@@ -653,13 +656,13 @@ public partial class MainView : UserControl
         ViewModel.HybridCompilationSource.SetLanguageVersion(version);
 
         var newLanguageName = version.LanguageName;
-        var currentLanguageName = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        var CurrentLanguage = ViewModel.CurrentLanguage;
         Dispatcher.UIThread.InvokeAsync(() =>
-            SetNewLanguage(newLanguageName, currentLanguageName));
+            SetNewLanguage(newLanguageName, CurrentLanguage));
 
-        void SetNewLanguage(string newLanguageName, string currentLanguageName)
+        void SetNewLanguage(string newLanguageName, string CurrentLanguage)
         {
-            if (newLanguageName != currentLanguageName)
+            if (newLanguageName != CurrentLanguage)
             {
                 ResetToLanguage(newLanguageName);
             }

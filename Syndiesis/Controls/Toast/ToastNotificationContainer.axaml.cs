@@ -48,6 +48,6 @@ public partial class ToastNotificationContainer : UserControl
     public static ToastNotificationContainer? GetFromMainWindowTopLevel(Visual visual)
     {
         var top = TopLevel.GetTopLevel(visual) as MainWindow;
-        return top?.ToastNotificationContainer;
+        return top?.mainView.ToastNotificationContainer;
     }
 }

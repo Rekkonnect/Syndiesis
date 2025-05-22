@@ -59,7 +59,7 @@
         Foreground="#80FFFFFF"
         VerticalAlignment="Center"
         Text="No updates are currently available"
-        Name="buttonText"
+        Name="buttonText1"
       />
     </Button>
   </Grid>

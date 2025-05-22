@@ -17,6 +17,7 @@ public sealed class AppSettings
     #region Settings
     public AnalysisNodeCreationOptions NodeLineOptions = new();
     public IndentationOptions IndentationOptions = new();
+    public UpdateOptions UpdateOptions = new();
 
     public StylePreferences NodeColorPreferences = new();
     public ColorizationPreferences ColorizationPreferences = new();

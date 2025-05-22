@@ -67,40 +67,41 @@ public partial class App : Application
     private static void SetupGeneral()
     {
         SetupSerilog();
-        AppSettings.TryLoad();
+        Task.Run(() => AppSettings.TryLoad());
+        InitializeUpdateCheck();
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            SetupDesktop(desktop);
+            SetupDesktopLifetime(desktop);
         }
 
         if (ApplicationLifetime is ISingleViewApplicationLifetime single)
         {
-            SetupSingleView(single);
+            SetupSingleViewLifetime(single);
         }
 
         if (ApplicationLifetime is IControlledApplicationLifetime controlled)
         {
-            SetupControlled(controlled);
+            SetupControlledLifetime(controlled);
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
-    private void SetupDesktop(IClassicDesktopStyleApplicationLifetime desktop)
+    private void SetupDesktopLifetime(IClassicDesktopStyleApplicationLifetime desktop)
     {
         desktop.MainWindow = new MainWindow();
     }
 
-    private void SetupSingleView(ISingleViewApplicationLifetime single)
+    private void SetupSingleViewLifetime(ISingleViewApplicationLifetime single)
     {
         single.MainView = new MainView();
     }
 
-    private void SetupControlled(IControlledApplicationLifetime controlled)
+    private void SetupControlledLifetime(IControlledApplicationLifetime controlled)
     {
         SetupSerilog(controlled);
         controlled.Exit += HandleControlledLifetimeExit;
@@ -109,7 +110,7 @@ public partial class App : Application
     private void HandleControlledLifetimeExit(
         object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
-        AppSettings.TrySave();
+        Task.Run(() => AppSettings.TrySave());
     }
 
     private void SetupSerilog(IControlledApplicationLifetime lifetime)
@@ -136,5 +137,10 @@ public partial class App : Application
     private static void LogApplicationExit(object? sender, EventArgs e)
     {
         LoggerExtensionsEx.LogMethodInvocation(nameof(LogApplicationExit));
+    }
+
+    private static void InitializeUpdateCheck()
+    {
+        Task.Run(Singleton<UpdateManager>.Instance.CheckForUpdates);
     }
 }

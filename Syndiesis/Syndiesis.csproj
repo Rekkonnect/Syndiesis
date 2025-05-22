@@ -81,6 +81,12 @@
     <Compile Update="Controls\Updating\UpdatePopup.axaml.cs">
       <DependentUpon>UpdatePopup.axaml</DependentUpon>
     </Compile>
+    <Compile Update="Controls\PopupDisplayContainer.axaml.cs">
+      <DependentUpon>PopupDisplayContainer.axaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\MainViewContainer.axaml.cs">
+      <DependentUpon>MainViewContainer.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 
 </Project>

@@ -100,13 +100,13 @@ public sealed class HybridSingleTreeCompilationSource
         Log.Information($"Set the source within {profiling.SnapshotResults!.Time.TotalMilliseconds}ms");
     }
 
-    private static string GetLanguage(string source, CancellationToken cancellationToken)
+    private string GetLanguage(string source, CancellationToken cancellationToken)
     {
         var csTree = CSharpSyntaxTree.ParseText(source, cancellationToken: cancellationToken);
         var vbTree = VisualBasicSyntaxTree.ParseText(source, cancellationToken: cancellationToken);
 
         if (cancellationToken.IsCancellationRequested)
-            return LanguageNames.CSharp;
+            return CurrentLanguageName;
 
         var csPenalty = InvalidCodePenalty(
             csTree,

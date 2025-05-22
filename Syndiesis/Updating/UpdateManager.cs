@@ -1,7 +1,5 @@
 ﻿#if DEBUG
 #define FORCE_UPDATE_CHECK
-#undef FORCE_DOWNLOAD
-#undef FORCE_INSTALL
 #endif
 
 using Serilog;
@@ -59,9 +57,10 @@ public sealed class UpdateManager
                 Log.Information("No update was found");
             }
 
-#if FORCE_DOWNLOAD
-            await EnsureUpdateDownloaded();
-#endif
+            if (AppSettings.Instance.UpdateOptions.AutoDownloadUpdates)
+            {
+                await EnsureUpdateDownloaded();
+            }
         }
         catch (Exception ex)
         {
@@ -79,10 +78,6 @@ public sealed class UpdateManager
 
         Log.Information($"Beginning downloading latest release from {_updater.LatestRelease?.Url}");
         _downloadedAsset = await _updater.DownloadUpdateAsync();
-        
-#if FORCE_INSTALL
-        await InstallDownloadedUpdate();
-#endif
     }
 
     public async Task InstallDownloadedUpdate()
