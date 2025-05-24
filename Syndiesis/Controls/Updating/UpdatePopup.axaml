@@ -8,19 +8,33 @@
   Height="420"
   xmlns:updating="using:Syndiesis.Controls.Updating"
   x:Class="Syndiesis.Controls.Updating.UpdatePopup"
+  Opacity="0"
+  Margin="0 0 0 -30"
   >
 
   <UserControl.Transitions>
     <Transitions>
       <DoubleTransition
-        Duration="0:0:0.250"
+        Duration="0:0:0.750"
         Property="Opacity"
         Easing="ExponentialEaseOut"
         />
       
       <ThicknessTransition
-        Duration="0:0:0.250"
+        Duration="0:0:0.500"
         Property="Margin"
+        Easing="ExponentialEaseOut"
+        />
+
+      <DoubleTransition
+        Duration="0:0:0.200"
+        Property="Height"
+        Easing="ExponentialEaseOut"
+        />
+
+      <DoubleTransition
+        Duration="0:0:1.000"
+        Property="Width"
         Easing="ExponentialEaseOut"
         />
     </Transitions>
@@ -46,14 +60,27 @@
       </Grid.Background>
 
       <updating:UpdateTopBar
+        Name="topBar"
         VerticalAlignment="Top"
         HorizontalAlignment="Stretch"
         />
 
       <Grid
+        Name="innerContent"
         VerticalAlignment="Bottom"
         HorizontalAlignment="Stretch"
         >
+
+        <Grid.Transitions>
+          <Transitions>
+            <DoubleTransition
+              Duration="0:0:0.100"
+              Property="Opacity"
+              Easing="ExponentialEaseOut"
+              />
+          </Transitions>
+        </Grid.Transitions>
+
 
         <Border
           CornerRadius="20 0 0 0"
@@ -67,11 +94,21 @@
 
           <Button
             CornerRadius="0"
+            BorderThickness="0"
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch"
             Background="#475859"
             Name="mainButton"
             >
+
+            <Button.Styles>
+              <Style Selector="Button:pointerover /template/ ContentPresenter">
+                <Setter Property="Background" Value="#20009099" />
+              </Style>
+              <Style Selector="Button:pressed /template/ ContentPresenter">
+                <Setter Property="Background" Value="#30009099" />
+              </Style>
+            </Button.Styles>
 
             <TextBlock
               ClipToBounds="false"
@@ -98,6 +135,7 @@
 
           <Button
             CornerRadius="0"
+            BorderThickness="0"
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch"
             Background="#80B02010"
@@ -125,7 +163,7 @@
 
         </Border>
       </Grid>
-  </Grid>
+    </Grid>
   </Border>
 
 </UserControl>

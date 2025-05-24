@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.VisualTree;
 using Garyon.Objects;
 using Syndiesis.Views;
+using System.Linq;
 
 namespace Syndiesis.Controls;
 
@@ -15,8 +16,17 @@ public partial class PopupDisplayContainer : UserControl, IShowHideControl
 
     public Control? Popup
     {
-        get => popupContainer.Content as Control;
-        set => popupContainer.Content = value;
+        get => popupContainer.Children.FirstOrDefault();
+        set
+        {
+            if (value is null)
+            {
+                popupContainer.Children.Clear();
+                return;
+            }
+
+            popupContainer.Children.ClearSetValue(value);
+        }
     }
 
     public PopupDisplayContainer()

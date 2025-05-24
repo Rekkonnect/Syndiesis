@@ -5,7 +5,6 @@ using Avalonia.Threading;
 using Garyon.Objects;
 using Syndiesis.Updating;
 using System.ComponentModel;
-using System.Data;
 using Updatum;
 
 namespace Syndiesis.Controls.Updating;
@@ -73,7 +72,9 @@ public partial class UpdateInformationButton : UserControl
         if (container is null)
             return;
 
-        container.Popup = new UpdatePopup();
+        var popup = new UpdatePopup();
+        container.Popup = popup;
+        popup.Opacity = 0;
         Dispatcher.UIThread.InvokeAsync(container.Show);
     }
 }

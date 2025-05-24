@@ -2,9 +2,12 @@
 #define FORCE_UPDATE_CHECK
 #endif
 
+using Octokit;
 using Serilog;
+using Syndiesis.Core;
 using System;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 using Updatum;
 
@@ -39,6 +42,10 @@ public sealed class UpdateManager
 
     public bool HasPendingUpdate => _downloadedAsset is not null || _updater.IsUpdateAvailable;
 
+    public GitReference? LatestReleaseCommit { get; private set; }
+    public Release? Release => _updater.LatestRelease;
+    public string? LatestVersionString => _updater.LatestReleaseTagVersionStr;
+
     public event PropertyChangedEventHandler? UpdaterPropertyChanged;
 
     public async Task CheckForUpdates()
@@ -48,7 +55,7 @@ public sealed class UpdateManager
             _updater.PropertyChanged += UpdaterPropertyChanged;
 
             Log.Information($"Checking for updates (triggering on version {_updater.CurrentVersion})");
-            var updateFound = await _updater.CheckForUpdatesAsync();
+            var updateFound = await GetUpdateInfo();
 
             Log.Information($"Latest release found: {_updater.LatestRelease?.Name}");
 
@@ -67,6 +74,23 @@ public sealed class UpdateManager
             App.Current.ExceptionListener.HandleException(
                 ex, "An exception occurred while trying to check and install the update");
         }
+    }
+
+    private async Task<bool> GetUpdateInfo()
+    {
+        var found = await _updater.CheckForUpdatesAsync();
+
+        if (found)
+        {
+            var release = _updater.LatestRelease!;
+            var tag = await _updater.GithubClient.GetTagFromRelease(
+                release, owner: _updater.Owner, repository: _updater.Repository);
+
+            var releaseCommit = tag.Commit;
+            LatestReleaseCommit = releaseCommit;
+        }
+
+        return found;
     }
 
     public async Task EnsureUpdateDownloaded()

@@ -4,12 +4,13 @@ using Avalonia.Interactivity;
 using Avalonia.Threading;
 using Garyon.Objects;
 using Syndiesis.Updating;
+using Syndiesis.Views;
 using System.ComponentModel;
 using Updatum;
 
 namespace Syndiesis.Controls.Updating;
 
-public partial class UpdatePopup : UserControl
+public partial class UpdatePopup : UserControl, IShowHideControl
 {
     // TODO: This is a temporary solution to preserve the state of the button
     private bool _needsDownloading = false;
@@ -80,5 +81,33 @@ public partial class UpdatePopup : UserControl
         {
             Task.Run(manager.InstallDownloadedUpdate);
         }
+    }
+
+    public Task Show()
+    {
+        Opacity = 1;
+        Margin = default;
+        return Task.CompletedTask;
+    }
+
+    public Task Hide()
+    {
+        var targetOutermostParent = this.NearestAncestorOfType<MainViewContainer>()!;
+        var targetBar = targetOutermostParent.TitleBar;
+        var topLeftOffset = this.TranslatePoint(default, targetBar)!.Value;
+        var targetHeight = targetBar.Height;
+        var choppedHeight = Height - targetHeight;
+        var relativeTopMargin = topLeftOffset.Y;
+        var targetMargin = Margin
+            .WithTop(-relativeTopMargin)
+            .WithBottom(choppedHeight + relativeTopMargin);
+
+        Margin = targetMargin;
+        Opacity = 0;
+        Height = targetHeight;
+        Width = targetOutermostParent.Bounds.Width;
+
+        innerContent.Opacity = 0;
+        return Task.CompletedTask;
     }
 }

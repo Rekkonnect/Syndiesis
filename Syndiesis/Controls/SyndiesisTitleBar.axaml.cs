@@ -9,6 +9,7 @@ using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;
+using Syndiesis.Core;
 using Syndiesis.Utilities;
 using System;
 using System.Diagnostics.CodeAnalysis;
@@ -136,7 +137,7 @@ public partial class SyndiesisTitleBar : UserControl
     {
         var infoVersion = App.Current.AppInfo.InformationalVersion;
         var version = infoVersion.Version;
-        var sha = infoVersion.CommitSha?[..7];
+        var sha = infoVersion.CommitSha?.ShortCommitSha();
 
         var groups = new RunOrGrouped[]
         {

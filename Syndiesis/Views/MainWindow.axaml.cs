@@ -70,7 +70,8 @@ public partial class MainWindow : Window
     private void SetTitle(string programTitle)
     {
         var infoVersion = App.Current.AppInfo.InformationalVersion;
-        Title = $"{programTitle} v{infoVersion.Version} [{infoVersion.CommitSha![..7]}]";
+        var shortSha = infoVersion.CommitSha!.ShortCommitSha();
+        Title = $"{programTitle} v{infoVersion.Version} [{shortSha}]";
     }
 
     private void InitializeEvents()

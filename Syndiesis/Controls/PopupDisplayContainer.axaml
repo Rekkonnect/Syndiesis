@@ -27,12 +27,22 @@
       VerticalAlignment="Stretch"
       HorizontalAlignment="Stretch"
       />
-    
-    <ContentControl
+
+    <Grid
       Name="popupContainer"
       VerticalAlignment="Center"
       HorizontalAlignment="Center"
-      />
+      >
+      <Grid.Effect>
+        <DropShadowEffect
+          OffsetX="0"
+          OffsetY="0"
+          BlurRadius="120"
+          Opacity="0.9"
+          Color="Black"
+          />
+      </Grid.Effect>
+    </Grid>
 
   </Grid>
   

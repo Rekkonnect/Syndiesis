@@ -57,22 +57,54 @@
           Name="linePulseRectangle"
           IsHitTestVisible="False"
           />
-        
+
         <!-- TODO: Add the remaining elements -->
 
-        <StackPanel
-          Orientation="Horizontal"
-          Spacing="10"
+        <Grid
           Margin="15 0 0 0"
           Name="contentStackPanel"
           >
+
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition />
+            <ColumnDefinition />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+
+          <TextBlock
+            FontFamily="{StaticResource AptosDisplayFontFamily}"
+            Foreground="#B8CBCC"
+            HorizontalAlignment="Center"
+            Text="Update available"
+            FontSize="18"
+            TextAlignment="Center"
+            VerticalAlignment="Center"
+            />
+
           <inlines:CopyableGroupedRunInlineTextBlock
             Name="headerText"
+            Grid.Column="1"
             FontFamily="{StaticResource AptosDisplayFontFamily}"
+            HorizontalAlignment="Center"
             VerticalAlignment="Center"
             IsHitTestVisible="False"
             />
-        </StackPanel>
+
+          <Border
+            Grid.Column="2"
+            CornerRadius="0 0 0 10"
+            ClipToBounds="True"
+            Width="35"
+            >
+
+            <controls:SyndiesisTitleBarButton
+              Name="closeButton"
+              HorizontalAlignment="Stretch"
+              ButtonBrush="#80B02010"
+              />
+
+          </Border>
+        </Grid>
       </Grid>
     </Border>
 
