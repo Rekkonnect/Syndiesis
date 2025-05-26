@@ -137,7 +137,7 @@ public partial class SyndiesisTitleBar : UserControl
     {
         var infoVersion = App.Current.AppInfo.InformationalVersion;
         var version = infoVersion.Version;
-        var sha = infoVersion.CommitSha?.ShortCommitSha();
+        var sha = infoVersion.CommitSha?.Short;
 
         var groups = new RunOrGrouped[]
         {

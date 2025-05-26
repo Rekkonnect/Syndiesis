@@ -19,7 +19,7 @@
         Property="Opacity"
         Easing="ExponentialEaseOut"
         />
-      
+
       <ThicknessTransition
         Duration="0:0:0.500"
         Property="Margin"
@@ -44,14 +44,20 @@
     CornerRadius="6"
     ClipToBounds="true"
     >
-    
+
     <Grid
       VerticalAlignment="Stretch"
       HorizontalAlignment="Stretch"
       >
 
+      <Grid.Styles>
+        <Style Selector=":is(Button):pressed">
+          <Setter Property="RenderTransform" Value="none" />
+        </Style>
+      </Grid.Styles>
+
       <Grid.Background>
-        <LinearGradientBrush StartPoint="0,0" EndPoint="100%,100%">
+        <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
           <LinearGradientBrush.GradientStops>
             <GradientStop Color="#001D1F" Offset="0" />
             <GradientStop Color="#002B2E" Offset="1" />
@@ -81,7 +87,6 @@
           </Transitions>
         </Grid.Transitions>
 
-
         <Border
           CornerRadius="20 0 0 0"
           ClipToBounds="True"
@@ -90,35 +95,99 @@
           VerticalAlignment="Bottom"
           HorizontalAlignment="Right"
           BorderThickness="0"
+          Name="mainButtonBorder"
           >
+
+          <Border.Transitions>
+            <Transitions>
+              <DoubleTransition
+                Duration="0:0:0.300"
+                Property="Height"
+                Easing="ExponentialEaseOut"
+                />
+            </Transitions>
+          </Border.Transitions>
 
           <Button
             CornerRadius="0"
             BorderThickness="0"
             VerticalAlignment="Stretch"
             HorizontalAlignment="Stretch"
-            Background="#475859"
+            Background="#005459"
             Name="mainButton"
             >
 
             <Button.Styles>
               <Style Selector="Button:pointerover /template/ ContentPresenter">
-                <Setter Property="Background" Value="#20009099" />
+                <Setter Property="Background" Value="#007A82" />
               </Style>
               <Style Selector="Button:pressed /template/ ContentPresenter">
-                <Setter Property="Background" Value="#30009099" />
+                <Setter Property="Background" Value="#003A3D" />
               </Style>
             </Button.Styles>
 
-            <TextBlock
-              ClipToBounds="false"
-              FontSize="18"
-              Foreground="#80FFFFFF"
-              VerticalAlignment="Center"
-              HorizontalAlignment="Center"
-              Text="Downloading update..."
-              Name="buttonText"
+            <Grid>
+
+              <TextBlock
+                FontFamily="{StaticResource AptosFontFamily}"
+                FontSize="18"
+                Foreground="#80FFFFFF"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Text="Downloading update..."
+                Name="mainButtonText"
+              >
+
+                <TextBlock.Transitions>
+                  <Transitions>
+                    <ThicknessTransition
+                      Duration="0:0:0.500"
+                      Property="Margin"
+                      Easing="ExponentialEaseOut"
+                    />
+                  </Transitions>
+                </TextBlock.Transitions>
+
+              </TextBlock>
+
+              <TextBlock
+                FontFamily="{StaticResource AptosFontFamily}"
+                FontSize="14"
+                Foreground="#3D9499"
+                VerticalAlignment="Center"
+                HorizontalAlignment="Center"
+                Opacity="0"
+                Text="The program will close and automatically restart."
+                Name="installationHelpText"
+              >
+
+                <TextBlock.Transitions>
+                  <Transitions>
+                    <DoubleTransition
+                      Duration="0:0:0.500"
+                      Property="Opacity"
+                      Easing="ExponentialEaseOut"
+                    />
+
+                    <ThicknessTransition
+                      Duration="0:0:0.500"
+                      Property="Margin"
+                      Easing="ExponentialEaseOut"
+                    />
+                  </Transitions>
+                </TextBlock.Transitions>
+
+              </TextBlock>
+
+              <TextBlock
+                VerticalAlignment="Center"
+                HorizontalAlignment="Right"
+                TextAlignment="Right"
+                Padding="0 0 30 0"
+                Name="progressPercentageText"
               />
+
+            </Grid>
           </Button>
         </Border>
 
@@ -127,11 +196,30 @@
           ClipToBounds="True"
           Height="30"
           Width="130"
-          Margin="0 0 420 0"
+          Margin="0 0 400 0"
+          Opacity="0"
           VerticalAlignment="Bottom"
           HorizontalAlignment="Right"
           BorderThickness="0"
+          Name="cancelBorder"
+          ZIndex="-1"
           >
+
+          <Border.Transitions>
+            <Transitions>
+              <DoubleTransition
+                Duration="0:0:0.300"
+                Property="Opacity"
+                Easing="ExponentialEaseOut"
+                />
+
+              <ThicknessTransition
+                Duration="0:0:0.300"
+                Property="Margin"
+                Easing="ExponentialEaseOut"
+                />
+            </Transitions>
+          </Border.Transitions>
 
           <Button
             CornerRadius="0"
@@ -142,17 +230,17 @@
             Name="cancelButton"
             >
 
-            <Button.Transitions>
-              <Transitions>
-                <DoubleTransition
-                  Duration="0:0:0.250"
-                  Property="Opacity"
-              />
-              </Transitions>
-            </Button.Transitions>
+            <Button.Styles>
+              <Style Selector="Button:pointerover /template/ ContentPresenter">
+                <Setter Property="Background" Value="#7E3026" />
+              </Style>
+              <Style Selector="Button:pressed /template/ ContentPresenter">
+                <Setter Property="Background" Value="#A43E31" />
+              </Style>
+            </Button.Styles>
 
             <TextBlock
-              ClipToBounds="false"
+              FontFamily="{StaticResource AptosFontFamily}"
               FontSize="16"
               Foreground="#F2C6C2"
               VerticalAlignment="Center"

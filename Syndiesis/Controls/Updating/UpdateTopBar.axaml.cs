@@ -39,7 +39,6 @@ public partial class UpdateTopBar : UserControl
 
     private void OnCloseButtonClicked(object? sender, RoutedEventArgs e)
     {
-        // DO SOMETHING
         var popup = this.NearestAncestorOfType<UpdatePopup>();
         if (popup is null)
         {

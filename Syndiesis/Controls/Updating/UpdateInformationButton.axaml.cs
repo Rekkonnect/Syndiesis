@@ -5,7 +5,6 @@ using Avalonia.Threading;
 using Garyon.Objects;
 using Syndiesis.Updating;
 using System.ComponentModel;
-using Updatum;
 
 namespace Syndiesis.Controls.Updating;
 
@@ -40,7 +39,6 @@ public partial class UpdateInformationButton : UserControl
         var manager = Singleton<UpdateManager>.Instance;
         var downloadProgress = manager.DownloadProgress;
         var updateState = manager.UpdateState;
-        var hasPendingUpdate = manager.HasPendingUpdate;
 
         buttonText.Text = GetText();
 
@@ -49,14 +47,16 @@ public partial class UpdateInformationButton : UserControl
             var progress = downloadProgress?.Progress ?? 0;
             return updateState switch
             {
-                UpdatumState.InstallingUpdate => "Installing update",
-                UpdatumState.DownloadingUpdate => $"Downloading update: {progress:P1}",
-                UpdatumState.CheckingForUpdate => "Checking for update",
-                _ => hasPendingUpdate switch
-                {
-                    true => "Pending update",
-                    false => "Up-to-date",
-                }
+                UpdateManager.State.Unchecked => "Check for updates",
+                UpdateManager.State.Checking => "Checking for update",
+                UpdateManager.State.UpToDate => "Up-to-date",
+                UpdateManager.State.DiscoveredUpdate => "Pending update",
+                UpdateManager.State.Downloading => $"Downloading update: {progress:P1}",
+                UpdateManager.State.ReadyToInstall => "Update ready",
+                UpdateManager.State.Installing => "Installing update",
+                UpdateManager.State.InstallationFailed => "Installation failed",
+
+                _ => "Unknown update state",
             };
         }
     }

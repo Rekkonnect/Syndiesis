@@ -1,5 +1,5 @@
 ﻿#if DEBUG
-#define FORCE_UPDATE_CHECK
+#define FORCE_DISCOVER_UPDATE
 #endif
 
 using Octokit;
@@ -7,8 +7,6 @@ using Serilog;
 using Syndiesis.Core;
 using System;
 using System.ComponentModel;
-using System.Linq;
-using System.Threading.Tasks;
 using Updatum;
 
 namespace Syndiesis.Updating;
@@ -19,7 +17,7 @@ public sealed class UpdateManager
     {
         AssetRegexPattern = $"^Syndiesis-.*-{EntryApplication.GenericRuntimeIdentifier}\\.zip",
         DownloadProgressUpdateFrequencySeconds = 0,
-#if FORCE_UPDATE_CHECK
+#if FORCE_DISCOVER_UPDATE
         CurrentVersion = Version.Parse("1.0.0"),
 #endif
     };
@@ -38,21 +36,49 @@ public sealed class UpdateManager
         }
     }
 
-    public UpdatumState UpdateState => _updater.State;
+    private State _state = State.Unchecked;
 
-    public bool HasPendingUpdate => _downloadedAsset is not null || _updater.IsUpdateAvailable;
+    private static readonly PropertyChangedEventArgs _propertyChangedArgs
+        = new(nameof(UpdateState));
+
+    public State UpdateState
+    {
+        get => _state;
+        private set
+        {
+            _state = value;
+            OnPropertyChanged(this, _propertyChangedArgs);
+            UpdaterStateChanged?.Invoke(this, value);
+        }
+    }
 
     public GitReference? LatestReleaseCommit { get; private set; }
     public Release? Release => _updater.LatestRelease;
     public string? LatestVersionString => _updater.LatestReleaseTagVersionStr;
 
+    public event EventHandler<State> UpdaterStateChanged;
     public event PropertyChangedEventHandler? UpdaterPropertyChanged;
+
+    public UpdateManager()
+    {
+        InitializeEvents();
+    }
+
+    private void InitializeEvents()
+    {
+        _updater.PropertyChanged += OnPropertyChanged;
+    }
+
+    private void OnPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        UpdaterPropertyChanged?.Invoke(sender, e);
+    }
 
     public async Task CheckForUpdates()
     {
         try
         {
-            _updater.PropertyChanged += UpdaterPropertyChanged;
+            UpdateState = State.Checking;
 
             Log.Information($"Checking for updates (triggering on version {_updater.CurrentVersion})");
             var updateFound = await GetUpdateInfo();
@@ -61,8 +87,11 @@ public sealed class UpdateManager
 
             if (!updateFound)
             {
-                Log.Information("No update was found");
+                UpdateState = State.UpToDate;
+                return;
             }
+
+            UpdateState = State.DiscoveredUpdate;
 
             if (AppSettings.Instance.UpdateOptions.AutoDownloadUpdates)
             {
@@ -100,8 +129,10 @@ public sealed class UpdateManager
             return;
         }
 
+        UpdateState = State.Downloading;
         Log.Information($"Beginning downloading latest release from {_updater.LatestRelease?.Url}");
         _downloadedAsset = await _updater.DownloadUpdateAsync();
+        UpdateState = State.ReadyToInstall;
     }
 
     public async Task InstallDownloadedUpdate()
@@ -111,10 +142,24 @@ public sealed class UpdateManager
             return;
         }
 
+        UpdateState = State.Installing;
         var result = await _updater.InstallUpdateAsync(_downloadedAsset);
         if (!result)
         {
             Log.Error("Failed to install the downloaded asset");
+            UpdateState = State.InstallationFailed;
         }
+    }
+
+    public enum State
+    {
+        Unchecked,
+        Checking,
+        UpToDate,
+        DiscoveredUpdate,
+        Downloading,
+        ReadyToInstall,
+        Installing,
+        InstallationFailed,
     }
 }

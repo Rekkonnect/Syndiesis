@@ -102,4 +102,10 @@ public static class ConvenienceExtensions
                 break;
         }
     }
+
+    public static void SwitchInvoke(this bool value, Action whenTrue, Action whenFalse)
+    {
+        var action = value ? whenTrue : whenFalse;
+        action();
+    }
 }

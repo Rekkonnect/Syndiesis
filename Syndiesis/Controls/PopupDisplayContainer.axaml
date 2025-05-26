@@ -10,15 +10,6 @@
   <Grid
     Name="outerGrid"
     >
-    <Grid.Transitions>
-      <Transitions>
-        <DoubleTransition
-          Property="Opacity"
-          Duration="0:0:0.200"
-          />
-      </Transitions>
-    </Grid.Transitions>
-
     <Border
       Name="backgroundBorder"
       IsHitTestVisible="false"
@@ -26,7 +17,19 @@
       Opacity="0"
       VerticalAlignment="Stretch"
       HorizontalAlignment="Stretch"
-      />
+      >
+
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition
+            Property="Opacity"
+            Duration="0:0:0.250"
+            Easing="ExponentialEaseOut"
+          />
+        </Transitions>
+      </Border.Transitions>
+
+    </Border>
 
     <Grid
       Name="popupContainer"
@@ -37,8 +40,7 @@
         <DropShadowEffect
           OffsetX="0"
           OffsetY="0"
-          BlurRadius="120"
-          Opacity="0.9"
+          BlurRadius="50"
           Color="Black"
           />
       </Grid.Effect>

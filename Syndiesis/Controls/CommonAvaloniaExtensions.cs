@@ -9,7 +9,6 @@ using Avalonia.Threading;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;
 
@@ -78,6 +77,23 @@ public static partial class CommonAvaloniaExtensions
     public static Thickness WithBottom(this Thickness thickness, double bottom)
     {
         return new(thickness.Left, thickness.Top, thickness.Right, bottom);
+    }
+
+    public static Thickness OffsetLeft(this Thickness thickness, double left)
+    {
+        return new(thickness.Left + left, thickness.Top, thickness.Right, thickness.Bottom);
+    }
+    public static Thickness OffsetRight(this Thickness thickness, double right)
+    {
+        return new(thickness.Left, thickness.Top, thickness.Right + right, thickness.Bottom);
+    }
+    public static Thickness OffsetTop(this Thickness thickness, double top)
+    {
+        return new(thickness.Left, thickness.Top + top, thickness.Right, thickness.Bottom);
+    }
+    public static Thickness OffsetBottom(this Thickness thickness, double bottom)
+    {
+        return new(thickness.Left, thickness.Top, thickness.Right, thickness.Bottom + bottom);
     }
 
     public static Rect WithZeroOffset(this Rect rect)

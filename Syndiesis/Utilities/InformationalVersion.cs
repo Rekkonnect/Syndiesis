@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Syndiesis.Utilities;
 
-public sealed record InformationalVersion(string Version, string? CommitSha)
+public sealed record InformationalVersion(string Version, CommitSha? CommitSha)
 {
     public static InformationalVersion Parse(AssemblyInformationalVersionAttribute attribute)
     {

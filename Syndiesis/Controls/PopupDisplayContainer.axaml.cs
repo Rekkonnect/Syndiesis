@@ -12,7 +12,7 @@ public partial class PopupDisplayContainer : UserControl, IShowHideControl
     public ControlShowHideHandler ShowHideHandler { get; set; }
         = Singleton<DefaultControlShowHideHandler>.Instance;
 
-    public double BackgroundOpacity { get; set; } = 0.35;
+    public double BackgroundOpacity { get; set; } = 0.5;
 
     public Control? Popup
     {

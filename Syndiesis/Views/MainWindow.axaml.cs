@@ -3,11 +3,8 @@ using Avalonia.Controls;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
 using Avalonia.Threading;
-using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Core;
-using Syndiesis.Updating;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Views;
 
@@ -24,13 +21,6 @@ public partial class MainWindow : Window
         AttachDevTools();
         InitializeEvents();
         SetCurrentTitle();
-
-        InitializeUpdateCheck();
-    }
-
-    private void InitializeUpdateCheck()
-    {
-        Task.Run(Singleton<UpdateManager>.Instance.CheckForUpdates);
     }
 
     private void AttachDevTools()
@@ -70,7 +60,7 @@ public partial class MainWindow : Window
     private void SetTitle(string programTitle)
     {
         var infoVersion = App.Current.AppInfo.InformationalVersion;
-        var shortSha = infoVersion.CommitSha!.ShortCommitSha();
+        var shortSha = infoVersion.CommitSha!.Short;
         Title = $"{programTitle} v{infoVersion.Version} [{shortSha}]";
     }
 

@@ -82,7 +82,7 @@ public sealed class DynamicIterationEstimator(TimeSpan maxAllocatedTime)
         public ReadOnlySpan<T> GetBuffer()
         {
             int length = Math.Min(_appends, _buffer.Length);
-            return _buffer[..length];
+            return _buffer.AsSpan()[..length];
         }
     }
 }
