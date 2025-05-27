@@ -1,5 +1,6 @@
 ﻿#if DEBUG
 #define FORCE_DISCOVER_UPDATE
+#define FORCE_FAIL_INSTALL
 #endif
 
 using Octokit;
@@ -56,7 +57,7 @@ public sealed class UpdateManager
     public Release? Release => _updater.LatestRelease;
     public string? LatestVersionString => _updater.LatestReleaseTagVersionStr;
 
-    public event EventHandler<State> UpdaterStateChanged;
+    public event EventHandler<State>? UpdaterStateChanged;
     public event PropertyChangedEventHandler? UpdaterPropertyChanged;
 
     public UpdateManager()
@@ -143,8 +144,13 @@ public sealed class UpdateManager
         }
 
         UpdateState = State.Installing;
-        var result = await _updater.InstallUpdateAsync(_downloadedAsset);
-        if (!result)
+#if FORCE_FAIL_INSTALL
+        await Task.Delay(1000);
+        var installationResult = false;
+#else
+        var installationResult = await _updater.InstallUpdateAsync(_downloadedAsset);
+#endif
+        if (!installationResult)
         {
             Log.Error("Failed to install the downloaded asset");
             UpdateState = State.InstallationFailed;

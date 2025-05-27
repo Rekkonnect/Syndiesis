@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Interactivity;
@@ -164,6 +165,8 @@ public partial class UpdatePopup : UserControl, IShowHideControl
             ;
     }
 
+    private const string _installationFailedMainButtonClass = "installationFailed";
+
     private void UpdateTexts()
     {
         var manager = Singleton<UpdateManager>.Instance;
@@ -176,6 +179,21 @@ public partial class UpdatePopup : UserControl, IShowHideControl
         mainButton.IsEnabled = IsMainButtonActive();
         progressPercentageText.IsVisible = updateState is UpdateManager.State.Downloading;
         _progressRun.Text = (progress * 100).ToString("N1");
+        installationHelpText.Text = GetSecondaryButtonText();
+
+        bool failed = updateState is UpdateManager.State.InstallationFailed;
+        mainButton.Classes.Set(
+            _installationFailedMainButtonClass,
+            failed)
+            ;
+
+        // The selector won't pick up this text block probably because at the
+        // time of the arrangement it has an opacity of 0, so we have to manually
+        // change its color
+        installationHelpText.Foreground = new SolidColorBrush(
+            InstallationHelpTextColor(failed));
+
+        return;
 
         string GetMainButtonText()
         {
@@ -192,6 +210,24 @@ public partial class UpdatePopup : UserControl, IShowHideControl
 
                 _ => "Unknown update state",
             };
+        }
+
+        string GetSecondaryButtonText()
+        {
+            return updateState switch
+            {
+                UpdateManager.State.ReadyToInstall
+                    => "The program will close and automatically restart.",
+                UpdateManager.State.InstallationFailed
+                    => "Some error occurred, click to try again.",
+
+                _ => string.Empty,
+            };
+        }
+
+        static uint InstallationHelpTextColor(bool failedInstallation)
+        {
+            return failedInstallation ? 0xFF996E5Cu : 0xFF3D9499u;
         }
     }
 
@@ -214,6 +250,7 @@ public partial class UpdatePopup : UserControl, IShowHideControl
                 break;
 
             case UpdateManager.State.ReadyToInstall:
+            case UpdateManager.State.InstallationFailed:
                 Task.Run(manager.InstallDownloadedUpdate);
                 break;
 
@@ -230,6 +267,7 @@ public partial class UpdatePopup : UserControl, IShowHideControl
             is UpdateManager.State.Unchecked
             or UpdateManager.State.DiscoveredUpdate
             or UpdateManager.State.ReadyToInstall
+            or UpdateManager.State.InstallationFailed
             ;
     }
 

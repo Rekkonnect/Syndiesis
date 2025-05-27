@@ -29,7 +29,7 @@
       <DoubleTransition
         Duration="0:0:0.200"
         Property="Height"
-        Easing="ExponentialEaseOut"
+        Easing="CubicEaseOut"
         />
 
       <DoubleTransition
@@ -119,12 +119,45 @@
 
             <Button.Styles>
               <Style Selector="Button:pointerover /template/ ContentPresenter">
-                <Setter Property="Background" Value="#007A82" />
+                <Setter Property="Background" Value="#006066" />
               </Style>
               <Style Selector="Button:pressed /template/ ContentPresenter">
                 <Setter Property="Background" Value="#003A3D" />
               </Style>
+
+              <Style Selector="Button.installationFailed /template/ ContentPresenter">
+                <Setter Property="Background" Value="#4D1700" />
+              </Style>
+
+              <Style Selector="Button.installationFailed:pointerover /template/ ContentPresenter">
+                <Setter Property="Background" Value="#661F00" />
+              </Style>
+              <Style Selector="Button.installationFailed:pressed /template/ ContentPresenter">
+                <Setter Property="Background" Value="#591B00" />
+              </Style>
+              
+              <Style Selector="Button.installationFailed TextBlock#mainButtonText">
+                <Setter Property="Foreground" Value="#F2AE91" />
+              </Style>
+
+              <!--
+              This selector does not work probably because at the time of setting
+              the class that triggered this selector the text block is invisible
+              -->
+              <Style Selector="Button.installationFailed TextBlock#installationHelpText">
+                <Setter Property="Foreground" Value="#996E5C" />
+              </Style>
             </Button.Styles>
+
+            <Button.Transitions>
+              <Transitions>
+                <BrushTransition
+                  Duration="0:0:0.300"
+                  Property="Background"
+                  Easing="ExponentialEaseOut"
+                />
+              </Transitions>
+            </Button.Transitions>
 
             <Grid>
 
@@ -141,8 +174,14 @@
                 <TextBlock.Transitions>
                   <Transitions>
                     <ThicknessTransition
-                      Duration="0:0:0.500"
+                      Duration="0:0:0.300"
                       Property="Margin"
+                      Easing="ExponentialEaseOut"
+                    />
+
+                    <BrushTransition
+                      Duration="0:0:0.300"
+                      Property="Foreground"
                       Easing="ExponentialEaseOut"
                     />
                   </Transitions>
@@ -157,21 +196,26 @@
                 VerticalAlignment="Center"
                 HorizontalAlignment="Center"
                 Opacity="0"
-                Text="The program will close and automatically restart."
                 Name="installationHelpText"
               >
 
                 <TextBlock.Transitions>
                   <Transitions>
                     <DoubleTransition
-                      Duration="0:0:0.500"
+                      Duration="0:0:0.300"
                       Property="Opacity"
                       Easing="ExponentialEaseOut"
                     />
 
                     <ThicknessTransition
-                      Duration="0:0:0.500"
+                      Duration="0:0:0.300"
                       Property="Margin"
+                      Easing="ExponentialEaseOut"
+                    />
+
+                    <BrushTransition
+                      Duration="0:0:0.300"
+                      Property="Foreground"
                       Easing="ExponentialEaseOut"
                     />
                   </Transitions>
@@ -189,7 +233,8 @@
 
             </Grid>
           </Button>
-        </Border>
+        
+      </Border>
 
         <Border
           CornerRadius="20 0 0 0"
