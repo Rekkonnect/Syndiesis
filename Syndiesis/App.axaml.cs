@@ -67,8 +67,13 @@ public partial class App : Application
     private static void SetupGeneral()
     {
         SetupSerilog();
-        Task.Run(() => AppSettings.TryLoad());
-        InitializeUpdateCheck();
+        Task.Run(SetupGeneralAsync);
+    }
+
+    private static async Task SetupGeneralAsync()
+    {
+        await AppSettings.TryLoad();
+        await CheckUpdates();
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -139,8 +144,11 @@ public partial class App : Application
         LoggerExtensionsEx.LogMethodInvocation(nameof(LogApplicationExit));
     }
 
-    private static void InitializeUpdateCheck()
+    private static async Task CheckUpdates()
     {
-        Task.Run(Singleton<UpdateManager>.Instance.CheckForUpdates);
+        if (AppSettings.Instance.UpdateOptions.AutoCheckUpdates)
+        {
+            await Singleton<UpdateManager>.Instance.CheckForUpdates();
+        }
     }
 }

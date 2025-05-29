@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using Avalonia.Threading;
+using Serilog;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
 using System;
@@ -46,8 +47,11 @@ public sealed class AppSettings
         try
         {
             var json = await File.ReadAllTextAsync(path);
-            var returned = JsonSerializer.Deserialize<AppSettings>(
-                json, AppSettingsSerialization.DefaultOptions);
+            var returned = Dispatcher.UIThread.Invoke(() =>
+            {
+                return JsonSerializer.Deserialize<AppSettings>(
+                    json, AppSettingsSerialization.DefaultOptions);
+            });
             if (returned is null)
                 return false;
 

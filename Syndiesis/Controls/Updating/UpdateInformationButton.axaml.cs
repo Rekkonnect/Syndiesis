@@ -20,7 +20,19 @@ public partial class UpdateInformationButton : UserControl
     {
         var manager = Singleton<UpdateManager>.Instance;
         manager.UpdaterPropertyChanged += HandlePropertyChanged;
+        manager.UpdaterStateChanged += HandleStateChanged;
         button.Click += OnUpdateInformationButtonClicked;
+    }
+
+    private void HandleStateChanged(object? sender, UpdateManager.State state)
+    {
+        if (AppSettings.Instance.UpdateOptions.AutoShowPopupOnAvailableUpdate)
+        {
+            if (state is UpdateManager.State.ReadyToInstall)
+            {
+                Dispatcher.UIThread.InvokeAsync(ShowUpdateInformationPopup);
+            }
+        }
     }
 
     private void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -72,6 +84,17 @@ public partial class UpdateInformationButton : UserControl
         if (container is null)
             return;
 
+        if (container.IsShowing)
+        {
+            return;
+        }
+        // For now we only have the update popup, so it is safe to ignore
+        // any existing popup
+        ShowNewUpdatePopupToContainer(container);
+    }
+
+    private static void ShowNewUpdatePopupToContainer(PopupDisplayContainer container)
+    {
         var popup = new UpdatePopup();
         container.Popup = popup;
         popup.Opacity = 0;

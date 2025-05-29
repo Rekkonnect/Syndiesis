@@ -14,6 +14,8 @@ public partial class PopupDisplayContainer : UserControl, IShowHideControl
 
     public double BackgroundOpacity { get; set; } = 0.5;
 
+    public bool IsShowing { get; private set; }
+
     public Control? Popup
     {
         get => popupContainer.Children.FirstOrDefault();
@@ -40,6 +42,7 @@ public partial class PopupDisplayContainer : UserControl, IShowHideControl
         backgroundBorder.Opacity = BackgroundOpacity;
         
         await ShowHideHandler.Show(Popup);
+        IsShowing = true;
     }
 
     public async Task Hide()
@@ -48,6 +51,7 @@ public partial class PopupDisplayContainer : UserControl, IShowHideControl
         backgroundBorder.Opacity = 0;
 
         await ShowHideHandler.Hide(Popup);
+        IsShowing = false;
     }
 
     public static PopupDisplayContainer? GetFromOuterMainViewContainer(Visual visual)

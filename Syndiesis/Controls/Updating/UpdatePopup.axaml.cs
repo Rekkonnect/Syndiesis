@@ -26,6 +26,8 @@ public partial class UpdatePopup : UserControl, IShowHideControl
 
     private Run _progressRun;
 
+    public bool IsShowing { get; private set; }
+
     public UpdatePopup()
     {
         InitializeComponent();
@@ -275,6 +277,7 @@ public partial class UpdatePopup : UserControl, IShowHideControl
     {
         Opacity = 1;
         Margin = default;
+        IsShowing = true;
         return Task.CompletedTask;
     }
 
@@ -296,6 +299,7 @@ public partial class UpdatePopup : UserControl, IShowHideControl
         Width = targetOutermostParent.Bounds.Width;
 
         innerContent.Opacity = 0;
+        IsShowing = false;
         return Task.CompletedTask;
     }
 }
