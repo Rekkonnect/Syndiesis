@@ -66,7 +66,7 @@ public partial class UpdateInformationButton : UserControl
                 UpdateManager.State.Downloading => $"Downloading update: {progress:P1}",
                 UpdateManager.State.ReadyToInstall => "Update ready",
                 UpdateManager.State.Installing => "Installing update",
-                UpdateManager.State.InstallationFailed => "Installation failed",
+                UpdateManager.State.InstallationFailed => "Update failed",
 
                 _ => "Unknown update state",
             };

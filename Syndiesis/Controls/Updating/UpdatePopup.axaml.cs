@@ -1,10 +1,9 @@
 ﻿using Avalonia;
-using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Interactivity;
 using Avalonia.Media;
-using Avalonia.Threading; 
+using Avalonia.Threading;
 using Garyon.Objects;
 using Syndiesis.Updating;
 using Syndiesis.Utilities;
@@ -67,7 +66,19 @@ public partial class UpdatePopup : UserControl, IShowHideControl
         var manager = Singleton<UpdateManager>.Instance;
         manager.UpdaterPropertyChanged += HandlePropertyChanged;
         manager.UpdaterStateChanged += HandleUpdateStateChanged;
-        mainButton.Click += OnUpdateInformationButtonClicked;
+        mainButton.Click += OnMainButtonClicked;
+        cancelButton.Click += OnCancelButtonClicked;
+    }
+
+    private void OnCancelButtonClicked(object? sender, RoutedEventArgs e)
+    {
+        Task.Run(CancelUpdate);
+    }
+
+    private void CancelUpdate()
+    {
+        var manager = Singleton<UpdateManager>.Instance;
+        manager.UpdateDownloadCancellationTokenSource.Cancel();
     }
 
     private void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -233,7 +244,7 @@ public partial class UpdatePopup : UserControl, IShowHideControl
         }
     }
 
-    private void OnUpdateInformationButtonClicked(object? sender, RoutedEventArgs e)
+    private void OnMainButtonClicked(object? sender, RoutedEventArgs e)
     {
         Dispatcher.UIThread.InvokeAsync(HandleMainButtonClick);
     }

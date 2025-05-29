@@ -51,7 +51,7 @@
       >
 
       <Grid.Styles>
-        <Style Selector=":is(Button):pressed">
+        <Style Selector="Button.untransformable:pressed">
           <Setter Property="RenderTransform" Value="none" />
         </Style>
       </Grid.Styles>
@@ -96,6 +96,7 @@
           HorizontalAlignment="Right"
           BorderThickness="0"
           Name="mainButtonBorder"
+          Background="#475859"
           >
 
           <Border.Transitions>
@@ -115,6 +116,7 @@
             HorizontalAlignment="Stretch"
             Background="#005459"
             Name="mainButton"
+            Classes="untransformable"
             >
 
             <Button.Styles>
@@ -123,6 +125,10 @@
               </Style>
               <Style Selector="Button:pressed /template/ ContentPresenter">
                 <Setter Property="Background" Value="#003A3D" />
+              </Style>
+
+              <Style Selector="Button:disabled /template/ ContentPresenter">
+                <Setter Property="Background" Value="Transparent" />
               </Style>
 
               <Style Selector="Button.installationFailed /template/ ContentPresenter">
@@ -234,7 +240,7 @@
             </Grid>
           </Button>
         
-      </Border>
+        </Border>
 
         <Border
           CornerRadius="20 0 0 0"
@@ -273,6 +279,7 @@
             HorizontalAlignment="Stretch"
             Background="#80B02010"
             Name="cancelButton"
+            Classes="untransformable"
             >
 
             <Button.Styles>

@@ -1,27 +1,18 @@
-using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Controls.Documents;
-using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Garyon.Objects;
 using Syndiesis.Controls.Inlines;
-using Syndiesis.Controls.Toast;
 using Syndiesis.Core;
 using Syndiesis.Updating;
-using Syndiesis.Utilities;
 using System;
 
 namespace Syndiesis.Controls.Updating;
 
 public partial class UpdateTopBar : UserControl
 {
-    private Run? _versionRun;
-    private Run? _commitRun;
-
-    private CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
-
     public UpdateTopBar()
     {
         InitializeComponent();
@@ -32,9 +23,14 @@ public partial class UpdateTopBar : UserControl
 
     private void InitializeEvents()
     {
-        AddPointerHandlers(linePulseRectangle);
-        AddPointerHandlers(contentStackPanel);
         closeButton.Click += OnCloseButtonClicked;
+        var updateManager = Singleton<UpdateManager>.Instance;
+        updateManager.UpdaterStateChanged += HandleUpdaterStateChanged;
+    }
+
+    private void HandleUpdaterStateChanged(object? sender, UpdateManager.State e)
+    {
+        Dispatcher.UIThread.InvokeAsync(InitializeRuns);
     }
 
     private void OnCloseButtonClicked(object? sender, RoutedEventArgs e)
@@ -50,70 +46,17 @@ public partial class UpdateTopBar : UserControl
         Dispatcher.UIThread.InvokeAsync(container.Hide);
     }
 
-    private void AddPointerHandlers(Control control)
-    {
-        control.PointerPressed += HandleLineTapped;
-    }
-
-    private void HandleLineTapped(object? sender, PointerEventArgs e)
-    {
-        var pointer = e.GetCurrentPoint(this);
-        if (pointer.Properties.IsLeftButtonPressed)
-        {
-            switch (e.KeyModifiers.NormalizeByPlatform())
-            {
-                case KeyModifiers.Control:
-                    CopyEntireLine();
-                    break;
-            }
-        }
-    }
-
-    private void CopyEntireLine()
-    {
-        var text = headerText.Inlines!.Text;
-        _ = this.SetClipboardTextAsync(text)
-            .ConfigureAwait(false);
-        PulseCopiedLine();
-
-        var toastContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
-        if (toastContainer is not null)
-        {
-            var popupContent = $"""
-                Copied entire line content:
-                {text}
-                """;
-            _ = CommonToastNotifications.ShowClassicMain(
-                toastContainer,
-                popupContent,
-                TimeSpan.FromSeconds(2));
-        }
-    }
-
-    private void PulseCopiedLine()
-    {
-        _pulseLineCancellationTokenFactory.Cancel();
-        var animation = Animations.CreateOpacityPulseAnimation(linePulseRectangle, 1, OpacityProperty);
-        animation.Duration = TimeSpan.FromMilliseconds(750);
-        animation.Easing = Singleton<CubicEaseOut>.Instance;
-        _ = animation.RunAsync(linePulseRectangle, _pulseLineCancellationTokenFactory.CurrentToken);
-    }
-
     private void InitializeRuns()
     {
         var manager = Singleton<UpdateManager>.Instance;
-        var release = manager.Release;
-
-        if (release is null)
-        {
-            return;
-        }
 
         var version = ParseVersion(manager.LatestVersionString)?.ToString() ?? "?.?.?";
         string? sha = manager.LatestReleaseCommit?.Sha.ShortCommitSha();
 
         const uint textColor = 0xFFB8E3E5;
         const uint labelTextColor = 0xFF667E80;
+
+        Run commitRun;
 
         var groups = new RunOrGrouped[]
         {
@@ -126,7 +69,7 @@ public partial class UpdateTopBar : UserControl
                 },
 
                 new SingleRunInline(
-                    _versionRun = new Run(version)
+                    new Run(version)
                     {
                         FontSize = 18,
                         Foreground = new SolidColorBrush(textColor),
@@ -145,7 +88,7 @@ public partial class UpdateTopBar : UserControl
                 },
 
                 new SingleRunInline(
-                    _commitRun = new Run(sha)
+                    commitRun = new Run(sha)
                     {
                         FontSize = 18,
                         Foreground = new SolidColorBrush(textColor),
@@ -156,11 +99,20 @@ public partial class UpdateTopBar : UserControl
 
         if (sha is null)
         {
-            _commitRun.Foreground = new SolidColorBrush(0xFF440015);
-            _commitRun.Text = "[MISSING]";
+            commitRun.Foreground = new SolidColorBrush(0xFF440015);
+            commitRun.Text = "[MISSING]";
         }
 
-        headerText.GroupedRunInlines = new(groups);
+        bool hasAvailableUpdate = manager.Release is not null;
+
+        updateVersionHeaderText.GroupedRunInlines = new(groups);
+        updateVersionHeaderText.IsVisible = hasAvailableUpdate;
+
+        updatesHeaderText.Text = hasAvailableUpdate switch
+        {
+            true => "Update available",
+            false => "Updates",
+        };
     }
 
     private static Version? ParseVersion(string? tagName)

@@ -3,6 +3,7 @@
 #define FORCE_FAIL_INSTALL
 #endif
 
+using Garyon.Objects;
 using Octokit;
 using Serilog;
 using Syndiesis.Core;
@@ -25,6 +26,8 @@ public sealed class UpdateManager
 
     private UpdatumDownloadedAsset? _downloadedAsset;
 
+    // Known bug:
+    // https://github.com/sn4k3/Updatum/issues/4
     public DownloadProgress? DownloadProgress
     {
         get
@@ -36,6 +39,14 @@ public sealed class UpdateManager
             return new(_updater.DownloadedBytes, _updater.DownloadSizeBytes);
         }
     }
+
+    private readonly CancellationTokenFactory _updateDownloadCancellationTokenFactory = new();
+
+    public CancellationToken UpdateDownloadCancellationToken
+        => _updateDownloadCancellationTokenFactory.CurrentToken;
+
+    public CancellationTokenSource UpdateDownloadCancellationTokenSource
+        => _updateDownloadCancellationTokenFactory.CurrentSource;
 
     private State _state = State.Unchecked;
 
@@ -132,8 +143,18 @@ public sealed class UpdateManager
 
         UpdateState = State.Downloading;
         Log.Information($"Beginning downloading latest release from {_updater.LatestRelease?.Url}");
-        _downloadedAsset = await _updater.DownloadUpdateAsync();
-        UpdateState = State.ReadyToInstall;
+
+        try
+        {
+            _downloadedAsset = await _updater.DownloadUpdateAsync(
+                cancellationToken: UpdateDownloadCancellationToken);
+            UpdateState = State.ReadyToInstall;
+        }
+        catch (Exception ex)
+        when (ex is TaskCanceledException or OperationCanceledException)
+        {
+            UpdateState = State.DiscoveredUpdate;
+        }
     }
 
     public async Task InstallDownloadedUpdate()
