@@ -1,0 +1,113 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:syndiesis="https://github.com/Rekkonnect/Syndiesis"
+  mc:Ignorable="d" d:DesignWidth="600"
+  x:Class="Syndiesis.Controls.Updating.UpdateProgressBar"
+  >
+
+  <Border
+    CornerRadius="20"
+    Background="#003A3D"
+    ClipToBounds="True"
+    >
+
+    <Panel
+      Name="contentContainer">
+
+      <Grid
+        Name="progressBarGrid">
+
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="0*" />
+          <ColumnDefinition Width="1*" />
+        </Grid.ColumnDefinitions>
+
+        <Border
+          Grid.Column="0"
+          ClipToBounds="true"
+          Background="#004B50"
+          />
+
+      </Grid>
+
+      <TextBlock
+        FontFamily="{StaticResource AptosFontFamily}"
+        Name="noUpdateInformationText"
+        FontSize="16"
+        Foreground="#A0B8CBCC"
+        Text="No update information available"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        TextAlignment="Center"
+        />
+
+      <Grid
+        Name="downloadProgressTextGrid"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Center"
+        IsVisible="false"
+        >
+
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="*" />
+          <ColumnDefinition Width="Auto" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <TextBlock
+          Grid.Column="0"
+          VerticalAlignment="Center"
+          HorizontalAlignment="Right"
+          TextAlignment="Right"
+          FontFamily="{StaticResource AptosFontFamily}"
+          >
+          <Run
+            Name="downloadedMegabytesText"
+            FontSize="18"
+            Foreground="#91EDF2"
+            Text="0.00"
+            />
+          <Run
+            FontSize="16"
+            Foreground="#8EB0B2"
+            Text=" MiB"
+            />
+        </TextBlock>
+
+        <TextBlock
+          Grid.Column="1"
+          FontSize="22"
+          Foreground="#91EDF2"
+          Text="/"
+          syndiesis:Margin.Horizontal="10"
+          FontFamily="{StaticResource AptosFontFamily}"
+          />
+
+        <TextBlock
+          Grid.Column="2"
+          VerticalAlignment="Center"
+          FontFamily="{StaticResource AptosFontFamily}"
+          >
+          <Run
+            Name="updateMegabytesText"
+            FontSize="18"
+            Foreground="#B8CBCC"
+            Text="0.00"
+            />
+          <Run
+            FontSize="16"
+            Foreground="#8EB0B2"
+            Text=" MiB"
+            />
+        </TextBlock>
+
+      </Grid>
+
+    </Panel>
+
+  </Border>
+
+</UserControl>
