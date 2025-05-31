@@ -86,7 +86,7 @@
             FontFamily="{StaticResource AptosDisplayFontFamily}"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            IsVisible="false"
+            IsVisible="true"
             />
 
           <Border

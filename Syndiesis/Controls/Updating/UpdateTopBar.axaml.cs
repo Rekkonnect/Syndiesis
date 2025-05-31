@@ -1,8 +1,8 @@
 using Avalonia.Controls.Documents;
 using Garyon.Objects;
 using Syndiesis.Controls.Inlines;
-using Syndiesis.Core;
 using Syndiesis.Updating;
+using Syndiesis.Utilities;
 
 namespace Syndiesis.Controls.Updating;
 
@@ -43,13 +43,18 @@ public partial class UpdateTopBar : UserControl
 
     private void InitializeRuns()
     {
-        var manager = Singleton<UpdateManager>.Instance;
+        var updatableVersionInfo = GetUpdatableVersion();
+        var displayedVersion = updatableVersionInfo.LatestDisplayedVersion;
+        var sha = displayedVersion.CommitSha?.Short;
 
-        var version = ParseVersion(manager.LatestVersionString)?.ToString() ?? "?.?.?";
-        string? sha = manager.LatestReleaseCommit?.Sha.ShortCommitSha();
-
-        const uint textColor = 0xFFB8E3E5;
+        const uint noUpdateTextColor = 0xFFB8E3E5;
+        const uint updateTextColor = 0xFFB6E5AC;
         const uint labelTextColor = 0xFF667E80;
+
+        bool hasUpdate = updatableVersionInfo.HasUpdate;
+        uint textColor = hasUpdate
+            ? updateTextColor
+            : noUpdateTextColor;
 
         Run commitRun;
 
@@ -64,7 +69,7 @@ public partial class UpdateTopBar : UserControl
                 },
 
                 new SingleRunInline(
-                    new Run(version)
+                    new Run(displayedVersion.Version)
                     {
                         FontSize = 18,
                         Foreground = new SolidColorBrush(textColor),
@@ -98,35 +103,35 @@ public partial class UpdateTopBar : UserControl
             commitRun.Text = "[MISSING]";
         }
 
-        bool hasAvailableUpdate = manager.Release is not null;
-
         updateVersionHeaderText.GroupedRunInlines = new(groups);
-        updateVersionHeaderText.IsVisible = hasAvailableUpdate;
 
-        updatesHeaderText.Text = hasAvailableUpdate switch
+        updatesHeaderText.Text = hasUpdate switch
         {
             true => "Update available",
             false => "Updates",
         };
     }
 
-    private static Version? ParseVersion(string? tagName)
+    private static UpdatableVersionInformation GetUpdatableVersion()
     {
-        if (tagName is null)
-            return null;
-
-        ReadOnlySpan<char> tag = tagName;
-        if (tag.StartsWith('v'))
-        {
-            tag = tag[1..];
-        }
-
-        bool parsed = Version.TryParse(tag, out var version);
-        return version;
+        var thisVersion = App.Current.AppInfo.InformationalVersion;
+        var manager = Singleton<UpdateManager>.Instance;
+        var updateVersion = manager.AvailableUpdateVersion;
+        return new(thisVersion, updateVersion);
     }
 
     private void InitializeIcons()
     {
         closeButton.PathData = App.Current.ResourceManager.CloseIconGeometry;
+    }
+
+    private sealed record UpdatableVersionInformation(
+        InformationalVersion CurrentVersion,
+        InformationalVersion? UpdateVersion)
+    {
+        public bool HasUpdate => UpdateVersion is not null;
+
+        public InformationalVersion LatestDisplayedVersion
+            => UpdateVersion ?? CurrentVersion;
     }
 }

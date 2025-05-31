@@ -1,12 +1,13 @@
 ﻿#if DEBUG
 #define FORCE_DISCOVER_UPDATE
-#define FORCE_FAIL_INSTALL
+#undef FORCE_FAIL_INSTALL
 #endif
 
 using Garyon.Objects;
 using Octokit;
 using Serilog;
 using Syndiesis.Core;
+using Syndiesis.Utilities;
 using System.ComponentModel;
 using Updatum;
 
@@ -66,6 +67,21 @@ public sealed class UpdateManager
     public GitReference? LatestReleaseCommit { get; private set; }
     public Release? Release => _updater.LatestRelease;
     public string? LatestVersionString => _updater.LatestReleaseTagVersionStr;
+
+    public InformationalVersion? AvailableUpdateVersion
+    {
+        get
+        {
+            if (Release is null)
+            {
+                return null;
+            }
+
+            var version = LatestVersionString!;
+            var sha = LatestReleaseCommit?.Sha;
+            return new(version, CommitSha.FromString(sha));
+        }
+    }
 
     public event EventHandler<State>? UpdaterStateChanged;
     public event PropertyChangedEventHandler? UpdaterPropertyChanged;
