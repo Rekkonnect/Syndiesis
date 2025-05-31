@@ -33,6 +33,24 @@
 
       </Grid>
 
+      <Border
+        Name="gradientAnimationBorder"
+        ClipToBounds="true"
+        Opacity="0"
+        >
+
+        <Border.Transitions>
+          <Transitions>
+            <DoubleTransition
+              Property="Opacity"
+              Easing="SineEaseInOut"
+              Duration="0:0:1"
+              />
+          </Transitions>
+        </Border.Transitions>
+        
+      </Border>
+
       <TextBlock
         FontFamily="{StaticResource AptosFontFamily}"
         Name="noUpdateInformationText"

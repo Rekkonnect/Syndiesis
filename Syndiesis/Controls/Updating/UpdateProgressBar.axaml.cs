@@ -1,8 +1,11 @@
+using Avalonia.Animation;
+using Avalonia.Styling;
 using Garyon.Extensions;
 using Garyon.Objects;
 using Syndiesis.Updating;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
+using System.Transactions;
 
 namespace Syndiesis.Controls.Updating;
 
@@ -16,6 +19,7 @@ public partial class UpdateProgressBar : UserControl
         InitializeEvents();
         InitializeDistribution();
         UpdateProgress();
+        SetFlowAnimation();
     }
 
     [MemberNotNull(nameof(_progressBarColumnDistributor))]
@@ -30,6 +34,20 @@ public partial class UpdateProgressBar : UserControl
     {
         var updateManager = Singleton<UpdateManager>.Instance;
         updateManager.UpdaterPropertyChanged += HandlePropertyChanged;
+        updateManager.UpdaterStateChanged += HandleStateChanged;
+    }
+
+    private void HandleStateChanged(object? sender, UpdateManager.State state)
+    {
+        Dispatcher.UIThread.InvokeAsync(UpdateGradientDisplay);
+    }
+
+    private void UpdateGradientDisplay()
+    {
+        var manager = Singleton<UpdateManager>.Instance;
+        var state = manager.UpdateState;
+        bool isDownloaded = state is UpdateManager.State.ReadyToInstall;
+        gradientAnimationBorder.Opacity = isDownloaded ? 1 : 0;
     }
 
     private void HandlePropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -63,6 +81,132 @@ public partial class UpdateProgressBar : UserControl
         const double megabyteSize = 1024 * 1024;
         var megabytes = bytes / megabyteSize;
         return megabytes.ToString("N2");
+    }
+
+    private void SetFlowAnimation()
+    {
+        Styles.Add(new Style(x => x.OfType<Border>().Name(nameof(gradientAnimationBorder)))
+        {
+            Animations =
+            {
+                CreateFlowAnimation(),
+            }
+        });
+    }
+
+    private static Animation CreateFlowAnimation()
+    {
+        var parameters = new FlowAnimationParameters
+        {
+            BrushStart = new(0, -1.5, RelativeUnit.Relative),
+            BrushEnd = new(1, 1.5, RelativeUnit.Relative),
+            Color1 = Color.FromUInt32(0xFF004B50),
+            Color2 = Color.FromUInt32(0xFF007A82),
+            SetterProperty = Border.BackgroundProperty,
+            Duration = TimeSpan.FromSeconds(5),
+            ColorGradientRatio = 0.25,
+            ColorHoldRatio = 0.15,
+        };
+        return parameters.CompileAnimation();
+    }
+
+    private sealed record FlowAnimationParameters
+    {
+        public required RelativePoint BrushStart { get; init; }
+        public required RelativePoint BrushEnd { get; init; }
+        public required Color Color1 { get; init; }
+        public required Color Color2 { get; init; }
+        public required AvaloniaProperty SetterProperty { get; init; }
+        public required TimeSpan Duration { get; init; }
+        public required double ColorGradientRatio { get; init; }
+        public required double ColorHoldRatio { get; init; }
+
+        public Animation CompileAnimation()
+        {
+            var ratioPerColor = ColorGradientRatio + ColorHoldRatio;
+            var fullLoopRatio = ratioPerColor * 2;
+            int loops = (int)Math.Ceiling(1D / fullLoopRatio) + 1;
+
+            const int keyframeCount = 2;
+            var animation = new Animation
+            {
+                Duration = Duration,
+                IterationCount = IterationCount.Infinite,
+            };
+
+            for (int i = 0; i < keyframeCount; i++)
+            {
+                var keyframeCue = i / (double)(keyframeCount - 1);
+                var stops = CreateGradientStops(keyframeCue);
+
+                var brush = new LinearGradientBrush
+                {
+                    StartPoint = BrushStart,
+                    EndPoint = BrushEnd,
+                    GradientStops = stops,
+                };
+
+                var keyframe = new KeyFrame
+                {
+                    Cue = new(keyframeCue),
+                    Setters =
+                    {
+                        new Setter(SetterProperty, brush),
+                    },
+                };
+
+                animation.Children.Add(keyframe);
+            }
+
+            return animation;
+
+            GradientStops CreateGradientStops(double cue)
+            {
+                var stops = new GradientStops();
+
+                var currentOffset = -(fullLoopRatio * (1 - cue));
+                for (int i = 0; i < loops; i++)
+                {
+                    stops.Add(
+                        new()
+                        {
+                            Color = Color1,
+                            Offset = currentOffset,
+                        });
+
+                    currentOffset += ColorGradientRatio;
+
+                    stops.Add(
+                        new()
+                        {
+                            Color = Color2,
+                            Offset = currentOffset,
+                        });
+
+                    currentOffset += ColorHoldRatio;
+
+                    stops.Add(
+                        new()
+                        {
+                            Color = Color2,
+                            Offset = currentOffset,
+                        });
+
+                    currentOffset += ColorGradientRatio;
+
+                    stops.Add(
+                        new()
+                        {
+                            Color = Color1,
+                            Offset = currentOffset,
+                        });
+
+                    currentOffset += ColorHoldRatio;
+                }
+
+                return stops;
+            }
+        }
     }
 
     private sealed record ColumnDistributor(
