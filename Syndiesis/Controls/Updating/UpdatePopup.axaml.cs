@@ -122,7 +122,7 @@ public partial class UpdatePopup : UserControl, IShowHideControl
             return;
 
         cancelBorder.Opacity = 1;
-        cancelBorder.Margin = cancelBorder.Margin.OffsetRight(_cancelButtonOffset);
+        cancelBorder.Margin = cancelBorder.Margin.WithRight(0);
 
         _isShowingCancel = true;
     }
@@ -133,7 +133,7 @@ public partial class UpdatePopup : UserControl, IShowHideControl
             return;
 
         cancelBorder.Opacity = 0;
-        cancelBorder.Margin = cancelBorder.Margin.OffsetRight(-_cancelButtonOffset);
+        cancelBorder.Margin = cancelBorder.Margin.WithRight(-_cancelButtonOffset);
 
         _isShowingCancel = false;
     }

@@ -38,6 +38,11 @@ public partial class App : Application
 
     public override void Initialize()
     {
+        // Force initialize app settings on the UI thread to avoid troubles
+        // with extra invocation handling when initializing instances from
+        // de-/serializations or first-time accesses. Deadlocks are very
+        // common to encounter when incorrectly using UI thread dispatches
+        _ = AppSettings.Instance;
         AvaloniaXamlLoader.Load(this);
         ResourceManager = new(this);
         AppInfo = CreateAppInfo();

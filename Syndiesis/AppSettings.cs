@@ -44,7 +44,7 @@ public sealed class AppSettings
         try
         {
             var json = await File.ReadAllTextAsync(path);
-            var returned = Dispatcher.UIThread.Invoke(() =>
+            var returned = await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 return JsonSerializer.Deserialize<AppSettings>(
                     json, AppSettingsSerialization.DefaultOptions);

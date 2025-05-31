@@ -1,5 +1,4 @@
-﻿using Syndiesis.Controls;
-using Syndiesis.Controls.Editor;
+﻿using Syndiesis.Controls.Editor;
 
 namespace Syndiesis;
 
@@ -10,7 +9,7 @@ public class ColorizationPreferences
 
     public ColorizationPreferences()
     {
-        Dispatcher.UIThread.ExecuteOrDispatch(Initialize);
+        Initialize();
 
         void Initialize()
         {

@@ -66,7 +66,7 @@
     <PackageReference Include="Dentextist" Version="1.0.1" GeneratePathProperty="true" />
     <PackageReference Include="RoseLynn.VS2019" Version="0.6.4.1" GeneratePathProperty="true" />
     <PackageReference Include="RoseLynn.Generators" Version="0.6.4.1" GeneratePathProperty="true" />
-    <PackageReference Include="Updatum" Version="1.1.1" />
+    <PackageReference Include="Updatum" Version="1.1.2" />
   </ItemGroup>
 
   <ItemGroup>

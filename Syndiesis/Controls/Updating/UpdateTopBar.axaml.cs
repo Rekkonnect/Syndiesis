@@ -37,7 +37,7 @@ public partial class UpdateTopBar : UserControl
             return;
         }
 
-        var container = popup.NearestAncestorOfType<PopupDisplayContainer>();
+        var container = popup.NearestAncestorOfType<PopupDisplayContainer>()!;
         Dispatcher.UIThread.InvokeAsync(container.Hide);
     }
 

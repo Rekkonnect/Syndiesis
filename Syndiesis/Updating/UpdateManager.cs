@@ -26,8 +26,6 @@ public sealed class UpdateManager
 
     private UpdatumDownloadedAsset? _downloadedAsset;
 
-    // Known bug:
-    // https://github.com/sn4k3/Updatum/issues/4
     public DownloadProgress? DownloadProgress
     {
         get
