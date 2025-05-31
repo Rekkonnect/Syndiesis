@@ -1,7 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Interactivity;
-using Avalonia.Threading;
 using Garyon.Objects;
 using Syndiesis.Updating;
 using System.ComponentModel;

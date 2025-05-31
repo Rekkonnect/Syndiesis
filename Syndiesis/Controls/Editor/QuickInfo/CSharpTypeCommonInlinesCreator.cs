@@ -3,10 +3,8 @@ using Serilog;
 using Syndiesis.ColorHelpers;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
-using System.Linq;
 using System.Reflection.Metadata;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;

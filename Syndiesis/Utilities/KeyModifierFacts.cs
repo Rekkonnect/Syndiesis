@@ -1,5 +1,4 @@
 ﻿using Avalonia.Input;
-using System;
 
 namespace Syndiesis.Utilities;
 

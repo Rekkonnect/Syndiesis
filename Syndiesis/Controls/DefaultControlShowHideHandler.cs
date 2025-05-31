@@ -1,11 +1,8 @@
-using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
-using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Styling;
 using Garyon.Objects;
-using System;
 
 namespace Syndiesis.Controls;
 

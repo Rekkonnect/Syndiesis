@@ -1,10 +1,5 @@
-using Avalonia.Controls;
 using Avalonia.Input;
 using Syndiesis.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Syndiesis.Controls.Tabs;
 

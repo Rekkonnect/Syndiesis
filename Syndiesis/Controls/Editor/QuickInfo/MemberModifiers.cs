@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using System;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 

@@ -1,7 +1,4 @@
-﻿using Avalonia.Media;
-using Avalonia.Threading;
-
-namespace Syndiesis;
+﻿namespace Syndiesis;
 
 // TODO Move to .Colors
 public sealed class LazilyUpdatedGradientStop(GradientStop stop)

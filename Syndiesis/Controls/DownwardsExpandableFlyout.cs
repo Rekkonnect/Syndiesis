@@ -1,8 +1,6 @@
 ﻿using Avalonia.Animation;
 using Avalonia.Animation.Easings;
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
-using System;
 
 namespace Syndiesis.Controls;
 

@@ -1,16 +1,10 @@
 using Avalonia.Collections;
-using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Media;
-using Avalonia.Threading;
 using Garyon.Extensions;
 using Garyon.Objects.Advanced;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 

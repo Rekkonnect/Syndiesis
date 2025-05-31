@@ -1,9 +1,6 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Input;
+﻿using Avalonia.Input;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
-using System.Collections.Generic;
 
 namespace Syndiesis.Controls;
 

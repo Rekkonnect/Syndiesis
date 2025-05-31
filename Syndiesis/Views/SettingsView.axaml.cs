@@ -1,12 +1,8 @@
-using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Threading;
 using Syndiesis.Controls;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
-using System;
 using System.IO;
 using System.Reflection;
 

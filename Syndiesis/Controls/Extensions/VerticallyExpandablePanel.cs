@@ -1,13 +1,9 @@
-﻿using Avalonia;
-using Avalonia.Animation;
+﻿using Avalonia.Animation;
 using Avalonia.Animation.Easings;
-using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Styling;
 using Garyon.Objects;
 using Syndiesis.Core;
-using System;
-using System.Linq;
 
 namespace Syndiesis.Controls.Extensions;
 

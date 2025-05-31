@@ -1,6 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
-
 namespace Syndiesis.Controls.Settings;
 
 public partial class LabelledSlider : UserControl

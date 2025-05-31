@@ -1,10 +1,7 @@
-﻿using Avalonia.Media;
-using Avalonia.Threading;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
 using Syndiesis.InternalGenerators.Core;
-using System;
 
 namespace Syndiesis.Controls.Editor;
 

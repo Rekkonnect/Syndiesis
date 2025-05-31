@@ -1,6 +1,4 @@
-﻿using Avalonia.Media;
-using Avalonia.Threading;
-using Syndiesis.ColorHelpers;
+﻿using Syndiesis.ColorHelpers;
 
 namespace Syndiesis;
 

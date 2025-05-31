@@ -1,6 +1,4 @@
-﻿using Avalonia.Controls;
-
-namespace Syndiesis.Controls;
+﻿namespace Syndiesis.Controls;
 
 public abstract class DesignerInitializableUserControl : UserControl
 {

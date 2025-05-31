@@ -1,9 +1,7 @@
-using Avalonia.Controls;
 using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
-using System;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 

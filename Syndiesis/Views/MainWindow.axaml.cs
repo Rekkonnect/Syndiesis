@@ -1,8 +1,5 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
-using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Core;
 

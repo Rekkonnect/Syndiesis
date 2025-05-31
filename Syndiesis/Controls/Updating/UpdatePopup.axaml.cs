@@ -1,14 +1,8 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.Documents;
-using Avalonia.Interactivity;
-using Avalonia.Media;
-using Avalonia.Threading;
+﻿using Avalonia.Controls.Documents;
 using Garyon.Objects;
 using Syndiesis.Updating;
 using Syndiesis.Utilities;
 using Syndiesis.Views;
-using System;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 

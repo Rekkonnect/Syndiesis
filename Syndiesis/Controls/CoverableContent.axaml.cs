@@ -1,9 +1,6 @@
 using Avalonia.Animation;
 using Avalonia.Animation.Easings;
-using Avalonia.Controls;
-using Avalonia.Media;
 using Garyon.Objects;
-using System;
 
 namespace Syndiesis.Controls;
 

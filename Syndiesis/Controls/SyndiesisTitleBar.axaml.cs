@@ -1,16 +1,12 @@
-using Avalonia;
 using Avalonia.Animation.Easings;
-using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
-using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Syndiesis.Controls;

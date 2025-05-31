@@ -3,8 +3,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.VisualBasic;
 using Serilog;
 using Syndiesis.Utilities;
-using System;
-using System.Linq;
 
 namespace Syndiesis.Core;
 

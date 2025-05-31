@@ -1,10 +1,7 @@
 ﻿using Garyon.Extensions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Operations;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Syndiesis.Core;
 

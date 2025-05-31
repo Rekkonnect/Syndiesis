@@ -2,7 +2,6 @@
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Syndiesis.Core;
 

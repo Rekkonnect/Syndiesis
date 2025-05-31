@@ -1,7 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using Garyon.Extensions;
-using System.Collections.Generic;
+﻿using Garyon.Extensions;
 
 namespace Syndiesis.Controls.Inlines;
 

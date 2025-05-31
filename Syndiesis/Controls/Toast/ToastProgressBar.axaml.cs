@@ -1,8 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Media;
-using System;
-
 namespace Syndiesis.Controls.Toast;
 
 public partial class ToastProgressBar : UserControl

@@ -1,6 +1,4 @@
-﻿using Avalonia.Media;
-
-namespace Syndiesis;
+﻿namespace Syndiesis;
 
 public interface ILazilyUpdatedBrush
 {

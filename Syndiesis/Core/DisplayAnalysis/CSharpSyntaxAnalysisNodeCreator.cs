@@ -1,16 +1,11 @@
-﻿using Avalonia.Media;
-using Garyon.Reflection;
+﻿using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Serilog;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 

@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Core;
-using System;
 
 namespace Syndiesis.Controls.Editor;
 

@@ -1,8 +1,4 @@
-using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Media;
-using System;
 
 namespace Syndiesis.Controls;
 

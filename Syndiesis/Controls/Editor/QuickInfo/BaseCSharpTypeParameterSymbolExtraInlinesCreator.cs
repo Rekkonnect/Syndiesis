@@ -4,7 +4,6 @@ using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
 using System.Collections.Immutable;
-using System.Diagnostics;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 

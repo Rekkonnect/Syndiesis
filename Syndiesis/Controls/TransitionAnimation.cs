@@ -1,6 +1,5 @@
 ﻿using Avalonia.Animation;
 using Avalonia.Styling;
-using System.Linq;
 
 namespace Syndiesis.Controls;
 

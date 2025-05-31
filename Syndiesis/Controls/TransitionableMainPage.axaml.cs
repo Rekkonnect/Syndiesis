@@ -1,9 +1,5 @@
-using Avalonia;
 using Avalonia.Animation;
-using Avalonia.Controls;
-using Avalonia.Threading;
 using Garyon.Objects;
-using System.Linq;
 
 namespace Syndiesis.Controls;
 

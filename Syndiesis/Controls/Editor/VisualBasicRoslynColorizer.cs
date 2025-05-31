@@ -6,9 +6,7 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Syndiesis.Core;
-using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace Syndiesis.Controls.Editor;
 

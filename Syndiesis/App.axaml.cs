@@ -1,4 +1,3 @@
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Garyon.Objects;
@@ -8,7 +7,6 @@ using Serilog.Events;
 using Syndiesis.Updating;
 using Syndiesis.Utilities;
 using Syndiesis.Views;
-using System;
 using System.Reflection;
 
 namespace Syndiesis;

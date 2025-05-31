@@ -3,7 +3,6 @@ using Serilog;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
-using System.Diagnostics;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 

@@ -1,5 +1,4 @@
-﻿using Avalonia.Threading;
-using Syndiesis.Controls;
+﻿using Syndiesis.Controls;
 using Syndiesis.Controls.Editor;
 
 namespace Syndiesis;

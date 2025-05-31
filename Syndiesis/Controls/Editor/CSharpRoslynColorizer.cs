@@ -7,9 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
-using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
 
 namespace Syndiesis.Controls.Editor;
 

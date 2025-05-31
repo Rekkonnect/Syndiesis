@@ -7,7 +7,6 @@ using Garyon.Objects;
 using Octokit;
 using Serilog;
 using Syndiesis.Core;
-using System;
 using System.ComponentModel;
 using Updatum;
 

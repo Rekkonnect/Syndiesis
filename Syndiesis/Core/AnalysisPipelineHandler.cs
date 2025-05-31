@@ -1,10 +1,8 @@
-﻿using Avalonia.Threading;
-using AvaloniaEdit.Document;
+﻿using AvaloniaEdit.Document;
 using Garyon.Mechanisms;
 using Garyon.Objects;
 using Serilog;
 using Syndiesis.Utilities;
-using System;
 
 namespace Syndiesis.Core;
 

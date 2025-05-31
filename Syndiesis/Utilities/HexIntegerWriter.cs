@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Syndiesis.Utilities;
+﻿namespace Syndiesis.Utilities;
 
 public ref struct HexIntegerWriter(Span<char> buffer, int groupLength = 0)
     : IIntegerWriter

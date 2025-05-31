@@ -1,10 +1,6 @@
 ﻿using Avalonia.Animation;
-using Avalonia.Controls;
 using Avalonia.Layout;
-using Avalonia.Media;
 using Avalonia.Styling;
-using System;
-using System.Diagnostics;
 
 namespace Syndiesis.Controls.Toast;
 

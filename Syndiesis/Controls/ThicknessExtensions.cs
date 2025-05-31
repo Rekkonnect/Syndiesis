@@ -1,6 +1,4 @@
-﻿using Avalonia;
-
-namespace Syndiesis.Controls;
+﻿namespace Syndiesis.Controls;
 
 // Should be part of the public API or a third-party library
 public static class ThicknessExtensions

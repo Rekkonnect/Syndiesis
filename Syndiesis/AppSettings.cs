@@ -1,8 +1,6 @@
-﻿using Avalonia.Threading;
-using Serilog;
+﻿using Serilog;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
-using System;
 using System.IO;
 using System.Text.Json;
 

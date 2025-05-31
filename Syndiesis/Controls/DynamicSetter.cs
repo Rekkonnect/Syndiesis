@@ -1,6 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Styling;
-using System;
+﻿using Avalonia.Styling;
 
 namespace Syndiesis.Controls;
 

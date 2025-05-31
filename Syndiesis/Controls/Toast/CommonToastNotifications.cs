@@ -1,7 +1,4 @@
-﻿using Avalonia.Media;
-using System;
-
-namespace Syndiesis.Controls.Toast;
+﻿namespace Syndiesis.Controls.Toast;
 
 public static class CommonToastNotifications
 {

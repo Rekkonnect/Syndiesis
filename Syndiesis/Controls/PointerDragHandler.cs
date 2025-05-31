@@ -1,6 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Input;
-using System;
+﻿using Avalonia.Input;
 
 namespace Syndiesis.Controls;
 

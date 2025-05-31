@@ -1,8 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Controls;
-using System;
-
-namespace Syndiesis.Controls;
+﻿namespace Syndiesis.Controls;
 
 public class Margin
 {

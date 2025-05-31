@@ -1,5 +1,3 @@
-using Avalonia.Controls;
-
 namespace Syndiesis.Controls;
 
 public abstract class ControlShowHideHandler

@@ -1,9 +1,4 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Media;
-using Avalonia.Threading;
 using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
@@ -16,9 +11,7 @@ using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Editor;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
-using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Reflection;
 
 namespace Syndiesis.Controls;

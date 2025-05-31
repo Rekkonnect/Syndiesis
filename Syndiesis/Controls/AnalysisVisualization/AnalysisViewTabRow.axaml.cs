@@ -1,7 +1,4 @@
-using Avalonia.Controls;
 using Syndiesis.Controls.Tabs;
-using System;
-using System.Linq;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 

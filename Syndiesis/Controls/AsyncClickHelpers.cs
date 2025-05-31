@@ -1,9 +1,4 @@
-﻿using Avalonia.Controls;
-using Avalonia.Interactivity;
-using Avalonia.Threading;
-using System;
-
-namespace Syndiesis.Controls;
+﻿namespace Syndiesis.Controls;
 
 public static class AsyncClickHelpers
 {

@@ -1,14 +1,8 @@
-﻿using Avalonia;
-using Avalonia.Collections;
-using Avalonia.Controls;
+﻿using Avalonia.Collections;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Reactive;
 using Avalonia.Styling;
-using Avalonia.Threading;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Syndiesis.Controls;
 

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Syndiesis.Core.DisplayAnalysis;
+﻿namespace Syndiesis.Core.DisplayAnalysis;
 
 public abstract class PropertyFilter
 {

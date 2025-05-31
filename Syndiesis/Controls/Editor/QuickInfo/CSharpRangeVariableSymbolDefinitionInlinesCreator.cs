@@ -1,8 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Syndiesis.Controls.Inlines;
-using System;
-using System.Linq;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 

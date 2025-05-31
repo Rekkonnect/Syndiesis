@@ -1,13 +1,8 @@
-using Avalonia.Controls;
 using Avalonia.Controls.Documents;
-using Avalonia.Interactivity;
-using Avalonia.Media;
-using Avalonia.Threading;
 using Garyon.Objects;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
 using Syndiesis.Updating;
-using System;
 
 namespace Syndiesis.Controls.Updating;
 

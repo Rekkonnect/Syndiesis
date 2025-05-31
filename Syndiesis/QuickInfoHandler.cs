@@ -1,9 +1,7 @@
-﻿using Avalonia.Controls;
-using Avalonia.Input;
+﻿using Avalonia.Input;
 using Garyon.Mechanisms;
 using Garyon.Objects;
 using Syndiesis.Controls.Editor.QuickInfo;
-using System;
 
 namespace Syndiesis;
 

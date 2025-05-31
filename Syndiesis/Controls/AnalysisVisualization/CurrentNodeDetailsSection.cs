@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Syndiesis.Controls.AnalysisVisualization;
+﻿namespace Syndiesis.Controls.AnalysisVisualization;
 
 public sealed class CurrentNodeDetailsSection : NodeDetailsSection
 {

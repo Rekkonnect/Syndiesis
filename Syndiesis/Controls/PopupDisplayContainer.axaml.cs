@@ -1,9 +1,6 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.VisualTree;
 using Garyon.Objects;
 using Syndiesis.Views;
-using System.Linq;
 
 namespace Syndiesis.Controls;
 

@@ -1,5 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Input;
 using Garyon.Objects;
 using Syndiesis.Views;

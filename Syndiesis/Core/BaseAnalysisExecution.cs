@@ -1,6 +1,5 @@
 ﻿using Garyon.Objects;
 using Syndiesis.Core.DisplayAnalysis;
-using System;
 
 namespace Syndiesis.Core;
 

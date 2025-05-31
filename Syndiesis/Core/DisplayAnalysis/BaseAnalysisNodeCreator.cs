@@ -1,5 +1,4 @@
-﻿using Avalonia.Media;
-using Garyon.Extensions;
+﻿using Garyon.Extensions;
 using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls;
@@ -7,14 +6,9 @@ using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
 using Syndiesis.Utilities;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 

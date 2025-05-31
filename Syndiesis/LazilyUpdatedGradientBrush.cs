@@ -1,9 +1,4 @@
-﻿using Avalonia.Media;
-using Avalonia.Threading;
-using System.Collections.Generic;
-using System.Linq;
-
-namespace Syndiesis;
+﻿namespace Syndiesis;
 
 // TODO Move to .Colors
 public sealed class LazilyUpdatedGradientBrush : ILazilyUpdatedBrush

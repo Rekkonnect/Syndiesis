@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Syndiesis.Controls.AnalysisVisualization;
+﻿namespace Syndiesis.Controls.AnalysisVisualization;
 
 internal interface IAnalysisNodeHoverManager
 {
