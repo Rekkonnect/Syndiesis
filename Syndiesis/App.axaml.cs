@@ -10,7 +10,6 @@ using Syndiesis.Utilities;
 using Syndiesis.Views;
 using System;
 using System.Reflection;
-using System.Threading.Tasks;
 
 namespace Syndiesis;
 

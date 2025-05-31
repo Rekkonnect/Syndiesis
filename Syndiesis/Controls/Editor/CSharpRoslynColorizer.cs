@@ -10,7 +10,6 @@ using Syndiesis.Core;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
-using System.Threading;
 
 namespace Syndiesis.Controls.Editor;
 

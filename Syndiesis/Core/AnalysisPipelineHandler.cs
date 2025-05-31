@@ -5,7 +5,6 @@ using Garyon.Objects;
 using Serilog;
 using Syndiesis.Utilities;
 using System;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 

@@ -3,8 +3,6 @@ using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Core.DisplayAnalysis;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 

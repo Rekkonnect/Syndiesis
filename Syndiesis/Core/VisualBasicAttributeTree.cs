@@ -4,7 +4,6 @@ using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Threading;
 
 namespace Syndiesis.Core;
 

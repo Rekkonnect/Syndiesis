@@ -62,40 +62,6 @@ public static partial class CommonAvaloniaExtensions
 // Components
 public static partial class CommonAvaloniaExtensions
 {
-    public static Thickness WithLeft(this Thickness thickness, double left)
-    {
-        return new(left, thickness.Top, thickness.Right, thickness.Bottom);
-    }
-    public static Thickness WithRight(this Thickness thickness, double right)
-    {
-        return new(thickness.Left, thickness.Top, right, thickness.Bottom);
-    }
-    public static Thickness WithTop(this Thickness thickness, double top)
-    {
-        return new(thickness.Left, top, thickness.Right, thickness.Bottom);
-    }
-    public static Thickness WithBottom(this Thickness thickness, double bottom)
-    {
-        return new(thickness.Left, thickness.Top, thickness.Right, bottom);
-    }
-
-    public static Thickness OffsetLeft(this Thickness thickness, double left)
-    {
-        return new(thickness.Left + left, thickness.Top, thickness.Right, thickness.Bottom);
-    }
-    public static Thickness OffsetRight(this Thickness thickness, double right)
-    {
-        return new(thickness.Left, thickness.Top, thickness.Right + right, thickness.Bottom);
-    }
-    public static Thickness OffsetTop(this Thickness thickness, double top)
-    {
-        return new(thickness.Left, thickness.Top + top, thickness.Right, thickness.Bottom);
-    }
-    public static Thickness OffsetBottom(this Thickness thickness, double bottom)
-    {
-        return new(thickness.Left, thickness.Top, thickness.Right, thickness.Bottom + bottom);
-    }
-
     public static Rect WithZeroOffset(this Rect rect)
     {
         return new(0, 0, rect.Width, rect.Height);

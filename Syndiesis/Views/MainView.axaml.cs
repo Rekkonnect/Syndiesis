@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Views;
 
@@ -399,8 +398,7 @@ public partial class MainView : UserControl
 
     private void GitHubClick()
     {
-        const string githubLink = "https://github.com/Rekkonnect/Syndiesis";
-        ProcessUtilities.OpenUrl(githubLink)
+        ProcessUtilities.OpenUrl(KnownConstants.GitHubLink)
             .AwaitProcessInitialized();
     }
 

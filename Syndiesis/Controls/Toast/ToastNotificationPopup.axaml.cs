@@ -4,8 +4,6 @@ using Avalonia.Controls;
 using Avalonia.Media;
 using Avalonia.Styling;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.Toast;
 

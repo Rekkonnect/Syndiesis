@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using RoseLynn;
 using Syndiesis.Controls.Inlines;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;

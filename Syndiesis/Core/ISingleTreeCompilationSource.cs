@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using System.Threading;
 
 namespace Syndiesis.Core;
 

@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 
 namespace Syndiesis.Core;
 

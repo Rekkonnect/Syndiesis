@@ -68,6 +68,13 @@ public partial class UpdatePopup : UserControl, IShowHideControl
         manager.UpdaterStateChanged += HandleUpdateStateChanged;
         mainButton.Click += OnMainButtonClicked;
         cancelButton.Click += OnCancelButtonClicked;
+        viewOnGitHubButton.AttachAsyncClick(OnViewOnGitHubButtonClicked);
+    }
+
+    private void OnViewOnGitHubButtonClicked()
+    {
+        ProcessUtilities.OpenUrl(KnownConstants.GitHubReleasesLink)
+            .AwaitProcessInitialized();
     }
 
     private void OnCancelButtonClicked(object? sender, RoutedEventArgs e)

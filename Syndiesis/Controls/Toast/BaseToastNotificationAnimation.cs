@@ -1,7 +1,4 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-
-namespace Syndiesis.Controls.Toast;
+﻿namespace Syndiesis.Controls.Toast;
 
 public abstract class BaseToastNotificationAnimation
 {

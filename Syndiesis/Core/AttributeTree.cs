@@ -7,7 +7,6 @@ using RoseLynn;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using System.Threading;
 
 namespace Syndiesis.Core;
 

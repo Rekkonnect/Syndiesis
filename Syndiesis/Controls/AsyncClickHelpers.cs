@@ -2,7 +2,6 @@
 using Avalonia.Interactivity;
 using Avalonia.Threading;
 using System;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;
 

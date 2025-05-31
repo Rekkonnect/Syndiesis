@@ -9,7 +9,6 @@ using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;
-using Syndiesis.Core;
 using Syndiesis.Utilities;
 using System;
 using System.Diagnostics.CodeAnalysis;

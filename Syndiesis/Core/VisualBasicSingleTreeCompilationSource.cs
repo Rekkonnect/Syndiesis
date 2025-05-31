@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.VisualBasic;
-using System.Threading;
 
 namespace Syndiesis.Core;
 

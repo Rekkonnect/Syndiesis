@@ -4,7 +4,6 @@ using Garyon.Mechanisms;
 using Garyon.Objects;
 using Syndiesis.Controls.Editor.QuickInfo;
 using System;
-using System.Threading.Tasks;
 
 namespace Syndiesis;
 

@@ -5,7 +5,6 @@ using Syndiesis.Core.DisplayAnalysis;
 using System;
 using System.IO;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace Syndiesis;
 

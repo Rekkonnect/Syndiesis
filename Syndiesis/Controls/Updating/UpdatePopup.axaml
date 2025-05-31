@@ -6,7 +6,7 @@
   mc:Ignorable="d"
   Width="620"
   Height="420"
-  xmlns:updating="using:Syndiesis.Controls.Updating"
+  xmlns:syndiesis="https://github.com/Rekkonnect/Syndiesis"
   x:Class="Syndiesis.Controls.Updating.UpdatePopup"
   Opacity="0"
   Margin="0 0 0 -30"
@@ -65,11 +65,28 @@
         </LinearGradientBrush>
       </Grid.Background>
 
-      <updating:UpdateTopBar
+      <syndiesis:UpdateTopBar
         Name="topBar"
         VerticalAlignment="Top"
         HorizontalAlignment="Stretch"
         />
+
+      <Button
+        VerticalAlignment="Top"
+        HorizontalAlignment="Center"
+        Name="viewOnGitHubButton"
+        syndiesis:Margin.Top="70"
+        >
+
+        <TextBlock
+          FontFamily="{StaticResource AptosFontFamily}"
+          FontSize="16"
+          Foreground="#B8CBCC"
+          VerticalAlignment="Center"
+          HorizontalAlignment="Center"
+          Text="View on GitHub"
+          />
+      </Button>
 
       <Grid
         Name="innerContent"
@@ -233,9 +250,9 @@
                 VerticalAlignment="Center"
                 HorizontalAlignment="Right"
                 TextAlignment="Right"
-                Padding="0 0 30 0"
+                syndiesis:Margin.Right="30"
                 Name="progressPercentageText"
-              />
+                />
 
             </Grid>
           </Button>

@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.Text;
 using System;
 using System.Diagnostics;
-using System.Threading;
 
 namespace Syndiesis.Core;
 

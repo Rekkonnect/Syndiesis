@@ -5,7 +5,6 @@ using Serilog;
 using Syndiesis.Utilities;
 using System;
 using System.Linq;
-using System.Threading;
 
 namespace Syndiesis.Core;
 
