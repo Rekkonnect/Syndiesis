@@ -1,6 +1,5 @@
-﻿namespace Syndiesis;
+﻿namespace Syndiesis.ColorHelpers;
 
-// TODO Move to .Colors
 public interface ILazilyUpdatedSolidBrush : ILazilyUpdatedBrush
 {
     public Color Color { get; }

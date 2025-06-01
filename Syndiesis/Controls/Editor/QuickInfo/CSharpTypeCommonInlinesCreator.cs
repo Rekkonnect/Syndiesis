@@ -1,6 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
 using Serilog;
-using Syndiesis.ColorHelpers;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
 using System.Collections.Immutable;
