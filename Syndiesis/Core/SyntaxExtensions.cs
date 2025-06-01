@@ -52,4 +52,29 @@ public static class SyntaxExtensions
             current = parent;
         }
     }
+
+    public static SyntaxNode? CommonParent(this SyntaxNode a, SyntaxNode b)
+    {
+        if (a.SyntaxTree != b.SyntaxTree)
+        {
+            throw new ArgumentException(
+                "The two nodes must belong to the same syntax tree");
+        }
+
+        var current = a;
+        var bSpan = b.Span;
+
+        while (current is not null)
+        {
+            // a is always contained, since we traverse the ancestors of a
+            if (current.Span.Contains(bSpan))
+            {
+                return current;
+            }
+
+            current = current.Parent;
+        }
+
+        return null;
+    }
 }

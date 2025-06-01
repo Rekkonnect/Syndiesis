@@ -1,3 +1,5 @@
+using Avalonia.Animation;
+using Avalonia.Animation.Easings;
 using Avalonia.Input;
 using AvaloniaEdit;
 using AvaloniaEdit.Document;
@@ -36,6 +38,7 @@ public partial class CodeEditor : UserControl
 
     private HybridSingleTreeCompilationSource? _compilationSource;
     private RoslynColorizer? _effectiveColorizer;
+    private ReusableCancellableAnimation _pulseLineAnimation;
 
     public AnalysisTreeListNode? HoveredListNode => _hoveredListNode;
 
@@ -136,6 +139,7 @@ public partial class CodeEditor : UserControl
         InitializeComponent();
         InitializeEvents();
         InitializeTextEditor();
+        InitializeAnimations();
     }
 
     [MemberNotNull(nameof(_nodeSpanHoverLayer))]
@@ -488,22 +492,34 @@ public partial class CodeEditor : UserControl
         base.OnKeyDown(e);
     }
 
-    private readonly CancellationTokenFactory _pulseFactoryCancellationToken = new();
-
     private void GoToDefinition()
     {
         var went = TryGoToDefinition();
         if (!went)
         {
-            _pulseFactoryCancellationToken.Cancel();
-            var pulseAnimation = Animations.CreateColorPulseAnimation(
-                backgroundPanel,
-                Color.FromUInt32(0xFF440011),
-                Panel.BackgroundProperty);
-            pulseAnimation.Duration = TimeSpan.FromMilliseconds(250);
-
-            _ = pulseAnimation.RunAsync(backgroundPanel, _pulseFactoryCancellationToken.CurrentToken);
+            PulseGoToDefinitionFailed();
         }
+    }
+
+    private void PulseGoToDefinitionFailed()
+    {
+        _ = _pulseLineAnimation.RunAsync(backgroundPanel);
+    }
+
+    [MemberNotNull(nameof(_pulseLineAnimation))]
+    private void InitializeAnimations()
+    {
+        _pulseLineAnimation = CreatePulseAnimation();
+    }
+
+    private ReusableCancellableAnimation CreatePulseAnimation()
+    {
+        var animation = Animations.CreateColorPulseAnimation(
+            backgroundPanel,
+            Color.FromUInt32(0xFF440011),
+            Panel.BackgroundProperty);
+        animation.Duration = TimeSpan.FromMilliseconds(250);
+        return new(animation);
     }
 
     private bool TryGoToDefinition()

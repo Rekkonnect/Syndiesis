@@ -5,17 +5,17 @@ using Avalonia.Input;
 using Garyon.Objects;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Syndiesis.Controls.Inlines;
 
 public partial class CopyableGroupedRunInlineTextBlock : UserControl
 {
-    private readonly CancellationTokenFactory _pulseGroupedRunsCancellationTokenFactory = new();
-
     private GroupedRunInline? _hoveredRunInline;
 
     private volatile bool _redrawn;
     private PointerEventArgs? _lastPointerEventArgs;
+    private ReusableCancellableAnimation _pulseLineAnimation;
 
     public InlineCollection? Inlines
     {
@@ -52,6 +52,7 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
     public CopyableGroupedRunInlineTextBlock()
     {
         InitializeComponent();
+        InitializeAnimations();
         ClipToBounds = false;
         containedText.LayoutUpdated += OnContainedTextLayoutUpdated;
     }
@@ -193,7 +194,7 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
             Canvas.SetTop(textPartHoverRectangle, bounds.Top - extraHeight + descriptionBounds.Top);
             textPartHoverRectangle.Width = bounds.Width + 2 * extraWidth;
             textPartHoverRectangle.Height = bounds.Height + 2 * extraHeight;
-            _pulseGroupedRunsCancellationTokenFactory.Cancel();
+            _pulseLineAnimation.CancellationTokenFactory.Cancel();
         }
     }
 
@@ -205,15 +206,23 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
 
     private void PulseCopiedTextInline()
     {
-        _pulseGroupedRunsCancellationTokenFactory.Cancel();
+        _ = _pulseLineAnimation.RunAsync(textPartHoverRectangle);
+    }
+
+    [MemberNotNull(nameof(_pulseLineAnimation))]
+    private void InitializeAnimations()
+    {
+        _pulseLineAnimation = CreatePulseAnimation();
+    }
+
+    private ReusableCancellableAnimation CreatePulseAnimation()
+    {
         var color = Color.FromArgb(192, 128, 128, 128);
         var animation = Animations.CreateColorPulseAnimation(
             textPartHoverRectangle, color, Rectangle.FillProperty);
         animation.Duration = TimeSpan.FromMilliseconds(500);
         animation.Easing = Singleton<CubicEaseOut>.Instance;
-        _ = animation.RunAsync(
-            textPartHoverRectangle,
-            _pulseGroupedRunsCancellationTokenFactory.CurrentToken);
+        return new(animation);
     }
 
     private void CopyHoveredInlineContent()

@@ -6,7 +6,6 @@ public partial class SyndiesisTitleBarButton : UserControl
 {
     public Geometry PathData
     {
-        get => iconPath.Data;
         set => iconPath.Data = value;
     }
 
@@ -44,7 +43,7 @@ public partial class SyndiesisTitleBarButton : UserControl
         UpdateHoverState();
     }
 
-    private static Color _hoverRectangleColor = Color.FromUInt32(0x30FFFFFF);
+    private static readonly Color _hoverRectangleColor = Color.FromUInt32(0x30FFFFFF);
     private static readonly SolidColorBrush _hoverRectangleBrush = new(_hoverRectangleColor);
 
     private static readonly SolidColorBrush _transparentBrush = new(Colors.Transparent);

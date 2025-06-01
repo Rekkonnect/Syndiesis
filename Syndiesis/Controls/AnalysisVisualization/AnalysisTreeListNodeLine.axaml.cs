@@ -9,13 +9,12 @@ using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Core.DisplayAnalysis;
 using Syndiesis.Utilities;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 
 public partial class AnalysisTreeListNodeLine : UserControl
 {
-    private readonly CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
-
     private bool _isExpanded;
 
     public bool IsExpanded
@@ -131,6 +130,7 @@ public partial class AnalysisTreeListNodeLine : UserControl
     public AnalysisNodeKind AnalysisNodeKind { get; set; }
 
     private AnalysisNodeLineContentState _contentState;
+    private ReusableCancellableAnimation? _pulseLineAnimation;
 
     public AnalysisNodeLineContentState ContentState
     {
@@ -218,12 +218,23 @@ public partial class AnalysisTreeListNodeLine : UserControl
 
     private void PulseCopiedLine()
     {
-        _pulseLineCancellationTokenFactory.Cancel();
+        EnsureAnimationsInitialized();
+        _ = _pulseLineAnimation.RunAsync(this);
+    }
+
+    [MemberNotNull(nameof(_pulseLineAnimation))]
+    private void EnsureAnimationsInitialized()
+    {
+        _pulseLineAnimation ??= CreatePulseAnimation();
+    }
+
+    private ReusableCancellableAnimation CreatePulseAnimation()
+    {
         var color = Color.FromArgb(192, 128, 128, 128);
         var animation = Animations.CreateColorPulseAnimation(this, color, BackgroundProperty);
         animation.Duration = TimeSpan.FromMilliseconds(750);
         animation.Easing = Singleton<CubicEaseOut>.Instance;
-        _ = animation.RunAsync(this, _pulseLineCancellationTokenFactory.CurrentToken);
+        return new(animation);
     }
 
     public void ReloadFromBuilder(UIBuilder.AnalysisTreeListNodeLine builder)
