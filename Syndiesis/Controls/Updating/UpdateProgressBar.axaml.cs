@@ -10,7 +10,7 @@ namespace Syndiesis.Controls.Updating;
 
 public partial class UpdateProgressBar : UserControl
 {
-    private ColumnDistributor _progressBarColumnDistributor;
+    private ProgressColumnDistributor _progressBarColumnDistributor;
 
     public UpdateProgressBar()
     {
@@ -203,22 +203,6 @@ public partial class UpdateProgressBar : UserControl
 
                 return stops;
             }
-        }
-    }
-
-    private sealed record ColumnDistributor(
-        ColumnDefinition Progressed,
-        ColumnDefinition Remaining)
-    {
-        public void SetProgressRatio(double ratio)
-        {
-            Progressed.Width = CreateRatioLength(ratio);
-            Remaining.Width = CreateRatioLength(1 - ratio);
-        }
-
-        private static GridLength CreateRatioLength(double ratio)
-        {
-            return new(ratio, GridUnitType.Star);
         }
     }
 }

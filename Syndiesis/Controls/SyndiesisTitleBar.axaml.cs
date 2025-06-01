@@ -130,7 +130,7 @@ public partial class SyndiesisTitleBar : UserControl
 
     private ReusableCancellableAnimation CreatePulseAnimation()
     {
-        var animation = Animations.CreateOpacityPulseAnimation(
+        var animation = Animations.CreatePropertyPulseAnimation(
             linePulseRectangle, 1, OpacityProperty);
         animation.Duration = TimeSpan.FromMilliseconds(750);
         animation.Easing = Singleton<CubicEaseOut>.Instance;
