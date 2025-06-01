@@ -52,6 +52,7 @@ public partial class AnalysisTreeListNodeLine : UserControl
         }
     }
 
+    // TODO: Remove this
     public static readonly StyledProperty<Color> NodeTypeColorProperty =
         AvaloniaProperty.Register<AnalysisTreeListNode, Color>(
             nameof(NodeTypeColor),
@@ -63,6 +64,7 @@ public partial class AnalysisTreeListNodeLine : UserControl
         set
         {
             SetValue(NodeTypeColorProperty!, value!);
+            // TODO: Avoid creating a new brush for every node
             nodeTypeIconText.Foreground = new SolidColorBrush(value);
         }
     }
