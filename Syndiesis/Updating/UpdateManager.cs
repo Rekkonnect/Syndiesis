@@ -34,7 +34,25 @@ public sealed class UpdateManager
             {
                 return null;
             }
-            return new(_updater.DownloadedBytes, _updater.DownloadSizeBytes);
+            return new(_updater.DownloadedBytes, DownloadSizeBytes);
+        }
+    }
+
+    public long DownloadSizeBytes
+    {
+        get
+        {
+            var bytes = _updater.DownloadSizeBytes;
+            if (bytes > 0)
+            {
+                return bytes;
+            }
+            var release = _updater.LatestRelease;
+            if (release is null)
+            {
+                return -1;
+            }
+            return _updater.GetCompatibleReleaseAsset(release)?.Size ?? -1;
         }
     }
 

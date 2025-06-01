@@ -5,7 +5,6 @@ using Garyon.Objects;
 using Syndiesis.Updating;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
-using System.Transactions;
 
 namespace Syndiesis.Controls.Updating;
 
@@ -19,6 +18,7 @@ public partial class UpdateProgressBar : UserControl
         InitializeEvents();
         InitializeDistribution();
         UpdateProgress();
+        UpdateGradientDisplay();
         SetFlowAnimation();
     }
 
@@ -59,7 +59,7 @@ public partial class UpdateProgressBar : UserControl
     {
         var manager = Singleton<UpdateManager>.Instance;
         var progress = manager.DownloadProgress;
-        bool isDownloading = progress is not null;
+        bool isDownloading = ShouldShowDownloadProgress(manager.UpdateState);
 
         noUpdateInformationText.IsVisible = !isDownloading;
         downloadProgressTextGrid.IsVisible = isDownloading;
@@ -74,6 +74,17 @@ public partial class UpdateProgressBar : UserControl
 
         downloadedMegabytesText.Text = MegabyteString(progress!.Value.DownloadedBytes);
         updateMegabytesText.Text = MegabyteString(progress!.Value.TotalBytes.ZeroOrGreater());
+    }
+
+    private static bool ShouldShowDownloadProgress(UpdateManager.State state)
+    {
+        return state
+            is UpdateManager.State.DiscoveredUpdate
+            or UpdateManager.State.Downloading
+            or UpdateManager.State.ReadyToInstall
+            or UpdateManager.State.Installing
+            or UpdateManager.State.InstallationFailed
+            ;
     }
 
     private static string MegabyteString(long bytes)
