@@ -390,7 +390,7 @@ public partial class CodeEditor : UserControl
     private void SetCaretPositionBringToView(TextViewPosition position)
     {
         CaretPosition = position;
-        textEditor.TextArea.Caret.BringCaretToView();
+        textEditor.TextArea.Caret.BringCaretToView(250);
     }
 
     private void UpdateScrolls()
