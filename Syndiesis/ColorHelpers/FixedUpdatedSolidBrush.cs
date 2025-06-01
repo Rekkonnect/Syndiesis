@@ -1,6 +1,4 @@
-﻿using Syndiesis.ColorHelpers;
-
-namespace Syndiesis;
+﻿namespace Syndiesis.ColorHelpers;
 
 public sealed class FixedUpdatedSolidBrush : ILazilyUpdatedSolidBrush
 {
@@ -23,7 +21,8 @@ public sealed class FixedUpdatedSolidBrush : ILazilyUpdatedSolidBrush
         _brush = brush;
     }
 
-    public LazilyUpdatedHsvTransformedSolidBrush WithHsvTransformation(HsvTransformation transformation)
+    public LazilyUpdatedHsvTransformedSolidBrush WithHsvTransformation(
+        HsvTransformation transformation)
     {
         return new(this, transformation);
     }

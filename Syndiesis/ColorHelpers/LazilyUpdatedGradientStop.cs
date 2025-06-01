@@ -1,6 +1,5 @@
-﻿namespace Syndiesis;
+﻿namespace Syndiesis.ColorHelpers;
 
-// TODO Move to .Colors
 public sealed class LazilyUpdatedGradientStop(GradientStop stop)
 {
     private readonly GradientStop _stop = stop;

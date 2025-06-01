@@ -1,7 +1,6 @@
 ﻿using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 using Microsoft.CodeAnalysis;
-using Syndiesis.ColorHelpers;
 using Syndiesis.Core;
 using Syndiesis.InternalGenerators.Core;
 using System.Text.Json.Serialization;

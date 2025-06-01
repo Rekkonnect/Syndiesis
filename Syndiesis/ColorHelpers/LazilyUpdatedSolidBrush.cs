@@ -1,8 +1,5 @@
-﻿using Syndiesis.ColorHelpers;
+﻿namespace Syndiesis.ColorHelpers;
 
-namespace Syndiesis;
-
-// TODO Move to .Colors
 public sealed class LazilyUpdatedSolidBrush : ILazilyUpdatedSolidBrush
 {
     private readonly SolidColorBrush _brush = new();

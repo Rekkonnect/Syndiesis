@@ -10,72 +10,43 @@ public static class Animations
         Color fillColor,
         AvaloniaProperty<IBrush?> colorProperty)
     {
-        return new()
-        {
-            Children =
-            {
-                new KeyFrame()
-                {
-                    Cue = new(0),
-                    Setters =
-                    {
-                        new Setter()
-                        {
-                            Property = colorProperty,
-                            Value = new SolidColorBrush(fillColor),
-                        }
-                    },
-                },
-                new KeyFrame()
-                {
-                    Cue = new(1),
-                    Setters =
-                    {
-                        new Setter()
-                        {
-                            Property = colorProperty,
-                            Value = control.GetValue(colorProperty),
-                        }
-                    },
-                },
-            }
-        };
+        return CreatePropertyPulseAnimation(
+            control,
+            new SolidColorBrush(fillColor),
+            colorProperty);
     }
 
-    public static Animation CreateOpacityPulseAnimation(
+    public static Animation CreatePropertyPulseAnimation<T>(
         Control control,
-        double opacity,
-        AvaloniaProperty<double> opacityProperty)
+        T? pulseValue,
+        AvaloniaProperty<T> property)
     {
         return new()
         {
             Children =
             {
-                new KeyFrame()
-                {
-                    Cue = new(0),
-                    Setters =
-                    {
-                        new Setter()
-                        {
-                            Property = opacityProperty,
-                            Value = opacity,
-                        }
-                    },
-                },
-                new KeyFrame()
-                {
-                    Cue = new(1),
-                    Setters =
-                    {
-                        new Setter()
-                        {
-                            Property = opacityProperty,
-                            Value = control.GetValue(opacityProperty),
-                        }
-                    },
-                },
+                SimpleKeyFrame(
+                    cueValue: 0,
+                    property: property,
+                    value: pulseValue),
+                SimpleKeyFrame(
+                    cueValue: 1,
+                    property: property,
+                    value: control.GetValue<T>(property)),
             }
+        };
+    }
+
+    public static KeyFrame SimpleKeyFrame<T>(
+        double cueValue, AvaloniaProperty<T> property, T? value)
+    {
+        return new()
+        {
+            Cue = new(cueValue),
+            Setters =
+            {
+                new Setter(property, value)
+            },
         };
     }
 }

@@ -79,7 +79,7 @@ public class SolidColorFieldGenerator : IIncrementalGenerator
             const string header = """
                 using Color = Avalonia.Media.Color;
                 using SolidColorBrush = Avalonia.Media.SolidColorBrush;
-                using LazilyUpdatedSolidBrush = Syndiesis.LazilyUpdatedSolidBrush;
+                using LazilyUpdatedSolidBrush = Syndiesis.ColorHelpers.LazilyUpdatedSolidBrush;
                 using JsonIncludeAttribute = System.Text.Json.Serialization.JsonIncludeAttribute;
 
 

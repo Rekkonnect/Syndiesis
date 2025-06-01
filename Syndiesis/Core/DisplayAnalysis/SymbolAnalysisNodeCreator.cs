@@ -3,6 +3,7 @@ using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
 using Syndiesis.Utilities;
+using System.Collections.Immutable;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -35,6 +36,8 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     private readonly ILabelSymbolRootViewNodeCreator _labelSymbolCreator;
 
     private readonly SymbolListRootViewNodeCreator _symbolListCreator;
+    private readonly SymbolDisplayPartRootViewNodeCreator _displayPartCreator;
+    private readonly SymbolDisplayPartsListRootViewNodeCreator _displayPartsListCreator;
 
     public SymbolAnalysisNodeCreator(
         BaseAnalysisNodeCreatorContainer parentContainer)
@@ -60,6 +63,8 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
         _labelSymbolCreator = new(this);
 
         _symbolListCreator = new(this);
+        _displayPartCreator = new(this);
+        _displayPartsListCreator = new(this);
     }
 
     public override AnalysisTreeListNode? CreateRootViewNode<TDisplayValueSource>(
@@ -73,6 +78,12 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
 
             case IReadOnlyList<ISymbol> symbolList:
                 return CreateRootSymbolList(symbolList, valueSource, includeChildren);
+
+            case SymbolDisplayPart displayPart:
+                return CreateRootSymbolDisplayPart(displayPart, valueSource, includeChildren);
+
+            case ImmutableArray<SymbolDisplayPart> displayParts:
+                return CreateRootSymbolDisplayPartsList(displayParts, valueSource, includeChildren);
         }
 
         // fallback
@@ -316,6 +327,24 @@ public sealed partial class SymbolAnalysisNodeCreator : BaseAnalysisNodeCreator
     {
         return _symbolListCreator.CreateNode(symbols, valueSource, includeChildren);
     }
+
+    public AnalysisTreeListNode CreateRootSymbolDisplayPart<TDisplayValueSource>(
+        SymbolDisplayPart part,
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+    {
+        return _displayPartCreator.CreateNode(part, valueSource, includeChildren);
+    }
+
+    public AnalysisTreeListNode CreateRootSymbolDisplayPartsList<TDisplayValueSource>(
+        ImmutableArray<SymbolDisplayPart> parts,
+        TDisplayValueSource? valueSource,
+        bool includeChildren = true)
+        where TDisplayValueSource : IDisplayValueSource
+    {
+        return _displayPartsListCreator.CreateNode(parts, valueSource, includeChildren);
+    }
 }
 
 partial class SymbolAnalysisNodeCreator
@@ -454,27 +483,31 @@ partial class SymbolAnalysisNodeCreator
 
                 Creator.CreateRootGeneral(
                     symbol.DeclaringSyntaxReferences,
-                    Property(nameof(ISymbol.DeclaringSyntaxReferences)))!,
+                    Property(nameof(ISymbol.DeclaringSyntaxReferences))),
 
                 Creator.CreateRootGeneral(
                     symbol.DeclaredAccessibility,
-                    Property(nameof(ISymbol.DeclaredAccessibility)))!,
+                    Property(nameof(ISymbol.DeclaredAccessibility))),
 
                 Creator.CreateRootGeneral(
                     symbol.IsImplicitlyDeclared,
-                    Property(nameof(ISymbol.IsImplicitlyDeclared)))!,
+                    Property(nameof(ISymbol.IsImplicitlyDeclared))),
 
                 Creator.CreateRootGeneral(
                     symbol.Name,
-                    Property(nameof(ISymbol.Name)))!,
+                    Property(nameof(ISymbol.Name))),
 
                 Creator.CreateRootGeneral(
                     symbol.MetadataName,
-                    Property(nameof(ISymbol.MetadataName)))!,
+                    Property(nameof(ISymbol.MetadataName))),
 
                 Creator.CreateRootGeneral(
                     symbol.ToDisplayString(),
-                    MethodSource(nameof(ISymbol.ToDisplayString)))!,
+                    MethodSource(nameof(ISymbol.ToDisplayString))),
+
+                Creator.CreateRootGeneral(
+                    symbol.ToDisplayParts(),
+                    MethodSource(nameof(ISymbol.ToDisplayParts))),
             ]);
         }
     }
@@ -665,7 +698,7 @@ partial class SymbolAnalysisNodeCreator
             list.AddRange([
                 Creator.CreateRootGeneral(
                     symbol.RefKind,
-                    Property(nameof(IPropertySymbol.RefKind)))!,
+                    Property(nameof(IPropertySymbol.RefKind))),
 
                 Creator.CreateRootSymbol(
                     symbol.Type,
@@ -712,7 +745,7 @@ partial class SymbolAnalysisNodeCreator
             list.AddRange([
                 Creator.CreateRootGeneral(
                     symbol.CallingConvention,
-                    Property(nameof(IMethodSymbol.CallingConvention)))!,
+                    Property(nameof(IMethodSymbol.CallingConvention))),
 
                 Creator.CreateRootGeneral(
                     symbol.RefKind,
@@ -749,7 +782,7 @@ partial class SymbolAnalysisNodeCreator
             list.Add(
                 Creator.CreateRootGeneral(
                     symbol.Variance,
-                    Property(nameof(ITypeParameterSymbol.Variance)))!
+                    Property(nameof(ITypeParameterSymbol.Variance)))
             );
 
             base.CreateChildren(symbol, list);
@@ -765,11 +798,11 @@ partial class SymbolAnalysisNodeCreator
             list.AddRange([
                 Creator.CreateRootGeneral(
                     symbol.RefKind,
-                    Property(nameof(IParameterSymbol.RefKind)))!,
+                    Property(nameof(IParameterSymbol.RefKind))),
 
                 Creator.CreateRootGeneral(
                     symbol.ScopedKind,
-                    Property(nameof(IParameterSymbol.ScopedKind)))!,
+                    Property(nameof(IParameterSymbol.ScopedKind))),
 
                 Creator.CreateRootSymbol(
                     symbol.Type,
@@ -781,12 +814,12 @@ partial class SymbolAnalysisNodeCreator
                 // Keep this in mind in the event that this changes in the future
                 Creator.CreateRootGeneral(
                     symbol.HasExplicitDefaultValue,
-                    Property(nameof(IParameterSymbol.HasExplicitDefaultValue)))!,
+                    Property(nameof(IParameterSymbol.HasExplicitDefaultValue))),
 
                 Creator.CreateGeneralOrThrowsExceptionNode<InvalidOperationException>(
                     symbol.HasExplicitDefaultValue,
                     () => symbol.ExplicitDefaultValue,
-                    Property(nameof(IParameterSymbol.ExplicitDefaultValue)))!,
+                    Property(nameof(IParameterSymbol.ExplicitDefaultValue))),
             ]);
 
             base.CreateChildren(symbol, list);
@@ -917,6 +950,125 @@ partial class SymbolAnalysisNodeCreator
                 ;
         }
     }
+
+    public sealed class SymbolDisplayPartsListRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
+        : SymbolRootViewNodeCreator<ImmutableArray<SymbolDisplayPart>>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            ImmutableArray<SymbolDisplayPart> displayParts, GroupedRunInlineCollection inlines)
+        {
+            AppendDisplayPartColors(displayParts, inlines);
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.DisplayPartsDisplay);
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(
+            ImmutableArray<SymbolDisplayPart> parts)
+        {
+            if (parts.IsEmpty())
+                return null;
+
+            return () => GetChildren(parts);
+        }
+
+        private IReadOnlyList<AnalysisTreeListNode> GetChildren(
+            ImmutableArray<SymbolDisplayPart> parts)
+        {
+            return parts
+                .Select(part => Creator.CreateRootSymbolDisplayPart<IDisplayValueSource>(part, default))
+                .ToList()
+                ;
+        }
+
+        private void AppendDisplayPartColors(
+            ImmutableArray<SymbolDisplayPart> displayParts,
+            GroupedRunInlineCollection inlines)
+        {
+            inlines.AddRange(
+                displayParts
+                    .Select(SymbolDisplayPartRootViewNodeCreator.CreateDisplayPartInline));
+        }
+    }
+
+    public sealed class SymbolDisplayPartRootViewNodeCreator(SymbolAnalysisNodeCreator creator)
+        : SymbolRootViewNodeCreator<SymbolDisplayPart>(creator)
+    {
+        public override AnalysisTreeListNodeLine CreateNodeLine(
+            SymbolDisplayPart part, GroupedRunInlineCollection inlines)
+        {
+            var inline = CreateDisplayPartInline(part);
+            inlines.Add(inline);
+            var splitter = CreateLargeSplitterRun();
+            inlines.Add(splitter);
+            var kindRun = EnumRootAnalysisNodeCreator.EnumValueRun(part.Kind);
+            inlines.Add(kindRun);
+
+            return AnalysisTreeListNodeLine(
+                inlines,
+                Styles.DisplayPartsDisplay);
+        }
+
+        public override AnalysisNodeChildRetriever? GetChildRetriever(
+            SymbolDisplayPart value)
+        {
+            return null;
+        }
+
+        public static SingleRunInline CreateDisplayPartInline(SymbolDisplayPart part)
+        {
+            var brush = BrushForDisplayPart(part.Kind);
+            return new(new(part.ToString(), brush));
+        }
+
+        public static ILazilyUpdatedBrush BrushForDisplayPart(SymbolDisplayPartKind kind)
+        {
+            return kind switch
+            {
+                // TODO: Introduce a color for aliases
+                SymbolDisplayPartKind.AliasName => CommonStyles.RawValueBrush,
+                // TODO: Introduce a color for assemblies
+                SymbolDisplayPartKind.AssemblyName => CommonStyles.RawValueBrush,
+                SymbolDisplayPartKind.ClassName => ColorizationStyles.ClassBrush,
+                SymbolDisplayPartKind.DelegateName => ColorizationStyles.DelegateBrush,
+                SymbolDisplayPartKind.EnumName => ColorizationStyles.EnumFieldBrush,
+                // TODO: Introduce a color for error types
+                SymbolDisplayPartKind.ErrorTypeName => CommonStyles.RawValueBrush,
+                SymbolDisplayPartKind.EventName => ColorizationStyles.EventBrush,
+                SymbolDisplayPartKind.FieldName => ColorizationStyles.FieldBrush,
+                SymbolDisplayPartKind.InterfaceName => ColorizationStyles.InterfaceBrush,
+                SymbolDisplayPartKind.Keyword => ColorizationStyles.KeywordBrush,
+                SymbolDisplayPartKind.LabelName => ColorizationStyles.LabelBrush,
+                SymbolDisplayPartKind.LineBreak => CommonStyles.RawValueBrush,
+                SymbolDisplayPartKind.NumericLiteral => ColorizationStyles.NumericLiteralBrush,
+                SymbolDisplayPartKind.StringLiteral => ColorizationStyles.StringLiteralBrush,
+                SymbolDisplayPartKind.LocalName => ColorizationStyles.LocalBrush,
+                SymbolDisplayPartKind.MethodName => ColorizationStyles.MethodBrush,
+                SymbolDisplayPartKind.ModuleName => ColorizationStyles.ModuleBrush,
+                // TODO: Introduce a color for namespaces
+                SymbolDisplayPartKind.NamespaceName => CommonStyles.RawValueBrush,
+                SymbolDisplayPartKind.Operator => ColorizationStyles.MethodBrush,
+                SymbolDisplayPartKind.ParameterName => ColorizationStyles.ParameterBrush,
+                SymbolDisplayPartKind.PropertyName => ColorizationStyles.PropertyBrush,
+                SymbolDisplayPartKind.Punctuation => CommonStyles.RawValueBrush,
+                SymbolDisplayPartKind.Space => CommonStyles.RawValueBrush,
+                SymbolDisplayPartKind.StructName => ColorizationStyles.StructBrush,
+                SymbolDisplayPartKind.AnonymousTypeIndicator => CommonStyles.RawValueBrush,
+                SymbolDisplayPartKind.Text => CommonStyles.RawValueBrush,
+                SymbolDisplayPartKind.TypeParameterName => ColorizationStyles.TypeParameterBrush,
+                SymbolDisplayPartKind.RangeVariableName => ColorizationStyles.RangeVariableBrush,
+                SymbolDisplayPartKind.EnumMemberName => ColorizationStyles.EnumFieldBrush,
+                SymbolDisplayPartKind.ExtensionMethodName => ColorizationStyles.MethodBrush,
+                SymbolDisplayPartKind.ConstantName => ColorizationStyles.ConstantBrush,
+                // TODO: Introduce a color for record class types
+                SymbolDisplayPartKind.RecordClassName => ColorizationStyles.ClassBrush,
+                // TODO: Introduce a color for record struct types
+                SymbolDisplayPartKind.RecordStructName => ColorizationStyles.StructBrush,
+
+                _ => CommonStyles.RawValueBrush,
+            };
+        }
+    }
 }
 
 partial class SymbolAnalysisNodeCreator
@@ -931,10 +1083,13 @@ partial class SymbolAnalysisNodeCreator
         // 'Collection' was used instead of 'List' to avoid
         // the confusion of SL with [Separated]SyntaxList
         public const string SymbolCollection = "SC";
+
+        public const string DisplayParts = "P";
     }
 
     [SolidColor("Symbol", 0xFFA2D080)]
     [SolidColor("SymbolCollection", 0xFF4DCA85)]
+    [SolidColor("DisplayParts", 0xFF63A8A8)]
     public sealed partial class SymbolStyles
     {
         public NodeTypeDisplay SymbolDisplay
@@ -942,5 +1097,8 @@ partial class SymbolAnalysisNodeCreator
 
         public NodeTypeDisplay SymbolCollectionDisplay
             => new(Types.SymbolCollection, SymbolCollectionColor);
+
+        public NodeTypeDisplay DisplayPartsDisplay
+            => new(Types.DisplayParts, DisplayPartsColor);
     }
 }

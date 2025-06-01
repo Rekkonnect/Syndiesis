@@ -17,8 +17,8 @@ public partial class SyndiesisTitleBar : UserControl
     private Run _commitRun;
 
     private Window? WindowRoot => VisualRoot as Window;
-    private CancellationTokenFactory _pulseLineCancellationTokenFactory = new();
     private Run _titleRun;
+    private ReusableCancellableAnimation _pulseLineAnimation;
 
     public Bitmap LogoImage
     {
@@ -36,6 +36,7 @@ public partial class SyndiesisTitleBar : UserControl
         InitializeComponent();
         InitializeRuns();
         InitializeEvents();
+        InitializeAnimations();
     }
 
     private void InitializeEvents()
@@ -118,11 +119,22 @@ public partial class SyndiesisTitleBar : UserControl
 
     private void PulseCopiedLine()
     {
-        _pulseLineCancellationTokenFactory.Cancel();
-        var animation = Animations.CreateOpacityPulseAnimation(linePulseRectangle, 1, OpacityProperty);
+        _ = _pulseLineAnimation.RunAsync(linePulseRectangle);
+    }
+
+    [MemberNotNull(nameof(_pulseLineAnimation))]
+    private void InitializeAnimations()
+    {
+        _pulseLineAnimation = CreatePulseAnimation();
+    }
+
+    private ReusableCancellableAnimation CreatePulseAnimation()
+    {
+        var animation = Animations.CreatePropertyPulseAnimation(
+            linePulseRectangle, 1, OpacityProperty);
         animation.Duration = TimeSpan.FromMilliseconds(750);
         animation.Easing = Singleton<CubicEaseOut>.Instance;
-        _ = animation.RunAsync(linePulseRectangle, _pulseLineCancellationTokenFactory.CurrentToken);
+        return new(animation);
     }
 
     [MemberNotNull(nameof(_titleRun))]

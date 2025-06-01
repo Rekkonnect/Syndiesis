@@ -1,6 +1,10 @@
 ﻿namespace Syndiesis.ColorHelpers;
 
-public readonly record struct HslTransformation(double Alpha, double Hue, double Saturation, double Lightness)
+public readonly record struct HslTransformation(
+    double Alpha = 0,
+    double Hue = 0,
+    double Saturation = 0,
+    double Lightness = 0)
     : IColorTransformation<HslColor>
 {
     public HslColor Transform(HslColor color)

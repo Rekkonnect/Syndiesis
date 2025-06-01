@@ -1,4 +1,4 @@
-﻿namespace Syndiesis;
+﻿namespace Syndiesis.ColorHelpers;
 
 public interface ILazilyUpdatedBrush
 {

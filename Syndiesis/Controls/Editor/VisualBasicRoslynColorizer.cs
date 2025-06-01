@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.VisualBasic;
 using Microsoft.CodeAnalysis.VisualBasic.Syntax;
 using Syndiesis.Core;
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Syndiesis.Controls.Editor;
 
@@ -74,7 +75,8 @@ public sealed partial class VisualBasicRoslynColorizer(
         var startNode = root.DeepestNodeContainingPosition(offset)!;
         var endNode = root.DeepestNodeContainingPosition(endOffset)!;
 
-        var parent = CommonParent(startNode, endNode);
+        var parent = startNode.CommonParent(endNode);
+        AssertNonNullCommonParent(parent);
 
         var descendantTrivia = parent.DescendantTrivia(descendIntoTrivia: true);
 
@@ -228,7 +230,8 @@ public sealed partial class VisualBasicRoslynColorizer(
         var startNode = root.DeepestNodeContainingPosition(offset)!;
         var endNode = root.DeepestNodeContainingPosition(endOffset)!;
 
-        var parent = CommonParent(startNode, endNode);
+        var parent = startNode.CommonParent(endNode);
+        AssertNonNullCommonParent(parent);
 
         var lineSpan = TextSpan.FromBounds(offset, endOffset);
         var descendantIdentifiers = parent.DescendantTokens(lineSpan, descendIntoTrivia: true);
@@ -650,28 +653,16 @@ public sealed partial class VisualBasicRoslynColorizer(
         element.TextRunProperties.SetForegroundBrush(brush.Brush);
     }
 
-    private SyntaxNode CommonParent(SyntaxNode a, SyntaxNode b)
+    private static void AssertNonNullCommonParent(
+        [NotNull]
+        SyntaxNode? parent)
     {
-        var current = a;
-        var bSpan = b.Span;
-
-        while (true)
-        {
-            // a is always contained, since we traverse the ancestors of a
-            if (current.Span.Contains(bSpan))
-            {
-                return current;
-            }
-
-            var parent = current.Parent;
-            Debug.Assert(
-                parent is not null,
-                """
-                Our parent must always be non-null. We must have already found the right
-                node before we reach the parent.
-                """);
-            current = parent;
-        }
+        Debug.Assert(
+            parent is not null,
+            """
+            Our parent must always be non-null. We must have already found the right
+            node before we reach the parent.
+            """);
     }
 
     private sealed class DocumentLineDictionary<T>

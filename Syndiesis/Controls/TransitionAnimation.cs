@@ -21,14 +21,15 @@ public sealed class TransitionAnimation(Animation animation)
 
     private void ApplyFinalKeyFrame(Animatable control)
     {
+        var keyframes = _animation.Children;
+        if (keyframes is [])
+            return;
+
         // set the final cue's setters -- which will persist after the animation
-        var finalKeyFrame = _animation.Children.FirstOrDefault(s => s.Cue.CueValue is 1.0);
-        if (finalKeyFrame is not null)
+        var finalKeyFrame = _animation.Children.MaxBy(s => s.Cue.CueValue)!;
+        foreach (var setter in finalKeyFrame.Setters.OfType<Setter>())
         {
-            foreach (var setter in finalKeyFrame.Setters.OfType<Setter>())
-            {
-                setter.ApplySetter(control);
-            }
+            setter.ApplySetter(control);
         }
     }
 }

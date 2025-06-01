@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Garyon.Objects;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Syndiesis;
@@ -20,12 +21,12 @@ public static class AppSettingsSerialization
             IgnoreReadOnlyProperties = true,
             Converters =
             {
-                new AvaloniaColorJsonConverter(),
+                Singleton<AvaloniaColorJsonConverter>.Instance,
             }
         };
     }
 
-    public class AvaloniaColorJsonConverter : JsonConverter<Color>
+    private sealed class AvaloniaColorJsonConverter : JsonConverter<Color>
     {
         public override Color Read(
             ref Utf8JsonReader reader,
@@ -34,7 +35,7 @@ public static class AppSettingsSerialization
         {
             if (reader.TokenType is not JsonTokenType.String)
                 return default;
-            return Avalonia.Media.Color.Parse(reader.GetString()!);
+            return Color.Parse(reader.GetString()!);
         }
 
         public override void Write(

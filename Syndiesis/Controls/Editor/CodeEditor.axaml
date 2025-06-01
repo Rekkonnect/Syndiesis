@@ -33,7 +33,8 @@
           HorizontalScrollBarVisibility="Hidden"
           VerticalScrollBarVisibility="Hidden"
           FontFamily="{StaticResource FiraCodeFontFamily}"
-        />
+          FontSize="12"
+          />
 
         <StackPanel
           Name="diagnosticsUnavailableDisplay"
