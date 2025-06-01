@@ -452,6 +452,15 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
 
     private Action<VisualLineElement>? GetColorizer(SymbolInfo symbolInfo)
     {
+        bool isCandidateMethod = symbolInfo.CandidateReason
+            is CandidateReason.MemberGroup
+            or CandidateReason.OverloadResolutionFailure
+            ;
+        if (isCandidateMethod)
+        {
+            return GetColorizer(SymbolKind.Method);
+        }
+
         var symbol = symbolInfo.Symbol;
         if (symbol is null)
             return null;
