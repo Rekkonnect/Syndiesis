@@ -167,41 +167,27 @@ public partial class UpdateProgressBar : UserControl
                 var currentOffset = -(fullLoopRatio * (1 - cue));
                 for (int i = 0; i < loops; i++)
                 {
-                    stops.Add(
-                        new()
-                        {
-                            Color = Color1,
-                            Offset = currentOffset,
-                        });
-
+                    AddWithColor(Color1);
                     currentOffset += ColorGradientRatio;
 
-                    stops.Add(
-                        new()
-                        {
-                            Color = Color2,
-                            Offset = currentOffset,
-                        });
-
+                    AddWithColor(Color2);
                     currentOffset += ColorHoldRatio;
 
-                    stops.Add(
-                        new()
-                        {
-                            Color = Color2,
-                            Offset = currentOffset,
-                        });
-
+                    AddWithColor(Color2);
                     currentOffset += ColorGradientRatio;
 
-                    stops.Add(
-                        new()
-                        {
-                            Color = Color1,
-                            Offset = currentOffset,
-                        });
-
+                    AddWithColor(Color1);
                     currentOffset += ColorHoldRatio;
+
+                    void AddWithColor(Color color)
+                    {
+                        stops.Add(
+                            new()
+                            {
+                                Color = color,
+                                Offset = currentOffset,
+                            });
+                    }
                 }
 
                 return stops;
