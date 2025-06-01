@@ -1,6 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Media;
-using AvaloniaEdit.Document;
+﻿using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
 using Microsoft.CodeAnalysis;
 using Syndiesis.ColorHelpers;

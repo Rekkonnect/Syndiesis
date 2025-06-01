@@ -1,6 +1,5 @@
 ﻿using Avalonia.Controls.Documents;
 using Syndiesis.Core.DisplayAnalysis;
-using System;
 
 namespace Syndiesis.Controls.Inlines;
 

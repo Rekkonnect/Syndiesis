@@ -1,6 +1,3 @@
-using Avalonia;
-using Avalonia.Controls;
-
 namespace Syndiesis.Controls.AnalysisVisualization;
 
 public partial class VisualExpandToggle : UserControl

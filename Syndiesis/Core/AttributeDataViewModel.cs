@@ -2,7 +2,6 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.VisualBasic;
 using System.Collections.Immutable;
-using System.Threading;
 
 namespace Syndiesis.Core;
 

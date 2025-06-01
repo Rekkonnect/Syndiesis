@@ -1,0 +1,51 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="350"
+  x:Class="Syndiesis.Controls.PopupDisplayContainer"
+  >
+
+  <Grid
+    Name="outerGrid"
+    >
+    <Border
+      Name="backgroundBorder"
+      IsHitTestVisible="false"
+      Background="Black"
+      Opacity="0"
+      VerticalAlignment="Stretch"
+      HorizontalAlignment="Stretch"
+      >
+
+      <Border.Transitions>
+        <Transitions>
+          <DoubleTransition
+            Property="Opacity"
+            Duration="0:0:0.250"
+            Easing="ExponentialEaseOut"
+          />
+        </Transitions>
+      </Border.Transitions>
+
+    </Border>
+
+    <Grid
+      Name="popupContainer"
+      VerticalAlignment="Center"
+      HorizontalAlignment="Center"
+      >
+      <Grid.Effect>
+        <DropShadowEffect
+          OffsetX="0"
+          OffsetY="0"
+          BlurRadius="50"
+          Color="Black"
+          />
+      </Grid.Effect>
+    </Grid>
+
+  </Grid>
+  
+</UserControl>

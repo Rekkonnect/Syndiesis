@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Syndiesis.Core;
+﻿namespace Syndiesis.Core;
 
 public static class CollectionExtensions
 {

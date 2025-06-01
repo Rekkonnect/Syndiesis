@@ -12,20 +12,35 @@ public sealed class CSharpPropertyCommonInlinesCreator(
         return ColorizationStyles.PropertyBrush;
     }
 
-    protected override GroupedRunInline.IBuilder CreateSymbolInlineCore(IPropertySymbol symbol)
-    {
-        if (symbol.IsIndexer)
-        {
-            return CreateIndexerSymbolInline(symbol);
-        }
-
-        return base.CreateSymbolInlineCore(symbol);
-    }
-
-    private GroupedRunInline.IBuilder CreateIndexerSymbolInline(IPropertySymbol property)
+    protected override ComplexGroupedRunInline.Builder CreateSymbolInlineCore(IPropertySymbol symbol)
     {
         var inlines = new ComplexGroupedRunInline.Builder();
+        CreateNameDisplayInlines(symbol, inlines);
+        return inlines;
+    }
 
+    private void CreateNameDisplayInlines(
+        IPropertySymbol property, ComplexGroupedRunInline.Builder inlines)
+    {
+        if (property.IsIndexer)
+        {
+            CreateIndexerSymbolInline(property, inlines);
+            return;
+        }
+
+        CreateOrdinaryPropertyNameInlines(property, inlines);
+    }
+
+    private void CreateOrdinaryPropertyNameInlines(
+        IPropertySymbol property, ComplexGroupedRunInline.Builder inlines)
+    {
+        var single = SingleRun(property.Name, GetBrush(property));
+        inlines.Add(single);
+    }
+
+    private void CreateIndexerSymbolInline(
+        IPropertySymbol property, ComplexGroupedRunInline.Builder inlines)
+    {
         var thisInline = KeywordRun("this");
         inlines.AddChild(thisInline);
         var openRun = Run("[", CommonStyles.RawValueBrush);
@@ -34,7 +49,5 @@ public sealed class CSharpPropertyCommonInlinesCreator(
         inlines.AddNonNullChild(parameters);
         var closeRun = Run("]", CommonStyles.RawValueBrush);
         inlines.AddChild(closeRun);
-
-        return inlines;
     }
 }

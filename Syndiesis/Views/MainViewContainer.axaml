@@ -1,0 +1,63 @@
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d" d:DesignWidth="1450" d:DesignHeight="850"
+  x:Class="Syndiesis.Views.MainViewContainer"
+  xmlns:controls="using:Syndiesis.Controls"
+  xmlns:toast="using:Syndiesis.Controls.Toast"
+  xmlns:updating="using:Syndiesis.Controls.Updating"
+  >
+
+  <UserControl.Styles>
+    <Style Selector="Button">
+      <Setter Property="FontFamily" Value="{StaticResource AptosFontFamily}" />
+      <Setter Property="FontSize" Value="16" />
+      <Setter Property="Cursor" Value="Hand" />
+    </Style>
+  </UserControl.Styles>
+
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <ResourceInclude Source="avares://Syndiesis/Styles/ButtonStyles.axaml"/>
+        <ResourceInclude Source="avares://Syndiesis/Styles/CheckBoxStyles.axaml"/>
+        <ResourceInclude Source="avares://Syndiesis/Styles/SliderStyles.axaml"/>
+        <ResourceInclude Source="avares://Syndiesis/Controls/Editor/SyndiesisTextEditor.axaml"/>
+        <ResourceInclude Source="avares://Syndiesis/Controls/Editor/SyndiesisTextArea.axaml"/>
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
+
+  <Panel>
+    
+    <DockPanel>
+
+      <controls:SyndiesisTitleBar
+        Name="TitleBar"
+      />
+
+      <Panel
+      >
+        <controls:TransitioningMainPage
+          Name="pageTransition"
+        >
+          <controls:TransitioningMainPage.PageTransition>
+            <controls:DrillTransition Duration="00:00:00.400" />
+          </controls:TransitioningMainPage.PageTransition>
+        </controls:TransitioningMainPage>
+
+        <toast:ToastNotificationContainer
+          Name="ToastNotificationContainer"
+        />
+
+        <controls:PopupDisplayContainer
+          Name="popupContainer"
+        />
+      </Panel>
+
+    </DockPanel>
+
+  </Panel>
+</UserControl>

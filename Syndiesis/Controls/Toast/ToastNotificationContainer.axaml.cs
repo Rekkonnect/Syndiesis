@@ -1,10 +1,6 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Input;
 using Garyon.Objects;
 using Syndiesis.Views;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.Toast;
 
@@ -45,9 +41,9 @@ public partial class ToastNotificationContainer : UserControl
         _cancellationTokenFactory.Cancel();
     }
 
-    public static ToastNotificationContainer? GetFromMainWindowTopLevel(Visual visual)
+    public static ToastNotificationContainer? GetFromOuterMainViewContainer(Visual visual)
     {
         var top = TopLevel.GetTopLevel(visual) as MainWindow;
-        return top?.ToastNotificationContainer;
+        return top?.mainView.ToastNotificationContainer;
     }
 }

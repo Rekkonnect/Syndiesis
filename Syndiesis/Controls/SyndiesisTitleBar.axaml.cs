@@ -1,16 +1,12 @@
-using Avalonia;
 using Avalonia.Animation.Easings;
-using Avalonia.Controls;
 using Avalonia.Controls.Documents;
 using Avalonia.Input;
-using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Controls.Toast;
 using Syndiesis.Utilities;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Syndiesis.Controls;
@@ -106,7 +102,7 @@ public partial class SyndiesisTitleBar : UserControl
             .ConfigureAwait(false);
         PulseCopiedLine();
 
-        var toastContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
+        var toastContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
         if (toastContainer is not null)
         {
             var popupContent = $"""
@@ -136,7 +132,7 @@ public partial class SyndiesisTitleBar : UserControl
     {
         var infoVersion = App.Current.AppInfo.InformationalVersion;
         var version = infoVersion.Version;
-        var sha = infoVersion.CommitSha?[..7];
+        var sha = infoVersion.CommitSha?.Short;
 
         var groups = new RunOrGrouped[]
         {

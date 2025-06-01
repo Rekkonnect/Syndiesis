@@ -1,15 +1,7 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Controls.AnalysisVisualization;
 

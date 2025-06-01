@@ -7,10 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Operations;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Core;
-using System;
 using System.Collections.Concurrent;
-using System.Diagnostics;
-using System.Threading;
 
 namespace Syndiesis.Controls.Editor;
 
@@ -269,19 +266,12 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
             var identifierParent = identifier.Parent!;
             var symbolInfo = model.GetSymbolInfo(identifierParent, cancellationToken);
 
-            bool isVar = IsVar(identifier, symbolInfo);
-            if (isVar)
+            bool isContextualKeyword = IsContextualIdentifierKeyword(
+                identifier, symbolInfo, model);
+            if (isContextualKeyword)
             {
-                var varColorizer = GetTokenColorizer(SyntaxKind.VarKeyword);
-                ColorizeSpan(line, identifier.Span, varColorizer);
-                continue;
-            }
-
-            bool isNameOf = IsNameOf(identifier, symbolInfo, model);
-            if (isNameOf)
-            {
-                var nameofColorizer = GetTokenColorizer(SyntaxKind.NameOfKeyword);
-                ColorizeSpan(line, identifier.Span, nameofColorizer);
+                var tokenColorizer = ColorizerForBrush(Styles.KeywordBrush);
+                ColorizeSpan(line, identifier.Span, tokenColorizer);
                 continue;
             }
 
@@ -381,9 +371,10 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
         SymbolInfo symbolInfo,
         SemanticModel semanticModel)
     {
+        const string identifier = "nameof";
         bool basic = token.Kind() is SyntaxKind.IdentifierToken
-            && token.Text is "nameof"
-            && symbolInfo.Symbol is not IMethodSymbol { Name: "nameof" };
+            && token.Text is identifier
+            && symbolInfo.Symbol is not IMethodSymbol { Name: identifier };
 
         if (!basic)
             return false;
@@ -398,9 +389,61 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
 
     private bool IsVar(SyntaxToken token, SymbolInfo symbolInfo)
     {
-        return token.Kind() is SyntaxKind.IdentifierToken
-            && token.Text is "var"
-            && symbolInfo.Symbol is not INamedTypeSymbol { Name: "var" };
+        const string identifier = "var";
+        bool basic = token.Kind() is SyntaxKind.IdentifierToken
+            && token.Text is identifier
+            && symbolInfo.Symbol is not INamedTypeSymbol { Name: identifier };
+
+        if (!basic)
+            return false;
+
+        var doubleParent = token.Parent!.Parent;
+        if (doubleParent is null)
+            return false;
+
+        switch (doubleParent)
+        {
+            case VariableDeclarationSyntax variable
+            when variable.Type.Span == token.Span:
+                return true;
+
+            case RefTypeSyntax refType
+            when refType.Type.Span == token.Span:
+                return true;
+
+            case DeclarationExpressionSyntax declarationExpression
+            when declarationExpression.Type.Span == token.Span:
+                return true;
+        }
+
+        return false;
+    }
+
+    private bool IsNotNull(SyntaxToken token, SymbolInfo symbolInfo)
+    {
+        const string identifier = "notnull";
+        bool basic = token.Kind() is SyntaxKind.IdentifierToken
+            && token.Text is identifier
+            && symbolInfo.Symbol is not INamedTypeSymbol { Name: identifier };
+
+        if (!basic)
+            return false;
+
+        var doubleParent = token.Parent!.Parent;
+        if (doubleParent is null)
+            return false;
+
+        return doubleParent is TypeConstraintSyntax typeConstraint
+            && typeConstraint.Type.Span == token.Span;
+    }
+
+    private bool IsContextualIdentifierKeyword(
+        SyntaxToken token, SymbolInfo symbolInfo, SemanticModel model)
+    {
+        return IsVar(token, symbolInfo)
+            || IsNameOf(token, symbolInfo, model)
+            || IsNotNull(token, symbolInfo)
+            ;
     }
 
     private Action<VisualLineElement>? GetColorizer(SymbolInfo symbolInfo)
@@ -720,6 +763,10 @@ public sealed partial class CSharpRoslynColorizer(CSharpSingleTreeCompilationSou
 
             case FromClauseSyntax fromClause
             when fromClause.Identifier.Span == token.Span:
+                return SymbolKind.RangeVariable;
+
+            case JoinClauseSyntax joinClause
+            when joinClause.Identifier.Span == token.Span:
                 return SymbolKind.RangeVariable;
 
             case LetClauseSyntax letClause

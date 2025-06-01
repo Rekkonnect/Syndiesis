@@ -1,5 +1,4 @@
-﻿using Avalonia.Media;
-using AvaloniaEdit.Document;
+﻿using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Rendering;
 using Microsoft.CodeAnalysis.Text;

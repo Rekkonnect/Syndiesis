@@ -1,10 +1,7 @@
-using Avalonia;
-using Avalonia.Controls;
 using Garyon.Functions;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Core;
 using System.Collections.Immutable;
-using System.Linq;
 using CodeAnalysisLocation = Microsoft.CodeAnalysis.Location;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;

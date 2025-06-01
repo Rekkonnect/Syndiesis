@@ -1,7 +1,4 @@
-﻿using Avalonia.Media;
-using Avalonia.Threading;
-
-namespace Syndiesis.ColorHelpers;
+﻿namespace Syndiesis.ColorHelpers;
 
 public abstract class LazilyUpdatedTransformedSolidBrush<TColorTransformation, TColor>(
     ILazilyUpdatedSolidBrush mainSolid,

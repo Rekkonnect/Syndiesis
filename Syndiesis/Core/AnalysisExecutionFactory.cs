@@ -1,5 +1,4 @@
 ﻿using Syndiesis.Controls.AnalysisVisualization;
-using System;
 
 namespace Syndiesis.Core;
 

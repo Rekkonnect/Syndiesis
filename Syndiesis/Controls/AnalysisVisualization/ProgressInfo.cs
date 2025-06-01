@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Syndiesis.Controls.AnalysisVisualization;
+﻿namespace Syndiesis.Controls.AnalysisVisualization;
 
 public readonly record struct ProgressInfo(int Value, int Maximum)
 {

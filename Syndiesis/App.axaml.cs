@@ -1,12 +1,12 @@
-using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Serilog;
 using Serilog.Events;
+using Syndiesis.Updating;
 using Syndiesis.Utilities;
 using Syndiesis.Views;
-using System;
 using System.Reflection;
 
 namespace Syndiesis;
@@ -38,6 +38,11 @@ public partial class App : Application
 
     public override void Initialize()
     {
+        // Force initialize app settings on the UI thread to avoid troubles
+        // with extra invocation handling when initializing instances from
+        // de-/serializations or first-time accesses. Deadlocks are very
+        // common to encounter when incorrectly using UI thread dispatches
+        _ = AppSettings.Instance;
         AvaloniaXamlLoader.Load(this);
         ResourceManager = new(this);
         AppInfo = CreateAppInfo();
@@ -64,40 +69,46 @@ public partial class App : Application
     private static void SetupGeneral()
     {
         SetupSerilog();
-        AppSettings.TryLoad();
+        Task.Run(SetupGeneralAsync);
+    }
+
+    private static async Task SetupGeneralAsync()
+    {
+        await AppSettings.TryLoad();
+        await CheckUpdates();
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
         if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            SetupDesktop(desktop);
+            SetupDesktopLifetime(desktop);
         }
 
         if (ApplicationLifetime is ISingleViewApplicationLifetime single)
         {
-            SetupSingleView(single);
+            SetupSingleViewLifetime(single);
         }
 
         if (ApplicationLifetime is IControlledApplicationLifetime controlled)
         {
-            SetupControlled(controlled);
+            SetupControlledLifetime(controlled);
         }
 
         base.OnFrameworkInitializationCompleted();
     }
 
-    private void SetupDesktop(IClassicDesktopStyleApplicationLifetime desktop)
+    private void SetupDesktopLifetime(IClassicDesktopStyleApplicationLifetime desktop)
     {
         desktop.MainWindow = new MainWindow();
     }
 
-    private void SetupSingleView(ISingleViewApplicationLifetime single)
+    private void SetupSingleViewLifetime(ISingleViewApplicationLifetime single)
     {
         single.MainView = new MainView();
     }
 
-    private void SetupControlled(IControlledApplicationLifetime controlled)
+    private void SetupControlledLifetime(IControlledApplicationLifetime controlled)
     {
         SetupSerilog(controlled);
         controlled.Exit += HandleControlledLifetimeExit;
@@ -106,7 +117,7 @@ public partial class App : Application
     private void HandleControlledLifetimeExit(
         object? sender, ControlledApplicationLifetimeExitEventArgs e)
     {
-        AppSettings.TrySave();
+        Task.Run(() => AppSettings.TrySave());
     }
 
     private void SetupSerilog(IControlledApplicationLifetime lifetime)
@@ -133,5 +144,13 @@ public partial class App : Application
     private static void LogApplicationExit(object? sender, EventArgs e)
     {
         LoggerExtensionsEx.LogMethodInvocation(nameof(LogApplicationExit));
+    }
+
+    private static async Task CheckUpdates()
+    {
+        if (AppSettings.Instance.UpdateOptions.AutoCheckUpdates)
+        {
+            await Singleton<UpdateManager>.Instance.CheckForUpdates();
+        }
     }
 }

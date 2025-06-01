@@ -1,7 +1,4 @@
-﻿using Avalonia.Threading;
-using Syndiesis.Controls;
-
-namespace Syndiesis.Core.DisplayAnalysis;
+﻿namespace Syndiesis.Core.DisplayAnalysis;
 
 public sealed class StylePreferences
 {
@@ -14,7 +11,7 @@ public sealed class StylePreferences
 
     public StylePreferences()
     {
-        Dispatcher.UIThread.ExecuteOrDispatch(Initialize);
+        Initialize();
 
         void Initialize()
         {

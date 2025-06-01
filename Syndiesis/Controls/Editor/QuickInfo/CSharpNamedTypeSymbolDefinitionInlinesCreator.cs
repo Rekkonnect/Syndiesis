@@ -9,6 +9,39 @@ public sealed class CSharpNamedTypeSymbolDefinitionInlinesCreator(
 {
     public override GroupedRunInline.IBuilder CreateSymbolInline(INamedTypeSymbol symbol)
     {
+        if (symbol.IsExtension)
+        {
+            return CreateExtensionTypeInlines(symbol);
+        }
+
+        return CreateOrdinaryTypeInlines(symbol);
+    }
+
+    private ComplexGroupedRunInline.Builder CreateExtensionTypeInlines(INamedTypeSymbol symbol)
+    {
+        var inlines = new ComplexGroupedRunInline.Builder();
+        AddKeywordRun("extension", inlines);
+        var container = (CSharpSymbolCommonInlinesCreatorContainer)ParentContainer.RootContainer.Commons;
+        container.AliasSimplifiedTypeCreator.AddTypeArgumentInlines(inlines, symbol.TypeArguments);
+
+        var rawBrush = CommonStyles.RawValueBrush;
+        inlines.Add(Run("(", rawBrush));
+
+        var parameter = symbol.ExtensionParameter;
+        if (parameter is not null)
+        {
+            var parameterInline = ParentContainer.CreatorForSymbol(parameter)
+                .CreateSymbolInline(parameter);
+            inlines.Add(parameterInline.AsRunOrGrouped);
+        }
+
+        inlines.Add(Run(")", rawBrush));
+
+        return inlines;
+    }
+
+    private ComplexGroupedRunInline.Builder CreateOrdinaryTypeInlines(INamedTypeSymbol symbol)
+    {
         var inlines = new ComplexGroupedRunInline.Builder();
 
         if (symbol.IsRecord)

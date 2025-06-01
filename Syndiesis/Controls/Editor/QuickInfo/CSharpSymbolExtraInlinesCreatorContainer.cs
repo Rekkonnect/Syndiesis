@@ -7,6 +7,7 @@ public sealed class CSharpSymbolExtraInlinesCreatorContainer
 {
     private readonly CSharpTypeSymbolExtraInlinesCreator _typeSymbolTypeParameters;
     private readonly CSharpMethodSymbolExtraInlinesCreator _methodSymbolTypeParameters;
+    private readonly CSharpTypeParameterSymbolExtraInlinesCreator _typeParameters;
 
     public CSharpSymbolExtraInlinesCreatorContainer(
         ISymbolInlinesRootCreatorContainer rootContainer)
@@ -14,6 +15,7 @@ public sealed class CSharpSymbolExtraInlinesCreatorContainer
     {
         _typeSymbolTypeParameters = new(this);
         _methodSymbolTypeParameters = new(this);
+        _typeParameters = new(this);
     }
 
     protected override ISymbolItemInlinesCreator? FallbackCreatorForSymbol<TSymbol>(TSymbol symbol)
@@ -25,6 +27,9 @@ public sealed class CSharpSymbolExtraInlinesCreatorContainer
 
             case IMethodSymbol { Arity: > 0 }:
                 return _methodSymbolTypeParameters;
+
+            case ITypeParameterSymbol:
+                return _typeParameters;
 
             default:
                 return null;

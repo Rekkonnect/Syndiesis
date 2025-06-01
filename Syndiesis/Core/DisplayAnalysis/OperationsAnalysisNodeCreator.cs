@@ -1,12 +1,7 @@
-﻿using Avalonia.Media;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 

@@ -1,7 +1,4 @@
-﻿using Avalonia;
-using System;
-
-namespace Syndiesis;
+﻿namespace Syndiesis;
 
 internal class Program
 {

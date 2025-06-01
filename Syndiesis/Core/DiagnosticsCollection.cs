@@ -2,9 +2,7 @@
 using Jamarino.IntervalTree;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Syndiesis.Core;
 

@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-
-namespace Syndiesis.Controls.AnalysisVisualization;
+﻿namespace Syndiesis.Controls.AnalysisVisualization;
 
 public sealed class ParentNodeDetailsSection : NodeDetailsSection
 {

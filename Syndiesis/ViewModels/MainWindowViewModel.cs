@@ -10,4 +10,6 @@ public class MainWindowViewModel : ViewModelBase
     public readonly HybridSingleTreeCompilationSource HybridCompilationSource = new();
 
     public ISingleTreeCompilationSource CompilationSource => HybridCompilationSource.CurrentSource;
+
+    public string CurrentLanguage => CompilationSource.LanguageName;
 }

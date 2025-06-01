@@ -1,7 +1,6 @@
 ﻿using Avalonia.Collections;
 using Avalonia.Controls.Documents;
 using Syndiesis.Core.DisplayAnalysis;
-using System.Collections.Generic;
 
 namespace Syndiesis.Controls.Inlines;
 

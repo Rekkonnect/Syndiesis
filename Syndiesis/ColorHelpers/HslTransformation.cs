@@ -1,6 +1,4 @@
-﻿using Avalonia.Media;
-
-namespace Syndiesis.ColorHelpers;
+﻿namespace Syndiesis.ColorHelpers;
 
 public readonly record struct HslTransformation(double Alpha, double Hue, double Saturation, double Lightness)
     : IColorTransformation<HslColor>

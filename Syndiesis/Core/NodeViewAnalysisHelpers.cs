@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using System.Diagnostics.Contracts;
-using System.Linq;
 
 namespace Syndiesis.Core;
 

@@ -18,9 +18,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
-  <PropertyGroup
-    Label="Publish"
-    Condition="'$(Configuration)'=='Release'">
+  <PropertyGroup Label="Publish" Condition="'$(Configuration)'=='Release'">
     <RuntimeIdentifiers>win-x64;win-arm64;osx-x64;osx-arm64;linux-x64;linux-arm64</RuntimeIdentifiers>
     <PublishReadyToRun>true</PublishReadyToRun>
     <TrimMode>link</TrimMode>
@@ -68,6 +66,7 @@
     <PackageReference Include="Dentextist" Version="1.0.1" GeneratePathProperty="true" />
     <PackageReference Include="RoseLynn.VS2019" Version="0.6.4.1" GeneratePathProperty="true" />
     <PackageReference Include="RoseLynn.Generators" Version="0.6.4.1" GeneratePathProperty="true" />
+    <PackageReference Include="Updatum" Version="1.1.2" />
   </ItemGroup>
 
   <ItemGroup>

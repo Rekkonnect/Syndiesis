@@ -1,9 +1,6 @@
 ﻿using Avalonia.Controls.Documents;
-using Avalonia.Media;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
-using System;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 

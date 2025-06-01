@@ -1,6 +1,3 @@
-using Avalonia.Controls;
-using Avalonia.Media;
-
 namespace Syndiesis.Controls;
 
 public partial class UserInteractionCover : UserControl

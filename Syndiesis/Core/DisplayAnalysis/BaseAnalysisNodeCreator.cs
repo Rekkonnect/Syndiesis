@@ -1,5 +1,4 @@
-﻿using Avalonia.Media;
-using Garyon.Extensions;
+﻿using Garyon.Extensions;
 using Garyon.Reflection;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Controls;
@@ -7,15 +6,9 @@ using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
 using Syndiesis.Utilities;
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -1337,7 +1330,10 @@ partial class BaseAnalysisNodeCreator
             var isKvp = genericDeclaration == typeof(KeyValuePair<,>);
             if (isKvp)
             {
-                return KvpValueInline(value as dynamic);
+                // Required since the invocation contains a dynamic argument
+                // causing the invocation's result to also be dynamic
+                RunOrGrouped inline = KvpValueInline(value as dynamic);
+                return inline;
             }
 
             var isOptional = genericDeclaration == typeof(Optional<>);
@@ -1378,7 +1374,7 @@ partial class BaseAnalysisNodeCreator
             return BasicValueInline(value);
         }
 
-        private GroupedRunInline KvpValueInline<TKey, TValue>(KeyValuePair<TKey, TValue> kvp)
+        private ComplexGroupedRunInline KvpValueInline<TKey, TValue>(KeyValuePair<TKey, TValue> kvp)
         {
             var key = kvp.Key;
             var value = kvp.Value;

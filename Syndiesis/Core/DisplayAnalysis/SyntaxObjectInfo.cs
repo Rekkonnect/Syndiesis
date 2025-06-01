@@ -2,9 +2,6 @@
 using Microsoft.CodeAnalysis.Text;
 using RoseLynn.CSharp;
 using Syndiesis.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 

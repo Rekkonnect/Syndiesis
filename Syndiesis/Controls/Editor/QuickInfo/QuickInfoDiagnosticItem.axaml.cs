@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using Microsoft.CodeAnalysis;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;

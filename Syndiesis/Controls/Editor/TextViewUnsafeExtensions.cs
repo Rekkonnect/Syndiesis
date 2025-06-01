@@ -1,7 +1,6 @@
 ﻿using Avalonia.Controls.Primitives;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Rendering;
-using System;
 using System.Reflection;
 
 namespace Syndiesis.Controls.Editor;

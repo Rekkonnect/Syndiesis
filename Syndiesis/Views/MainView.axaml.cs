@@ -1,8 +1,4 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Threading;
 using AvaloniaEdit;
 using Garyon.Objects;
 using Microsoft.CodeAnalysis;
@@ -14,12 +10,8 @@ using Syndiesis.Controls.Toast;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
 using Syndiesis.ViewModels;
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Views;
 
@@ -32,6 +24,7 @@ public partial class MainView : UserControl
     public readonly MainWindowViewModel ViewModel = new();
 
     public event Action? SettingsRequested;
+    public event Action? LanguageChanged;
 
     public MainView()
     {
@@ -398,8 +391,7 @@ public partial class MainView : UserControl
 
     private void GitHubClick()
     {
-        const string githubLink = "https://github.com/Rekkonnect/Syndiesis";
-        ProcessUtilities.OpenUrl(githubLink)
+        ProcessUtilities.OpenUrl(KnownConstants.GitHubLink)
             .AwaitProcessInitialized();
     }
 
@@ -620,7 +612,7 @@ public partial class MainView : UserControl
     public void Reset()
     {
         LoggerExtensionsEx.LogMethodInvocation(nameof(Reset));
-        var name = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        var name = ViewModel.CurrentLanguage;
         ResetToLanguage(name);
     }
 
@@ -638,11 +630,13 @@ public partial class MainView : UserControl
 
         SetSource(defaultCode);
         codeEditor.DiagnosticsEnabled = AppSettings.Instance.DiagnosticsEnabled;
+
+        LanguageChanged?.Invoke();
     }
 
     public string ToggleLanguage()
     {
-        var current = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        var current = ViewModel.CurrentLanguage;
         var toggled = ToggleLanguageName(current);
         ResetToLanguage(toggled);
         return toggled;
@@ -653,13 +647,13 @@ public partial class MainView : UserControl
         ViewModel.HybridCompilationSource.SetLanguageVersion(version);
 
         var newLanguageName = version.LanguageName;
-        var currentLanguageName = ViewModel.HybridCompilationSource.CurrentLanguageName;
+        var CurrentLanguage = ViewModel.CurrentLanguage;
         Dispatcher.UIThread.InvokeAsync(() =>
-            SetNewLanguage(newLanguageName, currentLanguageName));
+            SetNewLanguage(newLanguageName, CurrentLanguage));
 
-        void SetNewLanguage(string newLanguageName, string currentLanguageName)
+        void SetNewLanguage(string newLanguageName, string CurrentLanguage)
         {
-            if (newLanguageName != currentLanguageName)
+            if (newLanguageName != CurrentLanguage)
             {
                 ResetToLanguage(newLanguageName);
             }
@@ -709,7 +703,7 @@ public partial class MainView : UserControl
 
     private void ShowResetSettingsPopup()
     {
-        var notificationContainer = ToastNotificationContainer.GetFromMainWindowTopLevel(this);
+        var notificationContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
         _ = CommonToastNotifications.ShowClassicMain(
             notificationContainer,
             "Reverted settings to current file state",

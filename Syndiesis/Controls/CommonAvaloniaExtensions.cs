@@ -1,15 +1,8 @@
-﻿using Avalonia;
-using Avalonia.Collections;
-using Avalonia.Controls;
+﻿using Avalonia.Collections;
 using Avalonia.Input;
 using Avalonia.Input.Platform;
 using Avalonia.Reactive;
 using Avalonia.Styling;
-using Avalonia.Threading;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Controls;
 
@@ -63,23 +56,6 @@ public static partial class CommonAvaloniaExtensions
 // Components
 public static partial class CommonAvaloniaExtensions
 {
-    public static Thickness WithLeft(this Thickness thickness, double left)
-    {
-        return new(left, thickness.Top, thickness.Right, thickness.Bottom);
-    }
-    public static Thickness WithRight(this Thickness thickness, double right)
-    {
-        return new(thickness.Left, thickness.Top, right, thickness.Bottom);
-    }
-    public static Thickness WithTop(this Thickness thickness, double top)
-    {
-        return new(thickness.Left, top, thickness.Right, thickness.Bottom);
-    }
-    public static Thickness WithBottom(this Thickness thickness, double bottom)
-    {
-        return new(thickness.Left, thickness.Top, thickness.Right, bottom);
-    }
-
     public static Rect WithZeroOffset(this Rect rect)
     {
         return new(0, 0, rect.Width, rect.Height);

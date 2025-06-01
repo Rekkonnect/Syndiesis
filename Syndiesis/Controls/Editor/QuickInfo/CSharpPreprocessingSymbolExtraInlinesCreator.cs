@@ -3,7 +3,6 @@ using Serilog;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.Core;
 using Syndiesis.Core.DisplayAnalysis;
-using System.Diagnostics;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
@@ -21,8 +20,7 @@ public sealed class CommonPreprocessingSymbolExtraInlinesCreator(
 {
     public override GroupedRunInline.IBuilder CreateSymbolInline(IPreprocessingSymbol symbol)
     {
-        throw new UnreachableException(
-            @"<seealso href=""https://en.wikipedia.org/wiki/Liskov_substitution_principle"" />");
+        throw new UnreachableException(ExceptionReasons.Liskov);
     }
 
     protected override void CreateWithHoverContext(

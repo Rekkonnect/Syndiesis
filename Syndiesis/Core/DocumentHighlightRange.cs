@@ -1,6 +1,4 @@
-﻿using Avalonia.Media;
-
-namespace Syndiesis.Core;
+﻿namespace Syndiesis.Core;
 
 /// <summary>
 /// Represents a highlighting range within a document.

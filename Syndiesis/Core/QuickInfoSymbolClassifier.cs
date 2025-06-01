@@ -22,7 +22,7 @@ public static class QuickInfoSymbolClassifier
                 return QuickInfoSymbolClassification.Assembly;
             case IModuleSymbol:
                 return QuickInfoSymbolClassification.Module;
-            
+
             case INamedTypeSymbol named:
                 switch (named.TypeKind)
                 {
@@ -40,14 +40,16 @@ public static class QuickInfoSymbolClassifier
                         return QuickInfoSymbolClassification.Error;
                     case TypeKind.Dynamic:
                         return QuickInfoSymbolClassification.Dynamic;
+                    case TypeKind.Extension:
+                        return QuickInfoSymbolClassification.Extension;
                 }
 
                 break;
-            
+
             case IArrayTypeSymbol:
                 return QuickInfoSymbolClassification.Array;
             case IPointerTypeSymbol:
-                return QuickInfoSymbolClassification.Pointer; 
+                return QuickInfoSymbolClassification.Pointer;
             case IFunctionPointerTypeSymbol:
                 return QuickInfoSymbolClassification.FunctionPointer;
 
@@ -57,11 +59,11 @@ public static class QuickInfoSymbolClassifier
                 return QuickInfoSymbolClassification.Field;
             case IPropertySymbol:
                 return QuickInfoSymbolClassification.Property;
-            
+
             case IMethodSymbol method:
                 if (method.IsOperator())
                     return QuickInfoSymbolClassification.Operator;
-                
+
                 if (method.MethodKind is MethodKind.Conversion)
                     return QuickInfoSymbolClassification.Conversion;
 
@@ -70,12 +72,12 @@ public static class QuickInfoSymbolClassifier
                     or MethodKind.StaticConstructor
                     or MethodKind.Destructor
                     ;
-                
+
                 if (isConstructorRelated)
                     return QuickInfoSymbolClassification.Constructor;
 
                 return QuickInfoSymbolClassification.Method;
-            
+
             case ILabelSymbol:
                 return QuickInfoSymbolClassification.Label;
             case ILocalSymbol:
@@ -93,7 +95,7 @@ public static class QuickInfoSymbolClassifier
             case IPreprocessingSymbol:
                 return QuickInfoSymbolClassification.Preprocessing;
         }
-        
+
         return QuickInfoSymbolClassification.None;
     }
 }

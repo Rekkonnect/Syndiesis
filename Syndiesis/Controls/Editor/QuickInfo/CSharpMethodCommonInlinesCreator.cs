@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
 using RoseLynn;
 using Syndiesis.Controls.Inlines;
-using System.Diagnostics;
+using System.Diagnostics.Contracts;
 
 namespace Syndiesis.Controls.Editor.QuickInfo;
 
@@ -183,48 +183,22 @@ public sealed class CSharpMethodCommonInlinesCreator(
         inlines.AddChild(containingSymbolInline);
         inlines.Add(CreateQualifierSeparatorRun());
 
-        var methodKindAccessorKeyword = KeywordForAccessor(method);
+        var methodKindAccessorKeyword = SymbolHelpers.CSharp.KeywordForAccessor(method);
+        Contract.Assert(methodKindAccessorKeyword is not null);
         var modeInline = SingleKeywordRun(methodKindAccessorKeyword);
         inlines.Add(modeInline);
-    }
-
-    private static string KeywordForAccessor(IMethodSymbol method)
-    {
-        if (method.IsInitOnly)
-        {
-            return "init";
-        }
-
-        return method.MethodKind switch
-        {
-            MethodKind.PropertyGet => "get",
-            MethodKind.PropertySet => "set",
-            MethodKind.EventAdd => "add",
-            MethodKind.EventRemove => "remove",
-            _ => throw new UnreachableException("This method kind was not expected"),
-        };
     }
 
     private void AddConversionMethodInlines(IMethodSymbol method, ComplexGroupedRunInline.Builder inlines)
     {
         var operatorKind = OperatorKindFacts.MapNameToKind(method.Name, out var checkingMode);
-        var modeKeyword = ConversionOperatorImplicationModeKeyword(operatorKind);
+        var modeKeyword = SymbolHelpers.CSharp.ConversionOperatorImplicationModeKeyword(operatorKind);
         var modeInline = SingleKeywordRun($"{modeKeyword} operator");
         inlines.Add(modeInline);
         inlines.Add(CreateSpaceSeparatorRun());
 
         var targetTypeInline = ParentContainer.AliasSimplifiedTypeCreator.CreateSymbolInline(method.ReturnType);
         inlines.AddChild(targetTypeInline);
-    }
-
-    private static string ConversionOperatorImplicationModeKeyword(OperatorKind kind)
-    {
-        return kind switch
-        {
-            OperatorKind.Implicit => "implicit",
-            OperatorKind.Explicit => "explicit",
-            _ => "unknown",
-        };
     }
 
     private static void AddOperatorMethodInlines(IMethodSymbol method, ComplexGroupedRunInline.Builder inlines)

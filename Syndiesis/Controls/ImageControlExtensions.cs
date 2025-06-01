@@ -1,6 +1,4 @@
-﻿using Avalonia.Controls;
-
-namespace Syndiesis.Controls;
+﻿namespace Syndiesis.Controls;
 
 public static class ImageControlExtensions
 {

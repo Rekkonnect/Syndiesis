@@ -1,4 +1,3 @@
-using Avalonia.Controls;
 using AvaloniaEdit.Rendering;
 
 namespace Syndiesis.Controls.Editor;

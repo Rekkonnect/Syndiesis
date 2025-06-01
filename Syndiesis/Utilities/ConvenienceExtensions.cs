@@ -1,6 +1,4 @@
 ﻿using Garyon.Reflection;
-using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Numerics;
 
@@ -101,5 +99,11 @@ public static class ConvenienceExtensions
                 collection.AddRange(oneOrMany.Enumerable);
                 break;
         }
+    }
+
+    public static void SwitchInvoke(this bool value, Action whenTrue, Action whenFalse)
+    {
+        var action = value ? whenTrue : whenFalse;
+        action();
     }
 }

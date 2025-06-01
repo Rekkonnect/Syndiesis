@@ -1,5 +1,4 @@
-﻿using Avalonia.Media;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.Editor;
 using Syndiesis.Controls.Inlines;
 

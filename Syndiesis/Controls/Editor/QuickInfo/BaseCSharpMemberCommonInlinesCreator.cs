@@ -11,14 +11,15 @@ public abstract class BaseCSharpMemberCommonInlinesCreator<TSymbol>(
 {
     public new CSharpSymbolCommonInlinesCreatorContainer ParentContainer
         => (CSharpSymbolCommonInlinesCreatorContainer)base.ParentContainer;
-    
-    protected void AddTypeArgumentInlines(ComplexGroupedRunInline.Builder inlines, ImmutableArray<ITypeSymbol> arguments)
+
+    public void AddTypeArgumentInlines(
+        ComplexGroupedRunInline.Builder inlines, ImmutableArray<ITypeSymbol> arguments)
     {
         if (arguments.IsDefaultOrEmpty)
         {
             return;
         }
-        
+
         var openingTag = Run($"<", CommonStyles.RawValueBrush);
         inlines.AddChild(openingTag);
         for (var i = 0; i < arguments.Length; i++)

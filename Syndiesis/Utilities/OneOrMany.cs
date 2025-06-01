@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace Syndiesis.Utilities;
+﻿namespace Syndiesis.Utilities;
 
 public readonly struct OneOrMany<T>
 {

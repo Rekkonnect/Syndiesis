@@ -1,6 +1,3 @@
-using Avalonia.Controls;
-using System;
-
 namespace Syndiesis.Controls.Tabs;
 
 public partial class TabEnvelope : UserControl

@@ -1,9 +1,5 @@
-using Avalonia;
-using Avalonia.Controls;
 using Avalonia.Diagnostics;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Threading;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Core;
 
@@ -11,9 +7,6 @@ namespace Syndiesis.Views;
 
 public partial class MainWindow : Window
 {
-    private readonly MainView _mainView = new();
-    private readonly SettingsView _settingsView = new();
-
     public MainWindow()
     {
         // Truly a shame
@@ -25,14 +18,6 @@ public partial class MainWindow : Window
         AttachDevTools();
         InitializeEvents();
         SetCurrentTitle();
-
-        InitializeTransitions();
-    }
-
-    private void InitializeTransitions()
-    {
-        pageTransition.SetMainContent(_mainView);
-        pageTransition.SetSecondaryContent(_settingsView);
     }
 
     private void AttachDevTools()
@@ -72,100 +57,33 @@ public partial class MainWindow : Window
     private void SetTitle(string programTitle)
     {
         var infoVersion = App.Current.AppInfo.InformationalVersion;
-        Title = $"{programTitle} v{infoVersion.Version} [{infoVersion.CommitSha![..7]}]";
+        var shortSha = infoVersion.CommitSha!.Short;
+        Title = $"{programTitle} v{infoVersion.Version} [{shortSha}]";
     }
 
     private void InitializeEvents()
     {
-        _settingsView.SettingsSaved += OnSettingsSaved;
-        _settingsView.SettingsReset += OnSettingsReset;
-        _settingsView.SettingsCancelled += OnSettingsCancelled;
-        _mainView.SettingsRequested += OnSettingsRequested;
-        _mainView.AnalysisPipelineHandler.AnalysisCompleted += OnAnalysisCompleted;
-        TitleBar.LogoClicked += OnImageClicked;
-    }
-
-    private void OnAnalysisCompleted(AnalysisResult analysisResult)
-    {
-        Dispatcher.UIThread.InvokeAsync(UpdateTitleBar);
-    }
-
-    private void UpdateTitleBar()
-    {
-        var languageName = GetCurrentLanguageName();
-        SetThemeAndLogo(languageName);
+        mainView.MainView.ViewModel.HybridCompilationSource
+            .CompilationSourceChanged += OnCompilationSourceChanged;
     }
 
     private string GetCurrentLanguageName()
     {
-        return _mainView.ViewModel.HybridCompilationSource.CurrentLanguageName;
+        return mainView.MainView.ViewModel.CurrentLanguage;
     }
 
-    private void OnImageClicked(object? sender, PointerPressedEventArgs e)
+    private void OnCompilationSourceChanged()
     {
-        var point = e.GetCurrentPoint(this);
-        var properties = point.Properties;
-        if (properties.IsLeftButtonPressed && e.KeyModifiers is KeyModifiers.None)
+        Dispatcher.UIThread.InvokeAsync(UpdateLogo);
+    }
+
+    private void UpdateLogo()
+    {
+        var image = mainView?.TitleBar?.LogoImage;
+        if (image is not null)
         {
-            var toggled = _mainView.ToggleLanguage();
-            SetThemeAndLogo(toggled);
+            Icon = new WindowIcon(image);
         }
-    }
-
-    private void SetThemeAndLogo(string languageName)
-    {
-        TitleBar.SetThemeForLanguage(languageName);
-        var image = TitleBar.LogoImage;
-        Icon = new WindowIcon(image);
         SetCurrentTitle();
-    }
-
-    private void OnSettingsRequested()
-    {
-        ShowSettings();
-    }
-
-    private void OnSettingsSaved()
-    {
-        ShowMainView();
-    }
-
-    private void OnSettingsCancelled()
-    {
-        TransitionIntoMainView();
-    }
-
-    private void OnSettingsReset()
-    {
-        ApplySettings();
-    }
-
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        _mainView.Reset();
-        _mainView.Focus();
-    }
-
-    public void ShowSettings()
-    {
-        _settingsView.LoadFromSettings();
-        pageTransition.TransitionToSecondary();
-    }
-
-    public void ShowMainView()
-    {
-        ApplySettings();
-        TransitionIntoMainView();
-    }
-
-    private void ApplySettings()
-    {
-        _mainView.ApplyCurrentSettings();
-    }
-
-    private void TransitionIntoMainView()
-    {
-        pageTransition.TransitionToMain();
     }
 }

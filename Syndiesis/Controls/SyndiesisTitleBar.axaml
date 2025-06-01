@@ -1,14 +1,16 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="600"
-             Height="35"
-             xmlns:controls="using:Syndiesis.Controls"
-             xmlns:inlines="using:Syndiesis.Controls.Inlines"
-             DockPanel.Dock="Top"
-             x:Class="Syndiesis.Controls.SyndiesisTitleBar"
-             >
+<UserControl
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d" d:DesignWidth="600"
+  Height="35"
+  xmlns:controls="using:Syndiesis.Controls"
+  xmlns:inlines="using:Syndiesis.Controls.Inlines"
+  xmlns:updating="using:Syndiesis.Controls.Updating"
+  DockPanel.Dock="Top"
+  x:Class="Syndiesis.Controls.SyndiesisTitleBar"
+  >
 
   <Panel>
 
@@ -38,7 +40,15 @@
             </Transitions>
           </Rectangle.Transitions>
         </Rectangle>
-        
+
+        <Rectangle
+          Name="updateProgressBar"
+          Fill="#40FFFFFF"
+          IsHitTestVisible="False"
+          Width="0"
+          >
+        </Rectangle>
+
         <Rectangle
           VerticalAlignment="Stretch"
           HorizontalAlignment="Stretch"
@@ -59,16 +69,20 @@
             Height="35"
             Source="/Assets/Icons/logo.png"
             />
-      
+
           <inlines:CopyableGroupedRunInlineTextBlock
             Name="headerText"
             FontFamily="{StaticResource AptosDisplayFontFamily}"
             VerticalAlignment="Center"
             IsHitTestVisible="False"
-            >
-        
-          </inlines:CopyableGroupedRunInlineTextBlock>
+            />
         </StackPanel>
+
+        <updating:UpdateInformationButton
+          Margin="0 0 15 0"
+          HorizontalAlignment="Right"
+          >
+        </updating:UpdateInformationButton>
 
         <controls:SyndiesisTitleBarButtonPanel
           Grid.Column="1"
@@ -77,5 +91,5 @@
     </Border>
 
   </Panel>
-  
+
 </UserControl>

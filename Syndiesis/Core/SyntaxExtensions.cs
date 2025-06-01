@@ -1,6 +1,4 @@
 ﻿using Microsoft.CodeAnalysis;
-using System.Collections.Generic;
-using System.Threading;
 
 namespace Syndiesis.Core;
 

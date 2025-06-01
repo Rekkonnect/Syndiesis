@@ -1,5 +1,4 @@
-﻿using Avalonia.Interactivity;
-using AvaloniaEdit.Editing;
+﻿using AvaloniaEdit.Editing;
 
 namespace Syndiesis.Controls;
 

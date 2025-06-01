@@ -1,12 +1,8 @@
-﻿using Avalonia.Media;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Inlines;
 using Syndiesis.InternalGenerators.Core;
 using Syndiesis.Utilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Syndiesis.Core.DisplayAnalysis;
 
@@ -576,6 +572,22 @@ partial class SymbolAnalysisNodeCreator
         protected override SingleRunInline CreateKindInline(TSymbol symbol)
         {
             return CreateKindInlineForText(symbol.TypeKind.ToString());
+        }
+
+        protected override void CreateChildren(
+            TSymbol symbol, List<AnalysisTreeListNode> list)
+        {
+            list.AddRange([
+                Creator.CreateRootGeneral(
+                    symbol.IsExtension,
+                    Property(nameof(ITypeSymbol.IsExtension))),
+
+                Creator.CreateRootGeneral(
+                    symbol.ExtensionParameter,
+                    Property(nameof(ITypeSymbol.ExtensionParameter))),
+            ]);
+
+            base.CreateChildren(symbol, list);
         }
     }
 

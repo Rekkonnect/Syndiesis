@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Syndiesis.Core;
+﻿namespace Syndiesis.Core;
 
 public static class WhitespaceFacts
 {

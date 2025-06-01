@@ -1,6 +1,4 @@
 ﻿using Syndiesis.Core.DisplayAnalysis;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Syndiesis.Core;
 

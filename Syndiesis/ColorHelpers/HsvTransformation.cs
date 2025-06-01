@@ -1,6 +1,4 @@
-﻿using Avalonia.Media;
-
-namespace Syndiesis.ColorHelpers;
+﻿namespace Syndiesis.ColorHelpers;
 
 public readonly record struct HsvTransformation(
     double Alpha = 0,

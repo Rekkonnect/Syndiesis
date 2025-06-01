@@ -1,13 +1,6 @@
-using Avalonia.Controls;
 using Avalonia.Input;
-using Avalonia.Interactivity;
-using Avalonia.Media;
 using Microsoft.CodeAnalysis;
 using Syndiesis.Core;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 
 namespace Syndiesis.Controls;
 

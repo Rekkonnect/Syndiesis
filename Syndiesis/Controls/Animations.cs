@@ -1,7 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Animation;
-using Avalonia.Controls;
-using Avalonia.Media;
+﻿using Avalonia.Animation;
 using Avalonia.Styling;
 
 namespace Syndiesis.Controls;

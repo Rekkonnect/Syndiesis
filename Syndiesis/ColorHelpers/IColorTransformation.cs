@@ -1,6 +1,4 @@
-﻿using Avalonia.Media;
-
-namespace Syndiesis.ColorHelpers;
+﻿namespace Syndiesis.ColorHelpers;
 
 public interface IColorTransformation<TColor>
 {

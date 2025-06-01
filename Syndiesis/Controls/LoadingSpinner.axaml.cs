@@ -1,7 +1,3 @@
-using Avalonia.Controls;
-using Avalonia.Interactivity;
-using System.Collections.Generic;
-
 namespace Syndiesis.Controls;
 
 public partial class LoadingSpinner : UserControl

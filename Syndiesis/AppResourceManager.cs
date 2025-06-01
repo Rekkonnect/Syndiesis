@@ -1,7 +1,4 @@
-﻿using Avalonia.Controls;
-using Avalonia.Media;
-
-namespace Syndiesis;
+﻿namespace Syndiesis;
 
 public class AppResourceManager(App app)
 {
