@@ -34,8 +34,14 @@ public sealed class AppSettings
 
     public int RecursiveExpansionDepth = 4;
 
+    public double CodeFontSize = 12;
+
     public AnalysisNodeKind DefaultAnalysisTab = AnalysisNodeKind.Syntax;
     public AnalysisViewKind DefaultAnalysisView = AnalysisViewKind.Tree;
+    #endregion
+
+    #region Events
+    public static event Action? SettingsLoaded;
     #endregion
 
     #region Persistence
@@ -44,16 +50,19 @@ public sealed class AppSettings
         try
         {
             var json = await File.ReadAllTextAsync(path);
-            var returned = await Dispatcher.UIThread.InvokeAsync(() =>
+            var settings = await Dispatcher.UIThread.InvokeAsync(() =>
             {
                 return JsonSerializer.Deserialize<AppSettings>(
                     json, AppSettingsSerialization.DefaultOptions);
             });
-            if (returned is null)
+            if (settings is null)
                 return false;
 
-            Instance = returned;
+            Instance = settings;
             Log.Information($"Settings loaded from '{path}'");
+
+            _ = Dispatcher.UIThread.InvokeAsync(
+                () => SettingsLoaded?.Invoke());
             return true;
         }
         catch (Exception ex)

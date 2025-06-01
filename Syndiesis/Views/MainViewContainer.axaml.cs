@@ -32,6 +32,7 @@ public partial class MainViewContainer : UserControl
         _mainView.SettingsRequested += OnSettingsRequested;
         _mainView.AnalysisPipelineHandler.AnalysisCompleted += OnAnalysisCompleted;
         TitleBar.LogoClicked += OnImageClicked;
+        AppSettings.SettingsLoaded += ApplySettings;
     }
 
     private void OnAnalysisCompleted(AnalysisResult analysisResult)

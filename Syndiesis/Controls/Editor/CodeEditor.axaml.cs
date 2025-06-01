@@ -1,16 +1,14 @@
-using Avalonia.Animation;
-using Avalonia.Animation.Easings;
 using Avalonia.Input;
 using AvaloniaEdit;
 using AvaloniaEdit.Document;
 using AvaloniaEdit.Editing;
 using AvaloniaEdit.Rendering;
 using Garyon.Mechanisms;
-using Garyon.Objects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
 using Syndiesis.Controls.AnalysisVisualization;
 using Syndiesis.Controls.Editor;
+using Syndiesis.Controls.Toast;
 using Syndiesis.Core;
 using Syndiesis.Utilities;
 using System.Diagnostics.CodeAnalysis;
@@ -19,11 +17,11 @@ using System.Reflection;
 namespace Syndiesis.Controls;
 
 /// <summary>
-/// A code editor using <see cref="TextEditor"/>.
+/// A code editor using <see cref="SyndiesisTextEditor"/>.
 /// </summary>
 /// <remarks>
-/// It does not yet provide support for IDE features like autocompletion, code fixes,
-/// or others. They may be added in the future.
+/// It does not yet provide support for IDE features like autocompletion,
+/// code fixes, or others. They may be added in the future.
 /// </remarks>
 public partial class CodeEditor : UserControl
 {
@@ -31,6 +29,8 @@ public partial class CodeEditor : UserControl
 
     private bool _isUpdatingScrollLimits = false;
     private int _disabledNodeHoverTimes;
+
+    private readonly DelayerAction _fontSizeChangedDelayerAction = new();
 
     private NodeSpanHoverLayer _nodeSpanHoverLayer;
     private DiagnosticsLayer _diagnosticsLayer;
@@ -65,6 +65,16 @@ public partial class CodeEditor : UserControl
                 _effectiveColorizer = null;
                 lineTransformers.Clear();
             }
+        }
+    }
+
+    public new double FontSize
+    {
+        get => textEditor.TextArea.FontSize;
+        set
+        {
+            base.FontSize = value;
+            textEditor.TextArea.FontSize = value;
         }
     }
 
@@ -189,7 +199,40 @@ public partial class CodeEditor : UserControl
 
         Document.TextChanged += HandleTextChanged;
         textEditor.TextArea.Caret.PositionChanged += HandleCaretPositionChanged;
+        textEditor.TextArea.FontSizeChanged += HandleFontSizeChanged;
         textEditor.Loaded += HandleTextEditorLoaded;
+    }
+
+    private void HandleFontSizeChanged()
+    {
+        var previous = base.FontSize;
+        var fontSize = FontSize;
+        base.FontSize = fontSize;
+        var cameraOffsetAdjustment = fontSize / previous;
+        verticalScrollBar.StartPosition *= cameraOffsetAdjustment;
+
+        _fontSizeChangedDelayerAction.SetFutureUnblock(
+            TimeSpan.FromSeconds(2),
+            WaitSaveSettings);
+    }
+
+    private async Task WaitSaveSettings()
+    {
+        await _fontSizeChangedDelayerAction.WaitUnblockAsync();
+
+        var codeFontSize = await Dispatcher.UIThread.InvokeAsync(() => FontSize);
+        AppSettings.Instance.CodeFontSize = codeFontSize;
+
+        bool success = await AppSettings.TrySave();
+        if (success)
+        {
+            var notificationContainer = ToastNotificationContainer
+                .GetFromOuterMainViewContainer(this);
+            _ = CommonToastNotifications.ShowClassicMain(
+                notificationContainer,
+                "Font size updated in settings",
+                TimeSpan.FromSeconds(2));
+        }
     }
 
     private void HandleTextEditorLoaded(object? sender, RoutedEventArgs e)
@@ -329,6 +372,7 @@ public partial class CodeEditor : UserControl
         editorOptions.ShowBoxForControlCharacters = settings.ShowWhitespaceGlyphs;
         editorOptions.WordWrapIndentation = 120;
         textEditor.WordWrap = settings.WordWrap;
+        FontSize = settings.CodeFontSize;
     }
 
     public void ApplyIndentationOptions(IndentationOptions options)
@@ -422,9 +466,13 @@ public partial class CodeEditor : UserControl
 
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
-        const double scrollAmplificationMultiplier = 60;
-
         base.OnPointerWheelChanged(e);
+        ScrollVerticallyFromWheel(e);
+    }
+
+    private void ScrollVerticallyFromWheel(PointerWheelEventArgs e)
+    {
+        const double scrollAmplificationMultiplier = 60;
 
         double verticalSteps = -e.Delta.Y * scrollAmplificationMultiplier;
         double horizontalSteps = -e.Delta.X * scrollAmplificationMultiplier;
