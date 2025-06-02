@@ -1,13 +1,16 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:controls="using:Syndiesis.Controls"
-             xmlns:inlines="using:Syndiesis.Controls.Inlines"
-             xmlns:av="using:Syndiesis.Controls.AnalysisVisualization"
-             mc:Ignorable="d" d:DesignWidth="300"
-             Height="26"
-             x:Class="Syndiesis.Controls.AnalysisVisualization.AnalysisTreeListNodeLine">
+<UserControl
+  x:Class="Syndiesis.Controls.AnalysisVisualization.AnalysisTreeListNodeLine"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:av="using:Syndiesis.Controls.AnalysisVisualization"
+  xmlns:controls="using:Syndiesis.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:inlines="using:Syndiesis.Controls.Inlines"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  Height="26"
+  d:DesignWidth="300"
+  mc:Ignorable="d"
+  >
 
   <Grid>
     <Grid.ColumnDefinitions>
@@ -18,10 +21,10 @@
     </Grid.ColumnDefinitions>
 
     <av:VisualExpandToggle
+      Name="visualExpandToggle"
+      Grid.Column="0"
       Width="12"
       Height="12"
-      Grid.Column="0"
-      Name="visualExpandToggle"
       HorizontalAlignment="Right"
       />
 
@@ -30,37 +33,37 @@
       VerticalAlignment="Center"
       >
       <TextBlock
-        TextAlignment="Center"
+        Name="nodeTypeIconText"
+        Height="26"
         VerticalAlignment="Center"
         FontFamily="{StaticResource AptosDisplayFontFamily}"
-        FontWeight="Bold"
         FontSize="26"
+        FontWeight="Bold"
         Foreground="#33E5A5"
         Text="N"
-        Height="26"
-        Name="nodeTypeIconText"
+        TextAlignment="Center"
         />
 
       <ContentControl
         Name="optionalLoadingNodeContainer"
-        VerticalAlignment="Stretch"
         HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
         />
 
       <ContentControl
         Name="errorNodeContainer"
-        VerticalAlignment="Stretch"
-        HorizontalAlignment="Stretch"
         Padding="4"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
         />
     </Panel>
 
     <inlines:CopyableGroupedRunInlineTextBlock
-      FontFamily="{StaticResource AptosFontFamily}"
-      Grid.Column="2"
-      FontSize="16"
-      VerticalAlignment="Center"
       Name="descriptionText"
+      Grid.Column="2"
+      VerticalAlignment="Center"
+      FontFamily="{StaticResource AptosFontFamily}"
+      FontSize="16"
       />
 
   </Grid>

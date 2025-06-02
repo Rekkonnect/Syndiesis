@@ -1,25 +1,27 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             d:DesignWidth="40"
-             d:DesignHeight="40"
-             x:Class="Syndiesis.Controls.LoadingSpinner">
+<UserControl
+  x:Class="Syndiesis.Controls.LoadingSpinner"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="40"
+  d:DesignWidth="40"
+  mc:Ignorable="d"
+  >
 
   <UserControl.Styles>
     <Style Selector="Image">
       <Style.Animations>
         <Animation
-          Duration="00:00:00.500"
-          IterationCount="INFINITE"
           Easing="QuinticEaseOut"
+          IterationCount="INFINITE"
+          Duration="00:00:00.500"
           >
           <KeyFrame Cue="0%">
-            <Setter Property="RotateTransform.Angle" Value="0.0"/>
+            <Setter Property="RotateTransform.Angle" Value="0.0" />
           </KeyFrame>
           <KeyFrame Cue="100%">
-            <Setter Property="RotateTransform.Angle" Value="180.0"/>
+            <Setter Property="RotateTransform.Angle" Value="180.0" />
           </KeyFrame>
         </Animation>
       </Style.Animations>

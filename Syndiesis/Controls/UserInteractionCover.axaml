@@ -1,9 +1,13 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="350"
-             x:Class="Syndiesis.Controls.UserInteractionCover">
+<UserControl
+  x:Class="Syndiesis.Controls.UserInteractionCover"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="350"
+  d:DesignWidth="600"
+  mc:Ignorable="d"
+  >
 
   <Grid
     Background="Transparent"
@@ -15,11 +19,11 @@
 
     <ContentControl
       Name="iconContainer"
-      VerticalAlignment="Bottom"
-      HorizontalAlignment="Center"
-      Height="40"
-      Width="40"
       Grid.Row="0"
+      Width="40"
+      Height="40"
+      HorizontalAlignment="Center"
+      VerticalAlignment="Bottom"
       >
       <Image
         Source="avares://Syndiesis/Assets/Icons/fa-pen-fancy.png"
@@ -28,17 +32,17 @@
 
     <TextBlock
       Name="textDisplay"
-      VerticalAlignment="Top"
-      HorizontalAlignment="Center"
-      TextAlignment="Center"
-      FontFamily="{StaticResource AptosFontFamily}"
-      FontSize="15"
       Grid.Row="1"
       Margin="0 20 0 0"
-      Text="Funding for this program was made&#x0a;possible by viewers like you."
+      HorizontalAlignment="Center"
+      VerticalAlignment="Top"
+      FontFamily="{StaticResource AptosFontFamily}"
+      FontSize="15"
       Foreground="#009099"
+      Text="Funding for this program was made&#x0a;possible by viewers like you."
+      TextAlignment="Center"
       />
 
   </Grid>
-  
+
 </UserControl>

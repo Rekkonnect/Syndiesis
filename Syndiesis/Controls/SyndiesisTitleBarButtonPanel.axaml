@@ -1,20 +1,22 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             Width="150"
-             d:DesignHeight="30"
-             xmlns:controls="using:Syndiesis.Controls"
-             x:Class="Syndiesis.Controls.SyndiesisTitleBarButtonPanel">
+<UserControl
+  x:Class="Syndiesis.Controls.SyndiesisTitleBarButtonPanel"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="using:Syndiesis.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  Width="150"
+  d:DesignHeight="30"
+  mc:Ignorable="d"
+  >
 
   <UserControl.Styles>
     <Style Selector=":is(Button):pressed">
       <Setter Property="RenderTransform" Value="none" />
     </Style>
 
-    <Style Selector="Button:pointerover" >
-      <Setter Property="Foreground" Value="#20FFFFFF"/>
+    <Style Selector="Button:pointerover">
+      <Setter Property="Foreground" Value="#20FFFFFF" />
     </Style>
 
     <Style Selector=":is(Button)">
@@ -30,9 +32,9 @@
 
   <Grid>
     <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="*"/>
-      <ColumnDefinition Width="*"/>
-      <ColumnDefinition Width="*"/>
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="*" />
     </Grid.ColumnDefinitions>
 
     <controls:SyndiesisTitleBarButton
@@ -42,14 +44,14 @@
 
     <controls:SyndiesisTitleBarButton
       Name="maximizeButton"
-      ButtonBrush="#80606010"
       Grid.Column="1"
+      ButtonBrush="#80606010"
       />
 
     <controls:SyndiesisTitleBarButton
       Name="closeButton"
-      ButtonBrush="#80B02010"
       Grid.Column="2"
+      ButtonBrush="#80B02010"
       />
   </Grid>
 

@@ -1,12 +1,14 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             xmlns:controls="using:Syndiesis.Controls"
-             xmlns:aedit="using:AvaloniaEdit"
-             d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Syndiesis.Controls.CodeEditor"
+<UserControl
+  x:Class="Syndiesis.Controls.CodeEditor"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:aedit="using:AvaloniaEdit"
+  xmlns:controls="using:Syndiesis.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d"
   >
 
   <Panel
@@ -14,81 +16,84 @@
     Background="#001116"
     >
 
-    <Grid
-      >
+    <Grid>
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="20"/>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="20" />
       </Grid.ColumnDefinitions>
       <Grid.RowDefinitions>
-        <RowDefinition Height="*"/>
-        <RowDefinition Height="20"/>
+        <RowDefinition Height="*" />
+        <RowDefinition Height="20" />
       </Grid.RowDefinitions>
 
       <Grid>
         <controls:SyndiesisTextEditor
           Name="textEditor"
-          Text="Hello AvaloniaEdit from Syndiesis!"
-          ShowLineNumbers="True"
-          HorizontalScrollBarVisibility="Hidden"
-          VerticalScrollBarVisibility="Hidden"
           FontFamily="{StaticResource FiraCodeFontFamily}"
           FontSize="12"
+          HorizontalScrollBarVisibility="Hidden"
+          ShowLineNumbers="True"
+          Text="Hello AvaloniaEdit from Syndiesis!"
+          VerticalScrollBarVisibility="Hidden"
           />
 
         <StackPanel
           Name="diagnosticsUnavailableDisplay"
-          IsVisible="false"
           HorizontalAlignment="Right"
-          VerticalAlignment="Bottom">
+          VerticalAlignment="Bottom"
+          IsVisible="false"
+          >
           <TextBlock
             Margin="0 0 5 -3"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
+            FontFamily="{StaticResource AptosFontFamily}"
             FontSize="22"
             Foreground="#AAAA4444"
-            FontFamily="{StaticResource AptosFontFamily}"
-            Text="DIAGNOSTICS UNAVAILABLE">
-          </TextBlock>
+            Text="DIAGNOSTICS UNAVAILABLE"
+            />
           <TextBlock
             Margin="0 0 5 3"
             HorizontalAlignment="Right"
             VerticalAlignment="Bottom"
+            FontFamily="{StaticResource AptosFontFamily}"
             FontSize="14"
             Foreground="#80AA4444"
-            FontFamily="{StaticResource AptosFontFamily}"
-            Text="due to a compiler exception">
-          </TextBlock>
+            Text="due to a compiler exception"
+            />
         </StackPanel>
       </Grid>
 
       <Panel
+        Grid.Column="2"
         Background="#003034"
-        Grid.Column="2">
+        >
         <controls:VerticalScrollBar
           Name="verticalScrollBar"
-          MinValue="0"
-          MaxValue="5"
           HasAvailableScroll="False"
+          MaxValue="5"
+          MinValue="0"
           />
       </Panel>
       <Panel
-        Background="#003034"
+        Grid.Row="1"
         Grid.Column="0"
-        Grid.Row="1">
+        Background="#003034"
+        >
         <controls:HorizontalScrollBar
           Name="horizontalScrollBar"
-          MinValue="0"
-          MaxValue="120"
-          StartPosition="1"
           EndPosition="100"
+          MaxValue="120"
+          MinValue="0"
+          StartPosition="1"
           />
       </Panel>
-      <Panel Name="scrollBarIntersectionPanel"
-             Background="#00545A"
-             Grid.Column="1"
-             Grid.Row="1">
-      </Panel>
+      <Panel
+        Name="scrollBarIntersectionPanel"
+        Grid.Row="1"
+        Grid.Column="1"
+        Background="#00545A"
+        />
     </Grid>
   </Panel>
 </UserControl>

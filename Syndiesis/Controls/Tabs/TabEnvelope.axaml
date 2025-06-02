@@ -1,19 +1,23 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="250" d:DesignHeight="28"
-             x:Class="Syndiesis.Controls.Tabs.TabEnvelope">
+<UserControl
+  x:Class="Syndiesis.Controls.Tabs.TabEnvelope"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="28"
+  d:DesignWidth="250"
+  mc:Ignorable="d"
+  >
 
   <Panel>
     <Border
       Margin="0 3 0 0"
-    >
+      >
       <Border.Background>
         <LinearGradientBrush StartPoint="0,0" EndPoint="0%,100%">
           <LinearGradientBrush.GradientStops>
-            <GradientStop Color="#164066" Offset="0" />
-            <GradientStop Color="#004044" Offset="1" />
+            <GradientStop Offset="0" Color="#164066" />
+            <GradientStop Offset="1" Color="#004044" />
           </LinearGradientBrush.GradientStops>
         </LinearGradientBrush>
       </Border.Background>
@@ -21,24 +25,26 @@
 
     <Border
       Name="lowerBorder"
-      Background="#000000"
       Margin="0 3 0 0"
-    >
+      Background="#000000"
+      >
       <Border.Transitions>
         <Transitions>
           <ThicknessTransition
+            Easing="ExponentialEaseOut"
             Property="Margin"
             Duration="0:00:00.250"
-            Easing="ExponentialEaseOut"
             />
         </Transitions>
       </Border.Transitions>
     </Border>
 
-    <Path Fill="Black">
+    <Path
+      Fill="Black"
+      >
       <Path.Data>
         <PathGeometry>
-          <PathFigure StartPoint="0,12" IsClosed="True">
+          <PathFigure IsClosed="True" StartPoint="0,12">
             <BezierSegment Point1="0,12" Point2="0,0" Point3="22,0" />
             <BezierSegment Point1="22,0" Point2="0,0" Point3="0,0" />
           </PathFigure>
@@ -46,10 +52,12 @@
       </Path.Data>
     </Path>
 
-    <Path Fill="#38A0FF">
+    <Path
+      Fill="#38A0FF"
+      >
       <Path.Data>
         <PathGeometry>
-          <PathFigure StartPoint="20,0" IsClosed="True">
+          <PathFigure IsClosed="True" StartPoint="20,0">
             <BezierSegment Point1="20,0" Point2="0,0" Point3="0,12" />
             <BezierSegment Point1="0,12" Point2="0,3" Point3="20,3" />
           </PathFigure>
@@ -58,16 +66,19 @@
     </Path>
 
     <Rectangle
-      Fill="#38A0FF"
       Height="3"
-      VerticalAlignment="Top"
       Margin="20 0 20 0"
+      VerticalAlignment="Top"
+      Fill="#38A0FF"
       />
 
-    <Path Fill="Black" HorizontalAlignment="Right">
+    <Path
+      HorizontalAlignment="Right"
+      Fill="Black"
+      >
       <Path.Data>
         <PathGeometry>
-          <PathFigure StartPoint="0,12" IsClosed="True">
+          <PathFigure IsClosed="True" StartPoint="0,12">
             <BezierSegment Point1="0,12" Point2="0,0" Point3="-22,0" />
             <BezierSegment Point1="-22,0" Point2="0,0" Point3="0,0" />
           </PathFigure>
@@ -75,10 +86,13 @@
       </Path.Data>
     </Path>
 
-    <Path Fill="#38A0FF" HorizontalAlignment="Right">
+    <Path
+      HorizontalAlignment="Right"
+      Fill="#38A0FF"
+      >
       <Path.Data>
         <PathGeometry>
-          <PathFigure StartPoint="-20,0" IsClosed="True">
+          <PathFigure IsClosed="True" StartPoint="-20,0">
             <BezierSegment Point1="-20,0" Point2="0,0" Point3="0,12" />
             <BezierSegment Point1="0,12" Point2="0,3" Point3="-20,3" />
           </PathFigure>
@@ -88,12 +102,12 @@
 
     <TextBlock
       Name="text"
-      VerticalAlignment="Center"
+      Padding="10 2 10 0"
       HorizontalAlignment="Stretch"
-      TextAlignment="Center"
+      VerticalAlignment="Center"
       FontFamily="{StaticResource AptosFontFamily}"
       FontSize="16"
-      Padding="10 2 10 0"
+      TextAlignment="Center"
       />
   </Panel>
 

@@ -1,17 +1,21 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:controls="using:Syndiesis.Controls"
-             xmlns:shapes="using:Avalonia.Controls.Shapes"
-             mc:Ignorable="d" d:DesignWidth="20" d:DesignHeight="250"
-             x:Class="Syndiesis.Controls.VerticalScrollBar">
+<UserControl
+  x:Class="Syndiesis.Controls.VerticalScrollBar"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="using:Syndiesis.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:shapes="using:Avalonia.Controls.Shapes"
+  d:DesignHeight="250"
+  d:DesignWidth="20"
+  mc:Ignorable="d"
+  >
 
   <Grid>
     <Grid.RowDefinitions>
-      <RowDefinition Height="20"/>
-      <RowDefinition Height="*"/>
-      <RowDefinition Height="20"/>
+      <RowDefinition Height="20" />
+      <RowDefinition Height="*" />
+      <RowDefinition Height="20" />
     </Grid.RowDefinitions>
 
     <controls:ScrollBarStepButtonContainer
@@ -24,17 +28,17 @@
           HorizontalAlignment="Center"
           VerticalAlignment="Center"
           Points="0,8 6,0 12,8"
-        />
+          />
       </controls:ScrollBarStepButtonContainer.ContainerContent>
     </controls:ScrollBarStepButtonContainer>
 
     <Rectangle
       Name="draggableContainerRectangle"
       Grid.Row="1"
-      IsHitTestVisible="True"
       Fill="Transparent"
+      IsHitTestVisible="True"
       />
-    
+
     <Canvas
       Name="draggableRectangleCanvas"
       Grid.Row="1"
@@ -42,18 +46,17 @@
       >
 
       <!--
-      This is not responsive; the manual Width property controls the width
-      of the control, must resolve sometime
+        This is not responsive; the manual Width property controls the width
+        of the control, must resolve sometime
       -->
       <Rectangle
         Name="draggableRectangle"
+        Width="10"
+        Height="21"
         Margin="5 0 0 5"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Top"
-        Height="21"
-        Width="10"
-      >
-      </Rectangle>
+        />
     </Canvas>
 
     <controls:ScrollBarStepButtonContainer
@@ -62,11 +65,11 @@
       >
       <controls:ScrollBarStepButtonContainer.ContainerContent>
         <shapes:Polygon
-        Name="downIcon"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        Points="0,0 6,8 12,0"
-        />
+          Name="downIcon"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Points="0,0 6,8 12,0"
+          />
       </controls:ScrollBarStepButtonContainer.ContainerContent>
     </controls:ScrollBarStepButtonContainer>
 

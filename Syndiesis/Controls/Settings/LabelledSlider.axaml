@@ -1,12 +1,15 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="450" d:DesignHeight="100"
-             VerticalAlignment="Center"
-             x:Class="Syndiesis.Controls.Settings.LabelledSlider"
-             xmlns:sc="using:Syndiesis.Controls.Settings"
-             >
+<UserControl
+  x:Class="Syndiesis.Controls.Settings.LabelledSlider"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:sc="using:Syndiesis.Controls.Settings"
+  VerticalAlignment="Center"
+  d:DesignHeight="100"
+  d:DesignWidth="450"
+  mc:Ignorable="d"
+  >
 
   <Grid>
 
@@ -16,35 +19,36 @@
     </Grid.ColumnDefinitions>
 
     <Grid.RowDefinitions>
-      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto" />
     </Grid.RowDefinitions>
 
     <Slider
       Name="ValueSliderField"
-      Minimum="10"
-      Maximum="1000"
-      Value="100"
-      Grid.Column="1"
       Grid.RowSpan="2"
+      Grid.Column="1"
       Margin="15 0 0 0"
+      Maximum="1000"
+      Minimum="10"
+      Value="100"
       />
+
     <TextBlock
+      Name="NameTextBlock"
       HorizontalAlignment="Right"
       VerticalAlignment="Center"
       FontFamily="{StaticResource AptosDisplayFontFamily}"
       FontSize="16"
-      Name="NameTextBlock"
       Text="Typing delay wait"
       TextAlignment="Right"
       />
 
     <TextBlock
+      Name="ValueTextBlock"
+      Grid.RowSpan="2"
       HorizontalAlignment="Right"
       VerticalAlignment="Bottom"
       FontFamily="{StaticResource AptosDisplayFontFamily}"
       FontSize="14"
-      Grid.RowSpan="2"
-      Name="ValueTextBlock"
       Text="600 ms"
       TextAlignment="Right"
       />

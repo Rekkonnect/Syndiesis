@@ -1,10 +1,14 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="100"
-             xmlns:tabs="using:Syndiesis.Controls.Tabs"
-             x:Class="Syndiesis.Controls.Tabs.TabEnvelopeRow">
+<UserControl
+  x:Class="Syndiesis.Controls.Tabs.TabEnvelopeRow"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:tabs="using:Syndiesis.Controls.Tabs"
+  d:DesignHeight="100"
+  d:DesignWidth="400"
+  mc:Ignorable="d"
+  >
 
   <StackPanel
     Name="envelopesStack"

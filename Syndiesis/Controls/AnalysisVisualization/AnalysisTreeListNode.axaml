@@ -1,22 +1,25 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="400" d:DesignHeight="150"
-             xmlns:controls="using:Syndiesis.Controls"
-             xmlns:ce="using:Syndiesis.Controls.Extensions"
-             xmlns:local="using:Syndiesis.Controls.AnalysisVisualization"
-             x:Class="Syndiesis.Controls.AnalysisVisualization.AnalysisTreeListNode">
+<UserControl
+  x:Class="Syndiesis.Controls.AnalysisVisualization.AnalysisTreeListNode"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:ce="using:Syndiesis.Controls.Extensions"
+  xmlns:controls="using:Syndiesis.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:local="using:Syndiesis.Controls.AnalysisVisualization"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="150"
+  d:DesignWidth="400"
+  mc:Ignorable="d"
+  >
   <StackPanel
     Name="outerStackPanel"
     HorizontalAlignment="Stretch"
     VerticalAlignment="Stretch"
-  >
+    >
     <ContentControl
       Name="topNodeContent"
       HorizontalAlignment="Stretch"
-      >
-    </ContentControl>
+      />
 
     <ce:VerticallyExpandablePanel
       Name="expandableCanvas"
@@ -25,14 +28,14 @@
       <StackPanel
         Margin="15 0 0 0"
         HorizontalAlignment="Stretch"
-      >
+        >
         <local:LoadingTreeListNode
           Name="loadingNode"
           IsVisible="False"
-        />
+          />
         <StackPanel
           Name="innerStackPanel"
-        />
+          />
       </StackPanel>
     </ce:VerticallyExpandablePanel>
   </StackPanel>

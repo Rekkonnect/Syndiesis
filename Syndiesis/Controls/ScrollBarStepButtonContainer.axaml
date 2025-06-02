@@ -1,13 +1,23 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="20" d:DesignHeight="20"
-             x:Class="Syndiesis.Controls.ScrollBarStepButtonContainer">
+<UserControl
+  x:Class="Syndiesis.Controls.ScrollBarStepButtonContainer"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="20"
+  d:DesignWidth="20"
+  mc:Ignorable="d"
+  >
 
   <UserControl.Resources>
-    <SolidColorBrush x:Key="ButtonBackgroundPointerOver" Color="Transparent" />
-    <SolidColorBrush x:Key="ButtonBackgroundDisabled" Color="Transparent" />
+    <SolidColorBrush
+      x:Key="ButtonBackgroundPointerOver"
+      Color="Transparent"
+      />
+    <SolidColorBrush
+      x:Key="ButtonBackgroundDisabled"
+      Color="Transparent"
+      />
   </UserControl.Resources>
 
   <Panel>
@@ -15,8 +25,8 @@
       Name="button"
       HorizontalAlignment="Stretch"
       VerticalAlignment="Stretch"
-      CornerRadius="0"
       Background="Transparent"
+      CornerRadius="0"
       />
     <ContentControl
       Name="contentControl"
@@ -25,5 +35,5 @@
       IsHitTestVisible="False"
       />
   </Panel>
-  
+
 </UserControl>

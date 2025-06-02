@@ -1,13 +1,15 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             ZIndex="100"
-             xmlns:toast="using:Syndiesis.Controls.Toast"
-             xmlns:controls="using:Syndiesis.Controls"
-             controls:CursorContainer.Cursor="Hand"
-             x:Class="Syndiesis.Controls.Toast.ToastNotificationPopup">
+<UserControl
+  x:Class="Syndiesis.Controls.Toast.ToastNotificationPopup"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="using:Syndiesis.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:toast="using:Syndiesis.Controls.Toast"
+  controls:CursorContainer.Cursor="Hand"
+  ZIndex="100"
+  mc:Ignorable="d"
+  >
 
   <Panel
     Name="outerPanel"
@@ -20,35 +22,35 @@
       RadiusX="4"
       RadiusY="4"
       />
-    
+
     <ContentControl
       Name="popupContent"
+      MaxWidth="500"
+      Margin="20 20 20 20"
       HorizontalAlignment="Center"
       VerticalAlignment="Center"
-      Margin="20 20 20 20"
-      MaxWidth="500"
       >
       <TextBlock
+        Name="defaultTextBlock"
         FontFamily="{StaticResource AptosDisplayFontFamily}"
         FontSize="16"
-        TextWrapping="Wrap"
         TextAlignment="Center"
-        Name="defaultTextBlock"
+        TextWrapping="Wrap"
         >
         &lt;veryempty&gt;
       </TextBlock>
-      
+
     </ContentControl>
 
     <toast:ToastProgressBar
       Name="progressBar"
+      Width="100"
+      Height="5"
+      Margin="20 0 20 0"
       HorizontalAlignment="Center"
       VerticalAlignment="Bottom"
-      Height="5"
-      Width="100"
-      Margin="20 0 20 0"
       ClipToBounds="True"
       />
   </Panel>
-  
+
 </UserControl>

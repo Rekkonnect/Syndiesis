@@ -1,24 +1,27 @@
 <UserControl
+  x:Class="Syndiesis.Controls.Updating.UpdateProgressBar"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:syndiesis="https://github.com/Rekkonnect/Syndiesis"
-  mc:Ignorable="d" d:DesignWidth="600"
-  x:Class="Syndiesis.Controls.Updating.UpdateProgressBar"
+  d:DesignWidth="600"
+  mc:Ignorable="d"
   >
 
   <Border
-    CornerRadius="20"
     Background="#003A3D"
     ClipToBounds="True"
+    CornerRadius="20"
     >
 
     <Panel
-      Name="contentContainer">
+      Name="contentContainer"
+      >
 
       <Grid
-        Name="progressBarGrid">
+        Name="progressBarGrid"
+        >
 
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="0*" />
@@ -27,8 +30,8 @@
 
         <Border
           Grid.Column="0"
-          ClipToBounds="true"
           Background="#004B50"
+          ClipToBounds="true"
           />
 
       </Grid>
@@ -42,23 +45,23 @@
         <Border.Transitions>
           <Transitions>
             <DoubleTransition
-              Property="Opacity"
               Easing="SineEaseInOut"
+              Property="Opacity"
               Duration="0:0:1"
               />
           </Transitions>
         </Border.Transitions>
-        
+
       </Border>
 
       <TextBlock
-        FontFamily="{StaticResource AptosFontFamily}"
         Name="noUpdateInformationText"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        FontFamily="{StaticResource AptosFontFamily}"
         FontSize="16"
         Foreground="#A0B8CBCC"
         Text="No update information available"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
         TextAlignment="Center"
         />
 
@@ -77,10 +80,10 @@
 
         <TextBlock
           Grid.Column="0"
-          VerticalAlignment="Center"
           HorizontalAlignment="Right"
-          TextAlignment="Right"
+          VerticalAlignment="Center"
           FontFamily="{StaticResource AptosFontFamily}"
+          TextAlignment="Right"
           >
           <Run
             Name="downloadedMegabytesText"
@@ -97,11 +100,11 @@
 
         <TextBlock
           Grid.Column="1"
+          syndiesis:Margin.Horizontal="10"
+          FontFamily="{StaticResource AptosFontFamily}"
           FontSize="22"
           Foreground="#91EDF2"
           Text="/"
-          syndiesis:Margin.Horizontal="10"
-          FontFamily="{StaticResource AptosFontFamily}"
           />
 
         <TextBlock

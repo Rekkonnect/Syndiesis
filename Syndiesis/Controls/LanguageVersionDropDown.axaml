@@ -1,11 +1,13 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="300"
-             xmlns:controls="using:Syndiesis.Controls"
-             x:Class="Syndiesis.Controls.LanguageVersionDropDown"
-             >
+<UserControl
+  x:Class="Syndiesis.Controls.LanguageVersionDropDown"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="using:Syndiesis.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignWidth="300"
+  mc:Ignorable="d"
+  >
 
   <UserControl.Styles>
     <Style Selector="FlyoutPresenter">
@@ -17,21 +19,20 @@
       <Setter Property="Margin" Value="0" />
     </Style>
   </UserControl.Styles>
-  
+
   <FlyoutBase.AttachedFlyout>
-    <Flyout
-      >
+    <Flyout>
       <controls:LanguageVersionDropDownItems
         Name="items"
         VerticalAlignment="Top"
-      />
+        />
     </Flyout>
   </FlyoutBase.AttachedFlyout>
 
   <controls:LanguageVersionDropDownEnvelope
     Name="envelope"
-    VerticalAlignment="Top"
     Height="30"
+    VerticalAlignment="Top"
     />
-  
+
 </UserControl>

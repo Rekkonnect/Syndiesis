@@ -1,53 +1,53 @@
 <UserControl
+  x:Class="Syndiesis.Controls.Updating.UpdatePopup"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:syndiesis="https://github.com/Rekkonnect/Syndiesis"
-  mc:Ignorable="d"
   Width="620"
   Height="420"
-  x:Class="Syndiesis.Controls.Updating.UpdatePopup"
-  Opacity="0"
   syndiesis:Margin.Bottom="-30"
+  Opacity="0"
+  mc:Ignorable="d"
   >
 
   <UserControl.Transitions>
     <Transitions>
       <DoubleTransition
-        Duration="0:0:0.750"
-        Property="Opacity"
         Easing="ExponentialEaseOut"
+        Property="Opacity"
+        Duration="0:0:0.750"
         />
 
       <ThicknessTransition
-        Duration="0:0:0.500"
+        Easing="ExponentialEaseOut"
         Property="Margin"
-        Easing="ExponentialEaseOut"
+        Duration="0:0:0.500"
         />
 
       <DoubleTransition
-        Duration="0:0:0.200"
-        Property="Height"
         Easing="CubicEaseOut"
+        Property="Height"
+        Duration="0:0:0.200"
         />
 
       <DoubleTransition
-        Duration="0:0:1.000"
-        Property="Width"
         Easing="ExponentialEaseOut"
+        Property="Width"
+        Duration="0:0:1.000"
         />
     </Transitions>
   </UserControl.Transitions>
 
   <Border
-    CornerRadius="6"
     ClipToBounds="true"
+    CornerRadius="6"
     >
 
     <Grid
-      VerticalAlignment="Stretch"
       HorizontalAlignment="Stretch"
+      VerticalAlignment="Stretch"
       >
 
       <Grid.Styles>
@@ -59,38 +59,38 @@
       <Grid.Background>
         <LinearGradientBrush StartPoint="0%,0%" EndPoint="100%,100%">
           <LinearGradientBrush.GradientStops>
-            <GradientStop Color="#001D1F" Offset="0" />
-            <GradientStop Color="#002B2E" Offset="1" />
+            <GradientStop Offset="0" Color="#001D1F" />
+            <GradientStop Offset="1" Color="#002B2E" />
           </LinearGradientBrush.GradientStops>
         </LinearGradientBrush>
       </Grid.Background>
 
       <syndiesis:UpdateTopBar
         Name="topBar"
-        VerticalAlignment="Top"
         HorizontalAlignment="Stretch"
+        VerticalAlignment="Top"
         />
 
       <Grid
         Name="innerContent"
-        VerticalAlignment="Stretch"
         HorizontalAlignment="Stretch"
+        VerticalAlignment="Stretch"
         >
 
         <Grid.Transitions>
           <Transitions>
             <DoubleTransition
-              Duration="0:0:0.100"
-              Property="Opacity"
               Easing="ExponentialEaseOut"
+              Property="Opacity"
+              Duration="0:0:0.100"
               />
           </Transitions>
         </Grid.Transitions>
 
         <Button
-          VerticalAlignment="Top"
-          HorizontalAlignment="Center"
           Name="viewOnGitHubButton"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Top"
           syndiesis:Margin.Top="70"
           >
 
@@ -109,62 +109,63 @@
           -->
 
           <TextBlock
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
             FontFamily="{StaticResource AptosFontFamily}"
             FontSize="16"
             Foreground="#B8CBCC"
-            VerticalAlignment="Center"
-            HorizontalAlignment="Center"
             Text="View on GitHub"
             />
         </Button>
 
         <syndiesis:UpdateProgressBar
-          VerticalAlignment="Center"
-          HorizontalAlignment="Center"
           Width="350"
-          Height="60">
-        </syndiesis:UpdateProgressBar>
+          Height="60"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          />
 
         <Grid
           Name="bottomButtons"
+          HorizontalAlignment="Stretch"
           VerticalAlignment="Bottom"
-          HorizontalAlignment="Stretch">
+          >
 
           <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="2*" />
           </Grid.ColumnDefinitions>
-          
+
           <Border
-            Grid.Column="1"
-            CornerRadius="20 0 0 0"
-            ClipToBounds="True"
-            Height="50"
-            VerticalAlignment="Bottom"
-            HorizontalAlignment="Stretch"
-            BorderThickness="0"
             Name="mainButtonBorder"
+            Grid.Column="1"
+            Height="50"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Bottom"
             Background="#475859"
+            BorderThickness="0"
+            ClipToBounds="True"
+            CornerRadius="20 0 0 0"
             >
 
             <Border.Transitions>
               <Transitions>
                 <DoubleTransition
-                  Duration="0:0:0.300"
-                  Property="Height"
                   Easing="ExponentialEaseOut"
+                  Property="Height"
+                  Duration="0:0:0.300"
                   />
               </Transitions>
             </Border.Transitions>
 
             <Button
-              CornerRadius="0"
-              BorderThickness="0"
-              VerticalAlignment="Stretch"
-              HorizontalAlignment="Stretch"
-              Background="#005459"
               Name="mainButton"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Background="#005459"
+              BorderThickness="0"
               Classes="untransformable"
+              CornerRadius="0"
               >
 
               <Button.Styles>
@@ -206,9 +207,9 @@
               <Button.Transitions>
                 <Transitions>
                   <BrushTransition
-                    Duration="0:0:0.300"
-                    Property="Background"
                     Easing="ExponentialEaseOut"
+                    Property="Background"
+                    Duration="0:0:0.300"
                     />
                 </Transitions>
               </Button.Transitions>
@@ -216,27 +217,27 @@
               <Grid>
 
                 <TextBlock
+                  Name="mainButtonText"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
                   FontFamily="{StaticResource AptosFontFamily}"
                   FontSize="18"
                   Foreground="#80FFFFFF"
-                  VerticalAlignment="Center"
-                  HorizontalAlignment="Center"
                   Text="Downloading update..."
-                  Name="mainButtonText"
                   >
 
                   <TextBlock.Transitions>
                     <Transitions>
                       <ThicknessTransition
-                        Duration="0:0:0.300"
-                        Property="Margin"
                         Easing="ExponentialEaseOut"
+                        Property="Margin"
+                        Duration="0:0:0.300"
                         />
 
                       <BrushTransition
-                        Duration="0:0:0.300"
-                        Property="Foreground"
                         Easing="ExponentialEaseOut"
+                        Property="Foreground"
+                        Duration="0:0:0.300"
                         />
                     </Transitions>
                   </TextBlock.Transitions>
@@ -244,33 +245,33 @@
                 </TextBlock>
 
                 <TextBlock
+                  Name="installationHelpText"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
                   FontFamily="{StaticResource AptosFontFamily}"
                   FontSize="14"
                   Foreground="#3D9499"
-                  VerticalAlignment="Center"
-                  HorizontalAlignment="Center"
                   Opacity="0"
-                  Name="installationHelpText"
                   >
 
                   <TextBlock.Transitions>
                     <Transitions>
                       <DoubleTransition
-                        Duration="0:0:0.300"
-                        Property="Opacity"
                         Easing="ExponentialEaseOut"
+                        Property="Opacity"
+                        Duration="0:0:0.300"
                         />
 
                       <ThicknessTransition
-                        Duration="0:0:0.300"
-                        Property="Margin"
                         Easing="ExponentialEaseOut"
+                        Property="Margin"
+                        Duration="0:0:0.300"
                         />
 
                       <BrushTransition
-                        Duration="0:0:0.300"
-                        Property="Foreground"
                         Easing="ExponentialEaseOut"
+                        Property="Foreground"
+                        Duration="0:0:0.300"
                         />
                     </Transitions>
                   </TextBlock.Transitions>
@@ -278,11 +279,11 @@
                 </TextBlock>
 
                 <TextBlock
-                  VerticalAlignment="Center"
-                  HorizontalAlignment="Right"
-                  TextAlignment="Right"
-                  syndiesis:Margin.Right="30"
                   Name="progressPercentageText"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Center"
+                  syndiesis:Margin.Right="30"
+                  TextAlignment="Right"
                   />
 
               </Grid>
@@ -291,44 +292,44 @@
           </Border>
 
           <Border
-            Grid.Column="0"
-            CornerRadius="20 0 0 0"
-            ClipToBounds="True"
-            Height="30"
-            Width="130"
-            syndiesis:Margin.Right="-20"
-            Opacity="0"
-            VerticalAlignment="Bottom"
-            HorizontalAlignment="Right"
-            BorderThickness="0"
             Name="cancelBorder"
+            Grid.Column="0"
+            Width="130"
+            Height="30"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            syndiesis:Margin.Right="-20"
+            BorderThickness="0"
+            ClipToBounds="True"
+            CornerRadius="20 0 0 0"
+            Opacity="0"
             ZIndex="-1"
             >
 
             <Border.Transitions>
               <Transitions>
                 <DoubleTransition
-                  Duration="0:0:0.300"
-                  Property="Opacity"
                   Easing="ExponentialEaseOut"
+                  Property="Opacity"
+                  Duration="0:0:0.300"
                   />
 
                 <ThicknessTransition
-                  Duration="0:0:0.300"
-                  Property="Margin"
                   Easing="ExponentialEaseOut"
+                  Property="Margin"
+                  Duration="0:0:0.300"
                   />
               </Transitions>
             </Border.Transitions>
 
             <Button
-              CornerRadius="0"
-              BorderThickness="0"
-              VerticalAlignment="Stretch"
-              HorizontalAlignment="Stretch"
-              Background="#80B02010"
               Name="cancelButton"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Background="#80B02010"
+              BorderThickness="0"
               Classes="untransformable"
+              CornerRadius="0"
               >
 
               <Button.Styles>
@@ -341,11 +342,11 @@
               </Button.Styles>
 
               <TextBlock
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
                 FontFamily="{StaticResource AptosFontFamily}"
                 FontSize="16"
                 Foreground="#F2C6C2"
-                VerticalAlignment="Center"
-                HorizontalAlignment="Center"
                 Text="Cancel"
                 />
             </Button>

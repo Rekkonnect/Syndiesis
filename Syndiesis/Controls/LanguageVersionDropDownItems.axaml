@@ -1,11 +1,12 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             xmlns:controls="using:Syndiesis.Controls"
-             x:Class="Syndiesis.Controls.LanguageVersionDropDownItems"
-             >
+<UserControl
+  x:Class="Syndiesis.Controls.LanguageVersionDropDownItems"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="using:Syndiesis.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  mc:Ignorable="d"
+  >
 
   <Panel
     Width="300"
@@ -17,48 +18,47 @@
       Name="vbSlide"
       Grid.RowSpan="2"
       Grid.ColumnSpan="2"
-      Points="180,0 400,0 400,375 120,375"
       Fill="#002A33"
+      Points="180,0 400,0 400,375 120,375"
       >
       <Polygon.Transitions>
         <Transitions>
           <ThicknessTransition
-            Property="Margin"
             Easing="ExponentialEaseOut"
+            Property="Margin"
             Duration="0:0:0.400"
             />
         </Transitions>
       </Polygon.Transitions>
     </Polygon>
 
-    <Grid
-    >
+    <Grid>
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="*" />
       </Grid.ColumnDefinitions>
 
       <Grid.RowDefinitions>
-        <RowDefinition Height="Auto"/>
-        <RowDefinition Height="*"/>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
       </Grid.RowDefinitions>
 
       <TextBlock
-        Grid.Column="0"
         Grid.Row="0"
-        Text="C#"
-        Foreground="#00B090"
+        Grid.Column="0"
+        Margin="20 10 0 0"
         FontFamily="{StaticResource AptosFontFamily}"
         FontSize="50"
-        Margin="20 10 0 0"
-      />
+        Foreground="#00B090"
+        Text="C#"
+        />
 
       <Grid
-        Grid.Column="0"
-        Grid.Row="1"
         Name="csVersionsGrid"
+        Grid.Row="1"
+        Grid.Column="0"
         Margin="20 15 0 20"
-      >
+        >
 
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
@@ -71,40 +71,40 @@
         </Grid.RowDefinitions>
 
         <StackPanel
-          Grid.Column="0"
-          Grid.Row="1"
           Name="csVersionsLeftPanel"
+          Grid.Row="1"
+          Grid.Column="0"
           Margin="0 15 0 0"
           Spacing="1"
-        />
+          />
 
         <StackPanel
-          Grid.Column="1"
-          Grid.Row="1"
           Name="csVersionsRightPanel"
+          Grid.Row="1"
+          Grid.Column="1"
           Margin="0 15 0 0"
           Spacing="1"
-        />
+          />
 
       </Grid>
 
       <TextBlock
-        Grid.Column="1"
         Grid.Row="0"
-        Text="VB"
-        Foreground="#0090B0"
+        Grid.Column="1"
+        Margin="0 10 20 0"
         FontFamily="{StaticResource AptosFontFamily}"
         FontSize="50"
+        Foreground="#0090B0"
+        Text="VB"
         TextAlignment="Right"
-        Margin="0 10 20 0"
-      />
+        />
 
       <Grid
-        Grid.Column="1"
-        Grid.Row="1"
         Name="vbVersionsGrid"
+        Grid.Row="1"
+        Grid.Column="1"
         Margin="20 15 20 0"
-      >
+        >
 
         <Grid.ColumnDefinitions>
           <ColumnDefinition Width="*" />
@@ -117,20 +117,20 @@
         </Grid.RowDefinitions>
 
         <StackPanel
-          Grid.Column="0"
-          Grid.Row="1"
           Name="vbVersionsLeftPanel"
+          Grid.Row="1"
+          Grid.Column="0"
           Margin="0 15 0 0"
           Spacing="1"
-        />
+          />
 
         <StackPanel
-          Grid.Column="1"
-          Grid.Row="1"
           Name="vbVersionsRightPanel"
+          Grid.Row="1"
+          Grid.Column="1"
           Margin="0 15 0 0"
           Spacing="1"
-        />
+          />
 
       </Grid>
 

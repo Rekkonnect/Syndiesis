@@ -1,22 +1,26 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="250" d:DesignHeight="15"
-             x:Class="Syndiesis.Controls.Toast.ToastProgressBar">
+<UserControl
+  x:Class="Syndiesis.Controls.Toast.ToastProgressBar"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="15"
+  d:DesignWidth="250"
+  mc:Ignorable="d"
+  >
 
   <Border
     Name="progressBorder"
     Background="#60000000"
-    CornerRadius="15 15 0 0"
     ClipToBounds="True"
+    CornerRadius="15 15 0 0"
     >
     <Rectangle
       Name="progressRectangle"
-      Fill="#FF009099"
-      HorizontalAlignment="Left"
       Width="25"
+      HorizontalAlignment="Left"
+      Fill="#FF009099"
       />
   </Border>
-  
+
 </UserControl>
