@@ -51,20 +51,15 @@ public partial class AnalysisTreeListNodeLine : UserControl
         }
     }
 
-    // TODO: Remove this
-    public static readonly StyledProperty<Color> NodeTypeColorProperty =
-        AvaloniaProperty.Register<AnalysisTreeListNode, Color>(
-            nameof(NodeTypeColor),
-            defaultValue: BaseAnalysisNodeCreator.CommonStyles.ClassMainColor);
+    private readonly LazilyUpdatedSolidBrush _nodeTypeColor = new();
 
     public Color NodeTypeColor
     {
-        get => GetValue(NodeTypeColorProperty!);
+        get => _nodeTypeColor.Color;
         set
         {
-            SetValue(NodeTypeColorProperty!, value!);
-            // TODO: Avoid creating a new brush for every node
-            nodeTypeIconText.Foreground = new SolidColorBrush(value);
+            _nodeTypeColor.Color = value;
+            nodeTypeIconText.Foreground = _nodeTypeColor.Brush;
         }
     }
 
@@ -206,7 +201,7 @@ public partial class AnalysisTreeListNodeLine : UserControl
             .ConfigureAwait(false);
         PulseCopiedLine();
 
-        var toastContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
+        var toastContainer = ToastNotificationContainer.GetFromOuterMainViewContainer();
         _ = CommonToastNotifications.ShowClassicMain(
             toastContainer,
             $"""

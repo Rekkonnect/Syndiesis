@@ -12,9 +12,8 @@ public partial class ToastNotificationPopup : UserControl
         {
             var brush = new SolidColorBrush(value);
             backgroundFill.Fill = brush;
-            var hsv = value.ToHsv();
-            var progressBarColor = new HsvColor(hsv.A, hsv.H, hsv.S, hsv.V + 0.4);
-            progressBar.ProgressBarBrush = new SolidColorBrush(progressBarColor.ToRgb());
+            var progressBarColor = value.TransformHsv(new(Value: 0.4));
+            progressBar.ProgressBarBrush = new SolidColorBrush(progressBarColor);
         }
     }
 

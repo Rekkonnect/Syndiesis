@@ -24,14 +24,6 @@ public sealed class SyndiesisTextArea : TextArea
         Caret.Show();
     }
 
-    // Preserve the caret even when losing focus
-    // TODO: Re-evaluate this
-    protected override void OnLostFocus(RoutedEventArgs e)
-    {
-        base.OnLostFocus(e);
-        Caret.Show();
-    }
-
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
         var modifiers = e.KeyModifiers.NormalizeByPlatform();
