@@ -153,4 +153,19 @@ public partial class App : Application
             await Singleton<UpdateManager>.Instance.CheckForUpdates();
         }
     }
+
+    public Visual? GetTopLevelVisual()
+    {
+        return ApplicationLifetime?.GetTopLevelVisual();
+    }
+
+    public MainViewContainer? GetMainViewContainer()
+    {
+        return GetTopLevelVisual() switch
+        {
+            MainWindow window => window.mainView,
+            MainViewContainer view => view,
+            _ => null,
+        };
+    }
 }

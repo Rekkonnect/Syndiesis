@@ -227,7 +227,7 @@ public partial class CodeEditor : UserControl
         if (success)
         {
             var notificationContainer = ToastNotificationContainer
-                .GetFromOuterMainViewContainer(this);
+                .GetFromOuterMainViewContainer();
             _ = CommonToastNotifications.ShowClassicMain(
                 notificationContainer,
                 "Font size updated in settings",

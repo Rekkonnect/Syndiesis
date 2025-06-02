@@ -199,9 +199,9 @@ public partial class AnalysisTreeListNode : UserControl
                 chunk = 20;
             }
 
-            if (chunk <= 5)
+            if (chunk <= 4)
             {
-                LoggerExtensionsEx.LogLowEndDevice();
+                LowEndDeviceDetection.RaiseLowEndDevice();
             }
 
             var taken = builders.Skip(start).Take(chunk);

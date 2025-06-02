@@ -235,7 +235,7 @@ public partial class CopyableGroupedRunInlineTextBlock : UserControl
             .ConfigureAwait(false);
         PulseCopiedTextInline();
 
-        var toastContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
+        var toastContainer = ToastNotificationContainer.GetFromOuterMainViewContainer();
         _ = CommonToastNotifications.ShowClassicMain(
             toastContainer,
             $"""
