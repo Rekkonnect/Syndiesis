@@ -119,6 +119,7 @@ public partial class LanguageVersionDropDownItems : UserControl
         // Just for spacing purposes
         var vbPreviewItem = CreateItem(new(CSharpVersion.Preview));
         vbPreviewItem.Opacity = 0;
+        vbPreviewItem.IsHitTestVisible = false;
 
         vbVersionsGrid.Children.Add(vbPreviewItem);
         Grid.SetRow(vbPreviewItem, 0);
