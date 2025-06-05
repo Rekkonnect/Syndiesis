@@ -1,5 +1,4 @@
-﻿using AvaloniaEdit.Editing;
-using AvaloniaEdit.Rendering;
+﻿using AvaloniaEdit.Rendering;
 using System.Reflection;
 
 namespace Syndiesis.Controls.Editor;
@@ -14,8 +13,8 @@ public abstract class SyndiesisTextEditorLayer : Control
             ;
 
     protected readonly CodeEditor CodeEditor;
-    protected readonly TextArea TextArea;
-    protected readonly TextView TextView;
+    protected readonly SyndiesisTextArea TextArea;
+    protected readonly SyndiesisTextView TextView;
 
     protected SyndiesisTextEditorLayer(CodeEditor codeEditor)
     {

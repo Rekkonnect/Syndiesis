@@ -110,7 +110,7 @@ public static class SymbolExtensions
         return symbol
             is INamedTypeSymbol { IsFileLocal: true };
     }
-    
+
     // known unspeakable characters on compiler-generated names
     private static readonly SearchValues<char> _unspeakableChars = SearchValues.Create("<>$#");
 
@@ -118,7 +118,7 @@ public static class SymbolExtensions
     {
         return name.AsSpan().ContainsAny(_unspeakableChars);
     }
-    
+
     public static bool HasUnspeakableName(this ISymbol symbol)
     {
         return IsUnspeakableName(symbol.Name);

@@ -18,12 +18,6 @@ public sealed class SyndiesisTextArea : TextArea
     {
     }
 
-    protected override void OnLoaded(RoutedEventArgs e)
-    {
-        base.OnLoaded(e);
-        Caret.Show();
-    }
-
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
         var modifiers = e.KeyModifiers.NormalizeByPlatform();

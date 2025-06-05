@@ -744,7 +744,7 @@ public partial class MainView : UserControl
             case Key.Tab:
                 if (modifiers is KeyModifiers.Control)
                 {
-                    codeEditor.textEditor.Focus();
+                    codeEditor.Focus();
                     e.Handled = true;
                 }
                 break;
