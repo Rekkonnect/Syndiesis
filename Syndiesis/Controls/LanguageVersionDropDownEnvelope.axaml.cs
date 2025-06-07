@@ -8,7 +8,7 @@ public partial class LanguageVersionDropDownEnvelope : UserControl
     public LanguageVersionDropDownEnvelope()
     {
         InitializeComponent();
-        DisplayVersion(new(Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp12));
+        DisplayVersion(new(CSharpVersion.CSharp13));
     }
 
     public void DisplayVersion(RoslynLanguageVersion version)

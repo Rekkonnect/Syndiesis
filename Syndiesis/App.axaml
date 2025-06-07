@@ -1,51 +1,144 @@
-<Application xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="using:Syndiesis"
-             x:Class="Syndiesis.App"
-             RequestedThemeVariant="Dark"
-             Name="Syndiesis"
-             >
+<Application
+  x:Class="Syndiesis.App"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:local="using:Syndiesis"
+  Name="Syndiesis"
+  RequestedThemeVariant="Dark"
+  >
 
   <Application.Styles>
     <FluentTheme />
-    <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml" />
+    <StyleInclude
+      Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml"
+      />
   </Application.Styles>
-  
+
   <Application.Resources>
-    <FontFamily x:Key="AptosFontFamily">avares://Syndiesis/Assets/Fonts/Aptos#Aptos</FontFamily>
-    <FontFamily x:Key="AptosDisplayFontFamily">avares://Syndiesis/Assets/Fonts/Aptos-Display#Aptos</FontFamily>
-    <FontFamily x:Key="FiraCodeFontFamily">avares://Syndiesis/Assets/Fonts/Fira-Code#Fira Code</FontFamily>
+    <FontFamily x:Key="AptosFontFamily">
+      avares://Syndiesis/Assets/Fonts/Aptos#Aptos
+    </FontFamily>
+    <FontFamily x:Key="AptosDisplayFontFamily">
+      avares://Syndiesis/Assets/Fonts/Aptos-Display#Aptos
+    </FontFamily>
+    <FontFamily x:Key="FiraCodeFontFamily">
+      avares://Syndiesis/Assets/Fonts/Fira-Code#Fira Code
+    </FontFamily>
 
-    <Image x:Key="LogoCSImage" Source="avares://Syndiesis/Assets/Icons/logo.png" />
-    <Image x:Key="LogoVBImage" Source="avares://Syndiesis/Assets/Icons/logovb.png" />
-    <Image x:Key="PenImage" Source="avares://Syndiesis/Assets/Icons/fa-pen-fancy.png" />
-    <Image x:Key="SpinnerImage" Source="avares://Syndiesis/Assets/Icons/fa-hurricane.png" />
-    <Image x:Key="SuccessImage" Source="avares://Syndiesis/Assets/Icons/fa-check.png" />
-    <Image x:Key="FailureImage" Source="avares://Syndiesis/Assets/Icons/fa-xmark.png" />
+    <Image
+      x:Key="LogoCSImage"
+      Source="avares://Syndiesis/Assets/Icons/logo.png"
+      />
+    <Image
+      x:Key="LogoVBImage"
+      Source="avares://Syndiesis/Assets/Icons/logovb.png"
+      />
+    <Image
+      x:Key="PenImage"
+      Source="avares://Syndiesis/Assets/Icons/fa-pen-fancy.png"
+      />
+    <Image
+      x:Key="SpinnerImage"
+      Source="avares://Syndiesis/Assets/Icons/fa-hurricane.png"
+      />
+    <Image
+      x:Key="SuccessImage"
+      Source="avares://Syndiesis/Assets/Icons/fa-check.png"
+      />
+    <Image
+      x:Key="FailureImage"
+      Source="avares://Syndiesis/Assets/Icons/fa-xmark.png"
+      />
 
-    <Image x:Key="DiagnosticErrorImage" Source="avares://Syndiesis/Assets/Icons/diagnostic-error.png" />
-    <Image x:Key="DiagnosticWarningImage" Source="avares://Syndiesis/Assets/Icons/diagnostic-warning.png" />
-    <Image x:Key="DiagnosticSuggestionImage" Source="avares://Syndiesis/Assets/Icons/diagnostic-suggestion.png" />
+    <Image
+      x:Key="DiagnosticErrorImage"
+      Source="avares://Syndiesis/Assets/Icons/diagnostic-error.png"
+      />
+    <Image
+      x:Key="DiagnosticWarningImage"
+      Source="avares://Syndiesis/Assets/Icons/diagnostic-warning.png"
+      />
+    <Image
+      x:Key="DiagnosticSuggestionImage"
+      Source="avares://Syndiesis/Assets/Icons/diagnostic-suggestion.png"
+      />
 
-    <Image x:Key="VisualStudio_Symbol_Class" Source="avares://Syndiesis/Assets/Icons/vs/symbols/class.png" />
-    <Image x:Key="VisualStudio_Symbol_Constant" Source="avares://Syndiesis/Assets/Icons/vs/symbols/constant.png" />
-    <Image x:Key="VisualStudio_Symbol_Delegate" Source="avares://Syndiesis/Assets/Icons/vs/symbols/delegate.png" />
-    <Image x:Key="VisualStudio_Symbol_Enum" Source="avares://Syndiesis/Assets/Icons/vs/symbols/enum.png" />
-    <Image x:Key="VisualStudio_Symbol_EnumField" Source="avares://Syndiesis/Assets/Icons/vs/symbols/enum-field.png" />
-    <Image x:Key="VisualStudio_Symbol_Event" Source="avares://Syndiesis/Assets/Icons/vs/symbols/event.png" />
-    <Image x:Key="VisualStudio_Symbol_Interface" Source="avares://Syndiesis/Assets/Icons/vs/symbols/interface.png" />
-    <Image x:Key="VisualStudio_Symbol_Local" Source="avares://Syndiesis/Assets/Icons/vs/symbols/local.png" />
-    <Image x:Key="VisualStudio_Symbol_Method" Source="avares://Syndiesis/Assets/Icons/vs/symbols/method.png" />
-    <Image x:Key="VisualStudio_Symbol_Module" Source="avares://Syndiesis/Assets/Icons/vs/symbols/module.png" />
-    <Image x:Key="VisualStudio_Symbol_Namespace" Source="avares://Syndiesis/Assets/Icons/vs/symbols/namespace.png" />
-    <Image x:Key="VisualStudio_Symbol_Operator" Source="avares://Syndiesis/Assets/Icons/vs/symbols/operator.png" />
-    <Image x:Key="VisualStudio_Symbol_Param" Source="avares://Syndiesis/Assets/Icons/vs/symbols/param.png" />
-    <Image x:Key="VisualStudio_Symbol_Prop" Source="avares://Syndiesis/Assets/Icons/vs/symbols/prop.png" />
-    <Image x:Key="VisualStudio_Symbol_Struct" Source="avares://Syndiesis/Assets/Icons/vs/symbols/struct.png" />
-    <Image x:Key="VisualStudio_Symbol_TypeParam" Source="avares://Syndiesis/Assets/Icons/vs/symbols/type-param.png" />
-    <Image x:Key="VisualStudio_Symbol_Label" Source="avares://Syndiesis/Assets/Icons/vs/symbols/label.png" />
-    <Image x:Key="VisualStudio_Symbol_Field" Source="avares://Syndiesis/Assets/Icons/vs/symbols/field.png" />
-    <Image x:Key="VisualStudio_Symbol_Assembly" Source="avares://Syndiesis/Assets/Icons/vs/symbols/assembly.png" />
+    <Image
+      x:Key="VisualStudio_Symbol_Class"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/class.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Constant"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/constant.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Delegate"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/delegate.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Enum"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/enum.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_EnumField"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/enum-field.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Event"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/event.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Interface"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/interface.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Local"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/local.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Method"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/method.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Module"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/module.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Namespace"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/namespace.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Operator"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/operator.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Param"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/param.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Prop"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/prop.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Struct"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/struct.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_TypeParam"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/type-param.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Label"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/label.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Field"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/field.png"
+      />
+    <Image
+      x:Key="VisualStudio_Symbol_Assembly"
+      Source="avares://Syndiesis/Assets/Icons/vs/symbols/assembly.png"
+      />
 
   </Application.Resources>
 </Application>

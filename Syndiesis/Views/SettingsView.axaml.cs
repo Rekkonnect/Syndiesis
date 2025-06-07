@@ -143,7 +143,7 @@ public partial class SettingsView : UserControl
     private async Task ResetSettingsAsync()
     {
         bool success = await AppSettings.TryLoad();
-        var notificationContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
+        var notificationContainer = ToastNotificationContainer.GetFromOuterMainViewContainer();
         if (success)
         {
             LoadFromSettings();
@@ -174,7 +174,7 @@ public partial class SettingsView : UserControl
 
         var path = AppSettings.DefaultPath;
         bool success = await AppSettings.TrySave(path);
-        var notificationContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
+        var notificationContainer = ToastNotificationContainer.GetFromOuterMainViewContainer();
         if (success)
         {
             _ = CommonToastNotifications.ShowClassicMain(

@@ -227,7 +227,7 @@ public partial class CodeEditor : UserControl
         if (success)
         {
             var notificationContainer = ToastNotificationContainer
-                .GetFromOuterMainViewContainer(this);
+                .GetFromOuterMainViewContainer();
             _ = CommonToastNotifications.ShowClassicMain(
                 notificationContainer,
                 "Font size updated in settings",
@@ -487,6 +487,11 @@ public partial class CodeEditor : UserControl
         horizontalScrollBar.Step(horizontalSteps);
     }
 
+    public void Focus()
+    {
+        textEditor.TextArea.Focus();
+    }
+
     protected override void OnKeyDown(KeyEventArgs e)
     {
         var modifiers = e.KeyModifiers.NormalizeByPlatform();
@@ -708,6 +713,12 @@ public partial class CodeEditor : UserControl
         }
 
         return selection.SurroundingSegment;
+    }
+
+    protected override void OnLoaded(RoutedEventArgs e)
+    {
+        base.OnLoaded(e);
+        Focus();
     }
 
     protected override void OnSizeChanged(SizeChangedEventArgs e)

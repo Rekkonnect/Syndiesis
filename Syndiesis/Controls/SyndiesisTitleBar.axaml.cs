@@ -103,7 +103,7 @@ public partial class SyndiesisTitleBar : UserControl
             .ConfigureAwait(false);
         PulseCopiedLine();
 
-        var toastContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
+        var toastContainer = ToastNotificationContainer.GetFromOuterMainViewContainer();
         if (toastContainer is not null)
         {
             var popupContent = $"""

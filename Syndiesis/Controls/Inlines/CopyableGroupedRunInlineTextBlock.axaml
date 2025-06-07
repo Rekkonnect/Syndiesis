@@ -1,10 +1,14 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             xmlns:inlines="using:Syndiesis.Controls.Inlines"
-             x:Class="Syndiesis.Controls.Inlines.CopyableGroupedRunInlineTextBlock">
+<UserControl
+  x:Class="Syndiesis.Controls.Inlines.CopyableGroupedRunInlineTextBlock"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:inlines="using:Syndiesis.Controls.Inlines"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d"
+  >
 
   <Panel>
 
@@ -13,12 +17,12 @@
       and miss highlighting the copyable content, more notably in cases like `Length:  0`.
     -->
     <Rectangle
+      HorizontalAlignment="Stretch"
+      VerticalAlignment="Stretch"
       Fill="Transparent"
       IsHitTestVisible="True"
-      VerticalAlignment="Stretch"
-      HorizontalAlignment="Stretch"
       />
-    
+
     <Canvas>
       <Rectangle
         Name="textPartHoverRectangle"
@@ -26,23 +30,23 @@
         Canvas.Top="4"
         Width="89"
         Height="18"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Top"
         Fill="#40808080"
         IsVisible="False"
         RadiusX="3"
         RadiusY="3"
-        HorizontalAlignment="Left"
-        VerticalAlignment="Top"
-      />
+        />
     </Canvas>
 
     <inlines:GroupedRunInlineTextBlock
-      FontFamily="{StaticResource AptosFontFamily}"
-      Grid.Column="2"
-      FontSize="16"
-      VerticalAlignment="Center"
       Name="containedText"
+      Grid.Column="2"
+      VerticalAlignment="Center"
+      FontFamily="{StaticResource AptosFontFamily}"
+      FontSize="16"
       />
 
   </Panel>
-  
+
 </UserControl>

@@ -1,33 +1,88 @@
-<ResourceDictionary xmlns="https://github.com/avaloniaui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+<ResourceDictionary
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  >
 
   <!--
-  Preview copied from
-  https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Themes.Fluent/Controls/CheckBox.xaml
+    Preview copied from
+    https://github.com/AvaloniaUI/Avalonia/blob/master/src/Avalonia.Themes.Fluent/Controls/CheckBox.xaml
   -->
   <Design.PreviewWith>
-    <Border Padding="20">
-      <StackPanel Spacing="20">
+    <Border
+      Padding="20"
+      >
+      <StackPanel
+        Spacing="20"
+        >
         <CheckBox>Unchecked</CheckBox>
-        <CheckBox IsChecked="True">Checked</CheckBox>
-        <CheckBox IsThreeState="True" IsChecked="{x:Null}">Indeterminate</CheckBox>
-        <CheckBox Width="120">Checkbox should wrap its text</CheckBox>
+        <CheckBox
+          IsChecked="True"
+          >
+          Checked
+        </CheckBox>
+        <CheckBox
+          IsChecked="{x:Null}"
+          IsThreeState="True"
+          >
+          Indeterminate
+        </CheckBox>
+        <CheckBox
+          Width="120"
+          >
+          Checkbox should wrap its text
+        </CheckBox>
       </StackPanel>
     </Border>
   </Design.PreviewWith>
 
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeChecked" Color="#009099" />
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillChecked" Color="#009099" />
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver" Color="#00B0BB" />
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver" Color="#00B0BB" />
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed" Color="#007077" />
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillCheckedPressed" Color="#007077" />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundStrokeChecked"
+    Color="#009099"
+    />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundFillChecked"
+    Color="#009099"
+    />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundStrokeCheckedPointerOver"
+    Color="#00B0BB"
+    />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundFillCheckedPointerOver"
+    Color="#00B0BB"
+    />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundStrokeCheckedPressed"
+    Color="#007077"
+    />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundFillCheckedPressed"
+    Color="#007077"
+    />
 
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminate" Color="#009099" />
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminate" Color="#009099" />
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePointerOver" Color="#00B0BB" />
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminatePointerOver" Color="#00B0BB" />
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePressed" Color="#007077" />
-  <SolidColorBrush x:Key="CheckBoxCheckBackgroundFillIndeterminatePressed" Color="#007077" />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundStrokeIndeterminate"
+    Color="#009099"
+    />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundFillIndeterminate"
+    Color="#009099"
+    />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePointerOver"
+    Color="#00B0BB"
+    />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundFillIndeterminatePointerOver"
+    Color="#00B0BB"
+    />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundStrokeIndeterminatePressed"
+    Color="#007077"
+    />
+  <SolidColorBrush
+    x:Key="CheckBoxCheckBackgroundFillIndeterminatePressed"
+    Color="#007077"
+    />
 
 </ResourceDictionary>

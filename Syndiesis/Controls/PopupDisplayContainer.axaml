@@ -1,10 +1,12 @@
 <UserControl
+  x:Class="Syndiesis.Controls.PopupDisplayContainer"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="350"
-  x:Class="Syndiesis.Controls.PopupDisplayContainer"
+  d:DesignHeight="350"
+  d:DesignWidth="600"
+  mc:Ignorable="d"
   >
 
   <Grid
@@ -12,20 +14,20 @@
     >
     <Border
       Name="backgroundBorder"
-      IsHitTestVisible="false"
-      Background="Black"
-      Opacity="0"
-      VerticalAlignment="Stretch"
       HorizontalAlignment="Stretch"
+      VerticalAlignment="Stretch"
+      Background="Black"
+      IsHitTestVisible="false"
+      Opacity="0"
       >
 
       <Border.Transitions>
         <Transitions>
           <DoubleTransition
+            Easing="ExponentialEaseOut"
             Property="Opacity"
             Duration="0:0:0.250"
-            Easing="ExponentialEaseOut"
-          />
+            />
         </Transitions>
       </Border.Transitions>
 
@@ -33,19 +35,19 @@
 
     <Grid
       Name="popupContainer"
-      VerticalAlignment="Center"
       HorizontalAlignment="Center"
+      VerticalAlignment="Center"
       >
       <Grid.Effect>
         <DropShadowEffect
+          BlurRadius="50"
           OffsetX="0"
           OffsetY="0"
-          BlurRadius="50"
           Color="Black"
           />
       </Grid.Effect>
     </Grid>
 
   </Grid>
-  
+
 </UserControl>

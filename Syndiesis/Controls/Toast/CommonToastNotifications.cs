@@ -10,7 +10,7 @@ public static class CommonToastNotifications
     {
         if (container is null)
             return;
-        
+
         var popup = new ToastNotificationPopup();
         popup.BackgroundFill = backgroundFill;
         popup.defaultTextBlock.Text = text;

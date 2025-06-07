@@ -1,22 +1,23 @@
 <UserControl
+  x:Class="Syndiesis.Controls.SyndiesisTitleBar"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  mc:Ignorable="d" d:DesignWidth="600"
-  Height="35"
   xmlns:controls="using:Syndiesis.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:inlines="using:Syndiesis.Controls.Inlines"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:updating="using:Syndiesis.Controls.Updating"
+  Height="35"
+  d:DesignWidth="600"
   DockPanel.Dock="Top"
-  x:Class="Syndiesis.Controls.SyndiesisTitleBar"
+  mc:Ignorable="d"
   >
 
   <Panel>
 
     <Border
-      CornerRadius="0 0 0 20"
       ClipToBounds="True"
+      CornerRadius="0 0 0 20"
       >
 
       <Grid>
@@ -33,9 +34,9 @@
           <Rectangle.Transitions>
             <Transitions>
               <BrushTransition
-                Duration="0:0:0.250"
-                Property="Fill"
                 Easing="ExponentialEaseOut"
+                Property="Fill"
+                Duration="0:0:0.250"
                 />
             </Transitions>
           </Rectangle.Transitions>
@@ -43,26 +44,25 @@
 
         <Rectangle
           Name="updateProgressBar"
-          Fill="#40FFFFFF"
-          IsHitTestVisible="False"
           Width="0"
-          >
-        </Rectangle>
-
-        <Rectangle
-          VerticalAlignment="Stretch"
-          HorizontalAlignment="Stretch"
-          Fill="#40BBBBBB"
-          Opacity="0"
-          Name="linePulseRectangle"
+          Fill="#40FFFFFF"
           IsHitTestVisible="False"
           />
 
+        <Rectangle
+          Name="linePulseRectangle"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Stretch"
+          Fill="#40BBBBBB"
+          IsHitTestVisible="False"
+          Opacity="0"
+          />
+
         <StackPanel
+          Name="contentStackPanel"
+          Margin="15 0 0 0"
           Orientation="Horizontal"
           Spacing="10"
-          Margin="15 0 0 0"
-          Name="contentStackPanel"
           >
           <Image
             Name="logoImage"
@@ -72,8 +72,8 @@
 
           <inlines:CopyableGroupedRunInlineTextBlock
             Name="headerText"
-            FontFamily="{StaticResource AptosDisplayFontFamily}"
             VerticalAlignment="Center"
+            FontFamily="{StaticResource AptosDisplayFontFamily}"
             IsHitTestVisible="False"
             />
         </StackPanel>
@@ -81,8 +81,7 @@
         <updating:UpdateInformationButton
           Margin="0 0 15 0"
           HorizontalAlignment="Right"
-          >
-        </updating:UpdateInformationButton>
+          />
 
         <controls:SyndiesisTitleBarButtonPanel
           Grid.Column="1"

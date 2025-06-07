@@ -1,71 +1,76 @@
-<UserControl xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:controls="using:Syndiesis.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="Syndiesis.Controls.AnalysisVisualization.AnalysisTreeListView">
+<UserControl
+  x:Class="Syndiesis.Controls.AnalysisVisualization.AnalysisTreeListView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:controls="using:Syndiesis.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d"
+  >
 
-  <Panel Name="backgroundPanel"
-         Background="#001116"
-         >
+  <Panel
+    Name="backgroundPanel"
+    Background="#001116"
+    >
     <Grid>
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="*"/>
-        <ColumnDefinition Width="20"/>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="20" />
       </Grid.ColumnDefinitions>
       <Grid.RowDefinitions>
-        <RowDefinition Height="*"/>
-        <RowDefinition Height="20"/>
+        <RowDefinition Height="*" />
+        <RowDefinition Height="20" />
       </Grid.RowDefinitions>
 
       <Panel
-        Grid.Column="0"
         Name="contentCanvasContainer"
+        Grid.Column="0"
         >
         <Canvas
           Name="contentCanvas"
           >
           <ContentControl
             Name="topLevelNodeContent"
-            VerticalAlignment="Top"
             HorizontalAlignment="Left"
-            >
-          </ContentControl>
+            VerticalAlignment="Top"
+            />
         </Canvas>
       </Panel>
-      <Panel Name="verticalScrollBarPanel"
-             Background="#003034"
-             Grid.Column="1">
+      <Panel
+        Name="verticalScrollBarPanel"
+        Grid.Column="1"
+        Background="#003034"
+        >
         <controls:VerticalScrollBar
           Name="verticalScrollBar"
           AccentColor="#006066"
           HoverColor="#009099"
           SmallStep="50"
-          >
-
-        </controls:VerticalScrollBar>
+          />
 
       </Panel>
-      <Panel Name="horizontalScrollBarPanel"
-             Background="#003034"
-             Grid.Column="0"
-             Grid.Row="1">
+      <Panel
+        Name="horizontalScrollBarPanel"
+        Grid.Row="1"
+        Grid.Column="0"
+        Background="#003034"
+        >
 
         <controls:HorizontalScrollBar
           Name="horizontalScrollBar"
           AccentColor="#006066"
           HoverColor="#009099"
           SmallStep="50"
-          >
-
-        </controls:HorizontalScrollBar>
+          />
       </Panel>
-      <Panel Name="scrollBarIntersectionPanel"
-             Background="#00545A"
-             Grid.Column="2"
-             Grid.Row="1">
-      </Panel>
+      <Panel
+        Name="scrollBarIntersectionPanel"
+        Grid.Row="1"
+        Grid.Column="2"
+        Background="#00545A"
+        />
     </Grid>
   </Panel>
 

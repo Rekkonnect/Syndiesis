@@ -1,34 +1,36 @@
 <UserControl
+  x:Class="Syndiesis.Controls.Updating.UpdateInformationButton"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  mc:Ignorable="d"
   Height="25"
-  x:Class="Syndiesis.Controls.Updating.UpdateInformationButton">
+  mc:Ignorable="d"
+  >
 
   <Button
+    Name="button"
     Padding="5"
     Background="Transparent"
-    Name="button">
+    >
 
     <Button.Transitions>
       <Transitions>
         <DoubleTransition
-          Duration="0:0:0.250"
           Property="Opacity"
+          Duration="0:0:0.250"
           />
       </Transitions>
     </Button.Transitions>
 
     <TextBlock
+      Name="buttonText"
+      VerticalAlignment="Center"
       ClipToBounds="false"
       FontSize="14"
       Foreground="#80FFFFFF"
-      VerticalAlignment="Center"
-      TextAlignment="Right"
       Text="No updates are currently available"
-      Name="buttonText"
+      TextAlignment="Right"
       />
   </Button>
 

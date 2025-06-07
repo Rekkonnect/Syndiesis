@@ -703,7 +703,7 @@ public partial class MainView : UserControl
 
     private void ShowResetSettingsPopup()
     {
-        var notificationContainer = ToastNotificationContainer.GetFromOuterMainViewContainer(this);
+        var notificationContainer = ToastNotificationContainer.GetFromOuterMainViewContainer();
         _ = CommonToastNotifications.ShowClassicMain(
             notificationContainer,
             "Reverted settings to current file state",
@@ -744,7 +744,7 @@ public partial class MainView : UserControl
             case Key.Tab:
                 if (modifiers is KeyModifiers.Control)
                 {
-                    codeEditor.textEditor.Focus();
+                    codeEditor.Focus();
                     e.Handled = true;
                 }
                 break;

@@ -19,8 +19,8 @@ public abstract class BaseAnalysisNodeCreatorContainer
         SemanticCreator = new(this);
     }
 
-    protected abstract BaseSyntaxAnalysisNodeCreator CreateSyntaxCreator(); 
-    
+    protected abstract BaseSyntaxAnalysisNodeCreator CreateSyntaxCreator();
+
     public static BaseAnalysisNodeCreatorContainer CreateForLanguage(string languageName)
     {
         return languageName switch

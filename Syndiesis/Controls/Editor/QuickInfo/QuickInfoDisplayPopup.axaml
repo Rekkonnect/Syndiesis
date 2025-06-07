@@ -1,18 +1,19 @@
-<UserControl 
-xmlns="https://github.com/avaloniaui"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d"
-             VerticalAlignment="Stretch"
-             HorizontalAlignment="Stretch"
-             x:Class="Syndiesis.Controls.Editor.QuickInfo.QuickInfoDisplayPopup">
+<UserControl
+  x:Class="Syndiesis.Controls.Editor.QuickInfo.QuickInfoDisplayPopup"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  HorizontalAlignment="Stretch"
+  VerticalAlignment="Stretch"
+  mc:Ignorable="d"
+  >
 
   <Border
     Name="outerBorder"
+    Padding="5"
     Background="#FF282828"
     CornerRadius="4"
-    Padding="5"
     >
 
     <StackPanel
@@ -25,10 +26,10 @@ xmlns="https://github.com/avaloniaui"
 
       <Rectangle
         Name="splitter"
-        HorizontalAlignment="Stretch"
-        VerticalAlignment="Center"
         Height="2"
         Margin="5 15 5 15"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Center"
         Fill="#80808080"
         />
 
@@ -38,7 +39,7 @@ xmlns="https://github.com/avaloniaui"
         />
 
     </StackPanel>
-    
+
   </Border>
 
 </UserControl>
