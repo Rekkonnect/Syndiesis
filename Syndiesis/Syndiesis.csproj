@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  
+
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Metadata">
-    <Version>1.2.2</Version>
+    <Version>1.2.3</Version>
     <Authors>Alex Kalfakakos</Authors>
     <Copyright>© 2024-2025 Alex Kalfakakos</Copyright>
     <Description>The most revolutionary syntax visualizer for C#</Description>
@@ -27,28 +27,23 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Allow Dev Errors|AnyCPU'">
     <DefineConstants>$(DefineConstants);ALLOW_DEV_ERRORS</DefineConstants>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
     <None Remove=".gitignore" />
-    <None Remove="Assets\Icons\diagnostic-error.png" />
-    <None Remove="Assets\Icons\diagnostic-suggestion.png" />
-    <None Remove="Assets\Icons\diagnostic-warning.png" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <TrimmableAssembly Include="Avalonia.Themes.Fluent" />
     <TrimmableAssembly Include="Avalonia.Themes.Default" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.3.0" />
     <PackageReference Include="Avalonia.AvaloniaEdit" Version="11.3.0" />
     <PackageReference Include="Avalonia.Desktop" Version="11.3.0" />
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" Version="11.3.0" />
-    <PackageReference Include="Avalonia.Diagnostics" Condition="'$(Configuration)'=='Allow Dev Errors'">
-      <Version>11.0.10</Version>
-    </PackageReference>
+    <PackageReference Condition="'$(Configuration)' == 'Allow Dev Errors'" Include="Avalonia.Diagnostics" Version="11.3.0" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.0" />
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Garyon" Version="0.4.1" />
