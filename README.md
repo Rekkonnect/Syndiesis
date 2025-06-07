@@ -58,6 +58,7 @@ Below is a short list of features:
 
 - Code editor
   - AvaloniaEdit's features
+  - Font zoom
   - Syntax and semantic colorization
   - Go to definition using F12
   - Custom nagivation to outer syntax nodes based on the current selection
@@ -75,6 +76,9 @@ Below is a short list of features:
   - Node details view
   - Indication of throwing properties per node
   - Loading nodes respects responsiveness of the app
+- General
+  - Auto updating via [GitHub Releases](https://github.com/Rekkonnect/Syndiesis/releases)
+  - Appearance and behavior customization through settings
 
 A large portion of the app is built using basic components in Avalonia. The code editor is from [AvaloniaEdit](https://github.com/avaloniaUI/AvaloniaEdit).
 Some icons were taken from the free version of [FontAwesome](https://fontawesome.com/).
